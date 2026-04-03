@@ -7,6 +7,11 @@ Taiwanese Hokkien dataset:
 - App behavior: offline Hokkien → Mandarin and Mandarin → Hokkien lookup
 - Bundled asset: `assets/data/dictionary.json.gz`
 
+## License
+
+- App code: MIT. See `LICENSE`.
+- Dictionary data: `CC BY-NC-ND 2.5 TW`. See `DATA_LICENSE.md`.
+
 ## Project Structure
 
 - `lib/main.dart`: app UI, asset loading, and search logic
