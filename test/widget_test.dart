@@ -500,6 +500,29 @@ void main() {
     expect(find.text('Top'), findsNothing);
     expect(find.text('Bottom'), findsNothing);
     await tester.scrollUntilVisible(
+      find.text('臺羅標注說明'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('臺羅標注說明'), findsOneWidget);
+    expect(find.text('漢字用字原則'), findsOneWidget);
+
+    await tester.tap(find.text('臺羅標注說明'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.text('臺羅標注說明'), findsWidgets);
+    expect(find.text('拼寫基礎'), findsOneWidget);
+    expect(find.textContaining('音節之間會用連字符號標示多音節詞'), findsOneWidget);
+    expect(find.text('查詢時怎麼用'), findsOneWidget);
+
+    await tester.pageBack();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    await tester.scrollUntilVisible(
       find.text('關於台語辭典'),
       300,
       scrollable: find.byType(Scrollable).first,
