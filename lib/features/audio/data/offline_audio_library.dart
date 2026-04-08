@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
@@ -8,13 +7,14 @@ import 'package:path_provider/path_provider.dart';
 
 import '../domain/audio_archive.dart';
 import 'audio_archive_index.dart';
+import 'audio_archive_storage.dart';
+import 'audio_playback_diagnostics.dart';
 
 class OfflineAudioLibrary extends ChangeNotifier {
   OfflineAudioLibrary();
 
-  static const int _maxDownloadAttempts = 4;
-
   final AudioPlayer _player = AudioPlayer();
+  final AudioArchiveDownloader _downloader = const AudioArchiveDownloader();
   final Map<AudioArchiveType, Map<String, ZipEntryLocation>> _indexes = {
     AudioArchiveType.word: <String, ZipEntryLocation>{},
     AudioArchiveType.sentence: <String, ZipEntryLocation>{},
@@ -37,6 +37,7 @@ class OfflineAudioLibrary extends ChangeNotifier {
   };
 
   Directory? _supportDirectory;
+  AudioArchiveStorage? _storage;
   bool _initialized = false;
   bool _initializationFailed = false;
   String? _loadingClipKey;
@@ -80,7 +81,8 @@ class OfflineAudioLibrary extends ChangeNotifier {
 
     try {
       _supportDirectory = await getApplicationSupportDirectory();
-      await _audioRootDirectory.create(recursive: true);
+      _storage = AudioArchiveStorage(_supportDirectory!);
+      await _storage!.audioRootDirectory.create(recursive: true);
       for (final type in AudioArchiveType.values) {
         await _loadArchiveState(type);
       }
@@ -109,31 +111,34 @@ class OfflineAudioLibrary extends ChangeNotifier {
     _totalBytes[type] = type.archiveBytes;
     notifyListeners();
 
-    final targetFile = _archiveFile(type);
+    final storage = _storage!;
+    final targetFile = storage.archiveFile(type);
     final tempFile = File('${targetFile.path}.download');
 
     try {
       await tempFile.parent.create(recursive: true);
-      _downloadedBytes[type] = await _downloadArchiveWithRetry(type, tempFile);
+      _downloadedBytes[type] = await _downloader.download(
+        type,
+        tempFile,
+        onProgress: (downloadedBytes, totalBytes) {
+          _downloadedBytes[type] = downloadedBytes;
+          _totalBytes[type] = totalBytes;
+          notifyListeners();
+        },
+      );
 
       final index = await buildStoredZipIndex(tempFile);
       if (!index.containsKey(type.sampleClipId)) {
         throw FormatException('下載回來的檔案不是 ${type.archiveFileName}');
       }
 
-      final cacheDirectory = _cacheDirectory(type);
-      if (await cacheDirectory.exists()) {
-        await cacheDirectory.delete(recursive: true);
-      }
-
-      if (await targetFile.exists()) {
-        await targetFile.delete();
-      }
-      await tempFile.rename(targetFile.path);
-
+      await storage.replaceArchive(
+        type: type,
+        tempFile: tempFile,
+        index: index,
+      );
       _indexes[type] = index;
       _isReady[type] = true;
-      await writeZipIndex(_indexFile(type), index);
       notifyListeners();
 
       return AudioActionResult(message: '已下載 ${type.displayLabel}，之後可離線播放。');
@@ -148,91 +153,6 @@ class OfflineAudioLibrary extends ChangeNotifier {
     } finally {
       _isDownloading[type] = false;
       notifyListeners();
-    }
-  }
-
-  Future<int> _downloadArchiveWithRetry(
-    AudioArchiveType type,
-    File tempFile,
-  ) async {
-    Object? lastError;
-
-    for (var attempt = 1; attempt <= _maxDownloadAttempts; attempt++) {
-      try {
-        return await _downloadArchiveOnce(type, tempFile);
-      } on FormatException {
-        rethrow;
-      } catch (error) {
-        lastError = error;
-        if (attempt == _maxDownloadAttempts) {
-          break;
-        }
-        await Future<void>.delayed(_retryDelay(attempt));
-      }
-    }
-
-    throw HttpException(
-      '連線中斷，重試 $_maxDownloadAttempts 次後仍未完成下載。最後錯誤：$lastError',
-    );
-  }
-
-  Future<int> _downloadArchiveOnce(AudioArchiveType type, File tempFile) async {
-    final client = HttpClient()
-      ..connectionTimeout = const Duration(seconds: 20)
-      ..idleTimeout = const Duration(seconds: 30);
-
-    try {
-      var downloadedBytes = await _existingLength(tempFile);
-      _downloadedBytes[type] = downloadedBytes;
-      notifyListeners();
-
-      final request = await client.getUrl(Uri.parse(type.sourceUrl));
-      if (downloadedBytes > 0) {
-        request.headers.set(HttpHeaders.rangeHeader, 'bytes=$downloadedBytes-');
-      }
-
-      final response = await request.close();
-      if (response.statusCode == HttpStatus.partialContent) {
-        final totalBytes = _parseTotalBytesFromContentRange(
-          response.headers.value(HttpHeaders.contentRangeHeader),
-        );
-        if (totalBytes != null) {
-          _totalBytes[type] = totalBytes;
-        }
-      } else if (response.statusCode == HttpStatus.ok) {
-        if (downloadedBytes > 0) {
-          await tempFile.delete();
-          downloadedBytes = 0;
-          _downloadedBytes[type] = 0;
-        }
-        if (response.contentLength > 0) {
-          _totalBytes[type] = response.contentLength;
-        }
-      } else if (response.statusCode ==
-              HttpStatus.requestedRangeNotSatisfiable &&
-          downloadedBytes > 0) {
-        return downloadedBytes;
-      } else {
-        throw HttpException('下載失敗，HTTP ${response.statusCode}');
-      }
-
-      final sink = tempFile.openWrite(
-        mode: downloadedBytes > 0 ? FileMode.append : FileMode.write,
-      );
-      try {
-        await for (final chunk in response) {
-          sink.add(chunk);
-          downloadedBytes += chunk.length;
-          _downloadedBytes[type] = downloadedBytes;
-          notifyListeners();
-        }
-      } finally {
-        await sink.close();
-      }
-
-      return downloadedBytes;
-    } finally {
-      client.close(force: true);
     }
   }
 
@@ -271,11 +191,11 @@ class OfflineAudioLibrary extends ChangeNotifier {
 
     try {
       final clipFile = await materializeStoredZipEntry(
-        archiveFile: _archiveFile(type),
-        outputFile: _clipCacheFile(type, clipId),
+        archiveFile: _storage!.archiveFile(type),
+        outputFile: _storage!.clipCacheFile(type, clipId),
         entry: entry,
       );
-      final clipDiagnostics = await _describeClipFile(clipFile);
+      final clipDiagnostics = await describeAudioClipFile(clipFile);
       debugPrint(
         '[audio] preparing ${type.name}:$clipId -> ${clipFile.path} '
         '($clipDiagnostics)',
@@ -330,107 +250,15 @@ class OfflineAudioLibrary extends ChangeNotifier {
   }
 
   Future<void> _loadArchiveState(AudioArchiveType type) async {
-    final archiveFile = _archiveFile(type);
-    if (!await archiveFile.exists()) {
+    final storage = _storage;
+    if (storage == null) {
       return;
     }
-
-    final indexFile = _indexFile(type);
-    if (await indexFile.exists()) {
-      final cachedIndex = await readZipIndex(indexFile);
-      if (cachedIndex.containsKey(type.sampleClipId)) {
-        _indexes[type] = cachedIndex;
-        _isReady[type] = true;
-        return;
-      }
-    }
-
-    final rebuiltIndex = await buildStoredZipIndex(archiveFile);
-    if (rebuiltIndex.containsKey(type.sampleClipId)) {
-      _indexes[type] = rebuiltIndex;
+    final index = await storage.loadArchiveState(type);
+    if (index != null) {
+      _indexes[type] = index;
       _isReady[type] = true;
-      await writeZipIndex(indexFile, rebuiltIndex);
     }
-  }
-
-  Directory get _audioRootDirectory {
-    return Directory('${_supportDirectory!.path}/offline_audio');
-  }
-
-  File _archiveFile(AudioArchiveType type) {
-    return File('${_audioRootDirectory.path}/${type.storageStem}.zip');
-  }
-
-  File _indexFile(AudioArchiveType type) {
-    return File('${_audioRootDirectory.path}/${type.storageStem}.index.json');
-  }
-
-  Directory _cacheDirectory(AudioArchiveType type) {
-    return Directory('${_audioRootDirectory.path}/${type.cacheFolderName}');
-  }
-
-  File _clipCacheFile(AudioArchiveType type, String clipId) {
-    final safeFileName = clipId.replaceAll(RegExp(r'[^0-9A-Za-z()_-]'), '_');
-    return File('${_cacheDirectory(type).path}/$safeFileName.mp3');
-  }
-
-  Future<String> _describeClipFile(File file) async {
-    final exists = await file.exists();
-    if (!exists) {
-      return 'missing file';
-    }
-
-    final length = await file.length();
-    final headerBytes = Uint8List.fromList(await file.openRead(0, 12).first);
-    final headerKind = _classifyAudioHeader(headerBytes);
-    final headerHex = headerBytes
-        .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
-        .join(' ');
-    return 'size=${formatBytes(length)}, header=$headerKind [$headerHex]';
-  }
-
-  String _classifyAudioHeader(Uint8List bytes) {
-    if (bytes.length >= 3 &&
-        bytes[0] == 0x49 &&
-        bytes[1] == 0x44 &&
-        bytes[2] == 0x33) {
-      return 'id3';
-    }
-    if (bytes.length >= 2 && bytes[0] == 0xFF && (bytes[1] & 0xE0) == 0xE0) {
-      return 'mpeg-frame';
-    }
-    if (bytes.length >= 4 &&
-        bytes[0] == 0x52 &&
-        bytes[1] == 0x49 &&
-        bytes[2] == 0x46 &&
-        bytes[3] == 0x46) {
-      return 'riff';
-    }
-    return 'unknown';
-  }
-
-  Future<int> _existingLength(File file) async {
-    if (!await file.exists()) {
-      return 0;
-    }
-    return file.length();
-  }
-
-  int? _parseTotalBytesFromContentRange(String? contentRange) {
-    if (contentRange == null) {
-      return null;
-    }
-
-    final match = RegExp(r'bytes\s+\d+-\d+/(\d+)').firstMatch(contentRange);
-    if (match == null) {
-      return null;
-    }
-
-    return int.tryParse(match.group(1)!);
-  }
-
-  Duration _retryDelay(int attempt) {
-    return Duration(seconds: min(attempt * 2, 8));
   }
 
   String _clipKey(AudioArchiveType type, String clipId) {
