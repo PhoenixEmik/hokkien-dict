@@ -5,44 +5,79 @@ import 'package:hokkien_dictionary/main.dart';
 import 'package:hokkien_dictionary/offline_audio.dart';
 
 void main() {
-  test('dictionary repository returns no entries for non-matching query', () {
+  test('dictionary repository filters and ranks by headword only', () {
     const bundle = DictionaryBundle(
-      entryCount: 2,
-      senseCount: 2,
+      entryCount: 5,
+      senseCount: 5,
       exampleCount: 0,
       entries: [
         DictionaryEntry(
           id: 1,
           type: '',
-          hanji: '一',
-          romanization: 'tsit',
+          hanji: '人民',
+          romanization: 'jin-bin',
           category: '',
           audioId: '',
-          hokkienSearch: '一 tsit',
-          mandarinSearch: '數字 一',
+          hokkienSearch: '人民 jin-bin',
+          mandarinSearch: '人民',
           senses: [
-            DictionarySense(
-              partOfSpeech: '',
-              definition: '數字一',
-              examples: [],
-            ),
+            DictionarySense(partOfSpeech: '', definition: '人民', examples: []),
           ],
         ),
         DictionaryEntry(
           id: 2,
           type: '',
-          hanji: '狗',
-          romanization: 'kau',
+          hanji: '人民族',
+          romanization: 'jin-bin-tso̍k',
           category: '',
           audioId: '',
-          hokkienSearch: '狗 kau',
-          mandarinSearch: '動物 狗',
+          hokkienSearch: '人民族 jin-bin-tso̍k',
+          mandarinSearch: '民族',
+          senses: [
+            DictionarySense(partOfSpeech: '', definition: '民族', examples: []),
+          ],
+        ),
+        DictionaryEntry(
+          id: 3,
+          type: '',
+          hanji: '新人民',
+          romanization: 'sin-jin-bin',
+          category: '',
+          audioId: '',
+          hokkienSearch: '新人民 sin-jin-bin',
+          mandarinSearch: '新人民',
+          senses: [
+            DictionarySense(partOfSpeech: '', definition: '新人民', examples: []),
+          ],
+        ),
+        DictionaryEntry(
+          id: 4,
+          type: '',
+          hanji: '政權',
+          romanization: 'tsing-khuan',
+          category: '',
+          audioId: '',
+          hokkienSearch: '政權 tsing-khuan',
+          mandarinSearch: '政權',
           senses: [
             DictionarySense(
               partOfSpeech: '',
-              definition: '狗',
+              definition: '人民群眾的權力',
               examples: [],
             ),
+          ],
+        ),
+        DictionaryEntry(
+          id: 5,
+          type: '',
+          hanji: '國民',
+          romanization: 'kok-bin',
+          category: '',
+          audioId: '',
+          hokkienSearch: '國民 kok-bin',
+          mandarinSearch: '國民',
+          senses: [
+            DictionarySense(partOfSpeech: '', definition: '人民', examples: []),
           ],
         ),
       ],
@@ -50,22 +85,12 @@ void main() {
 
     final repository = DictionaryRepository();
 
-    expect(
-      repository.search(
-        bundle,
-        SearchDirection.hokkienToMandarin,
-        '人人人',
-      ),
-      isEmpty,
-    );
-    expect(
-      repository.search(
-        bundle,
-        SearchDirection.mandarinToHokkien,
-        '人人人',
-      ),
-      isEmpty,
-    );
+    final results = repository.search(bundle, '人民');
+
+    expect(results.map((entry) => entry.hanji).toList(), ['人民', '人民族', '新人民']);
+    expect(results.any((entry) => entry.hanji == '政權'), isFalse);
+    expect(results.any((entry) => entry.hanji == '國民'), isFalse);
+    expect(repository.search(bundle, '人人人'), isEmpty);
   });
 
   testWidgets('dictionary screen only renders filtered matches', (
@@ -104,11 +129,7 @@ void main() {
             hokkienSearch: '狗 kau',
             mandarinSearch: '動物 狗',
             senses: [
-              DictionarySense(
-                partOfSpeech: '',
-                definition: '狗',
-                examples: [],
-              ),
+              DictionarySense(partOfSpeech: '', definition: '狗', examples: []),
             ],
           ),
         ],
@@ -121,7 +142,6 @@ void main() {
           body: DictionaryScreen(
             repository: repository,
             audioLibrary: OfflineAudioLibrary(),
-            searchBarPlacement: SearchBarPlacement.top,
             onActionResult: (_) {},
           ),
         ),
@@ -132,14 +152,14 @@ void main() {
     expect(find.text('一'), findsNothing);
     expect(find.text('狗'), findsNothing);
 
-    await tester.enterText(find.byType(TextField), 'tsit');
+    await tester.enterText(find.byType(TextField), '一');
     await tester.pumpAndSettle();
 
-    expect(find.text('一'), findsOneWidget);
+    expect(find.text('一'), findsWidgets);
     expect(find.text('狗'), findsNothing);
     expect(find.byType(EntryListItem), findsOneWidget);
 
-    await tester.enterText(find.byType(TextField), 'kau');
+    await tester.enterText(find.byType(TextField), '狗');
     await tester.pumpAndSettle();
 
     expect(find.text('一'), findsNothing);
@@ -183,11 +203,7 @@ void main() {
             hokkienSearch: '狗 kau',
             mandarinSearch: '動物 狗',
             senses: [
-              DictionarySense(
-                partOfSpeech: '',
-                definition: '狗',
-                examples: [],
-              ),
+              DictionarySense(partOfSpeech: '', definition: '狗', examples: []),
             ],
           ),
         ],
@@ -200,7 +216,6 @@ void main() {
           body: DictionaryScreen(
             repository: repository,
             audioLibrary: OfflineAudioLibrary(),
-            searchBarPlacement: SearchBarPlacement.top,
             onActionResult: (_) {},
           ),
         ),
@@ -228,8 +243,12 @@ void main() {
 
     expect(find.text('Dictionary'), findsOneWidget);
     expect(find.text('Settings'), findsOneWidget);
-    expect(find.text('台語辭典'), findsOneWidget);
-    expect(find.byIcon(Icons.chevron_right), findsNothing);
+    expect(find.text('開始搜尋'), findsOneWidget);
+    expect(find.text('詞目'), findsNothing);
+    expect(find.text('義項'), findsNothing);
+    expect(find.text('例句'), findsNothing);
+    expect(find.text('台語 → 華語'), findsNothing);
+    expect(find.text('華語 → 台語'), findsNothing);
 
     await tester.enterText(find.byType(TextField), 'tsit');
     await tester.pump();
@@ -243,7 +262,7 @@ void main() {
     await tester.tap(resultChevron);
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('顯示台語詞目對應的華語義項'), findsOneWidget);
+    expect(find.textContaining('顯示符合查詢的台語詞目與華語義項'), findsOneWidget);
   });
 
   testWidgets('renders settings tab section', (WidgetTester tester) async {
@@ -254,10 +273,34 @@ void main() {
     await tester.tap(find.byIcon(Icons.settings_outlined));
     await tester.pump(const Duration(milliseconds: 400));
 
-    expect(find.text('Audio Resource Management'), findsOneWidget);
-    expect(find.text('Search Bar Position'), findsOneWidget);
-    expect(find.text('Top'), findsOneWidget);
-    expect(find.text('Bottom'), findsOneWidget);
+    expect(find.text('設定'), findsOneWidget);
+    expect(find.text('離線資源'), findsOneWidget);
+    expect(find.text('Search Bar Position'), findsNothing);
+    expect(find.text('Top'), findsNothing);
+    expect(find.text('Bottom'), findsNothing);
+    expect(find.text('關於'), findsWidgets);
+    expect(find.text('開源授權'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('關於').last);
+    await tester.tap(find.text('關於').last);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(find.text('關於台語辭典'), findsOneWidget);
+    expect(find.textContaining('App code: MIT'), findsOneWidget);
+
+    await tester.tap(find.text('關閉'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    await tester.ensureVisible(find.text('開源授權'));
+    await tester.tap(find.text('開源授權'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(find.text('開源授權'), findsWidgets);
+    expect(find.text('Application'), findsOneWidget);
+    expect(find.text('套件授權'), findsOneWidget);
   });
 }
 
@@ -272,26 +315,47 @@ class _FakeDictionaryRepository extends DictionaryRepository {
   }
 
   @override
-  List<DictionaryEntry> search(
-    DictionaryBundle bundle,
-    SearchDirection direction,
-    String rawQuery,
-  ) {
+  List<DictionaryEntry> search(DictionaryBundle bundle, String rawQuery) {
     final query = normalizeQuery(rawQuery);
     if (query.isEmpty) {
       return const <DictionaryEntry>[];
     }
 
-    return bundle.entries.where((entry) {
-      final hokkienMatch =
-          normalizeQuery(entry.hanji).contains(query) ||
-          normalizeQuery(entry.romanization).contains(query);
-      final mandarinMatch = entry.senses.any(
-        (sense) => normalizeQuery(sense.definition).contains(query),
+    final matched = bundle.entries
+        .where((entry) {
+          final headword = normalizeQuery(
+            entry.hanji.isNotEmpty ? entry.hanji : entry.romanization,
+          );
+          return headword.contains(query);
+        })
+        .toList(growable: false);
+
+    matched.sort((left, right) {
+      final leftHeadword = normalizeQuery(
+        left.hanji.isNotEmpty ? left.hanji : left.romanization,
       );
-      return direction == SearchDirection.hokkienToMandarin
-          ? hokkienMatch || mandarinMatch
-          : mandarinMatch || hokkienMatch;
-    }).toList(growable: false);
+      final rightHeadword = normalizeQuery(
+        right.hanji.isNotEmpty ? right.hanji : right.romanization,
+      );
+      final leftPriority = _matchPriority(leftHeadword, query);
+      final rightPriority = _matchPriority(rightHeadword, query);
+      final comparePriority = leftPriority.compareTo(rightPriority);
+      if (comparePriority != 0) {
+        return comparePriority;
+      }
+      return left.id.compareTo(right.id);
+    });
+
+    return matched;
+  }
+
+  int _matchPriority(String headword, String query) {
+    if (headword == query) {
+      return 0;
+    }
+    if (headword.startsWith(query)) {
+      return 1;
+    }
+    return 2;
   }
 }

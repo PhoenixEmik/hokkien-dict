@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'offline_audio.dart';
 
@@ -58,10 +57,6 @@ class HokkienDictionaryApp extends StatelessWidget {
   }
 }
 
-enum SearchDirection { hokkienToMandarin, mandarinToHokkien }
-
-enum SearchBarPlacement { top, bottom }
-
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -74,13 +69,11 @@ class _MainScreenState extends State<MainScreen> {
   final OfflineAudioLibrary _audioLibrary = OfflineAudioLibrary();
 
   int _selectedIndex = 0;
-  SearchBarPlacement _searchBarPlacement = SearchBarPlacement.top;
 
   @override
   void initState() {
     super.initState();
     unawaited(_audioLibrary.initialize());
-    unawaited(_loadPreferences());
   }
 
   @override
@@ -89,35 +82,9 @@ class _MainScreenState extends State<MainScreen> {
     super.dispose();
   }
 
-  Future<void> _loadPreferences() async {
-    final preferences = await SharedPreferences.getInstance();
-    final storedValue = preferences.getString('search_bar_placement');
-    if (!mounted || storedValue == null) {
-      return;
-    }
-
-    setState(() {
-      _searchBarPlacement = storedValue == SearchBarPlacement.bottom.name
-          ? SearchBarPlacement.bottom
-          : SearchBarPlacement.top;
-    });
-  }
-
   Future<void> _downloadArchive(AudioArchiveType type) async {
     final result = await _audioLibrary.downloadArchive(type);
     _showResult(result);
-  }
-
-  Future<void> _updateSearchBarPlacement(SearchBarPlacement placement) async {
-    final preferences = await SharedPreferences.getInstance();
-    await preferences.setString('search_bar_placement', placement.name);
-    if (!mounted) {
-      return;
-    }
-
-    setState(() {
-      _searchBarPlacement = placement;
-    });
   }
 
   void _showResult(AudioActionResult result) {
@@ -144,14 +111,11 @@ class _MainScreenState extends State<MainScreen> {
       DictionaryScreen(
         repository: _repository,
         audioLibrary: _audioLibrary,
-        searchBarPlacement: _searchBarPlacement,
         onActionResult: _showResult,
       ),
       SettingsScreen(
         audioLibrary: _audioLibrary,
-        searchBarPlacement: _searchBarPlacement,
         onDownloadArchive: _downloadArchive,
-        onSearchBarPlacementChanged: _updateSearchBarPlacement,
       ),
     ];
 
@@ -186,13 +150,11 @@ class DictionaryScreen extends StatefulWidget {
     super.key,
     required this.repository,
     required this.audioLibrary,
-    required this.searchBarPlacement,
     required this.onActionResult,
   });
 
   final DictionaryRepository repository;
   final OfflineAudioLibrary audioLibrary;
-  final SearchBarPlacement searchBarPlacement;
   final ValueChanged<AudioActionResult> onActionResult;
 
   @override
@@ -203,7 +165,6 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
   final TextEditingController _searchController = TextEditingController();
   late final Future<DictionaryBundle> _bundleFuture;
 
-  SearchDirection _direction = SearchDirection.hokkienToMandarin;
   DictionaryBundle? _bundle;
   List<DictionaryEntry> _filteredResults = const <DictionaryEntry>[];
   String _normalizedQuery = '';
@@ -231,11 +192,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
     setState(() {
       _bundle = bundle;
       _normalizedQuery = normalizeQuery(_searchController.text);
-      _filteredResults = _buildFilteredResults(
-        bundle,
-        _direction,
-        _searchController.text,
-      );
+      _filteredResults = _buildFilteredResults(bundle, _searchController.text);
     });
 
     return bundle;
@@ -250,7 +207,6 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
     final normalizedQuery = normalizeQuery(_searchController.text);
     final filteredResults = _buildFilteredResults(
       bundle,
-      _direction,
       _searchController.text,
     );
     if (_normalizedQuery == normalizedQuery &&
@@ -266,7 +222,6 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
 
   List<DictionaryEntry> _buildFilteredResults(
     DictionaryBundle bundle,
-    SearchDirection direction,
     String rawQuery,
   ) {
     final normalizedQuery = normalizeQuery(rawQuery);
@@ -274,25 +229,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
       return const <DictionaryEntry>[];
     }
 
-    return widget.repository.search(bundle, direction, normalizedQuery);
-  }
-
-  void _handleDirectionChanged(SearchDirection direction) {
-    if (_direction == direction) {
-      return;
-    }
-
-    setState(() {
-      _direction = direction;
-      _normalizedQuery = normalizeQuery(_searchController.text);
-      _filteredResults = _bundle == null
-          ? const <DictionaryEntry>[]
-          : _buildFilteredResults(
-              _bundle!,
-              direction,
-              _searchController.text,
-            );
-    });
+    return widget.repository.search(bundle, normalizedQuery);
   }
 
   Future<void> _playClip(AudioArchiveType type, String clipId) async {
@@ -301,24 +238,14 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
   }
 
   Future<void> _showEntryDetails(DictionaryEntry entry) async {
-    await showModalBottomSheet<void>(
-      context: context,
-      useSafeArea: true,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return AnimatedBuilder(
-          animation: widget.audioLibrary,
-          builder: (context, child) {
-            return EntryDetailSheet(
-              entry: entry,
-              direction: _direction,
-              audioLibrary: widget.audioLibrary,
-              onPlayClip: _playClip,
-            );
-          },
-        );
-      },
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => WordDetailScreen(
+          entry: entry,
+          audioLibrary: widget.audioLibrary,
+          onPlayClip: _playClip,
+        ),
+      ),
     );
   }
 
@@ -346,12 +273,9 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final bundle = _bundle ?? snapshot.data!;
         final query = _searchController.text;
         final hasActiveQuery = _normalizedQuery.isNotEmpty;
         final filteredResults = _filteredResults;
-        final showSearchOnTop =
-            widget.searchBarPlacement == SearchBarPlacement.top;
 
         return SafeArea(
           child: LayoutBuilder(
@@ -363,47 +287,23 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                     maxWidth: constraints.maxWidth >= 900 ? 920 : 720,
                   ),
                   child: CustomScrollView(
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
                     slivers: [
                       SliverPadding(
                         padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                         sliver: SliverToBoxAdapter(
-                          child: CompactHeaderCard(
-                            title: '台語辭典',
-                            subtitle: '先搜尋，再點選詞條看完整解說與例句。',
-                            onInfoPressed: () => showDialog<void>(
-                              context: context,
-                              builder: (context) =>
-                                  const DictionaryAboutDialog(),
-                            ),
+                          child: SearchWorkspaceCard(
+                            controller: _searchController,
+                            onQueryChanged: (_) => _handleQueryChanged(),
                           ),
                         ),
                       ),
-                      SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        sliver: SliverToBoxAdapter(
-                          child: StatisticsPanel(bundle: bundle),
-                        ),
-                      ),
-                      if (showSearchOnTop)
-                        SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                          sliver: SliverToBoxAdapter(
-                            child: SearchWorkspaceCard(
-                              direction: _direction,
-                              controller: _searchController,
-                              onDirectionChanged: _handleDirectionChanged,
-                              onQueryChanged: (_) => _handleQueryChanged(),
-                            ),
-                          ),
-                        ),
                       SliverPadding(
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
                         sliver: !hasActiveQuery
                             ? SliverToBoxAdapter(
-                                child: EmptyState(
-                                  query: query,
-                                  searchBarPlacement: widget.searchBarPlacement,
-                                ),
+                                child: EmptyState(query: query),
                               )
                             : filteredResults.isEmpty
                             ? const SliverToBoxAdapter(
@@ -412,68 +312,21 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                                   child: NoResultsState(),
                                 ),
                               )
-                            : SliverMainAxisGroup(
-                                slivers: [
-                                  SliverToBoxAdapter(
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(
-                                        bottom: 12,
-                                        left: 4,
-                                      ),
-                                      child: Text(
-                                        '搜尋結果',
-                                        style: theme.textTheme.titleMedium
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w700,
-                                              color: const Color(0xFF18363C),
-                                            ),
-                                      ),
+                            : SliverList.separated(
+                                itemCount: filteredResults.length,
+                                itemBuilder: (context, index) {
+                                  return EntryListItem(
+                                    entry: filteredResults[index],
+                                    onTap: () => _showEntryDetails(
+                                      filteredResults[index],
                                     ),
-                                  ),
-                                  SliverList.separated(
-                                    itemCount: filteredResults.length,
-                                    itemBuilder: (context, index) {
-                                      return EntryListItem(
-                                        entry: filteredResults[index],
-                                        onTap: () =>
-                                            _showEntryDetails(
-                                              filteredResults[index],
-                                            ),
-                                      );
-                                    },
-                                    separatorBuilder: (context, index) {
-                                      return const SizedBox(height: 10);
-                                    },
-                                  ),
-                                  if (!showSearchOnTop)
-                                    SliverToBoxAdapter(
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(top: 16),
-                                        child: SearchWorkspaceCard(
-                                          direction: _direction,
-                                          controller: _searchController,
-                                          onDirectionChanged:
-                                              _handleDirectionChanged,
-                                          onQueryChanged: (_) =>
-                                              _handleQueryChanged(),
-                                        ),
-                                      ),
-                                    ),
-                                ],
+                                  );
+                                },
+                                separatorBuilder: (context, index) {
+                                  return const SizedBox(height: 10);
+                                },
                               ),
                       ),
-                      if (!showSearchOnTop && filteredResults.isEmpty)
-                        SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
-                          sliver: SliverToBoxAdapter(
-                            child: SearchWorkspaceCard(
-                              direction: _direction,
-                              controller: _searchController,
-                              onDirectionChanged: _handleDirectionChanged,
-                              onQueryChanged: (_) => _handleQueryChanged(),
-                            ),
-                          ),
-                        ),
                     ],
                   ),
                 ),
@@ -490,24 +343,20 @@ class SettingsScreen extends StatelessWidget {
   const SettingsScreen({
     super.key,
     required this.audioLibrary,
-    required this.searchBarPlacement,
     required this.onDownloadArchive,
-    required this.onSearchBarPlacementChanged,
   });
 
   final OfflineAudioLibrary audioLibrary;
-  final SearchBarPlacement searchBarPlacement;
   final Future<void> Function(AudioArchiveType type) onDownloadArchive;
-  final Future<void> Function(SearchBarPlacement placement)
-  onSearchBarPlacementChanged;
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: audioLibrary,
       builder: (context, child) {
-        return SafeArea(
-          child: LayoutBuilder(
+        return Scaffold(
+          appBar: AppBar(title: const Text('設定')),
+          body: LayoutBuilder(
             builder: (context, constraints) {
               return Align(
                 alignment: Alignment.topCenter,
@@ -515,51 +364,54 @@ class SettingsScreen extends StatelessWidget {
                   constraints: BoxConstraints(
                     maxWidth: constraints.maxWidth >= 900 ? 920 : 720,
                   ),
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CompactHeaderCard(
-                          title: 'Settings',
-                          subtitle: '控制搜尋欄位置與離線語音資源。',
-                          accentLabel:
-                              '${AudioArchiveType.values.where(audioLibrary.isArchiveReady).length} / 2 套資源已就緒',
-                          onInfoPressed: () => showDialog<void>(
-                            context: context,
-                            builder: (context) => const AudioAboutDialog(),
-                          ),
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+                    children: [
+                      SettingsSectionHeader(
+                        title: '離線資源',
+                        subtitle:
+                            '${AudioArchiveType.values.where(audioLibrary.isArchiveReady).length} / 2 套資源已就緒',
+                      ),
+                      AudioResourceTile(
+                        type: AudioArchiveType.word,
+                        audioLibrary: audioLibrary,
+                        onDownload: onDownloadArchive,
+                      ),
+                      const Divider(height: 1, indent: 72),
+                      AudioResourceTile(
+                        type: AudioArchiveType.sentence,
+                        audioLibrary: audioLibrary,
+                        onDownload: onDownloadArchive,
+                      ),
+                      const Divider(height: 32),
+                      const SettingsSectionHeader(
+                        title: '關於',
+                        subtitle: '查看應用程式資訊與開源授權。',
+                      ),
+                      SettingsNavigationTile(
+                        icon: Icons.info_outline,
+                        title: '關於',
+                        subtitle: '了解台語辭典的用途、資料來源與授權。',
+                        onTap: () => showDialog<void>(
+                          context: context,
+                          builder: (context) => const AppAboutDialog(),
                         ),
-                        const SizedBox(height: 18),
-                        SearchPlacementSection(
-                          placement: searchBarPlacement,
-                          onPlacementChanged: onSearchBarPlacementChanged,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Audio Resource Management',
-                          style: Theme.of(context).textTheme.titleLarge
-                              ?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                color: const Color(0xFF18363C),
-                              ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          '將詞目音檔與例句音檔集中管理。',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: const Color(0xFF5A6D71),
-                                height: 1.5,
-                              ),
-                        ),
-                        const SizedBox(height: 12),
-                        AudioManagementSection(
-                          audioLibrary: audioLibrary,
-                          onDownloadArchive: onDownloadArchive,
-                        ),
-                      ],
-                    ),
+                      ),
+                      const Divider(height: 1, indent: 72),
+                      SettingsNavigationTile(
+                        icon: Icons.code_outlined,
+                        title: '開源授權',
+                        subtitle: '查看應用程式與相依套件的授權資訊。',
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (context) =>
+                                  const OpenSourceCreditsPage(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -571,384 +423,130 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
-class CompactHeaderCard extends StatelessWidget {
-  const CompactHeaderCard({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    required this.onInfoPressed,
-    this.accentLabel,
-  });
-
-  final String title;
-  final String subtitle;
-  final String? accentLabel;
-  final VoidCallback onInfoPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(30),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF15505A), Color(0xFF23727E), Color(0xFFE7C863)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF123E45).withValues(alpha: 0.14),
-            blurRadius: 24,
-            offset: const Offset(0, 16),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    subtitle,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.88),
-                      height: 1.45,
-                    ),
-                  ),
-                  if (accentLabel != null) ...[
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.13),
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.18),
-                        ),
-                      ),
-                      child: Text(
-                        accentLabel!,
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            IconButton.filledTonal(
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.white.withValues(alpha: 0.14),
-                foregroundColor: Colors.white,
-              ),
-              onPressed: onInfoPressed,
-              icon: const Icon(Icons.info_outline),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class StatisticsPanel extends StatelessWidget {
-  const StatisticsPanel({super.key, required this.bundle});
-
-  final DictionaryBundle bundle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: [
-            StatisticChip(
-              icon: Icons.menu_book_outlined,
-              label: '詞目',
-              value: '${bundle.entryCount}',
-            ),
-            StatisticChip(
-              icon: Icons.notes_outlined,
-              label: '義項',
-              value: '${bundle.senseCount}',
-            ),
-            StatisticChip(
-              icon: Icons.forum_outlined,
-              label: '例句',
-              value: '${bundle.exampleCount}',
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class StatisticChip extends StatelessWidget {
-  const StatisticChip({
-    super.key,
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      constraints: const BoxConstraints(minWidth: 150),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF2EFE8),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 18, color: const Color(0xFF245963)),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  value,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFF18363C),
-                  ),
-                ),
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: const Color(0xFF5A6D71),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class SearchWorkspaceCard extends StatelessWidget {
   const SearchWorkspaceCard({
     super.key,
-    required this.direction,
     required this.controller,
-    required this.onDirectionChanged,
     required this.onQueryChanged,
   });
 
-  final SearchDirection direction;
   final TextEditingController controller;
-  final ValueChanged<SearchDirection> onDirectionChanged;
   final ValueChanged<String> onQueryChanged;
 
   @override
   Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: TextField(
+          controller: controller,
+          onChanged: onQueryChanged,
+          textInputAction: TextInputAction.search,
+          decoration: InputDecoration(
+            isDense: true,
+            hintText: '輸入台語漢字、白話字或華語詞義',
+            prefixIcon: const Icon(Icons.search),
+            suffixIcon: controller.text.isEmpty
+                ? null
+                : IconButton(
+                    onPressed: () {
+                      controller.clear();
+                      onQueryChanged('');
+                    },
+                    icon: const Icon(Icons.close),
+                  ),
+            filled: true,
+            fillColor: const Color(0xFFF6F2EA),
+            border: OutlineInputBorder(
+              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(18),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SettingsSectionHeader extends StatelessWidget {
+  const SettingsSectionHeader({super.key, required this.title, this.subtitle});
+
+  final String title;
+  final String? subtitle;
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final hintText = switch (direction) {
-      SearchDirection.hokkienToMandarin => '輸入台語漢字或白話字',
-      SearchDirection.mandarinToHokkien => '輸入華語詞義',
-    };
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SegmentedButton<SearchDirection>(
-                showSelectedIcon: false,
-                segments: const [
-                  ButtonSegment<SearchDirection>(
-                    value: SearchDirection.hokkienToMandarin,
-                    label: Text('台語 → 華語'),
-                    icon: Icon(Icons.east),
-                  ),
-                  ButtonSegment<SearchDirection>(
-                    value: SearchDirection.mandarinToHokkien,
-                    label: Text('華語 → 台語'),
-                    icon: Icon(Icons.west),
-                  ),
-                ],
-                selected: {direction},
-                onSelectionChanged: (selection) {
-                  onDirectionChanged(selection.first);
-                },
-              ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: const Color(0xFF18363C),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              onChanged: onQueryChanged,
-              textInputAction: TextInputAction.search,
-              decoration: InputDecoration(
-                isDense: true,
-                hintText: hintText,
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: controller.text.isEmpty
-                    ? null
-                    : IconButton(
-                        onPressed: () {
-                          controller.clear();
-                          onQueryChanged('');
-                        },
-                        icon: const Icon(Icons.close),
-                      ),
-                filled: true,
-                fillColor: const Color(0xFFF6F2EA),
-                border: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(18),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
+          ),
+          if (subtitle != null) ...[
+            const SizedBox(height: 4),
             Text(
-              '預設不顯示任何詞條，輸入關鍵字後才顯示結果。',
+              subtitle!,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: const Color(0xFF6A7B7F),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class SearchPlacementSection extends StatelessWidget {
-  const SearchPlacementSection({
-    super.key,
-    required this.placement,
-    required this.onPlacementChanged,
-  });
-
-  final SearchBarPlacement placement;
-  final Future<void> Function(SearchBarPlacement placement) onPlacementChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Search Bar Position',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: const Color(0xFF18363C),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              '把搜尋欄固定在統計區塊下方，或移到結果列表底部。',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: const Color(0xFF5A6D71),
-                height: 1.5,
+                height: 1.4,
               ),
             ),
-            const SizedBox(height: 12),
-            SegmentedButton<SearchBarPlacement>(
-              showSelectedIcon: false,
-              segments: const [
-                ButtonSegment<SearchBarPlacement>(
-                  value: SearchBarPlacement.top,
-                  icon: Icon(Icons.vertical_align_top),
-                  label: Text('Top'),
-                ),
-                ButtonSegment<SearchBarPlacement>(
-                  value: SearchBarPlacement.bottom,
-                  icon: Icon(Icons.vertical_align_bottom),
-                  label: Text('Bottom'),
-                ),
-              ],
-              selected: {placement},
-              onSelectionChanged: (selection) {
-                unawaited(onPlacementChanged(selection.first));
-              },
-            ),
           ],
-        ),
+        ],
       ),
     );
   }
 }
 
-class AudioManagementSection extends StatelessWidget {
-  const AudioManagementSection({
+class SettingsNavigationTile extends StatelessWidget {
+  const SettingsNavigationTile({
     super.key,
-    required this.audioLibrary,
-    required this.onDownloadArchive,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
   });
 
-  final OfflineAudioLibrary audioLibrary;
-  final Future<void> Function(AudioArchiveType type) onDownloadArchive;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          children: [
-            CompactAudioResourceCard(
-              type: AudioArchiveType.word,
-              audioLibrary: audioLibrary,
-              onDownload: onDownloadArchive,
-            ),
-            const SizedBox(height: 10),
-            const Divider(height: 1),
-            const SizedBox(height: 10),
-            CompactAudioResourceCard(
-              type: AudioArchiveType.sentence,
-              audioLibrary: audioLibrary,
-              onDownload: onDownloadArchive,
-            ),
-          ],
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      leading: Icon(icon, color: const Color(0xFF17454C)),
+      title: Text(
+        title,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w700,
+          color: const Color(0xFF18363C),
         ),
       ),
+      subtitle: Text(
+        subtitle,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: const Color(0xFF5A6D71),
+          height: 1.4,
+        ),
+      ),
+      onTap: onTap,
+      trailing: const Icon(Icons.chevron_right, color: Color(0xFF708286)),
     );
   }
 }
 
-class CompactAudioResourceCard extends StatelessWidget {
-  const CompactAudioResourceCard({
+class AudioResourceTile extends StatelessWidget {
+  const AudioResourceTile({
     super.key,
     required this.type,
     required this.audioLibrary,
@@ -964,130 +562,87 @@ class CompactAudioResourceCard extends StatelessWidget {
     final isReady = audioLibrary.isArchiveReady(type);
     final isDownloading = audioLibrary.isDownloading(type);
     final progress = audioLibrary.downloadProgress(type);
-    final theme = Theme.of(context);
+    final statusText = isDownloading
+        ? audioLibrary.downloadStatus(type)
+        : isReady
+        ? '已下載，可離線播放'
+        : '大小約 ${formatBytes(type.archiveBytes)}';
 
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8F4ED),
-        borderRadius: BorderRadius.circular(18),
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      leading: Icon(
+        type == AudioArchiveType.word
+            ? Icons.record_voice_over_outlined
+            : Icons.chat_bubble_outline,
+        color: const Color(0xFF17454C),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: const Color(0xFFEDF4F3),
-              borderRadius: BorderRadius.circular(14),
+      title: Text(
+        type.displayLabel,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w700,
+          color: const Color(0xFF18363C),
+        ),
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              type.archiveFileName,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: const Color(0xFF66797D)),
             ),
-            alignment: Alignment.center,
-            child: Icon(
-              type == AudioArchiveType.word
-                  ? Icons.record_voice_over_outlined
-                  : Icons.chat_bubble_outline,
-              color: const Color(0xFF17454C),
+            const SizedBox(height: 2),
+            Text(
+              statusText,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: const Color(0xFF5A6D71)),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  type.displayLabel,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFF18363C),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  type.archiveFileName,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: const Color(0xFF66797D),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(
-                      isReady
-                          ? Icons.check_circle
-                          : Icons.cloud_download_outlined,
-                      size: 16,
-                      color: isReady
-                          ? const Color(0xFF1A7F53)
-                          : const Color(0xFFC9752D),
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        isDownloading
-                            ? audioLibrary.downloadStatus(type)
-                            : isReady
-                            ? '已下載，可離線播放'
-                            : '大小約 ${formatBytes(type.archiveBytes)}',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFF5A6D71),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                if (isDownloading && progress != null) ...[
-                  const SizedBox(height: 8),
-                  LinearProgressIndicator(
-                    value: progress,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-          FilledButton.tonal(
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              backgroundColor: const Color(0xFFF2D18B),
-              foregroundColor: const Color(0xFF0E2F35),
-              textStyle: const TextStyle(fontWeight: FontWeight.w700),
-            ),
-            onPressed: isDownloading ? null : () => onDownload(type),
-            child: isDownloading
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text(isReady ? '重新下載' : '下載'),
-          ),
-        ],
+            if (isDownloading && progress != null) ...[
+              const SizedBox(height: 8),
+              LinearProgressIndicator(value: progress),
+            ],
+          ],
+        ),
+      ),
+      trailing: FilledButton.tonal(
+        style: FilledButton.styleFrom(
+          visualDensity: VisualDensity.compact,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          minimumSize: const Size(0, 34),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          textStyle: Theme.of(
+            context,
+          ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        onPressed: isDownloading ? null : () => onDownload(type),
+        child: isDownloading
+            ? const SizedBox(
+                width: 14,
+                height: 14,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : Text(isReady ? '重新下載' : '下載'),
       ),
     );
   }
 }
 
 class EmptyState extends StatelessWidget {
-  const EmptyState({
-    super.key,
-    required this.query,
-    required this.searchBarPlacement,
-  });
+  const EmptyState({super.key, required this.query});
 
   final String query;
-  final SearchBarPlacement searchBarPlacement;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final title = query.trim().isEmpty ? '開始搜尋' : '找不到符合的結果';
     final body = query.trim().isEmpty
-        ? searchBarPlacement == SearchBarPlacement.top
-              ? '輸入台語漢字、白話字，或華語釋義後才顯示詞條。'
-              : '搜尋欄目前放在下方，輸入關鍵字後才顯示詞條。'
+        ? '輸入台語漢字、白話字，或華語釋義後才顯示詞條。'
         : '換個寫法試試看，或改用另一個查詢方向。';
 
     return Card(
@@ -1212,17 +767,45 @@ class EntryListItem extends StatelessWidget {
   }
 }
 
-class EntryDetailSheet extends StatelessWidget {
-  const EntryDetailSheet({
+class WordDetailScreen extends StatelessWidget {
+  const WordDetailScreen({
     super.key,
     required this.entry,
-    required this.direction,
     required this.audioLibrary,
     required this.onPlayClip,
   });
 
   final DictionaryEntry entry;
-  final SearchDirection direction;
+  final OfflineAudioLibrary audioLibrary;
+  final Future<void> Function(AudioArchiveType type, String clipId) onPlayClip;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(entry.hanji.isEmpty ? '詞條詳細資料' : entry.hanji)),
+      body: AnimatedBuilder(
+        animation: audioLibrary,
+        builder: (context, child) {
+          return WordDetailBody(
+            entry: entry,
+            audioLibrary: audioLibrary,
+            onPlayClip: onPlayClip,
+          );
+        },
+      ),
+    );
+  }
+}
+
+class WordDetailBody extends StatelessWidget {
+  const WordDetailBody({
+    super.key,
+    required this.entry,
+    required this.audioLibrary,
+    required this.onPlayClip,
+  });
+
+  final DictionaryEntry entry;
   final OfflineAudioLibrary audioLibrary;
   final Future<void> Function(AudioArchiveType type, String clipId) onPlayClip;
 
@@ -1234,85 +817,69 @@ class EntryDetailSheet extends StatelessWidget {
       if (entry.category.isNotEmpty) entry.category,
     ].join(' · ');
 
-    return FractionallySizedBox(
-      heightFactor: 0.92,
-      child: DecoratedBox(
-        decoration: const BoxDecoration(
-          color: Color(0xFFF7F1E7),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
-              child: Column(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF9CA9AC),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              entry.hanji.isEmpty ? '未標記漢字' : entry.hanji,
-                              style: theme.textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                color: const Color(0xFF0E2F35),
-                              ),
-                            ),
-                            if (entry.romanization.isNotEmpty) ...[
-                              const SizedBox(height: 6),
-                              Text(
-                                entry.romanization,
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  color: const Color(0xFFC9752D),
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ],
-                            if (subtitle.isNotEmpty) ...[
-                              const SizedBox(height: 8),
-                              Text(
-                                subtitle,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: const Color(0xFF54696D),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      if (entry.audioId.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(left: 12),
-                          child: AudioButton(
-                            type: AudioArchiveType.word,
-                            audioId: entry.audioId,
-                            audioLibrary: audioLibrary,
-                            onPressed: onPlayClip,
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
+    return SafeArea(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: constraints.maxWidth >= 900 ? 920 : 720,
               ),
-            ),
-            Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                entry.hanji.isEmpty ? '未標記漢字' : entry.hanji,
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  color: const Color(0xFF0E2F35),
+                                ),
+                              ),
+                              if (entry.romanization.isNotEmpty) ...[
+                                const SizedBox(height: 6),
+                                Text(
+                                  entry.romanization,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    color: const Color(0xFFC9752D),
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                              if (subtitle.isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                Text(
+                                  subtitle,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: const Color(0xFF54696D),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        if (entry.audioId.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 12),
+                            child: AudioButton(
+                              type: AudioArchiveType.word,
+                              audioId: entry.audioId,
+                              audioLibrary: audioLibrary,
+                              onPressed: onPlayClip,
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
                     ...entry.senses.map((sense) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 16),
@@ -1426,9 +993,7 @@ class EntryDetailSheet extends StatelessWidget {
                     Align(
                       alignment: Alignment.centerRight,
                       child: Text(
-                        direction == SearchDirection.hokkienToMandarin
-                            ? '顯示台語詞目對應的華語義項'
-                            : '顯示命中華語釋義後對應的台語詞目',
+                        '顯示符合查詢的台語詞目與華語義項',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: const Color(0xFF617176),
                         ),
@@ -1438,8 +1003,8 @@ class EntryDetailSheet extends StatelessWidget {
                 ),
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -1497,16 +1062,17 @@ class AudioButton extends StatelessWidget {
   }
 }
 
-class DictionaryAboutDialog extends StatelessWidget {
-  const DictionaryAboutDialog({super.key});
+class AppAboutDialog extends StatelessWidget {
+  const AppAboutDialog({super.key});
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('About Dictionary'),
+      title: const Text('關於台語辭典'),
       content: const Text(
-        '搜尋結果現在採扁平列表，不再分組。畫面預設不顯示任何詞條，使用者輸入後才會看到結果。\n\n'
-        '詞典資料來源：教育部《臺灣台語常用詞辭典》\n'
+        '台語辭典提供離線的台語與華語雙向查詢，並支援下載教育部詞目與例句音檔。\n\n'
+        'App code: MIT\n'
+        'Dictionary data and audio: 教育部《臺灣台語常用詞辭典》衍生內容，採 CC BY-NC-ND 2.5 TW。\n\n'
         '參考頁面：https://sutian.moe.edu.tw/zh-hant/siongkuantsuguan/',
       ),
       actions: [
@@ -1515,6 +1081,102 @@ class DictionaryAboutDialog extends StatelessWidget {
           child: const Text('關閉'),
         ),
       ],
+    );
+  }
+}
+
+class OpenSourceCreditsPage extends StatelessWidget {
+  const OpenSourceCreditsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('開源授權')),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Align(
+              alignment: Alignment.topCenter,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: constraints.maxWidth >= 900 ? 920 : 720,
+                ),
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+                  children: [
+                    const CreditSectionCard(
+                      title: 'Application',
+                      body:
+                          '台語辭典 app code is distributed under the MIT license.',
+                    ),
+                    const SizedBox(height: 12),
+                    const CreditSectionCard(
+                      title: 'Dictionary data and audio',
+                      body:
+                          'Bundled dictionary data and downloaded audio are derived from the Ministry of Education 臺灣台語常用詞辭典 dataset and remain separately licensed under CC BY-NC-ND 2.5 TW.',
+                    ),
+                    const SizedBox(height: 12),
+                    Card(
+                      child: SettingsNavigationTile(
+                        icon: Icons.description_outlined,
+                        title: '套件授權',
+                        subtitle: '查看 Flutter 與相依套件附帶的授權聲明。',
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (context) => const LicensePage(
+                                applicationName: '台語辭典',
+                                applicationLegalese:
+                                    'App code: MIT. Dictionary data and audio are separately licensed.',
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class CreditSectionCard extends StatelessWidget {
+  const CreditSectionCard({super.key, required this.title, required this.body});
+
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF18363C),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              body,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: const Color(0xFF5A6D71),
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -1559,98 +1221,56 @@ class DictionaryRepository {
     return DictionaryBundle.fromJson(decoded);
   }
 
-  List<DictionaryEntry> search(
-    DictionaryBundle bundle,
-    SearchDirection direction,
-    String rawQuery,
-  ) {
+  List<DictionaryEntry> search(DictionaryBundle bundle, String rawQuery) {
     final query = normalizeQuery(rawQuery);
     if (query.isEmpty) {
       return const [];
     }
 
-    final scored = <_ScoredEntry>[];
+    final matched = <_ScoredEntry>[];
     for (final entry in bundle.entries) {
-      final score = _scoreEntry(entry, direction, query);
-      if (score > 0) {
-        scored.add(_ScoredEntry(entry, score));
+      final headword = _headwordForSearch(entry);
+      final priority = _matchPriority(headword, query);
+      if (priority != null) {
+        matched.add(_ScoredEntry(entry, priority));
       }
     }
 
-    scored.sort((left, right) {
-      final compareScore = right.score.compareTo(left.score);
-      if (compareScore != 0) {
-        return compareScore;
+    matched.sort((left, right) {
+      final comparePriority = left.score.compareTo(right.score);
+      if (comparePriority != 0) {
+        return comparePriority;
       }
+
+      final leftHeadword = _headwordForSearch(left.entry);
+      final rightHeadword = _headwordForSearch(right.entry);
+      final compareLength = leftHeadword.length.compareTo(rightHeadword.length);
+      if (compareLength != 0) {
+        return compareLength;
+      }
+
       return left.entry.id.compareTo(right.entry.id);
     });
 
-    return scored.take(60).map((item) => item.entry).toList(growable: false);
+    return matched.take(60).map((item) => item.entry).toList(growable: false);
   }
 
-  int _scoreEntry(
-    DictionaryEntry entry,
-    SearchDirection direction,
-    String query,
-  ) {
-    if (direction == SearchDirection.hokkienToMandarin) {
-      var bestScore = _scoreMatch(entry.hokkienSearch, query);
-      bestScore = _maxScore(
-        bestScore,
-        _scoreWithBonus(normalizeQuery(entry.hanji), query, 80),
-      );
-      bestScore = _maxScore(
-        bestScore,
-        _scoreWithBonus(normalizeQuery(entry.romanization), query, 90),
-      );
-      return bestScore;
-    }
-
-    var bestScore = _scoreMatch(entry.mandarinSearch, query);
-    for (final sense in entry.senses) {
-      bestScore = _maxScore(
-        bestScore,
-        _scoreWithBonus(normalizeQuery(sense.definition), query, 70),
-      );
-      for (final example in sense.examples) {
-        bestScore = _maxScore(
-          bestScore,
-          _scoreWithBonus(normalizeQuery(example.mandarin), query, 35),
-        );
-      }
-    }
-    return bestScore;
+  String _headwordForSearch(DictionaryEntry entry) {
+    final headword = entry.hanji.isNotEmpty ? entry.hanji : entry.romanization;
+    return normalizeQuery(headword);
   }
 
-  int _scoreWithBonus(String haystack, String query, int bonus) {
-    final score = _scoreMatch(haystack, query);
-    if (score <= 0) {
-      return score;
+  int? _matchPriority(String headword, String query) {
+    if (headword.isEmpty || query.isEmpty || !headword.contains(query)) {
+      return null;
     }
-    return score + bonus;
-  }
-
-  int _maxScore(int current, int next) {
-    return next > current ? next : current;
-  }
-
-  int _scoreMatch(String haystack, String query) {
-    if (haystack.isEmpty || query.isEmpty) {
-      return -1;
+    if (headword == query) {
+      return 0;
     }
-    if (haystack == query) {
-      return 450;
+    if (headword.startsWith(query)) {
+      return 1;
     }
-    if (haystack.startsWith(query)) {
-      return 320;
-    }
-    if (haystack.contains(' $query ')) {
-      return 280;
-    }
-    if (haystack.contains(query)) {
-      return 180;
-    }
-    return -1;
+    return 2;
   }
 }
 
