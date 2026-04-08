@@ -106,84 +106,75 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                       constraints: BoxConstraints(
                         maxWidth: constraints.maxWidth >= 900 ? 920 : 720,
                       ),
-                      child: SelectionArea(
-                        child: CustomScrollView(
-                          keyboardDismissBehavior:
-                              ScrollViewKeyboardDismissBehavior.onDrag,
-                          slivers: [
-                            SliverPadding(
-                              padding: const EdgeInsets.fromLTRB(
-                                16,
-                                16,
-                                16,
-                                12,
+                      child: CustomScrollView(
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
+                        slivers: [
+                          SliverPadding(
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                            sliver: SliverToBoxAdapter(
+                              child: SearchWorkspaceCard(
+                                controller: _searchController.searchController,
+                                onSubmitted: (_) {
+                                  unawaited(_searchController.submitQuery());
+                                },
                               ),
+                            ),
+                          ),
+                          if (!hasActiveQuery && searchHistory.isNotEmpty)
+                            SliverPadding(
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                               sliver: SliverToBoxAdapter(
-                                child: SearchWorkspaceCard(
-                                  controller:
-                                      _searchController.searchController,
-                                  onSubmitted: (_) {
-                                    unawaited(_searchController.submitQuery());
-                                  },
+                                child: SearchHistorySection(
+                                  history: searchHistory,
+                                  onHistoryTap:
+                                      _searchController.applyHistoryQuery,
+                                  onClearHistory:
+                                      _searchController.clearSearchHistory,
                                 ),
                               ),
                             ),
-                            if (!hasActiveQuery && searchHistory.isNotEmpty)
-                              SliverPadding(
-                                padding: const EdgeInsets.fromLTRB(
-                                  16,
-                                  0,
-                                  16,
-                                  12,
-                                ),
-                                sliver: SliverToBoxAdapter(
-                                  child: SearchHistorySection(
-                                    history: searchHistory,
-                                    onHistoryTap:
-                                        _searchController.applyHistoryQuery,
-                                    onClearHistory:
-                                        _searchController.clearSearchHistory,
-                                  ),
-                                ),
-                              ),
-                            SliverPadding(
-                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
-                              sliver: !hasActiveQuery
-                                  ? SliverToBoxAdapter(
+                          SliverPadding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
+                            sliver: !hasActiveQuery
+                                ? SliverToBoxAdapter(
+                                    child: SelectionArea(
                                       child: EmptyState(query: query),
-                                    )
-                                  : isSearching
-                                  ? const SliverToBoxAdapter(
-                                      child: SizedBox(
-                                        height: 220,
-                                        child: SearchLoadingState(),
-                                      ),
-                                    )
-                                  : filteredResults.isEmpty
-                                  ? const SliverToBoxAdapter(
-                                      child: SizedBox(
-                                        height: 220,
-                                        child: NoResultsState(),
-                                      ),
-                                    )
-                                  : SliverList.separated(
-                                      itemCount: filteredResults.length,
-                                      itemBuilder: (context, index) {
-                                        return EntryListItem(
+                                    ),
+                                  )
+                                : isSearching
+                                ? const SliverToBoxAdapter(
+                                    child: SizedBox(
+                                      height: 220,
+                                      child: SearchLoadingState(),
+                                    ),
+                                  )
+                                : filteredResults.isEmpty
+                                ? const SliverToBoxAdapter(
+                                    child: SizedBox(
+                                      height: 220,
+                                      child: NoResultsState(),
+                                    ),
+                                  )
+                                : SliverList.separated(
+                                    itemCount: filteredResults.length,
+                                    itemBuilder: (context, index) {
+                                      return SelectionArea(
+                                        child: EntryListItem(
                                           entry: filteredResults[index],
                                           onTap: () => _showEntryDetails(
                                             snapshot.data!,
                                             filteredResults[index],
                                           ),
-                                        );
-                                      },
-                                      separatorBuilder: (context, index) {
-                                        return const SizedBox(height: 10);
-                                      },
-                                    ),
-                            ),
-                          ],
-                        ),
+                                        ),
+                                      );
+                                    },
+                                    separatorBuilder: (context, index) {
+                                      return const SizedBox(height: 10);
+                                    },
+                                  ),
+                          ),
+                        ],
                       ),
                     ),
                   );

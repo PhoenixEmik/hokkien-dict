@@ -99,17 +99,17 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                       constraints: BoxConstraints(
                         maxWidth: constraints.maxWidth >= 900 ? 920 : 720,
                       ),
-                      child: SelectionArea(
-                        child: ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
-                          itemCount: bookmarkedEntries.length,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: EdgeInsets.only(
-                                bottom: index == bookmarkedEntries.length - 1
-                                    ? 0
-                                    : 10,
-                              ),
+                      child: ListView.builder(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+                        itemCount: bookmarkedEntries.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: EdgeInsets.only(
+                              bottom: index == bookmarkedEntries.length - 1
+                                  ? 0
+                                  : 10,
+                            ),
+                            child: SelectionArea(
                               child: EntryListItem(
                                 entry: bookmarkedEntries[index],
                                 onTap: () => _showEntryDetails(
@@ -117,9 +117,9 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                                   bookmarkedEntries[index],
                                 ),
                               ),
-                            );
-                          },
-                        ),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   );
