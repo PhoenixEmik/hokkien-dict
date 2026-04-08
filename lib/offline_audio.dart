@@ -317,6 +317,12 @@ class OfflineAudioLibrary extends ChangeNotifier {
 
     try {
       final clipFile = await _materializeClip(type, clipId, entry);
+      final clipDiagnostics = await _describeClipFile(clipFile);
+      debugPrint(
+        '[audio] preparing ${type.name}:$clipId -> ${clipFile.path} '
+        '($clipDiagnostics)',
+      );
+
       await _player.stop();
       await _player.setFilePath(clipFile.path);
 
@@ -335,10 +341,26 @@ class OfflineAudioLibrary extends ChangeNotifier {
       );
 
       return const AudioActionResult();
+    } on PlayerException catch (error, stackTrace) {
+      _loadingClipKey = null;
+      _playingClipKey = null;
+      notifyListeners();
+      debugPrint(
+        '[audio] PlayerException while playing ${type.name}:$clipId '
+        'code=${error.code} message=${error.message}',
+      );
+      debugPrintStack(stackTrace: stackTrace);
+      return AudioActionResult(
+        message: '播放失敗：${error.code} ${error.message ?? ''}'.trim(),
+        isError: true,
+      );
     } catch (error) {
       _loadingClipKey = null;
       _playingClipKey = null;
       notifyListeners();
+      debugPrint(
+        '[audio] unexpected playback failure for ${type.name}:$clipId: $error',
+      );
       return AudioActionResult(message: '播放失敗：$error', isError: true);
     }
   }
@@ -533,6 +555,41 @@ class OfflineAudioLibrary extends ChangeNotifier {
   File _clipCacheFile(AudioArchiveType type, String clipId) {
     final safeFileName = clipId.replaceAll(RegExp(r'[^0-9A-Za-z()_-]'), '_');
     return File('${_cacheDirectory(type).path}/$safeFileName.mp3');
+  }
+
+  Future<String> _describeClipFile(File file) async {
+    final exists = await file.exists();
+    if (!exists) {
+      return 'missing file';
+    }
+
+    final length = await file.length();
+    final headerBytes = Uint8List.fromList(await file.openRead(0, 12).first);
+    final headerKind = _classifyAudioHeader(headerBytes);
+    final headerHex = headerBytes
+        .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
+        .join(' ');
+    return 'size=${formatBytes(length)}, header=$headerKind [$headerHex]';
+  }
+
+  String _classifyAudioHeader(Uint8List bytes) {
+    if (bytes.length >= 3 &&
+        bytes[0] == 0x49 &&
+        bytes[1] == 0x44 &&
+        bytes[2] == 0x33) {
+      return 'id3';
+    }
+    if (bytes.length >= 2 && bytes[0] == 0xFF && (bytes[1] & 0xE0) == 0xE0) {
+      return 'mpeg-frame';
+    }
+    if (bytes.length >= 4 &&
+        bytes[0] == 0x52 &&
+        bytes[1] == 0x49 &&
+        bytes[2] == 0x46 &&
+        bytes[3] == 0x46) {
+      return 'riff';
+    }
+    return 'unknown';
   }
 
   Future<int> _existingLength(File file) async {

@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'offline_audio.dart';
 
@@ -12,48 +13,163 @@ void main() {
   runApp(const HokkienDictionaryApp());
 }
 
-class HokkienDictionaryApp extends StatelessWidget {
+class HokkienDictionaryApp extends StatefulWidget {
   const HokkienDictionaryApp({super.key});
+
+  @override
+  State<HokkienDictionaryApp> createState() => _HokkienDictionaryAppState();
+}
+
+class _HokkienDictionaryAppState extends State<HokkienDictionaryApp> {
+  final AppPreferences _appPreferences = AppPreferences();
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_appPreferences.initialize());
+  }
+
+  @override
+  void dispose() {
+    _appPreferences.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     const canvas = Color(0xFFF7F1E7);
     const deepInk = Color(0xFF0E2F35);
+    const surface = Color(0xFFFFFFFF);
+    const outline = Color(0xFFD7D0C4);
+    const mutedText = Color(0xFF5F6C70);
 
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: '台語辭典',
-      theme: ThemeData(
-        useMaterial3: true,
-        scaffoldBackgroundColor: canvas,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: deepInk,
-          brightness: Brightness.light,
-          surface: canvas,
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.transparent,
-          foregroundColor: deepInk,
-          surfaceTintColor: Colors.transparent,
-        ),
-        cardTheme: CardThemeData(
-          elevation: 0,
-          margin: EdgeInsets.zero,
-          color: Colors.white.withValues(alpha: 0.94),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+    return AppPreferencesScope(
+      notifier: _appPreferences,
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: '台語辭典',
+        theme: ThemeData(
+          useMaterial3: true,
+          scaffoldBackgroundColor: canvas,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: deepInk,
+            brightness: Brightness.light,
+            surface: surface,
+            surfaceContainerLowest: surface,
+            surfaceContainerLow: const Color(0xFFFFFBF5),
+            outlineVariant: outline,
+          ),
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Colors.transparent,
+            foregroundColor: deepInk,
+            surfaceTintColor: Colors.transparent,
+          ),
+          cardTheme: CardThemeData(
+            elevation: 2,
+            margin: EdgeInsets.zero,
+            color: surface,
+            shadowColor: Colors.black.withValues(alpha: 0.08),
+            surfaceTintColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+              side: const BorderSide(color: outline),
+            ),
+          ),
+          searchBarTheme: SearchBarThemeData(
+            elevation: const WidgetStatePropertyAll(3),
+            backgroundColor: const WidgetStatePropertyAll(surface),
+            surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
+            shadowColor: WidgetStatePropertyAll(
+              Colors.black.withValues(alpha: 0.10),
+            ),
+            side: const WidgetStatePropertyAll(BorderSide(color: outline)),
+            padding: const WidgetStatePropertyAll(
+              EdgeInsets.symmetric(horizontal: 16),
+            ),
+            textStyle: const WidgetStatePropertyAll(
+              TextStyle(
+                color: deepInk,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            hintStyle: const WidgetStatePropertyAll(
+              TextStyle(
+                color: mutedText,
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            shape: WidgetStatePropertyAll(
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            ),
+          ),
+          chipTheme: ChipThemeData(
+            backgroundColor: deepInk.withValues(alpha: 0.07),
+            side: BorderSide.none,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(999),
+            ),
           ),
         ),
-        chipTheme: ChipThemeData(
-          backgroundColor: deepInk.withValues(alpha: 0.07),
-          side: BorderSide.none,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(999),
-          ),
-        ),
+        home: const MainScreen(),
       ),
-      home: const MainScreen(),
     );
+  }
+}
+
+class AppPreferences extends ChangeNotifier {
+  static const _readingTextScaleKey = 'reading_text_scale';
+  static const minReadingTextScale = 0.9;
+  static const maxReadingTextScale = 1.4;
+
+  double _readingTextScale = 1.0;
+
+  double get readingTextScale => _readingTextScale;
+
+  Future<void> initialize() async {
+    final preferences = await SharedPreferences.getInstance();
+    final storedScale = preferences.getDouble(_readingTextScaleKey);
+    if (storedScale == null) {
+      return;
+    }
+    _readingTextScale = storedScale
+        .clamp(minReadingTextScale, maxReadingTextScale)
+        .toDouble();
+    notifyListeners();
+  }
+
+  Future<void> setReadingTextScale(double value) async {
+    final nextValue = value
+        .clamp(minReadingTextScale, maxReadingTextScale)
+        .toDouble();
+    if (_readingTextScale == nextValue) {
+      return;
+    }
+
+    _readingTextScale = nextValue;
+    notifyListeners();
+
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setDouble(_readingTextScaleKey, nextValue);
+  }
+}
+
+class AppPreferencesScope extends InheritedNotifier<AppPreferences> {
+  const AppPreferencesScope({
+    super.key,
+    required AppPreferences notifier,
+    required super.child,
+  }) : super(notifier: notifier);
+
+  static AppPreferences of(BuildContext context) {
+    final scope = context
+        .dependOnInheritedWidgetOfExactType<AppPreferencesScope>();
+    assert(
+      scope != null,
+      'AppPreferencesScope is missing from the widget tree.',
+    );
+    return scope!.notifier!;
   }
 }
 
@@ -67,6 +183,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   final DictionaryRepository _repository = DictionaryRepository();
   final OfflineAudioLibrary _audioLibrary = OfflineAudioLibrary();
+  final BookmarkStore _bookmarkStore = BookmarkStore();
 
   int _selectedIndex = 0;
 
@@ -74,10 +191,12 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     unawaited(_audioLibrary.initialize());
+    unawaited(_bookmarkStore.initialize());
   }
 
   @override
   void dispose() {
+    _bookmarkStore.dispose();
     _audioLibrary.dispose();
     super.dispose();
   }
@@ -111,6 +230,13 @@ class _MainScreenState extends State<MainScreen> {
       DictionaryScreen(
         repository: _repository,
         audioLibrary: _audioLibrary,
+        bookmarkStore: _bookmarkStore,
+        onActionResult: _showResult,
+      ),
+      BookmarksScreen(
+        repository: _repository,
+        audioLibrary: _audioLibrary,
+        bookmarkStore: _bookmarkStore,
         onActionResult: _showResult,
       ),
       SettingsScreen(
@@ -135,6 +261,11 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Dictionary',
           ),
           NavigationDestination(
+            icon: Icon(Icons.bookmark_border),
+            selectedIcon: Icon(Icons.bookmark),
+            label: 'Bookmarks',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.settings_outlined),
             selectedIcon: Icon(Icons.settings),
             label: 'Settings',
@@ -150,11 +281,13 @@ class DictionaryScreen extends StatefulWidget {
     super.key,
     required this.repository,
     required this.audioLibrary,
+    required this.bookmarkStore,
     required this.onActionResult,
   });
 
   final DictionaryRepository repository;
   final OfflineAudioLibrary audioLibrary;
+  final BookmarkStore bookmarkStore;
   final ValueChanged<AudioActionResult> onActionResult;
 
   @override
@@ -162,23 +295,31 @@ class DictionaryScreen extends StatefulWidget {
 }
 
 class _DictionaryScreenState extends State<DictionaryScreen> {
+  static const _searchHistoryKey = 'recent_search_history';
+  static const _maxSearchHistoryItems = 10;
+  static const _searchDebounceDuration = Duration(milliseconds: 300);
+
   final TextEditingController _searchController = TextEditingController();
   late final Future<DictionaryBundle> _bundleFuture;
 
   DictionaryBundle? _bundle;
   List<DictionaryEntry> _filteredResults = const <DictionaryEntry>[];
+  List<String> _searchHistory = const <String>[];
   String _normalizedQuery = '';
+  Timer? _searchDebounceTimer;
 
   @override
   void initState() {
     super.initState();
     _bundleFuture = _loadBundle();
     _searchController.addListener(_handleQueryChanged);
+    unawaited(_loadSearchHistory());
   }
 
   @override
   void dispose() {
     _searchController.removeListener(_handleQueryChanged);
+    _searchDebounceTimer?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -198,7 +339,30 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
     return bundle;
   }
 
+  Future<void> _loadSearchHistory() async {
+    final preferences = await SharedPreferences.getInstance();
+    final storedHistory =
+        preferences.getStringList(_searchHistoryKey) ?? const <String>[];
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _searchHistory = storedHistory;
+    });
+  }
+
   void _handleQueryChanged() {
+    _searchDebounceTimer?.cancel();
+    _searchDebounceTimer = Timer(_searchDebounceDuration, _applySearchQuery);
+  }
+
+  void _applySearchQueryImmediately() {
+    _searchDebounceTimer?.cancel();
+    _applySearchQuery();
+  }
+
+  void _applySearchQuery() {
     final bundle = _bundle;
     if (bundle == null) {
       return;
@@ -220,6 +384,61 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
     });
   }
 
+  void _handleQuerySubmitted(String rawQuery) {
+    _applySearchQueryImmediately();
+    unawaited(_recordSearchQueryIfValid(rawQuery));
+  }
+
+  Future<void> _recordSearchQueryIfValid(String rawQuery) async {
+    final bundle = _bundle;
+    final trimmedQuery = rawQuery.trim();
+    if (bundle == null || trimmedQuery.isEmpty) {
+      return;
+    }
+    if (_buildFilteredResults(bundle, trimmedQuery).isEmpty) {
+      return;
+    }
+
+    await _saveSearchHistory(trimmedQuery);
+  }
+
+  Future<void> _saveSearchHistory(String query) async {
+    final nextHistory = <String>[
+      query,
+      ..._searchHistory.where((item) => item != query),
+    ].take(_maxSearchHistoryItems).toList(growable: false);
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setStringList(_searchHistoryKey, nextHistory);
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _searchHistory = nextHistory;
+    });
+  }
+
+  Future<void> _clearSearchHistory() async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.remove(_searchHistoryKey);
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _searchHistory = const <String>[];
+    });
+  }
+
+  void _applyHistoryQuery(String query) {
+    _searchController.value = TextEditingValue(
+      text: query,
+      selection: TextSelection.collapsed(offset: query.length),
+    );
+    _applySearchQueryImmediately();
+    unawaited(_saveSearchHistory(query));
+  }
+
   List<DictionaryEntry> _buildFilteredResults(
     DictionaryBundle bundle,
     String rawQuery,
@@ -238,11 +457,16 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
   }
 
   Future<void> _showEntryDetails(DictionaryEntry entry) async {
+    await _recordSearchQueryIfValid(_searchController.text);
+    if (!mounted) {
+      return;
+    }
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) => WordDetailScreen(
           entry: entry,
           audioLibrary: widget.audioLibrary,
+          bookmarkStore: widget.bookmarkStore,
           onPlayClip: _playClip,
         ),
       ),
@@ -276,6 +500,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
         final query = _searchController.text;
         final hasActiveQuery = _normalizedQuery.isNotEmpty;
         final filteredResults = _filteredResults;
+        final searchHistory = _searchHistory;
 
         return SafeArea(
           child: LayoutBuilder(
@@ -295,10 +520,21 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                         sliver: SliverToBoxAdapter(
                           child: SearchWorkspaceCard(
                             controller: _searchController,
-                            onQueryChanged: (_) => _handleQueryChanged(),
+                            onSubmitted: _handleQuerySubmitted,
                           ),
                         ),
                       ),
+                      if (!hasActiveQuery && searchHistory.isNotEmpty)
+                        SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                          sliver: SliverToBoxAdapter(
+                            child: SearchHistorySection(
+                              history: searchHistory,
+                              onHistoryTap: _applyHistoryQuery,
+                              onClearHistory: _clearSearchHistory,
+                            ),
+                          ),
+                        ),
                       SliverPadding(
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
                         sliver: !hasActiveQuery
@@ -351,8 +587,10 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appPreferences = AppPreferencesScope.of(context);
+
     return AnimatedBuilder(
-      animation: audioLibrary,
+      animation: Listenable.merge([audioLibrary, appPreferences]),
       builder: (context, child) {
         return Scaffold(
           appBar: AppBar(title: const Text('設定')),
@@ -364,55 +602,185 @@ class SettingsScreen extends StatelessWidget {
                   constraints: BoxConstraints(
                     maxWidth: constraints.maxWidth >= 900 ? 920 : 720,
                   ),
-                  child: ListView(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
-                    children: [
-                      SettingsSectionHeader(
-                        title: '離線資源',
-                        subtitle:
-                            '${AudioArchiveType.values.where(audioLibrary.isArchiveReady).length} / 2 套資源已就緒',
-                      ),
-                      AudioResourceTile(
-                        type: AudioArchiveType.word,
-                        audioLibrary: audioLibrary,
-                        onDownload: onDownloadArchive,
-                      ),
-                      const Divider(height: 1, indent: 72),
-                      AudioResourceTile(
-                        type: AudioArchiveType.sentence,
-                        audioLibrary: audioLibrary,
-                        onDownload: onDownloadArchive,
-                      ),
-                      const Divider(height: 32),
-                      const SettingsSectionHeader(
-                        title: '關於',
-                        subtitle: '查看應用程式資訊與授權。',
-                      ),
-                      AboutListTile(
-                        icon: const Icon(
-                          Icons.info_outline,
-                          color: Color(0xFF17454C),
+                  child: ListTileTheme(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: ListView(
+                      padding: const EdgeInsets.fromLTRB(0, 8, 0, 28),
+                      children: [
+                        const SettingsSectionHeader(title: '離線資源'),
+                        AudioResourceTile(
+                          type: AudioArchiveType.word,
+                          audioLibrary: audioLibrary,
+                          onDownload: onDownloadArchive,
                         ),
-                        applicationName: '台語辭典',
-                        applicationLegalese:
-                            'App code: MIT\nDictionary data and audio: 教育部《臺灣台語常用詞辭典》衍生內容，採 CC BY-NC-ND 2.5 TW。',
-                        aboutBoxChildren: const [
-                          SizedBox(height: 12),
-                          Text('台語辭典提供離線的台語與華語雙向查詢，並支援下載教育部詞目與例句音檔。'),
-                          SizedBox(height: 12),
-                          Text(
-                            '參考頁面：https://sutian.moe.edu.tw/zh-hant/siongkuantsuguan/',
+                        AudioResourceTile(
+                          type: AudioArchiveType.sentence,
+                          audioLibrary: audioLibrary,
+                          onDownload: onDownloadArchive,
+                        ),
+                        const Divider(height: 32),
+                        const SettingsSectionHeader(title: '閱讀文字'),
+                        SettingsTextScaleTile(
+                          value: appPreferences.readingTextScale,
+                          onChanged: (value) {
+                            unawaited(
+                              appPreferences.setReadingTextScale(value),
+                            );
+                          },
+                        ),
+                        const Divider(height: 32),
+                        const SettingsSectionHeader(title: '關於'),
+                        AboutListTile(
+                          icon: const Icon(
+                            Icons.info_outline,
+                            color: Color(0xFF17454C),
                           ),
-                        ],
-                        applicationIcon: const Icon(
-                          Icons.menu_book_outlined,
-                          color: Color(0xFF17454C),
+                          applicationName: '台語辭典',
+                          applicationLegalese:
+                              'App code: MIT\nDictionary data and audio: 教育部《臺灣台語常用詞辭典》衍生內容，採 CC BY-NC-ND 2.5 TW。',
+                          aboutBoxChildren: const [
+                            SizedBox(height: 12),
+                            Text('台語辭典提供離線的台語與華語雙向查詢，並支援下載教育部詞目與例句音檔。'),
+                            SizedBox(height: 12),
+                            Text(
+                              '參考頁面：https://sutian.moe.edu.tw/zh-hant/siongkuantsuguan/',
+                            ),
+                          ],
+                          applicationIcon: const Icon(
+                            Icons.menu_book_outlined,
+                            color: Color(0xFF17454C),
+                          ),
+                          child: const Text('關於台語辭典'),
                         ),
-                        child: const Text('關於台語辭典'),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
+class BookmarksScreen extends StatefulWidget {
+  const BookmarksScreen({
+    super.key,
+    required this.repository,
+    required this.audioLibrary,
+    required this.bookmarkStore,
+    required this.onActionResult,
+  });
+
+  final DictionaryRepository repository;
+  final OfflineAudioLibrary audioLibrary;
+  final BookmarkStore bookmarkStore;
+  final ValueChanged<AudioActionResult> onActionResult;
+
+  @override
+  State<BookmarksScreen> createState() => _BookmarksScreenState();
+}
+
+class _BookmarksScreenState extends State<BookmarksScreen> {
+  late final Future<DictionaryBundle> _bundleFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _bundleFuture = widget.repository.loadBundle();
+  }
+
+  Future<void> _playClip(AudioArchiveType type, String clipId) async {
+    final result = await widget.audioLibrary.playClip(type, clipId);
+    widget.onActionResult(result);
+  }
+
+  Future<void> _showEntryDetails(DictionaryEntry entry) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => WordDetailScreen(
+          entry: entry,
+          audioLibrary: widget.audioLibrary,
+          bookmarkStore: widget.bookmarkStore,
+          onPlayClip: _playClip,
+        ),
+      ),
+    );
+  }
+
+  List<DictionaryEntry> _buildBookmarkedEntries(DictionaryBundle bundle) {
+    final entriesById = <int, DictionaryEntry>{
+      for (final entry in bundle.entries) entry.id: entry,
+    };
+    return widget.bookmarkStore.bookmarkedIds
+        .map((id) => entriesById[id])
+        .whereType<DictionaryEntry>()
+        .toList(growable: false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: widget.bookmarkStore,
+      builder: (context, child) {
+        return Scaffold(
+          appBar: AppBar(title: const Text('書籤')),
+          body: FutureBuilder<DictionaryBundle>(
+            future: _bundleFuture,
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      '資料載入失敗：${snapshot.error}',
+                      style: Theme.of(context).textTheme.titleMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              }
+
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              final bookmarkedEntries = _buildBookmarkedEntries(snapshot.data!);
+              if (bookmarkedEntries.isEmpty) {
+                return const BookmarkEmptyState();
+              }
+
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  return Align(
+                    alignment: Alignment.topCenter,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: constraints.maxWidth >= 900 ? 920 : 720,
+                      ),
+                      child: ListView.builder(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+                        itemCount: bookmarkedEntries.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: EdgeInsets.only(
+                              bottom: index == bookmarkedEntries.length - 1
+                                  ? 0
+                                  : 10,
+                            ),
+                            child: EntryListItem(
+                              entry: bookmarkedEntries[index],
+                              onTap: () =>
+                                  _showEntryDetails(bookmarkedEntries[index]),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                },
               );
             },
           ),
@@ -426,11 +794,11 @@ class SearchWorkspaceCard extends StatelessWidget {
   const SearchWorkspaceCard({
     super.key,
     required this.controller,
-    required this.onQueryChanged,
+    required this.onSubmitted,
   });
 
   final TextEditingController controller;
-  final ValueChanged<String> onQueryChanged;
+  final ValueChanged<String> onSubmitted;
 
   @override
   Widget build(BuildContext context) {
@@ -444,57 +812,140 @@ class SearchWorkspaceCard extends StatelessWidget {
               IconButton(
                 onPressed: () {
                   controller.clear();
-                  onQueryChanged('');
                 },
                 icon: const Icon(Icons.close),
               ),
             ],
-      onChanged: onQueryChanged,
-      elevation: const WidgetStatePropertyAll(0),
-      backgroundColor: const WidgetStatePropertyAll(Color(0xFFF6F2EA)),
-      padding: const WidgetStatePropertyAll(
-        EdgeInsets.symmetric(horizontal: 16),
-      ),
-      shape: WidgetStatePropertyAll(
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      onSubmitted: onSubmitted,
+    );
+  }
+}
+
+class SearchHistorySection extends StatelessWidget {
+  const SearchHistorySection({
+    super.key,
+    required this.history,
+    required this.onHistoryTap,
+    required this.onClearHistory,
+  });
+
+  final List<String> history;
+  final ValueChanged<String> onHistoryTap;
+  final Future<void> Function() onClearHistory;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '搜尋紀錄',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF18363C),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: '清除搜尋紀錄',
+                  onPressed: onClearHistory,
+                  icon: const Icon(Icons.delete_outline),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: history
+                  .map((query) {
+                    return ActionChip(
+                      label: Text(query),
+                      avatar: const Icon(Icons.history, size: 18),
+                      onPressed: () => onHistoryTap(query),
+                    );
+                  })
+                  .toList(growable: false),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
 class SettingsSectionHeader extends StatelessWidget {
-  const SettingsSectionHeader({super.key, required this.title, this.subtitle});
+  const SettingsSectionHeader({super.key, required this.title});
 
   final String title;
-  final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: const Color(0xFF18363C),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+      child: Text(
+        title,
+        style: theme.textTheme.titleSmall?.copyWith(
+          fontWeight: FontWeight.w700,
+          color: theme.colorScheme.primary,
+        ),
+      ),
+    );
+  }
+}
+
+class SettingsTextScaleTile extends StatelessWidget {
+  const SettingsTextScaleTile({
+    super.key,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final double value;
+  final ValueChanged<double> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return ListTile(
+      title: const Text('字級'),
+      trailing: Text(
+        '${(value * 100).round()}%',
+        style: theme.textTheme.labelLarge?.copyWith(
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Slider(
+              value: value,
+              min: AppPreferences.minReadingTextScale,
+              max: AppPreferences.maxReadingTextScale,
+              divisions: 5,
+              label: _readingTextScaleLabel(value),
+              onChanged: onChanged,
             ),
-          ),
-          if (subtitle != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              subtitle!,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: const Color(0xFF5A6D71),
-                height: 1.4,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('小', style: theme.textTheme.bodySmall),
+                Text('特大', style: theme.textTheme.bodySmall),
+              ],
             ),
           ],
-        ],
+        ),
       ),
     );
   }
@@ -524,7 +975,7 @@ class AudioResourceTile extends StatelessWidget {
         : '大小約 ${formatBytes(type.archiveBytes)}';
 
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
       leading: Icon(
         type == AudioArchiveType.word
             ? Icons.record_voice_over_outlined
@@ -645,6 +1096,48 @@ class NoResultsState extends StatelessWidget {
   }
 }
 
+class BookmarkEmptyState extends StatelessWidget {
+  const BookmarkEmptyState({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.bookmark_border,
+              size: 44,
+              color: Theme.of(
+                context,
+              ).colorScheme.primary.withValues(alpha: 0.7),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '尚未加入任何書籤',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF18363C),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '從詞條詳細頁點選書籤圖示，就會顯示在這裡。',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: const Color(0xFF5A6D71),
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class EntryListItem extends StatelessWidget {
   const EntryListItem({super.key, required this.entry, required this.onTap});
 
@@ -703,27 +1196,48 @@ class WordDetailScreen extends StatelessWidget {
     super.key,
     required this.entry,
     required this.audioLibrary,
+    required this.bookmarkStore,
     required this.onPlayClip,
   });
 
   final DictionaryEntry entry;
   final OfflineAudioLibrary audioLibrary;
+  final BookmarkStore bookmarkStore;
   final Future<void> Function(AudioArchiveType type, String clipId) onPlayClip;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(entry.hanji.isEmpty ? '詞條詳細資料' : entry.hanji)),
-      body: AnimatedBuilder(
-        animation: audioLibrary,
-        builder: (context, child) {
-          return WordDetailBody(
-            entry: entry,
-            audioLibrary: audioLibrary,
-            onPlayClip: onPlayClip,
-          );
-        },
-      ),
+    return AnimatedBuilder(
+      animation: bookmarkStore,
+      builder: (context, child) {
+        final isBookmarked = bookmarkStore.isBookmarked(entry.id);
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(entry.hanji.isEmpty ? '詞條詳細資料' : entry.hanji),
+            actions: [
+              IconButton(
+                tooltip: isBookmarked ? '移除書籤' : '加入書籤',
+                onPressed: () {
+                  unawaited(bookmarkStore.toggleBookmark(entry.id));
+                },
+                icon: Icon(
+                  isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                ),
+              ),
+            ],
+          ),
+          body: AnimatedBuilder(
+            animation: audioLibrary,
+            builder: (context, child) {
+              return WordDetailBody(
+                entry: entry,
+                audioLibrary: audioLibrary,
+                onPlayClip: onPlayClip,
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
@@ -743,6 +1257,7 @@ class WordDetailBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final readingTextScale = AppPreferencesScope.of(context).readingTextScale;
     final subtitle = [
       if (entry.type.isNotEmpty) entry.type,
       if (entry.category.isNotEmpty) entry.category,
@@ -818,9 +1333,12 @@ class WordDetailBody extends StatelessWidget {
                               if (sense.definition.isNotEmpty)
                                 Text(
                                   sense.definition,
-                                  style: theme.textTheme.bodyLarge?.copyWith(
-                                    height: 1.55,
-                                    fontWeight: FontWeight.w700,
+                                  style: _scaledTextStyle(
+                                    theme.textTheme.bodyLarge?.copyWith(
+                                      height: 1.55,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    readingTextScale,
                                   ),
                                 ),
                             ],
@@ -832,6 +1350,7 @@ class WordDetailBody extends StatelessWidget {
                                 example: example,
                                 audioLibrary: audioLibrary,
                                 onPlayClip: onPlayClip,
+                                textScale: readingTextScale,
                               );
                             }),
                           ],
@@ -864,11 +1383,13 @@ class ExampleListTile extends StatelessWidget {
     required this.example,
     required this.audioLibrary,
     required this.onPlayClip,
+    required this.textScale,
   });
 
   final DictionaryExample example;
   final OfflineAudioLibrary audioLibrary;
   final Future<void> Function(AudioArchiveType type, String clipId) onPlayClip;
+  final double textScale;
 
   @override
   Widget build(BuildContext context) {
@@ -883,8 +1404,11 @@ class ExampleListTile extends StatelessWidget {
             ? null
             : Text(
                 example.hanji,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
+                style: _scaledTextStyle(
+                  theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                  textScale,
                 ),
               ),
         subtitle: Column(
@@ -894,17 +1418,23 @@ class ExampleListTile extends StatelessWidget {
             if (example.romanization.isNotEmpty)
               Text(
                 example.romanization,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF6B5C3A),
+                style: _scaledTextStyle(
+                  theme.textTheme.bodyMedium?.copyWith(
+                    color: const Color(0xFF6B5C3A),
+                  ),
+                  textScale,
                 ),
               ),
             if (example.mandarin.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(
                 example.mandarin,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF35545B),
-                  height: 1.5,
+                style: _scaledTextStyle(
+                  theme.textTheme.bodyMedium?.copyWith(
+                    color: const Color(0xFF35545B),
+                    height: 1.5,
+                  ),
+                  textScale,
                 ),
               ),
             ],
@@ -922,6 +1452,26 @@ class ExampleListTile extends StatelessWidget {
       ),
     );
   }
+}
+
+TextStyle? _scaledTextStyle(TextStyle? style, double scale) {
+  if (style == null || style.fontSize == null) {
+    return style;
+  }
+  return style.copyWith(fontSize: style.fontSize! * scale);
+}
+
+String _readingTextScaleLabel(double value) {
+  if (value <= 0.95) {
+    return '較小';
+  }
+  if (value >= 1.35) {
+    return '特大';
+  }
+  if (value >= 1.15) {
+    return '較大';
+  }
+  return '標準';
 }
 
 class AudioButton extends StatelessWidget {
@@ -976,6 +1526,42 @@ class AudioButton extends StatelessWidget {
   }
 }
 
+class BookmarkStore extends ChangeNotifier {
+  static const _bookmarkIdsKey = 'bookmarked_entry_ids';
+
+  List<int> _bookmarkedIds = const <int>[];
+
+  List<int> get bookmarkedIds => List<int>.unmodifiable(_bookmarkedIds);
+
+  bool isBookmarked(int entryId) {
+    return _bookmarkedIds.contains(entryId);
+  }
+
+  Future<void> initialize() async {
+    final preferences = await SharedPreferences.getInstance();
+    final storedIds = preferences.getStringList(_bookmarkIdsKey) ?? const [];
+    _bookmarkedIds = storedIds
+        .map(int.tryParse)
+        .whereType<int>()
+        .toList(growable: false);
+    notifyListeners();
+  }
+
+  Future<void> toggleBookmark(int entryId) async {
+    final nextIds = isBookmarked(entryId)
+        ? _bookmarkedIds.where((id) => id != entryId).toList(growable: false)
+        : <int>[entryId, ..._bookmarkedIds.where((id) => id != entryId)];
+    _bookmarkedIds = nextIds;
+
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setStringList(
+      _bookmarkIdsKey,
+      _bookmarkedIds.map((id) => '$id').toList(growable: false),
+    );
+    notifyListeners();
+  }
+}
+
 class DictionaryRepository {
   static Future<DictionaryBundle>? _bundleFuture;
 
@@ -1002,10 +1588,9 @@ class DictionaryRepository {
 
     final matched = <_ScoredEntry>[];
     for (final entry in bundle.entries) {
-      final headword = _headwordForSearch(entry);
-      final priority = _matchPriority(headword, query);
-      if (priority != null) {
-        matched.add(_ScoredEntry(entry, priority));
+      final match = _matchEntry(entry, query);
+      if (match != null) {
+        matched.add(match);
       }
     }
 
@@ -1015,9 +1600,7 @@ class DictionaryRepository {
         return comparePriority;
       }
 
-      final leftHeadword = _headwordForSearch(left.entry);
-      final rightHeadword = _headwordForSearch(right.entry);
-      final compareLength = leftHeadword.length.compareTo(rightHeadword.length);
+      final compareLength = left.matchedLength.compareTo(right.matchedLength);
       if (compareLength != 0) {
         return compareLength;
       }
@@ -1028,30 +1611,67 @@ class DictionaryRepository {
     return matched.take(60).map((item) => item.entry).toList(growable: false);
   }
 
-  String _headwordForSearch(DictionaryEntry entry) {
-    final headword = entry.hanji.isNotEmpty ? entry.hanji : entry.romanization;
-    return normalizeQuery(headword);
-  }
+  _ScoredEntry? _matchEntry(DictionaryEntry entry, String query) {
+    final headwordMatch = _bestMatchLength(
+      _headwordFieldsForEntry(entry),
+      query,
+    );
+    if (headwordMatch != null) {
+      final score = headwordMatch == query.length ? 0 : 1;
+      return _ScoredEntry(entry, score, headwordMatch);
+    }
 
-  int? _matchPriority(String headword, String query) {
-    if (headword.isEmpty || query.isEmpty || !headword.contains(query)) {
+    final definitionMatch = _bestMatchLength(
+      _definitionFieldsForEntry(entry),
+      query,
+    );
+    if (definitionMatch == null) {
       return null;
     }
-    if (headword == query) {
-      return 0;
+    return _ScoredEntry(entry, 2, definitionMatch);
+  }
+
+  List<String> _headwordFieldsForEntry(DictionaryEntry entry) {
+    final fields = <String>{};
+    final hanji = normalizeQuery(entry.hanji);
+    if (hanji.isNotEmpty) {
+      fields.add(hanji);
     }
-    if (headword.startsWith(query)) {
-      return 1;
+    final romanization = normalizeQuery(entry.romanization);
+    if (romanization.isNotEmpty) {
+      fields.add(romanization);
     }
-    return 2;
+    return fields.toList(growable: false);
+  }
+
+  List<String> _definitionFieldsForEntry(DictionaryEntry entry) {
+    return entry.senses
+        .map((sense) => normalizeQuery(sense.definition))
+        .where((definition) => definition.isNotEmpty)
+        .toSet()
+        .toList(growable: false);
+  }
+
+  int? _bestMatchLength(List<String> fields, String query) {
+    int? bestLength;
+    for (final field in fields) {
+      if (field.isEmpty || query.isEmpty || !field.contains(query)) {
+        continue;
+      }
+      if (bestLength == null || field.length < bestLength) {
+        bestLength = field.length;
+      }
+    }
+    return bestLength;
   }
 }
 
 class _ScoredEntry {
-  const _ScoredEntry(this.entry, this.score);
+  const _ScoredEntry(this.entry, this.score, this.matchedLength);
 
   final DictionaryEntry entry;
   final int score;
+  final int matchedLength;
 }
 
 class DictionaryBundle {
@@ -1189,16 +1809,24 @@ class DictionaryExample {
 }
 
 String normalizeQuery(String input) {
-  var normalized = input.trim().toLowerCase();
+  var normalized = removeTones(input.trim());
+  normalized = normalized.replaceAll(RegExp(r'[1-8]'), '');
+  normalized = normalized.replaceAll(RegExp(r'\s+'), ' ').trim();
+  normalized = normalized.replaceAll(RegExp(r'[-_/]'), ' ');
+  normalized = normalized.replaceAll(RegExp("[【】\\[\\]（）()、,.;:!?\"'`]+"), ' ');
+  normalized = normalized.replaceAll(RegExp(r'\s+'), ' ').trim();
+  return normalized;
+}
+
+String removeTones(String input) {
+  var normalized = input.toLowerCase();
   for (final entry in _romanizationFold.entries) {
     normalized = normalized.replaceAll(entry.key, entry.value);
   }
   normalized = normalized.replaceAll(RegExp(r'[\u0300-\u036f]'), '');
   normalized = normalized.replaceAll('o͘', 'oo');
   normalized = normalized.replaceAll('ⁿ', 'n');
-  normalized = normalized.replaceAll(RegExp(r'[-_/]'), ' ');
-  normalized = normalized.replaceAll(RegExp("[【】\\[\\]（）()、,.;:!?\"'`]+"), ' ');
-  normalized = normalized.replaceAll(RegExp(r'\s+'), ' ').trim();
+  normalized = normalized.replaceAll(RegExp(r'[1-8]'), '');
   return normalized;
 }
 
