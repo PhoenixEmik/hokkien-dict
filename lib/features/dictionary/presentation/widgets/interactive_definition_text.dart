@@ -40,8 +40,8 @@ class _InteractiveDefinitionTextState extends State<InteractiveDefinitionText> {
       fontWeight: FontWeight.w700,
     );
 
-    return RichText(
-      text: TextSpan(
+    return Text.rich(
+      TextSpan(
         style: baseStyle,
         children: _buildDefinitionSpans(
           widget.text,
