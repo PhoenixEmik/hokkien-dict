@@ -1,0 +1,104 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:isolate';
+
+import 'package:flutter/services.dart';
+
+import '../domain/dictionary_models.dart';
+import '../domain/dictionary_search_service.dart';
+
+class DictionaryRepository {
+  static Future<DictionaryBundle>? _bundleFuture;
+  static bool useBackgroundSearchIsolate = true;
+  static final Expando<Map<int, DictionaryEntry>> _entriesByIdCache =
+      Expando<Map<int, DictionaryEntry>>('dictionaryEntriesById');
+  static final Expando<List<Map<String, Object>>> _searchIndexCache =
+      Expando<List<Map<String, Object>>>('dictionarySearchIndex');
+
+  Future<DictionaryBundle> loadBundle() {
+    return _bundleFuture ??= _loadBundle();
+  }
+
+  Future<DictionaryBundle> _loadBundle() async {
+    final data = await rootBundle.load('assets/data/dictionary.json.gz');
+    final bytes = data.buffer.asUint8List(
+      data.offsetInBytes,
+      data.lengthInBytes,
+    );
+    final jsonString = utf8.decode(GZipCodec().decode(bytes));
+    final decoded = jsonDecode(jsonString) as Map<String, dynamic>;
+    return DictionaryBundle.fromJson(decoded);
+  }
+
+  List<DictionaryEntry> search(DictionaryBundle bundle, String rawQuery) {
+    final query = normalizeQuery(rawQuery);
+    if (query.isEmpty) {
+      return const [];
+    }
+
+    return _resolveSearchResults(
+      bundle,
+      searchDictionaryEntryIds(_searchIndexFor(bundle), query),
+    );
+  }
+
+  Future<List<DictionaryEntry>> searchAsync(
+    DictionaryBundle bundle,
+    String rawQuery,
+  ) async {
+    final query = normalizeQuery(rawQuery);
+    if (query.isEmpty) {
+      return const [];
+    }
+
+    if (!useBackgroundSearchIsolate) {
+      return search(bundle, query);
+    }
+
+    try {
+      final matchedIds = await Isolate.run(
+        () => searchDictionaryEntryIds(_searchIndexFor(bundle), query),
+      );
+      return _resolveSearchResults(bundle, matchedIds);
+    } catch (_) {
+      return _resolveSearchResults(
+        bundle,
+        searchDictionaryEntryIds(_searchIndexFor(bundle), query),
+      );
+    }
+  }
+
+  List<DictionaryEntry> _resolveSearchResults(
+    DictionaryBundle bundle,
+    List<int> matchedIds,
+  ) {
+    return matchedIds
+        .map((id) => _entriesByIdFor(bundle)[id])
+        .whereType<DictionaryEntry>()
+        .toList(growable: false);
+  }
+
+  List<Map<String, Object>> _searchIndexFor(DictionaryBundle bundle) {
+    final cached = _searchIndexCache[bundle];
+    if (cached != null) {
+      return cached;
+    }
+
+    final built = buildDictionarySearchIndex(bundle.entries);
+    _searchIndexCache[bundle] = built;
+    return built;
+  }
+
+  Map<int, DictionaryEntry> _entriesByIdFor(DictionaryBundle bundle) {
+    final cached = _entriesByIdCache[bundle];
+    if (cached != null) {
+      return cached;
+    }
+
+    final built = <int, DictionaryEntry>{
+      for (final entry in bundle.entries) entry.id: entry,
+    };
+    _entriesByIdCache[bundle] = built;
+    return built;
+  }
+}
