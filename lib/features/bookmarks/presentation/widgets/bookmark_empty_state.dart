@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 
 class BookmarkEmptyState extends StatelessWidget {
   const BookmarkEmptyState({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -20,7 +23,7 @@ class BookmarkEmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              '尚未加入任何書籤',
+              l10n.bookmarksEmptyTitle,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF18363C),
@@ -28,7 +31,7 @@ class BookmarkEmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '從詞條詳細頁點選書籤圖示，就會顯示在這裡。',
+              l10n.bookmarksEmptyBody,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: const Color(0xFF5A6D71),
                 height: 1.5,

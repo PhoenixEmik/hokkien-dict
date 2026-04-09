@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 
 class SearchWorkspaceCard extends StatelessWidget {
   const SearchWorkspaceCard({
@@ -12,15 +13,17 @@ class SearchWorkspaceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return SearchBar(
       controller: controller,
-      hintText: '輸入台語漢字、白話字或華語詞義',
+      hintText: l10n.searchHint,
       leading: const Icon(Icons.search),
       trailing: controller.text.isEmpty
           ? null
           : [
               IconButton(
-                tooltip: '清除搜尋內容',
+                tooltip: l10n.clearSearch,
                 onPressed: () {
                   controller.clear();
                 },
@@ -46,6 +49,8 @@ class SearchHistorySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -56,7 +61,7 @@ class SearchHistorySection extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    '搜尋紀錄',
+                    l10n.searchHistory,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF18363C),
@@ -64,7 +69,7 @@ class SearchHistorySection extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  tooltip: '清除搜尋紀錄',
+                  tooltip: l10n.clearSearchHistory,
                   onPressed: onClearHistory,
                   icon: const Icon(Icons.delete_outline),
                 ),
@@ -78,8 +83,8 @@ class SearchHistorySection extends StatelessWidget {
                   .map((query) {
                     return Semantics(
                       button: true,
-                      label: '搜尋紀錄 $query',
-                      hint: '點兩下重新搜尋',
+                      label: '${l10n.searchHistory} $query',
+                      hint: l10n.searchHint,
                       child: ActionChip(
                         label: Text(query),
                         avatar: const Icon(Icons.history, size: 18),
@@ -104,10 +109,11 @@ class EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final title = query.trim().isEmpty ? '開始搜尋' : '找不到符合的結果';
+    final l10n = AppLocalizations.of(context);
+    final title = query.trim().isEmpty ? l10n.startSearch : l10n.noResultsTitle;
     final body = query.trim().isEmpty
-        ? '輸入台語漢字、白話字，或華語釋義後才顯示詞條。'
-        : '換個寫法試試看，或改用另一個查詢方向。';
+        ? l10n.startSearchBody
+        : l10n.noResultsBody;
 
     return Card(
       child: Padding(
@@ -143,7 +149,7 @@ class NoResultsState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Text(
-        '找不到符合的詞條',
+        AppLocalizations.of(context).noResultsShort,
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
           fontWeight: FontWeight.w700,
           color: const Color(0xFF5A6D71),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 import 'package:hokkien_dictionary/core/preferences/app_preferences.dart';
 
 class SettingsTextScaleTile extends StatelessWidget {
@@ -14,9 +15,10 @@ class SettingsTextScaleTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return ListTile(
-      title: const Text('字級'),
+      title: Text(l10n.fontSize),
       trailing: Text(
         '${(value * 100).round()}%',
         style: theme.textTheme.labelLarge?.copyWith(
@@ -33,14 +35,14 @@ class SettingsTextScaleTile extends StatelessWidget {
               min: AppPreferences.minReadingTextScale,
               max: AppPreferences.maxReadingTextScale,
               divisions: 5,
-              label: _readingTextScaleLabel(value),
+              label: l10n.readingTextScaleLabel(value),
               onChanged: onChanged,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('小', style: theme.textTheme.bodySmall),
-                Text('特大', style: theme.textTheme.bodySmall),
+                Text(l10n.small, style: theme.textTheme.bodySmall),
+                Text(l10n.extraLarge, style: theme.textTheme.bodySmall),
               ],
             ),
           ],
@@ -48,17 +50,4 @@ class SettingsTextScaleTile extends StatelessWidget {
       ),
     );
   }
-}
-
-String _readingTextScaleLabel(double value) {
-  if (value <= 0.95) {
-    return '較小';
-  }
-  if (value >= 1.35) {
-    return '特大';
-  }
-  if (value >= 1.15) {
-    return '較大';
-  }
-  return '標準';
 }

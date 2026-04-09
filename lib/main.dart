@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hokkien_dictionary/app/app.dart';
 
 export 'app/app.dart';
+export 'core/localization/app_localizations.dart';
+export 'core/localization/locale_provider.dart';
 export 'core/preferences/app_preferences.dart';
 export 'features/bookmarks/application/bookmark_store.dart';
 export 'features/bookmarks/presentation/screens/bookmarks_screen.dart';

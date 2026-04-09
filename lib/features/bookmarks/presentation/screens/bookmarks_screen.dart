@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 import 'package:hokkien_dictionary/features/bookmarks/application/bookmark_store.dart';
 import 'package:hokkien_dictionary/features/bookmarks/presentation/widgets/bookmark_empty_state.dart';
 import 'package:hokkien_dictionary/features/dictionary/data/dictionary_repository.dart';
@@ -61,11 +62,13 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return AnimatedBuilder(
       animation: widget.bookmarkStore,
       builder: (context, child) {
         return Scaffold(
-          appBar: AppBar(title: const Text('書籤')),
+          appBar: AppBar(title: Text(l10n.bookmarksTitle)),
           body: FutureBuilder<DictionaryBundle>(
             future: _bundleFuture,
             builder: (context, snapshot) {

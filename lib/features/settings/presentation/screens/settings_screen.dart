@@ -1,9 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
+import 'package:hokkien_dictionary/core/localization/locale_provider.dart';
 import 'package:hokkien_dictionary/core/preferences/app_preferences.dart';
 import 'package:hokkien_dictionary/features/settings/presentation/screens/reference_article_screen.dart';
 import 'package:hokkien_dictionary/features/settings/presentation/widgets/audio_resource_tile.dart';
+import 'package:hokkien_dictionary/features/settings/presentation/widgets/settings_locale_tile.dart';
 import 'package:hokkien_dictionary/features/settings/presentation/widgets/settings_section_header.dart';
 import 'package:hokkien_dictionary/features/settings/presentation/widgets/settings_theme_mode_tile.dart';
 import 'package:hokkien_dictionary/features/settings/presentation/widgets/settings_text_scale_tile.dart';
@@ -41,12 +44,21 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appPreferences = AppPreferencesScope.of(context);
+    final localeProvider = LocaleProviderScope.of(context);
+    final l10n = AppLocalizations.of(context);
+    final selectedLocale =
+        localeProvider.locale ??
+        AppLocalizations.resolveLocale(Localizations.localeOf(context));
 
     return AnimatedBuilder(
-      animation: Listenable.merge([audioLibrary, appPreferences]),
+      animation: Listenable.merge([
+        audioLibrary,
+        appPreferences,
+        localeProvider,
+      ]),
       builder: (context, child) {
         return Scaffold(
-          appBar: AppBar(title: const Text('設定')),
+          appBar: AppBar(title: Text(l10n.settingsTitle)),
           body: LayoutBuilder(
             builder: (context, constraints) {
               return Align(
@@ -60,7 +72,7 @@ class SettingsScreen extends StatelessWidget {
                     child: ListView(
                       padding: const EdgeInsets.fromLTRB(0, 8, 0, 28),
                       children: [
-                        const SettingsSectionHeader(title: '離線資源'),
+                        SettingsSectionHeader(title: l10n.offlineResources),
                         AudioResourceTile(
                           type: AudioArchiveType.word,
                           audioLibrary: audioLibrary,
@@ -72,7 +84,13 @@ class SettingsScreen extends StatelessWidget {
                           onDownload: onDownloadArchive,
                         ),
                         const Divider(height: 32),
-                        const SettingsSectionHeader(title: '外觀'),
+                        SettingsSectionHeader(title: l10n.appearance),
+                        SettingsLocaleTile(
+                          value: selectedLocale,
+                          onSelected: (locale) {
+                            unawaited(localeProvider.setLocale(locale));
+                          },
+                        ),
                         SettingsThemeModeTile(
                           value: appPreferences.themePreference,
                           onSelected: (value) {
@@ -88,14 +106,14 @@ class SettingsScreen extends StatelessWidget {
                           },
                         ),
                         const Divider(height: 32),
-                        const SettingsSectionHeader(title: '關於'),
+                        SettingsSectionHeader(title: l10n.about),
                         ListTile(
                           leading: const Icon(
                             Icons.translate_outlined,
                             color: Color(0xFF17454C),
                           ),
-                          title: const Text('臺羅標注說明'),
-                          subtitle: const Text('查看教育部頁面的重點整理與台羅拼寫原則。'),
+                          title: Text(l10n.tailoGuide),
+                          subtitle: Text(l10n.tailoGuideSubtitle),
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () {
                             _showReferenceArticle(
@@ -328,8 +346,8 @@ class SettingsScreen extends StatelessWidget {
                             Icons.edit_note_outlined,
                             color: Color(0xFF17454C),
                           ),
-                          title: const Text('漢字用字原則'),
-                          subtitle: const Text('查看教育部頁面的重點整理與辭典漢字選用方式。'),
+                          title: Text(l10n.hanjiGuide),
+                          subtitle: Text(l10n.hanjiGuideSubtitle),
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () {
                             _showReferenceArticle(
@@ -396,30 +414,30 @@ class SettingsScreen extends StatelessWidget {
                             Icons.info_outline,
                             color: Color(0xFF17454C),
                           ),
-                          applicationName: '台語辭典',
+                          applicationName: l10n.appTitle,
                           applicationLegalese:
                               'App code: MIT\nDictionary data and audio: 教育部《臺灣台語常用詞辭典》衍生內容，採 CC BY-ND 3.0 TW。',
-                          aboutBoxChildren: const [
-                            SizedBox(height: 12),
-                            Text('台語辭典提供離線的台語與華語雙向查詢，並支援下載教育部詞目與例句音檔。'),
-                            SizedBox(height: 12),
+                          aboutBoxChildren: [
+                            const SizedBox(height: 12),
+                            Text(l10n.aboutDescription),
+                            const SizedBox(height: 12),
                             Text(
-                              '參考頁面：https://sutian.moe.edu.tw/zh-hant/siongkuantsuguan/',
+                              '${l10n.referencePage}: https://sutian.moe.edu.tw/zh-hant/siongkuantsuguan/',
                             ),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             Text(
-                              '臺羅標注說明：https://sutian.moe.edu.tw/zh-hant/piantsip/tailo-phiautsu-suatbing/',
+                              '${l10n.tailoGuide}: https://sutian.moe.edu.tw/zh-hant/piantsip/tailo-phiautsu-suatbing/',
                             ),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             Text(
-                              '漢字用字原則：https://sutian.moe.edu.tw/zh-hant/piantsip/hanji-iongji-guantsik/',
+                              '${l10n.hanjiGuide}: https://sutian.moe.edu.tw/zh-hant/piantsip/hanji-iongji-guantsik/',
                             ),
                           ],
                           applicationIcon: const Icon(
                             Icons.menu_book_outlined,
                             color: Color(0xFF17454C),
                           ),
-                          child: const Text('關於台語辭典'),
+                          child: Text(l10n.aboutApp),
                         ),
                       ],
                     ),

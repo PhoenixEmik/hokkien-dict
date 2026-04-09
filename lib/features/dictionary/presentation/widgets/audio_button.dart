@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 import 'package:hokkien_dictionary/offline_audio.dart';
 
 class AudioButton extends StatelessWidget {
@@ -19,16 +20,19 @@ class AudioButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isLoading = audioLibrary.isClipLoading(type, audioId);
     final isPlaying = audioLibrary.isClipPlaying(type, audioId);
     final archiveReady = audioLibrary.isArchiveReady(type);
     const buttonSize = 48.0;
-    final clipLabel = type == AudioArchiveType.word ? '詞目音檔' : '例句音檔';
+    final clipLabel = type == AudioArchiveType.word
+        ? l10n.audioWordArchive
+        : l10n.audioSentenceArchive;
     final actionLabel = switch ((isLoading, isPlaying, archiveReady)) {
-      (true, _, _) => '正在載入$clipLabel',
-      (false, true, _) => '停止播放$clipLabel',
-      (false, false, true) => '播放$clipLabel',
-      (false, false, false) => '下載$clipLabel',
+      (true, _, _) => l10n.loadingAudio(clipLabel),
+      (false, true, _) => l10n.stopAudio(clipLabel),
+      (false, false, true) => l10n.playAudio(clipLabel),
+      (false, false, false) => l10n.downloadAudio(clipLabel),
     };
 
     return Semantics(

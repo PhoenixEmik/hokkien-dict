@@ -11,6 +11,7 @@ void main() {
   final searchField = find.byType(EditableText);
   const searchDebounce = Duration(milliseconds: 350);
   const searchAsyncWait = Duration(seconds: 1);
+  const traditionalChineseLocale = Locale('zh', 'TW');
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -310,6 +311,20 @@ void main() {
     expect(restoredPreferences.useAmoledTheme, isTrue);
   });
 
+  test('locale provider stores selected locale', () async {
+    final provider = LocaleProvider();
+    await provider.initialize();
+
+    expect(provider.locale, isNull);
+
+    await provider.setLocale(const Locale('zh', 'CN'));
+
+    final restoredProvider = LocaleProvider();
+    await restoredProvider.initialize();
+
+    expect(restoredProvider.locale, const Locale('zh', 'CN'));
+  });
+
   testWidgets('dictionary screen only renders filtered matches', (
     WidgetTester tester,
   ) async {
@@ -354,7 +369,8 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(
+      _buildLocalizedTestApp(
+        locale: traditionalChineseLocale,
         home: Scaffold(
           body: DictionaryScreen(
             repository: repository,
@@ -431,7 +447,8 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(
+      _buildLocalizedTestApp(
+        locale: traditionalChineseLocale,
         home: Scaffold(
           body: DictionaryScreen(
             repository: repository,
@@ -459,13 +476,15 @@ void main() {
   testWidgets('renders flat dictionary flow with no default entries', (
     WidgetTester tester,
   ) async {
+    SharedPreferences.setMockInitialValues({'interface_locale': 'zh-TW'});
+
     await tester.pumpWidget(const HokkienDictionaryApp());
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
 
-    expect(find.text('Dictionary'), findsOneWidget);
-    expect(find.text('Bookmarks'), findsOneWidget);
-    expect(find.text('Settings'), findsOneWidget);
+    expect(find.text('辭典'), findsOneWidget);
+    expect(find.text('書籤'), findsOneWidget);
+    expect(find.text('設定'), findsWidgets);
     expect(find.text('開始搜尋'), findsOneWidget);
     expect(find.text('詞目'), findsNothing);
     expect(find.text('義項'), findsNothing);
@@ -485,6 +504,8 @@ void main() {
   });
 
   testWidgets('renders settings tab section', (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({'interface_locale': 'zh-TW'});
+
     await tester.pumpWidget(const HokkienDictionaryApp());
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
@@ -492,10 +513,17 @@ void main() {
     await tester.tap(find.byIcon(Icons.settings_outlined));
     await tester.pump(const Duration(milliseconds: 400));
 
-    expect(find.text('設定'), findsOneWidget);
+    expect(find.text('設定'), findsWidgets);
     expect(find.text('離線資源'), findsOneWidget);
     expect(find.text('外觀'), findsOneWidget);
+    expect(find.text('Language / 語言'), findsOneWidget);
     expect(find.text('主題'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('字級'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pump(const Duration(milliseconds: 300));
     expect(find.byType(Slider), findsOneWidget);
     expect(find.text('Search Bar Position'), findsNothing);
     expect(find.text('Top'), findsNothing);
@@ -520,7 +548,7 @@ void main() {
     expect(find.text('聲調舉例'), findsOneWidget);
     expect(find.text('tong1'), findsOneWidget);
 
-    await tester.pageBack();
+    await tester.tap(find.byType(BackButton));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 
@@ -602,7 +630,8 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(
+      _buildLocalizedTestApp(
+        locale: traditionalChineseLocale,
         home: Scaffold(
           body: DictionaryScreen(
             repository: repository,
@@ -672,7 +701,8 @@ void main() {
     await bookmarkStore.initialize();
 
     await tester.pumpWidget(
-      MaterialApp(
+      _buildLocalizedTestApp(
+        locale: traditionalChineseLocale,
         home: BookmarksScreen(
           repository: repository,
           audioLibrary: OfflineAudioLibrary(),
@@ -714,12 +744,10 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
+        _buildLocalizedTestApp(
+          locale: traditionalChineseLocale,
           home: Scaffold(
-            body: EntryListItem(
-              entry: entry,
-              onTap: () {},
-            ),
+            body: EntryListItem(entry: entry, onTap: () {}),
           ),
         ),
       );
@@ -743,7 +771,8 @@ void main() {
     final semanticsHandle = tester.ensureSemantics();
     try {
       await tester.pumpWidget(
-        MaterialApp(
+        _buildLocalizedTestApp(
+          locale: traditionalChineseLocale,
           home: Scaffold(
             body: AudioButton(
               type: AudioArchiveType.word,
@@ -769,6 +798,18 @@ void main() {
       semanticsHandle.dispose();
     }
   });
+}
+
+Widget _buildLocalizedTestApp({
+  required Widget home,
+  Locale locale = const Locale('zh', 'TW'),
+}) {
+  return MaterialApp(
+    locale: locale,
+    supportedLocales: AppLocalizations.supportedLocales,
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    home: home,
+  );
 }
 
 class _FakeDictionaryRepository extends DictionaryRepository {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 import 'package:hokkien_dictionary/offline_audio.dart';
 
 class AudioResourceTile extends StatelessWidget {
@@ -15,14 +16,15 @@ class AudioResourceTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isReady = audioLibrary.isArchiveReady(type);
     final isDownloading = audioLibrary.isDownloading(type);
     final progress = audioLibrary.downloadProgress(type);
     final statusText = isDownloading
         ? audioLibrary.downloadStatus(type)
         : isReady
-        ? '已下載，可離線播放'
-        : '大小約 ${formatBytes(type.archiveBytes)}';
+        ? l10n.downloadReady
+        : l10n.downloadApproximateSize(formatBytes(type.archiveBytes));
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
@@ -33,7 +35,9 @@ class AudioResourceTile extends StatelessWidget {
         color: const Color(0xFF17454C),
       ),
       title: Text(
-        type.displayLabel,
+        type == AudioArchiveType.word
+            ? l10n.audioWordArchive
+            : l10n.audioSentenceArchive,
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
           fontWeight: FontWeight.w700,
           color: const Color(0xFF18363C),
@@ -80,7 +84,7 @@ class AudioResourceTile extends StatelessWidget {
                 height: 14,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
-            : Text(isReady ? '重新下載' : '下載'),
+            : Text(isReady ? l10n.redownload : l10n.download),
       ),
     );
   }

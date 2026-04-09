@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 import 'package:hokkien_dictionary/core/preferences/app_preferences.dart';
 import 'package:hokkien_dictionary/features/bookmarks/application/bookmark_store.dart';
 import 'package:hokkien_dictionary/features/dictionary/domain/dictionary_models.dart';
@@ -40,20 +41,23 @@ class WordDetailScreen extends StatelessWidget {
     return AnimatedBuilder(
       animation: bookmarkStore,
       builder: (context, child) {
+        final l10n = AppLocalizations.of(context);
         final isBookmarked = bookmarkStore.isBookmarked(entry.id);
         return Scaffold(
           appBar: AppBar(
-            title: Text(entry.hanji.isEmpty ? '詞條詳細資料' : entry.hanji),
+            title: Text(
+              entry.hanji.isEmpty ? l10n.wordDetailFallbackTitle : entry.hanji,
+            ),
             actions: [
               IconButton(
-                tooltip: '分享詞條',
+                tooltip: l10n.shareEntry,
                 onPressed: () {
                   unawaited(_shareEntry());
                 },
                 icon: const Icon(Icons.share),
               ),
               IconButton(
-                tooltip: isBookmarked ? '移除書籤' : '加入書籤',
+                tooltip: isBookmarked ? l10n.removeBookmark : l10n.addBookmark,
                 onPressed: () {
                   unawaited(bookmarkStore.toggleBookmark(entry.id));
                 },
