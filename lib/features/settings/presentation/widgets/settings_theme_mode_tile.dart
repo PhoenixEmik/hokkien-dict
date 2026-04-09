@@ -17,35 +17,26 @@ class SettingsThemeModeTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return ListTile(
+      leading: const Icon(Icons.palette, color: Color(0xFF17454C)),
       title: Text(l10n.theme),
-      isThreeLine: true,
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(_themeLabel(value, l10n)),
-          const SizedBox(height: 8),
-          DropdownMenu<AppThemePreference>(
-            key: ValueKey<AppThemePreference>(value),
-            initialSelection: value,
-            requestFocusOnTap: false,
-            expandedInsets: EdgeInsets.zero,
-            label: Text(l10n.displayMode),
-            onSelected: (selection) {
-              if (selection != null) {
-                onSelected(selection);
-              }
-            },
-            dropdownMenuEntries: AppThemePreference.values
-                .map((mode) {
-                  return DropdownMenuEntry<AppThemePreference>(
-                    value: mode,
-                    label: _themeLabel(mode, l10n),
-                  );
-                })
-                .toList(growable: false),
-          ),
-        ],
+      trailing: DropdownButtonHideUnderline(
+        child: DropdownButton<AppThemePreference>(
+          value: value,
+          icon: const Icon(Icons.arrow_drop_down),
+          onChanged: (selection) {
+            if (selection != null) {
+              onSelected(selection);
+            }
+          },
+          items: AppThemePreference.values
+              .map((mode) {
+                return DropdownMenuItem<AppThemePreference>(
+                  value: mode,
+                  child: Text(_themeLabel(mode, l10n)),
+                );
+              })
+              .toList(growable: false),
+        ),
       ),
     );
   }

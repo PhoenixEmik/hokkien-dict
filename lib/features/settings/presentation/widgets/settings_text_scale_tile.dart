@@ -18,6 +18,7 @@ class SettingsTextScaleTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return ListTile(
+      leading: const Icon(Icons.format_size, color: Color(0xFF17454C)),
       title: Text(l10n.fontSize),
       trailing: Text(
         '${(value * 100).round()}%',
