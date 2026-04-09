@@ -129,6 +129,9 @@ class AppLocalizations {
       'playAudioPrefix': 'Play',
       'stopAudioPrefix': 'Stop',
       'download': 'Download',
+      'pause': 'Pause',
+      'resume': 'Resume',
+      'retry': 'Retry',
       'redownload': 'Re-download',
       'downloadReady': 'Downloaded and ready for offline playback',
       'downloadApproxPrefix': 'About',
@@ -191,6 +194,9 @@ class AppLocalizations {
       'playAudioPrefix': '播放',
       'stopAudioPrefix': '停止播放',
       'download': '下载',
+      'pause': '暂停',
+      'resume': '继续',
+      'retry': '重试',
       'redownload': '重新下载',
       'downloadReady': '已下载，可离线播放',
       'downloadApproxPrefix': '大小约',
@@ -250,6 +256,9 @@ class AppLocalizations {
       'playAudioPrefix': '播放',
       'stopAudioPrefix': '停止播放',
       'download': '下載',
+      'pause': '暫停',
+      'resume': '繼續',
+      'retry': '重試',
       'redownload': '重新下載',
       'downloadReady': '已下載，可離線播放',
       'downloadApproxPrefix': '大小約',
@@ -305,6 +314,9 @@ class AppLocalizations {
   String get playAudioPrefix => _text('playAudioPrefix');
   String get stopAudioPrefix => _text('stopAudioPrefix');
   String get download => _text('download');
+  String get pause => _text('pause');
+  String get resume => _text('resume');
+  String get retry => _text('retry');
   String get redownload => _text('redownload');
   String get downloadReady => _text('downloadReady');
   String get tailoGuide => _text('tailoGuide');

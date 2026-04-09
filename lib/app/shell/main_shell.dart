@@ -37,8 +37,8 @@ class _MainScreenState extends State<MainScreen> {
     super.dispose();
   }
 
-  Future<void> _downloadArchive(AudioArchiveType type) async {
-    final result = await _audioLibrary.downloadArchive(type);
+  Future<void> _handleArchiveDownloadAction(AudioArchiveType type) async {
+    final result = await _audioLibrary.handleDownloadAction(type);
     _showResult(result);
   }
 
@@ -78,7 +78,7 @@ class _MainScreenState extends State<MainScreen> {
       ),
       SettingsScreen(
         audioLibrary: _audioLibrary,
-        onDownloadArchive: _downloadArchive,
+        onDownloadArchive: _handleArchiveDownloadAction,
       ),
     ];
 

@@ -1,38 +1,34 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hokkien_dictionary/features/audio/data/audio_archive_index.dart';
 import 'package:hokkien_dictionary/features/audio/data/audio_archive_storage.dart';
+import 'package:hokkien_dictionary/features/audio/data/download_service.dart';
 import 'package:hokkien_dictionary/features/audio/data/audio_playback_diagnostics.dart';
 import 'package:hokkien_dictionary/features/audio/domain/audio_archive.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 
 class OfflineAudioLibrary extends ChangeNotifier {
-  OfflineAudioLibrary();
+  OfflineAudioLibrary() {
+    for (final type in AudioArchiveType.values) {
+      final service = DownloadService();
+      service.snapshot.addListener(notifyListeners);
+      _downloadServices[type] = service;
+    }
+  }
 
   final AudioPlayer _player = AudioPlayer();
-  final AudioArchiveDownloader _downloader = const AudioArchiveDownloader();
   final Map<AudioArchiveType, Map<String, ZipEntryLocation>> _indexes = {
     AudioArchiveType.word: <String, ZipEntryLocation>{},
     AudioArchiveType.sentence: <String, ZipEntryLocation>{},
   };
+  final Map<AudioArchiveType, DownloadService> _downloadServices = {};
   final Map<AudioArchiveType, bool> _isReady = {
     AudioArchiveType.word: false,
     AudioArchiveType.sentence: false,
-  };
-  final Map<AudioArchiveType, bool> _isDownloading = {
-    AudioArchiveType.word: false,
-    AudioArchiveType.sentence: false,
-  };
-  final Map<AudioArchiveType, int> _downloadedBytes = {
-    AudioArchiveType.word: 0,
-    AudioArchiveType.sentence: 0,
-  };
-  final Map<AudioArchiveType, int> _totalBytes = {
-    AudioArchiveType.word: AudioArchiveType.word.archiveBytes,
-    AudioArchiveType.sentence: AudioArchiveType.sentence.archiveBytes,
   };
 
   Directory? _supportDirectory;
@@ -49,20 +45,36 @@ class OfflineAudioLibrary extends ChangeNotifier {
 
   bool isArchiveReady(AudioArchiveType type) => _isReady[type] ?? false;
 
-  bool isDownloading(AudioArchiveType type) => _isDownloading[type] ?? false;
+  ValueListenable<DownloadSnapshot> downloadListenable(AudioArchiveType type) {
+    return _downloadServices[type]!.snapshot;
+  }
+
+  DownloadSnapshot downloadSnapshot(AudioArchiveType type) {
+    return _downloadServices[type]!.snapshot.value;
+  }
+
+  DownloadState downloadState(AudioArchiveType type) {
+    return downloadSnapshot(type).state;
+  }
+
+  bool isDownloading(AudioArchiveType type) {
+    return downloadState(type) == DownloadState.downloading;
+  }
 
   double? downloadProgress(AudioArchiveType type) {
-    final totalBytes = _totalBytes[type] ?? 0;
-    if (totalBytes <= 0) {
-      return null;
-    }
-    return (_downloadedBytes[type] ?? 0) / totalBytes;
+    return downloadSnapshot(type).progress;
   }
 
   String downloadStatus(AudioArchiveType type) {
-    final downloadedBytes = _downloadedBytes[type] ?? 0;
-    final totalBytes = _totalBytes[type] ?? type.archiveBytes;
-    return '${formatBytes(downloadedBytes)} / ${formatBytes(totalBytes)}';
+    final snapshot = downloadSnapshot(type);
+    final totalBytes = snapshot.totalBytes > 0
+        ? snapshot.totalBytes
+        : type.archiveBytes;
+    return '${formatBytes(snapshot.downloadedBytes)} / ${formatBytes(totalBytes)}';
+  }
+
+  String downloadSpeed(AudioArchiveType type) {
+    return formatBytesPerSecond(downloadSnapshot(type).speedBytesPerSecond);
   }
 
   bool isClipLoading(AudioArchiveType type, String clipId) {
@@ -84,6 +96,7 @@ class OfflineAudioLibrary extends ChangeNotifier {
       await _storage!.audioRootDirectory.create(recursive: true);
       for (final type in AudioArchiveType.values) {
         await _loadArchiveState(type);
+        await _restoreDownloadSnapshot(type);
       }
     } catch (_) {
       _initializationFailed = true;
@@ -91,6 +104,18 @@ class OfflineAudioLibrary extends ChangeNotifier {
 
     _initialized = true;
     notifyListeners();
+  }
+
+  Future<AudioActionResult> handleDownloadAction(AudioArchiveType type) async {
+    final state = downloadState(type);
+    if (state == DownloadState.downloading) {
+      _downloadServices[type]!.pause();
+      return AudioActionResult(message: '已暫停下載 ${type.displayLabel}。');
+    }
+    if (state == DownloadState.completed && isArchiveReady(type)) {
+      return const AudioActionResult();
+    }
+    return downloadArchive(type);
   }
 
   Future<AudioActionResult> downloadArchive(AudioArchiveType type) async {
@@ -102,28 +127,19 @@ class OfflineAudioLibrary extends ChangeNotifier {
       );
     }
 
-    if (_isDownloading[type] == true) {
+    final service = _downloadServices[type]!;
+    if (service.isDownloading) {
       return const AudioActionResult();
     }
 
-    _isDownloading[type] = true;
-    _totalBytes[type] = type.archiveBytes;
-    notifyListeners();
-
     final storage = _storage!;
-    final targetFile = storage.archiveFile(type);
-    final tempFile = File('${targetFile.path}.download');
+    final tempFile = storage.downloadTempFile(type);
 
     try {
-      await tempFile.parent.create(recursive: true);
-      _downloadedBytes[type] = await _downloader.download(
-        type,
-        tempFile,
-        onProgress: (downloadedBytes, totalBytes) {
-          _downloadedBytes[type] = downloadedBytes;
-          _totalBytes[type] = totalBytes;
-          notifyListeners();
-        },
+      await service.download(
+        url: type.sourceUrl,
+        targetFile: tempFile,
+        fallbackTotalBytes: type.archiveBytes,
       );
 
       final index = await buildStoredZipIndex(tempFile);
@@ -138,20 +154,43 @@ class OfflineAudioLibrary extends ChangeNotifier {
       );
       _indexes[type] = index;
       _isReady[type] = true;
+      service.seed(
+        DownloadSnapshot(
+          state: DownloadState.completed,
+          downloadedBytes: type.archiveBytes,
+          totalBytes: type.archiveBytes,
+          speedBytesPerSecond: 0,
+        ),
+      );
       notifyListeners();
 
       return AudioActionResult(message: '已下載 ${type.displayLabel}，之後可離線播放。');
+    } on DioException catch (_) {
+      if (downloadState(type) == DownloadState.paused) {
+        return const AudioActionResult();
+      }
+      return AudioActionResult(
+        message:
+            '下載 ${type.displayLabel} 失敗：${downloadSnapshot(type).errorMessage ?? '網路連線中斷'}',
+        isError: true,
+      );
     } catch (error) {
       if (error is FormatException && await tempFile.exists()) {
         await tempFile.delete();
+        service.seed(
+          const DownloadSnapshot(
+            state: DownloadState.error,
+            downloadedBytes: 0,
+            totalBytes: 0,
+            speedBytesPerSecond: 0,
+            errorMessage: '下載內容格式不正確',
+          ),
+        );
       }
       return AudioActionResult(
         message: '下載 ${type.displayLabel} 失敗：$error',
         isError: true,
       );
-    } finally {
-      _isDownloading[type] = false;
-      notifyListeners();
     }
   }
 
@@ -244,6 +283,10 @@ class OfflineAudioLibrary extends ChangeNotifier {
 
   @override
   void dispose() {
+    for (final service in _downloadServices.values) {
+      service.snapshot.removeListener(notifyListeners);
+      service.dispose();
+    }
     unawaited(_player.dispose());
     super.dispose();
   }
@@ -258,6 +301,42 @@ class OfflineAudioLibrary extends ChangeNotifier {
       _indexes[type] = index;
       _isReady[type] = true;
     }
+  }
+
+  Future<void> _restoreDownloadSnapshot(AudioArchiveType type) async {
+    final storage = _storage;
+    final service = _downloadServices[type];
+    if (storage == null || service == null) {
+      return;
+    }
+
+    if (_isReady[type] == true) {
+      service.seed(
+        DownloadSnapshot(
+          state: DownloadState.completed,
+          downloadedBytes: type.archiveBytes,
+          totalBytes: type.archiveBytes,
+          speedBytesPerSecond: 0,
+        ),
+      );
+      return;
+    }
+
+    final tempFile = storage.downloadTempFile(type);
+    if (await tempFile.exists()) {
+      final partialBytes = await tempFile.length();
+      service.seed(
+        DownloadSnapshot(
+          state: partialBytes > 0 ? DownloadState.paused : DownloadState.idle,
+          downloadedBytes: partialBytes,
+          totalBytes: type.archiveBytes,
+          speedBytesPerSecond: 0,
+        ),
+      );
+      return;
+    }
+
+    service.seed(DownloadSnapshot.idle(totalBytes: type.archiveBytes));
   }
 
   String _clipKey(AudioArchiveType type, String clipId) {

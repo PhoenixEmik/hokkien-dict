@@ -62,3 +62,10 @@ String formatBytes(int bytes) {
   final fixed = value >= 100 || unitIndex == 0 ? 0 : 1;
   return '${value.toStringAsFixed(fixed)} ${units[unitIndex]}';
 }
+
+String formatBytesPerSecond(double bytesPerSecond) {
+  if (bytesPerSecond <= 0) {
+    return '0 B/s';
+  }
+  return '${formatBytes(bytesPerSecond.round())}/s';
+}
