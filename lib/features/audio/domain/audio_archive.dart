@@ -1,3 +1,5 @@
+import 'package:hokkien_dictionary/core/constants/app_constants.dart';
+
 enum AudioArchiveType { word, sentence }
 
 extension AudioArchiveTypeMetadata on AudioArchiveType {
@@ -12,10 +14,8 @@ extension AudioArchiveTypeMetadata on AudioArchiveType {
   };
 
   String get sourceUrl => switch (this) {
-    AudioArchiveType.word =>
-      'https://sutian.moe.edu.tw/media/senn/sutiau-mp3.zip',
-    AudioArchiveType.sentence =>
-      'https://sutian.moe.edu.tw/media/senn/leku-mp3.zip',
+    AudioArchiveType.word => AppConstants.audioWordArchiveUrl,
+    AudioArchiveType.sentence => AppConstants.audioSentenceArchiveUrl,
   };
 
   int get archiveBytes => switch (this) {
