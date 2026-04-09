@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hokkien_dictionary/app/initialization/app_initialization_controller.dart';
 import 'package:hokkien_dictionary/app/initialization/app_initialization_screen.dart';
@@ -11,6 +12,7 @@ import 'package:hokkien_dictionary/features/dictionary/data/dictionary_repositor
 import 'package:hokkien_dictionary/features/dictionary/data/offline_dictionary_library.dart';
 import 'package:hokkien_dictionary/features/dictionary/presentation/screens/dictionary_screen.dart';
 import 'package:hokkien_dictionary/features/settings/presentation/screens/settings_screen.dart';
+import 'package:hokkien_dictionary/features/settings/presentation/widgets/liquid_glass.dart';
 import 'package:hokkien_dictionary/offline_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -210,6 +212,42 @@ class _MainScreenState extends State<MainScreen> {
             onRebuildDictionaryDatabase: _rebuildDictionaryDatabase,
           ),
         ];
+
+        if (isApplePlatform(context)) {
+          return Scaffold(
+            body: IndexedStack(index: _selectedIndex, children: screens),
+            bottomNavigationBar: CupertinoTabBar(
+              currentIndex: _selectedIndex,
+              onTap: (index) {
+                setState(() {
+                  _selectedIndex = index;
+                });
+              },
+              backgroundColor: resolveLiquidGlassSecondaryTint(
+                context,
+              ).withValues(alpha: 0.88),
+              activeColor: resolveLiquidGlassTint(context),
+              inactiveColor: resolveLiquidGlassSecondaryForeground(context),
+              items: [
+                BottomNavigationBarItem(
+                  icon: const Icon(CupertinoIcons.book),
+                  activeIcon: const Icon(CupertinoIcons.book_fill),
+                  label: l10n.dictionaryTab,
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(CupertinoIcons.bookmark),
+                  activeIcon: const Icon(CupertinoIcons.bookmark_fill),
+                  label: l10n.bookmarksTab,
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(CupertinoIcons.gear),
+                  activeIcon: const Icon(CupertinoIcons.gear_solid),
+                  label: l10n.settingsTab,
+                ),
+              ],
+            ),
+          );
+        }
 
         return Scaffold(
           body: IndexedStack(index: _selectedIndex, children: screens),

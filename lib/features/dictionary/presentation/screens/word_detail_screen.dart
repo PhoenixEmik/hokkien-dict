@@ -209,7 +209,7 @@ class WordDetailBody extends StatelessWidget {
               child: ListView(
                 padding: EdgeInsets.fromLTRB(
                   applePlatform ? 16 : 20,
-                  applePlatform ? 12 : 12,
+                  applePlatform ? 72 : 12,
                   applePlatform ? 16 : 20,
                   applePlatform ? 34 : 24,
                 ),

@@ -1,5 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
+import 'package:hokkien_dictionary/features/settings/presentation/widgets/liquid_glass.dart';
 
 class SearchWorkspaceCard extends StatelessWidget {
   const SearchWorkspaceCard({
@@ -14,6 +16,56 @@ class SearchWorkspaceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final applePlatform = isApplePlatform(context);
+
+    if (applePlatform) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: resolveLiquidGlassSecondaryTint(
+              context,
+            ).withValues(alpha: 0.84),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 18,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+            child: CupertinoSearchTextField(
+              controller: controller,
+              placeholder: l10n.searchHint,
+              onSubmitted: onSubmitted,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: resolveLiquidGlassForeground(context),
+                fontWeight: FontWeight.w600,
+              ),
+              placeholderStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: resolveLiquidGlassSecondaryForeground(context),
+              ),
+              prefixIcon: Icon(
+                CupertinoIcons.search,
+                color: resolveLiquidGlassSecondaryForeground(context),
+                size: 20,
+              ),
+              suffixIcon: Icon(
+                CupertinoIcons.clear_circled_solid,
+                color: resolveLiquidGlassSecondaryForeground(context),
+                size: 18,
+              ),
+              backgroundColor: Colors.transparent,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            ),
+          ),
+        ),
+      );
+    }
 
     return SearchBar(
       controller: controller,
@@ -51,6 +103,98 @@ class SearchHistorySection extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final applePlatform = isApplePlatform(context);
+
+    if (applePlatform) {
+      return LiquidGlassSection(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 16, 14, 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    l10n.searchHistory,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: resolveLiquidGlassForeground(context),
+                    ),
+                  ),
+                ),
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(28, 28),
+                  onPressed: onClearHistory,
+                  child: Icon(
+                    CupertinoIcons.delete_simple,
+                    color: resolveLiquidGlassTint(context),
+                    size: 20,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 0, 18, 16),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: history
+                  .map((query) {
+                    return Semantics(
+                      button: true,
+                      label: '${l10n.searchHistory} $query',
+                      hint: l10n.searchHint,
+                      child: CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        onPressed: () => onHistoryTap(query),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: resolveLiquidGlassSecondaryTint(
+                              context,
+                            ).withValues(alpha: 0.86),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.08),
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  CupertinoIcons.time,
+                                  size: 16,
+                                  color: resolveLiquidGlassTint(context),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  query,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: resolveLiquidGlassForeground(
+                                      context,
+                                    ),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  })
+                  .toList(growable: false),
+            ),
+          ),
+        ],
+      );
+    }
 
     return Card(
       child: Padding(
@@ -114,6 +258,37 @@ class EmptyState extends StatelessWidget {
     final body = query.trim().isEmpty
         ? l10n.startSearchBody
         : l10n.noResultsBody;
+    final applePlatform = isApplePlatform(context);
+
+    if (applePlatform) {
+      return LiquidGlassSection(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(22),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: resolveLiquidGlassForeground(context),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  body,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: resolveLiquidGlassSecondaryForeground(context),
+                    height: 1.55,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
 
     return Card(
       child: Padding(
@@ -147,6 +322,19 @@ class NoResultsState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (isApplePlatform(context)) {
+      return Center(
+        child: Text(
+          AppLocalizations.of(context).noResultsShort,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: resolveLiquidGlassSecondaryForeground(context),
+          ),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
     return Center(
       child: Text(
         AppLocalizations.of(context).noResultsShort,
@@ -165,6 +353,9 @@ class SearchLoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (isApplePlatform(context)) {
+      return const Center(child: CircularProgressIndicator.adaptive());
+    }
     return const Center(child: CircularProgressIndicator());
   }
 }
