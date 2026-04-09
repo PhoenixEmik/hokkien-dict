@@ -3,22 +3,37 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:flutter/services.dart';
+import 'package:hokkien_dictionary/features/dictionary/data/dictionary_database_builder_service.dart';
 import 'package:hokkien_dictionary/features/dictionary/domain/dictionary_models.dart';
 import 'package:hokkien_dictionary/features/dictionary/domain/dictionary_search_service.dart';
 
 class DictionaryRepository {
   static Future<DictionaryBundle>? _bundleFuture;
   static bool useBackgroundSearchIsolate = true;
+  static bool preferLocalDatabase = true;
   static final Expando<Map<int, DictionaryEntry>> _entriesByIdCache =
       Expando<Map<int, DictionaryEntry>>('dictionaryEntriesById');
   static final Expando<List<Map<String, Object>>> _searchIndexCache =
       Expando<List<Map<String, Object>>>('dictionarySearchIndex');
+  final DictionaryDatabaseBuilderService _databaseBuilderService =
+      const DictionaryDatabaseBuilderService();
+
+  static void clearBundleCache() {
+    _bundleFuture = null;
+  }
 
   Future<DictionaryBundle> loadBundle() {
     return _bundleFuture ??= _loadBundle();
   }
 
   Future<DictionaryBundle> _loadBundle() async {
+    if (preferLocalDatabase) {
+      final localBundle = await _databaseBuilderService.loadBundleIfAvailable();
+      if (localBundle != null) {
+        return localBundle;
+      }
+    }
+
     final data = await rootBundle.load('assets/data/dictionary.json.gz');
     final bytes = data.buffer.asUint8List(
       data.offsetInBytes,

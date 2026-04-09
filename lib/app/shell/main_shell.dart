@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 import 'package:hokkien_dictionary/features/bookmarks/application/bookmark_store.dart';
 import 'package:hokkien_dictionary/features/bookmarks/presentation/screens/bookmarks_screen.dart';
+import 'package:hokkien_dictionary/features/dictionary/data/dictionary_database_builder_service.dart';
 import 'package:hokkien_dictionary/features/dictionary/data/dictionary_repository.dart';
 import 'package:hokkien_dictionary/features/dictionary/presentation/screens/dictionary_screen.dart';
 import 'package:hokkien_dictionary/features/settings/presentation/screens/settings_screen.dart';
@@ -18,10 +19,13 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   final DictionaryRepository _repository = DictionaryRepository();
+  final DictionaryDatabaseBuilderService _dictionaryDatabaseBuilderService =
+      const DictionaryDatabaseBuilderService();
   final OfflineAudioLibrary _audioLibrary = OfflineAudioLibrary();
   final BookmarkStore _bookmarkStore = BookmarkStore();
 
   int _selectedIndex = 0;
+  int _dictionaryDataVersion = 0;
 
   @override
   void initState() {
@@ -40,6 +44,17 @@ class _MainScreenState extends State<MainScreen> {
   Future<void> _handleArchiveDownloadAction(AudioArchiveType type) async {
     final result = await _audioLibrary.handleDownloadAction(type);
     _showResult(result);
+  }
+
+  Future<void> _rebuildDictionaryDatabase() async {
+    await _dictionaryDatabaseBuilderService.rebuildFromDownloadedOds();
+    DictionaryRepository.clearBundleCache();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _dictionaryDataVersion++;
+    });
   }
 
   void _showResult(AudioActionResult result) {
@@ -65,12 +80,14 @@ class _MainScreenState extends State<MainScreen> {
     final l10n = AppLocalizations.of(context);
     final screens = [
       DictionaryScreen(
+        key: ValueKey('dictionary-$_dictionaryDataVersion'),
         repository: _repository,
         audioLibrary: _audioLibrary,
         bookmarkStore: _bookmarkStore,
         onActionResult: _showResult,
       ),
       BookmarksScreen(
+        key: ValueKey('bookmarks-$_dictionaryDataVersion'),
         repository: _repository,
         audioLibrary: _audioLibrary,
         bookmarkStore: _bookmarkStore,
@@ -79,6 +96,7 @@ class _MainScreenState extends State<MainScreen> {
       SettingsScreen(
         audioLibrary: _audioLibrary,
         onDownloadArchive: _handleArchiveDownloadAction,
+        onRebuildDictionaryDatabase: _rebuildDictionaryDatabase,
       ),
     ];
 

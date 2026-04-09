@@ -17,10 +17,12 @@ class SettingsScreen extends StatelessWidget {
     super.key,
     required this.audioLibrary,
     required this.onDownloadArchive,
+    required this.onRebuildDictionaryDatabase,
   });
 
   final OfflineAudioLibrary audioLibrary;
   final Future<void> Function(AudioArchiveType type) onDownloadArchive;
+  final Future<void> Function() onRebuildDictionaryDatabase;
 
   void _showReferenceArticle(
     BuildContext context, {
@@ -39,6 +41,60 @@ class SettingsScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _handleRebuildDictionaryDatabase(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            content: Row(
+              children: [
+                const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2.5),
+                ),
+                const SizedBox(width: 16),
+                Expanded(child: Text(l10n.rebuildingDictionaryDatabase)),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    Object? error;
+    try {
+      await onRebuildDictionaryDatabase();
+    } catch (caught) {
+      error = caught;
+    }
+
+    if (!context.mounted) {
+      return;
+    }
+
+    Navigator.of(context, rootNavigator: true).pop();
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            error == null
+                ? l10n.rebuildDictionaryDatabaseSuccess
+                : '重新構建失敗：$error',
+          ),
+          backgroundColor: error == null
+              ? const Color(0xFF0E2F35)
+              : const Color(0xFF8A3B1F),
+        ),
+      );
   }
 
   @override
@@ -82,6 +138,22 @@ class SettingsScreen extends StatelessWidget {
                           type: AudioArchiveType.sentence,
                           audioLibrary: audioLibrary,
                           onDownload: onDownloadArchive,
+                        ),
+                        ListTile(
+                          leading: const Icon(
+                            Icons.storage_outlined,
+                            color: Color(0xFF17454C),
+                          ),
+                          title: Text(l10n.rebuildDictionaryDatabase),
+                          subtitle: Text(
+                            l10n.rebuildDictionaryDatabaseSubtitle,
+                          ),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () {
+                            unawaited(
+                              _handleRebuildDictionaryDatabase(context),
+                            );
+                          },
                         ),
                         const Divider(height: 32),
                         SettingsSectionHeader(title: l10n.appearance),

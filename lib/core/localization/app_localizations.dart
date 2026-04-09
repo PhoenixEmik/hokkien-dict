@@ -125,6 +125,12 @@ class AppLocalizations {
       'themeAmoled': 'AMOLED Black',
       'audioWordArchive': 'Word Audio',
       'audioSentenceArchive': 'Example Audio',
+      'rebuildDictionaryDatabase': 'Rebuild Dictionary Database',
+      'rebuildDictionaryDatabaseSubtitle':
+          'Recreate the local SQLite dictionary from the downloaded kautian.ods file.',
+      'rebuildingDictionaryDatabase': 'Rebuilding dictionary database...',
+      'rebuildDictionaryDatabaseSuccess':
+          'Dictionary database rebuilt successfully.',
       'loadingAudioPrefix': 'Loading',
       'playAudioPrefix': 'Play',
       'stopAudioPrefix': 'Stop',
@@ -190,6 +196,11 @@ class AppLocalizations {
       'themeAmoled': 'AMOLED 黑',
       'audioWordArchive': '词目音档',
       'audioSentenceArchive': '例句音档',
+      'rebuildDictionaryDatabase': '重新构建词典资料库',
+      'rebuildDictionaryDatabaseSubtitle':
+          '从已下载的 kautian.ods 重新建立本机 SQLite 词典资料库。',
+      'rebuildingDictionaryDatabase': '正在重新构建词典资料库…',
+      'rebuildDictionaryDatabaseSuccess': '词典资料库已重新构建完成。',
       'loadingAudioPrefix': '正在载入',
       'playAudioPrefix': '播放',
       'stopAudioPrefix': '停止播放',
@@ -252,6 +263,11 @@ class AppLocalizations {
       'themeAmoled': 'AMOLED 黑',
       'audioWordArchive': '詞目音檔',
       'audioSentenceArchive': '例句音檔',
+      'rebuildDictionaryDatabase': '重新構建詞典資料庫',
+      'rebuildDictionaryDatabaseSubtitle':
+          '從已下載的 kautian.ods 重新建立本機 SQLite 詞典資料庫。',
+      'rebuildingDictionaryDatabase': '正在重新構建詞典資料庫…',
+      'rebuildDictionaryDatabaseSuccess': '詞典資料庫已重新構建完成。',
       'loadingAudioPrefix': '正在載入',
       'playAudioPrefix': '播放',
       'stopAudioPrefix': '停止播放',
@@ -310,6 +326,13 @@ class AppLocalizations {
   String get extraLarge => _text('extraLarge');
   String get audioWordArchive => _text('audioWordArchive');
   String get audioSentenceArchive => _text('audioSentenceArchive');
+  String get rebuildDictionaryDatabase => _text('rebuildDictionaryDatabase');
+  String get rebuildDictionaryDatabaseSubtitle =>
+      _text('rebuildDictionaryDatabaseSubtitle');
+  String get rebuildingDictionaryDatabase =>
+      _text('rebuildingDictionaryDatabase');
+  String get rebuildDictionaryDatabaseSuccess =>
+      _text('rebuildDictionaryDatabaseSuccess');
   String get loadingAudioPrefix => _text('loadingAudioPrefix');
   String get playAudioPrefix => _text('playAudioPrefix');
   String get stopAudioPrefix => _text('stopAudioPrefix');

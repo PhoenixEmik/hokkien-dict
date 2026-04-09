@@ -16,6 +16,8 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     DictionaryRepository.useBackgroundSearchIsolate = false;
+    DictionaryRepository.preferLocalDatabase = false;
+    DictionaryRepository.clearBundleCache();
   });
 
   test(
