@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 import 'package:hokkien_dictionary/core/utils/dialog_utils.dart';
 import 'package:hokkien_dictionary/features/dictionary/data/dictionary_database_builder_service.dart';
+import 'package:hokkien_dictionary/features/settings/presentation/widgets/liquid_glass.dart';
+import 'package:hokkien_dictionary/features/settings/presentation/widgets/settings_section_header.dart';
 
 class AdvancedSettingsScreen extends StatelessWidget {
   const AdvancedSettingsScreen({
@@ -94,31 +96,44 @@ class AdvancedSettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
+    final applePlatform = isApplePlatform(context);
+    final sectionChildren = [
+      ListTile(
+        leading: Icon(Icons.storage_outlined, color: colorScheme.primary),
+        title: Text(l10n.rebuildDictionaryDatabase),
+        subtitle: Text(l10n.rebuildDictionaryDatabaseSubtitle),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () {
+          unawaited(_confirmAndRebuild(context));
+        },
+      ),
+    ];
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.advancedSettings)),
-      body: Align(
-        alignment: Alignment.topCenter,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: ListTileTheme(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(0, 8, 0, 28),
-              children: [
-                ListTile(
-                  leading: Icon(
-                    Icons.storage_outlined,
-                    color: colorScheme.primary,
-                  ),
-                  title: Text(l10n.rebuildDictionaryDatabase),
-                  subtitle: Text(l10n.rebuildDictionaryDatabaseSubtitle),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    unawaited(_confirmAndRebuild(context));
-                  },
+      body: LiquidGlassBackground(
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: ListTileTheme(
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: applePlatform ? 20 : 24,
+              ),
+              child: ListView(
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  applePlatform ? 16 : 8,
+                  16,
+                  28,
                 ),
-              ],
+                children: [
+                  SettingsSectionHeader(title: l10n.advancedSettings),
+                  applePlatform
+                      ? LiquidGlassSection(children: sectionChildren)
+                      : Column(children: sectionChildren),
+                ],
+              ),
             ),
           ),
         ),

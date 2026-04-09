@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 import 'package:hokkien_dictionary/core/preferences/app_preferences.dart';
+import 'package:hokkien_dictionary/features/settings/presentation/widgets/liquid_glass.dart';
 
 class SettingsTextScaleTile extends StatelessWidget {
   const SettingsTextScaleTile({
@@ -16,6 +18,7 @@ class SettingsTextScaleTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
+    final applePlatform = isApplePlatform(context);
 
     return ListTile(
       leading: Icon(Icons.format_size, color: theme.colorScheme.primary),
@@ -31,14 +34,28 @@ class SettingsTextScaleTile extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Slider.adaptive(
-              value: value,
-              min: AppPreferences.minReadingTextScale,
-              max: AppPreferences.maxReadingTextScale,
-              divisions: 5,
-              label: l10n.readingTextScaleLabel(value),
-              onChanged: onChanged,
-            ),
+            if (applePlatform)
+              CupertinoTheme(
+                data: CupertinoTheme.of(
+                  context,
+                ).copyWith(primaryColor: resolveLiquidGlassTint(context)),
+                child: CupertinoSlider(
+                  value: value,
+                  min: AppPreferences.minReadingTextScale,
+                  max: AppPreferences.maxReadingTextScale,
+                  divisions: 5,
+                  onChanged: onChanged,
+                ),
+              )
+            else
+              Slider.adaptive(
+                value: value,
+                min: AppPreferences.minReadingTextScale,
+                max: AppPreferences.maxReadingTextScale,
+                divisions: 5,
+                label: l10n.readingTextScaleLabel(value),
+                onChanged: onChanged,
+              ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

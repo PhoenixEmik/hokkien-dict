@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 import 'package:hokkien_dictionary/features/dictionary/data/offline_dictionary_library.dart';
 import 'package:hokkien_dictionary/offline_audio.dart';
+import 'package:hokkien_dictionary/features/settings/presentation/widgets/liquid_glass.dart';
 
 class DictionarySourceResourceTile extends StatelessWidget {
   const DictionarySourceResourceTile({
@@ -18,6 +19,7 @@ class DictionarySourceResourceTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final applePlatform = isApplePlatform(context);
     return ValueListenableBuilder<DownloadSnapshot>(
       valueListenable: dictionaryLibrary.downloadListenable,
       builder: (context, snapshot, child) {
@@ -104,18 +106,27 @@ class DictionarySourceResourceTile extends StatelessWidget {
                         snapshot.state != DownloadState.idle) ...[
                       const SizedBox(height: 8),
                       LinearProgressIndicator(
+                        minHeight: applePlatform ? 4 : null,
                         value: snapshot.state == DownloadState.completed
                             ? 1
                             : progress,
+                        borderRadius: applePlatform
+                            ? BorderRadius.circular(999)
+                            : null,
+                        backgroundColor: applePlatform
+                            ? resolveLiquidGlassSecondaryTint(
+                                context,
+                              ).withValues(alpha: 0.45)
+                            : null,
                       ),
                     ],
                   ],
                 ),
               ),
-              trailing: IconButton.filledTonal(
+              trailing: AdaptiveSettingsActionButton(
                 tooltip: actionTooltip,
                 onPressed: onPressed,
-                icon: Icon(actionIcon),
+                icon: actionIcon,
               ),
             ),
           ),
