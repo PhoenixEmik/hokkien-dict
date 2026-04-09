@@ -11,13 +11,6 @@ extension AppThemePreferenceX on AppThemePreference {
     AppThemePreference.amoled => 'amoled',
   };
 
-  String get label => switch (this) {
-    AppThemePreference.system => '跟隨系統',
-    AppThemePreference.light => '淺色',
-    AppThemePreference.dark => '深色',
-    AppThemePreference.amoled => 'AMOLED 黑',
-  };
-
   ThemeMode get materialThemeMode => switch (this) {
     AppThemePreference.system => ThemeMode.system,
     AppThemePreference.light => ThemeMode.light,

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 import 'package:hokkien_dictionary/features/audio/data/audio_archive_index.dart';
 import 'package:hokkien_dictionary/features/audio/data/audio_archive_storage.dart';
 import 'package:hokkien_dictionary/features/audio/data/download_service.dart';
@@ -106,28 +107,39 @@ class OfflineAudioLibrary extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<AudioActionResult> handleDownloadAction(AudioArchiveType type) async {
+  Future<AudioActionResult> handleDownloadAction(
+    AudioArchiveType type,
+    AppLocalizations l10n,
+  ) async {
     final state = downloadState(type);
     if (state == DownloadState.downloading) {
       _downloadServices[type]!.pause();
-      return AudioActionResult(message: '已暫停下載 ${type.displayLabel}。');
+      return AudioActionResult(
+        message: l10n.audioArchivePaused(_archiveLabel(type, l10n)),
+      );
     }
     if (state == DownloadState.completed && isArchiveReady(type)) {
       return const AudioActionResult();
     }
-    return downloadArchive(type);
+    return downloadArchive(type, l10n);
   }
 
-  Future<AudioActionResult> downloadArchive(AudioArchiveType type) async {
+  Future<AudioActionResult> downloadArchive(
+    AudioArchiveType type,
+    AppLocalizations l10n,
+  ) async {
     await initialize();
     if (_supportDirectory == null) {
       return AudioActionResult(
-        message: _initializationFailed ? '目前無法初始化離線音檔儲存空間。' : '離線音檔儲存空間尚未準備好。',
+        message: _initializationFailed
+            ? l10n.audioStorageInitFailed
+            : l10n.audioStorageNotReady,
         isError: true,
       );
     }
 
     final service = _downloadServices[type]!;
+    service.defaultErrorMessage = l10n.downloadFailed;
     if (service.isDownloading) {
       return const AudioActionResult();
     }
@@ -144,7 +156,9 @@ class OfflineAudioLibrary extends ChangeNotifier {
 
       final index = await buildStoredZipIndex(tempFile);
       if (!index.containsKey(type.sampleClipId)) {
-        throw FormatException('下載回來的檔案不是 ${type.archiveFileName}');
+        throw FormatException(
+          l10n.audioArchiveUnexpectedFile(type.archiveFileName),
+        );
       }
 
       await storage.replaceArchive(
@@ -164,31 +178,48 @@ class OfflineAudioLibrary extends ChangeNotifier {
       );
       notifyListeners();
 
-      return AudioActionResult(message: '已下載 ${type.displayLabel}，之後可離線播放。');
+      return AudioActionResult(
+        message: l10n.audioArchiveDownloaded(_archiveLabel(type, l10n)),
+      );
     } on DioException catch (_) {
       if (downloadState(type) == DownloadState.paused) {
         return const AudioActionResult();
       }
       return AudioActionResult(
-        message:
-            '下載 ${type.displayLabel} 失敗：${downloadSnapshot(type).errorMessage ?? '網路連線中斷'}',
+        message: l10n.audioArchiveDownloadFailed(
+          _archiveLabel(type, l10n),
+          downloadSnapshot(type).errorMessage ?? l10n.networkInterrupted,
+        ),
         isError: true,
       );
     } catch (error) {
-      if (error is FormatException && await tempFile.exists()) {
+      if ((error is FormatException ||
+              error is StoredZipEntryFormatException ||
+              error is ZipIndexNotFoundException) &&
+          await tempFile.exists()) {
         await tempFile.delete();
         service.seed(
-          const DownloadSnapshot(
+          DownloadSnapshot(
             state: DownloadState.error,
             downloadedBytes: 0,
             totalBytes: 0,
             speedBytesPerSecond: 0,
-            errorMessage: '下載內容格式不正確',
+            errorMessage: l10n.audioArchiveInvalidContent,
           ),
         );
       }
+      final describedError = switch (error) {
+        StoredZipEntryFormatException(fileName: final fileName) =>
+          l10n.zipEntryNotStored(fileName),
+        ZipLocalHeaderFormatException() => l10n.zipLocalHeaderInvalid,
+        ZipIndexNotFoundException() => l10n.zipIndexNotFound,
+        _ => '$error',
+      };
       return AudioActionResult(
-        message: '下載 ${type.displayLabel} 失敗：$error',
+        message: l10n.audioArchiveDownloadFailed(
+          _archiveLabel(type, l10n),
+          describedError,
+        ),
         isError: true,
       );
     }
@@ -197,22 +228,29 @@ class OfflineAudioLibrary extends ChangeNotifier {
   Future<AudioActionResult> playClip(
     AudioArchiveType type,
     String clipId,
+    AppLocalizations l10n,
   ) async {
     await initialize();
     if (_supportDirectory == null) {
-      return const AudioActionResult(message: '離線音檔功能尚未初始化完成。', isError: true);
+      return AudioActionResult(
+        message: l10n.offlineAudioNotInitialized,
+        isError: true,
+      );
     }
 
     if (!isArchiveReady(type)) {
       return AudioActionResult(
-        message: '請先下載 ${type.archiveFileName}。',
+        message: l10n.audioArchiveDownloadFirst(type.archiveFileName),
         isError: true,
       );
     }
 
     final entry = _indexes[type]?[clipId];
     if (entry == null) {
-      return AudioActionResult(message: '找不到音檔：$clipId', isError: true);
+      return AudioActionResult(
+        message: l10n.audioClipNotFound(clipId),
+        isError: true,
+      );
     }
 
     final clipKey = _clipKey(type, clipId);
@@ -267,7 +305,9 @@ class OfflineAudioLibrary extends ChangeNotifier {
       );
       debugPrintStack(stackTrace: stackTrace);
       return AudioActionResult(
-        message: '播放失敗：${error.code} ${error.message ?? ''}'.trim(),
+        message: l10n.audioPlaybackFailed(
+          '${error.code} ${error.message ?? ''}'.trim(),
+        ),
         isError: true,
       );
     } catch (error) {
@@ -277,7 +317,16 @@ class OfflineAudioLibrary extends ChangeNotifier {
       debugPrint(
         '[audio] unexpected playback failure for ${type.name}:$clipId: $error',
       );
-      return AudioActionResult(message: '播放失敗：$error', isError: true);
+      return AudioActionResult(
+        message: l10n.audioPlaybackFailed(switch (error) {
+          StoredZipEntryFormatException(fileName: final fileName) =>
+            l10n.zipEntryNotStored(fileName),
+          ZipLocalHeaderFormatException() => l10n.zipLocalHeaderInvalid,
+          ZipIndexNotFoundException() => l10n.zipIndexNotFound,
+          _ => '$error',
+        }),
+        isError: true,
+      );
     }
   }
 
@@ -341,5 +390,11 @@ class OfflineAudioLibrary extends ChangeNotifier {
 
   String _clipKey(AudioArchiveType type, String clipId) {
     return '${type.name}:$clipId';
+  }
+
+  String _archiveLabel(AudioArchiveType type, AppLocalizations l10n) {
+    return type == AudioArchiveType.word
+        ? l10n.audioWordArchive
+        : l10n.audioSentenceArchive;
   }
 }

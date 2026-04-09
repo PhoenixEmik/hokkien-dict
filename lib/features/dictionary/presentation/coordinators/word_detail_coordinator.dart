@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 import 'package:hokkien_dictionary/features/bookmarks/application/bookmark_store.dart';
 import 'package:hokkien_dictionary/features/dictionary/data/dictionary_repository.dart';
 import 'package:hokkien_dictionary/features/dictionary/domain/dictionary_models.dart';
@@ -12,9 +13,10 @@ class WordDetailCoordinator {
     required OfflineAudioLibrary audioLibrary,
     required AudioArchiveType type,
     required String clipId,
+    required AppLocalizations l10n,
     required ValueChanged<AudioActionResult> onActionResult,
   }) async {
-    final result = await audioLibrary.playClip(type, clipId);
+    final result = await audioLibrary.playClip(type, clipId, l10n);
     onActionResult(result);
   }
 
@@ -32,6 +34,7 @@ class WordDetailCoordinator {
         audioLibrary: audioLibrary,
         type: type,
         clipId: clipId,
+        l10n: AppLocalizations.of(context),
         onActionResult: onActionResult,
       );
     }
@@ -39,9 +42,10 @@ class WordDetailCoordinator {
     Future<void> onWordTapped(String word) async {
       final linkedEntry = repository.findLinkedEntry(bundle, word);
       if (linkedEntry == null) {
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('找不到詞條：$word')));
+        ).showSnackBar(SnackBar(content: Text(l10n.linkedEntryNotFound(word))));
         return;
       }
 

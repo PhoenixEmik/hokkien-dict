@@ -8,11 +8,6 @@ extension AudioArchiveTypeMetadata on AudioArchiveType {
     AudioArchiveType.sentence => 'leku-mp3.zip',
   };
 
-  String get displayLabel => switch (this) {
-    AudioArchiveType.word => '詞目音檔',
-    AudioArchiveType.sentence => '例句音檔',
-  };
-
   String get sourceUrl => switch (this) {
     AudioArchiveType.word => AppConstants.audioWordArchiveUrl,
     AudioArchiveType.sentence => AppConstants.audioSentenceArchiveUrl,

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 
 class InteractiveDefinitionText extends StatefulWidget {
   const InteractiveDefinitionText({
@@ -33,6 +34,7 @@ class _InteractiveDefinitionTextState extends State<InteractiveDefinitionText> {
   Widget build(BuildContext context) {
     _disposeRecognizers();
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final baseStyle = widget.style ?? theme.textTheme.bodyLarge;
     final actionableStyle = baseStyle?.copyWith(
       color: theme.colorScheme.primary,
@@ -45,6 +47,7 @@ class _InteractiveDefinitionTextState extends State<InteractiveDefinitionText> {
         style: baseStyle,
         children: _buildDefinitionSpans(
           widget.text,
+          l10n: l10n,
           actionableStyle: actionableStyle,
         ),
       ),
@@ -53,6 +56,7 @@ class _InteractiveDefinitionTextState extends State<InteractiveDefinitionText> {
 
   List<InlineSpan> _buildDefinitionSpans(
     String text, {
+    required AppLocalizations l10n,
     required TextStyle? actionableStyle,
   }) {
     final spans = <InlineSpan>[];
@@ -68,10 +72,20 @@ class _InteractiveDefinitionTextState extends State<InteractiveDefinitionText> {
         };
       _recognizers.add(recognizer);
       spans.add(
-        TextSpan(
-          text: segment.displayText,
-          style: actionableStyle,
-          recognizer: recognizer,
+        WidgetSpan(
+          alignment: PlaceholderAlignment.baseline,
+          baseline: TextBaseline.alphabetic,
+          child: Semantics(
+            button: true,
+            link: true,
+            label: l10n.linkedDefinitionWordLabel(segment.actionWord),
+            child: GestureDetector(
+              onTap: recognizer.onTap,
+              child: ExcludeSemantics(
+                child: Text(segment.displayText, style: actionableStyle),
+              ),
+            ),
+          ),
         ),
       );
     }

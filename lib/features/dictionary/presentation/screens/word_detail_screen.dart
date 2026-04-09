@@ -25,13 +25,15 @@ class WordDetailScreen extends StatelessWidget {
   final Future<void> Function(AudioArchiveType type, String clipId) onPlayClip;
   final Future<void> Function(String word) onWordTapped;
 
-  Future<void> _shareEntry() async {
-    final shareText = _buildShareText(entry);
+  Future<void> _shareEntry(AppLocalizations l10n) async {
+    final shareText = _buildShareText(entry, l10n);
     await SharePlus.instance.share(
       ShareParams(
         text: shareText,
-        title: entry.hanji.isEmpty ? '台語辭典詞條' : entry.hanji,
-        subject: entry.hanji.isEmpty ? '台語辭典詞條' : entry.hanji,
+        title: entry.hanji.isEmpty ? l10n.shareEntryTitleFallback : entry.hanji,
+        subject: entry.hanji.isEmpty
+            ? l10n.shareEntryTitleFallback
+            : entry.hanji,
       ),
     );
   }
@@ -52,7 +54,7 @@ class WordDetailScreen extends StatelessWidget {
               IconButton(
                 tooltip: l10n.shareEntry,
                 onPressed: () {
-                  unawaited(_shareEntry());
+                  unawaited(_shareEntry(l10n));
                 },
                 icon: const Icon(Icons.share),
               ),
@@ -84,8 +86,10 @@ class WordDetailScreen extends StatelessWidget {
   }
 }
 
-String _buildShareText(DictionaryEntry entry) {
-  final word = entry.hanji.trim().isEmpty ? '未標記漢字' : entry.hanji.trim();
+String _buildShareText(DictionaryEntry entry, AppLocalizations l10n) {
+  final word = entry.hanji.trim().isEmpty
+      ? l10n.unlabeledHanji
+      : entry.hanji.trim();
   final romanization = entry.romanization.trim();
   final definitions = entry.senses
       .map((sense) => sense.definition.trim())
@@ -109,7 +113,7 @@ String _buildShareText(DictionaryEntry entry) {
 
   buffer
     ..writeln()
-    ..write('-- 來自台語辭典 App');
+    ..write(l10n.shareEntryFooter);
   return buffer.toString().trim();
 }
 

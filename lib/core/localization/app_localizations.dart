@@ -313,6 +313,18 @@ class AppLocalizations {
   String _text(String key) =>
       _localizedValues[_languageTag]?[key] ?? _localizedValues['en']![key]!;
 
+  String _selectText(
+    String english,
+    String simplifiedChinese,
+    String traditionalChinese,
+  ) {
+    return switch (_languageTag) {
+      'zh-CN' => simplifiedChinese,
+      'zh-TW' => traditionalChinese,
+      _ => english,
+    };
+  }
+
   String get appTitle => _text('appTitle');
   String get dictionaryTab => _text('dictionaryTab');
   String get bookmarksTab => _text('bookmarksTab');
@@ -376,6 +388,69 @@ class AppLocalizations {
   String get english => _text('english');
   String get simplifiedChinese => _text('simplifiedChinese');
   String get traditionalChinese => _text('traditionalChinese');
+  String get entryOpenDetailsHint => _selectText(
+    'Double tap to open entry details',
+    '双击开启词条详细资料',
+    '雙擊開啟詞條詳細資料',
+  );
+  String get unlabeledHanji =>
+      _selectText('Hanji not provided', '未标记汉字', '未標記漢字');
+  String get shareEntryTitleFallback =>
+      _selectText('Hokkien Dictionary Entry', '台语辞典词条', '台語辭典詞條');
+  String get shareEntryFooter => _selectText(
+    '-- Shared from Hokkien Dictionary',
+    '-- 来自台语辞典 App',
+    '-- 來自台語辭典 App',
+  );
+  String get referenceSource => _selectText('Source', '资料来源', '資料來源');
+  String get dictionaryDatabaseRebuilt => _selectText(
+    'Dictionary database rebuilt.',
+    '词典资料库已重新构建完成。',
+    '詞典資料庫已重新構建完成。',
+  );
+  String get dictionarySourceInitFailed => _selectText(
+    'Unable to initialize dictionary source storage.',
+    '目前无法初始化词典原始档储存空间。',
+    '目前無法初始化詞典原始檔儲存空間。',
+  );
+  String get audioStorageInitFailed => _selectText(
+    'Unable to initialize offline audio storage.',
+    '目前无法初始化离线音档储存空间。',
+    '目前無法初始化離線音檔儲存空間。',
+  );
+  String get audioStorageNotReady => _selectText(
+    'Offline audio storage is not ready yet.',
+    '离线音档储存空间尚未准备好。',
+    '離線音檔儲存空間尚未準備好。',
+  );
+  String get audioArchiveInvalidContent => _selectText(
+    'Downloaded content format is invalid.',
+    '下载内容格式不正确',
+    '下載內容格式不正確',
+  );
+  String get offlineAudioNotInitialized => _selectText(
+    'Offline audio is still initializing.',
+    '离线音档功能尚未初始化完成。',
+    '離線音檔功能尚未初始化完成。',
+  );
+  String get downloadFailed => _selectText('Download failed', '下载失败', '下載失敗');
+  String get zipLocalHeaderInvalid => _selectText(
+    'The ZIP local header is invalid.',
+    'zip 的 local header 格式不正确。',
+    'zip 的 local header 格式不正確。',
+  );
+  String get zipIndexNotFound => _selectText(
+    'ZIP index information was not found.',
+    '找不到 zip 索引资讯。',
+    '找不到 zip 索引資訊。',
+  );
+  String get networkInterrupted =>
+      _selectText('Network connection was interrupted', '网路连接中断', '網路連線中斷');
+  String get aboutLegalese => _selectText(
+    'App code: MIT\nDictionary data and audio: Derived from the Ministry of Education Taiwanese Hokkien Dictionary, licensed under CC BY-ND 3.0 TW.',
+    'App code: MIT\nDictionary data and audio: 教育部《台湾台语常用词辞典》衍生内容，采 CC BY-ND 3.0 TW。',
+    'App code: MIT\nDictionary data and audio: 教育部《臺灣台語常用詞辭典》衍生內容，採 CC BY-ND 3.0 TW。',
+  );
 
   String readingTextScaleLabel(double value) {
     if (value <= 0.95) {
@@ -429,6 +504,125 @@ class AppLocalizations {
       return '$download $label';
     }
     return '$download$label';
+  }
+
+  String romanizationLabel(String value) =>
+      _selectText('Romanization $value', '白话字 $value', '白話字 $value');
+
+  String definitionLabel(String value) =>
+      _selectText('Definition $value', '释义 $value', '釋義 $value');
+
+  String mandarinLabel(String value) =>
+      _selectText('Mandarin $value', '华语 $value', '華語 $value');
+
+  String loadDataFailed(String error) => _selectText(
+    'Failed to load data: $error',
+    '资料载入失败：$error',
+    '資料載入失敗：$error',
+  );
+
+  String linkedEntryNotFound(String word) =>
+      _selectText('Entry not found: $word', '找不到词条：$word', '找不到詞條：$word');
+
+  String dictionaryDatabaseRebuildFailed(String error) => _selectText(
+    'Failed to rebuild dictionary database: $error',
+    '重新构建词典资料库失败：$error',
+    '重新構建詞典資料庫失敗：$error',
+  );
+
+  String dictionarySourcePaused(String fileName) => _selectText(
+    'Paused downloading $fileName.',
+    '已暂停下载 $fileName。',
+    '已暫停下載 $fileName。',
+  );
+
+  String dictionarySourceDownloaded(String fileName) => _selectText(
+    'Downloaded dictionary source file $fileName.',
+    '已下载词典原始档 $fileName。',
+    '已下載詞典原始檔 $fileName。',
+  );
+
+  String dictionarySourceDownloadFailed(String error) => _selectText(
+    'Failed to download dictionary source file: $error',
+    '下载词典原始档失败：$error',
+    '下載詞典原始檔失敗：$error',
+  );
+
+  String dictionarySourceSheetMissing(String sheetName) => _selectText(
+    'Missing worksheet in ODS: $sheetName',
+    'ODS 内找不到工作表：$sheetName',
+    'ODS 內找不到工作表：$sheetName',
+  );
+
+  String audioArchivePaused(String label) => _selectText(
+    'Paused downloading $label.',
+    '已暂停下载 $label。',
+    '已暫停下載 $label。',
+  );
+
+  String audioArchiveUnexpectedFile(String fileName) => _selectText(
+    'The downloaded file is not $fileName.',
+    '下载回来的档案不是 $fileName',
+    '下載回來的檔案不是 $fileName',
+  );
+
+  String audioArchiveDownloaded(String label) => _selectText(
+    'Downloaded $label. It is now available offline.',
+    '已下载 $label，之后可离线播放。',
+    '已下載 $label，之後可離線播放。',
+  );
+
+  String audioArchiveDownloadFailed(String label, String error) => _selectText(
+    'Failed to download $label: $error',
+    '下载 $label 失败：$error',
+    '下載 $label 失敗：$error',
+  );
+
+  String audioArchiveDownloadFirst(String fileName) => _selectText(
+    'Please download $fileName first.',
+    '请先下载 $fileName。',
+    '請先下載 $fileName。',
+  );
+
+  String audioClipNotFound(String clipId) => _selectText(
+    'Audio clip not found: $clipId',
+    '找不到音档：$clipId',
+    '找不到音檔：$clipId',
+  );
+
+  String audioPlaybackFailed(String error) =>
+      _selectText('Playback failed: $error', '播放失败：$error', '播放失敗：$error');
+
+  String zipEntryNotStored(String fileName) => _selectText(
+    'ZIP entry is not stored mode: $fileName',
+    'zip 内的音档不是 stored 模式：$fileName',
+    'zip 內的音檔不是 stored 模式：$fileName',
+  );
+
+  String linkedDefinitionWordLabel(String word) =>
+      _selectText('Open linked entry $word', '开启关联词条 $word', '開啟關聯詞條 $word');
+
+  String semanticsProgressValue(int downloadedBytes, int totalBytes) =>
+      _selectText(
+        totalBytes > 0
+            ? '${(downloadedBytes / totalBytes * 100).round()} percent'
+            : 'Progress unavailable',
+        totalBytes > 0
+            ? '已完成 ${(downloadedBytes / totalBytes * 100).round()}%'
+            : '无法取得进度',
+        totalBytes > 0
+            ? '已完成 ${(downloadedBytes / totalBytes * 100).round()}%'
+            : '無法取得進度',
+      );
+
+  String semanticsJoined(List<String> segments) {
+    final filtered = segments
+        .where((segment) => segment.trim().isNotEmpty)
+        .toList(growable: false);
+    if (filtered.isEmpty) {
+      return '';
+    }
+    return _languageTag == 'en' ? filtered.join('. ') : filtered.join('。');
   }
 }
 

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 import 'package:hokkien_dictionary/features/bookmarks/application/bookmark_store.dart';
 import 'package:hokkien_dictionary/features/dictionary/application/dictionary_search_controller.dart';
 import 'package:hokkien_dictionary/features/dictionary/data/dictionary_repository.dart';
@@ -67,6 +68,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return AnimatedBuilder(
       animation: _searchController,
@@ -79,7 +81,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(24),
                   child: Text(
-                    '資料載入失敗：${snapshot.error}',
+                    l10n.loadDataFailed('${snapshot.error}'),
                     style: theme.textTheme.titleMedium,
                     textAlign: TextAlign.center,
                   ),

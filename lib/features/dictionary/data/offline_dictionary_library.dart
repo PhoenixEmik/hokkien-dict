@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hokkien_dictionary/core/constants/app_constants.dart';
+import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 import 'package:hokkien_dictionary/features/audio/data/download_service.dart';
 import 'package:hokkien_dictionary/features/audio/domain/audio_archive.dart';
 import 'package:hokkien_dictionary/features/dictionary/data/dictionary_database_builder_service.dart';
@@ -65,28 +66,31 @@ class OfflineDictionaryLibrary extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<AudioActionResult> handleDownloadAction() async {
+  Future<AudioActionResult> handleDownloadAction(AppLocalizations l10n) async {
     if (downloadState == DownloadState.downloading) {
       _downloadService.pause();
       return AudioActionResult(
-        message: '已暫停下載 ${AppConstants.dictionaryOdsFileName}。',
+        message: l10n.dictionarySourcePaused(
+          AppConstants.dictionaryOdsFileName,
+        ),
       );
     }
     if (downloadState == DownloadState.completed && isSourceReady) {
       return const AudioActionResult();
     }
-    return downloadSource();
+    return downloadSource(l10n);
   }
 
-  Future<AudioActionResult> downloadSource() async {
+  Future<AudioActionResult> downloadSource(AppLocalizations l10n) async {
     await initialize();
     if (_initializationFailed) {
-      return const AudioActionResult(
-        message: '目前無法初始化詞典原始檔儲存空間。',
+      return AudioActionResult(
+        message: l10n.dictionarySourceInitFailed,
         isError: true,
       );
     }
 
+    _downloadService.defaultErrorMessage = l10n.downloadFailed;
     if (_downloadService.isDownloading) {
       return const AudioActionResult();
     }
@@ -118,18 +122,25 @@ class OfflineDictionaryLibrary extends ChangeNotifier {
       notifyListeners();
 
       return AudioActionResult(
-        message: '已下載詞典原始檔 ${AppConstants.dictionaryOdsFileName}。',
+        message: l10n.dictionarySourceDownloaded(
+          AppConstants.dictionaryOdsFileName,
+        ),
       );
     } on DioException catch (_) {
       if (downloadState == DownloadState.paused) {
         return const AudioActionResult();
       }
       return AudioActionResult(
-        message: '下載詞典原始檔失敗：${downloadSnapshot.errorMessage ?? '網路連線中斷'}',
+        message: l10n.dictionarySourceDownloadFailed(
+          downloadSnapshot.errorMessage ?? l10n.networkInterrupted,
+        ),
         isError: true,
       );
     } catch (error) {
-      return AudioActionResult(message: '下載詞典原始檔失敗：$error', isError: true);
+      return AudioActionResult(
+        message: l10n.dictionarySourceDownloadFailed('$error'),
+        isError: true,
+      );
     }
   }
 

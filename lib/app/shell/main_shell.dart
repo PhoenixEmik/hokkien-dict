@@ -61,12 +61,14 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _handleArchiveDownloadAction(AudioArchiveType type) async {
-    final result = await _audioLibrary.handleDownloadAction(type);
+    final l10n = AppLocalizations.of(context);
+    final result = await _audioLibrary.handleDownloadAction(type, l10n);
     _showResult(result);
   }
 
   Future<void> _handleDictionarySourceDownloadAction() async {
-    final result = await _dictionaryLibrary.handleDownloadAction();
+    final l10n = AppLocalizations.of(context);
+    final result = await _dictionaryLibrary.handleDownloadAction(l10n);
     _showResult(result);
 
     if (result.isError ||
@@ -76,9 +78,14 @@ class _MainScreenState extends State<MainScreen> {
 
     try {
       await _rebuildDictionaryDatabaseInternal();
-      _showResult(const AudioActionResult(message: '詞典資料庫已重新構建完成。'));
+      _showResult(AudioActionResult(message: l10n.dictionaryDatabaseRebuilt));
     } catch (error) {
-      _showResult(AudioActionResult(message: '$error', isError: true));
+      _showResult(
+        AudioActionResult(
+          message: _describeDatabaseRebuildError(error, l10n),
+          isError: true,
+        ),
+      );
     }
   }
 
@@ -113,6 +120,16 @@ class _MainScreenState extends State<MainScreen> {
               : const Color(0xFF0E2F35),
         ),
       );
+  }
+
+  String _describeDatabaseRebuildError(Object error, AppLocalizations l10n) {
+    if (error is MissingDictionarySourceException) {
+      return l10n.downloadDictionarySourceFirst;
+    }
+    if (error is MissingDictionarySheetException) {
+      return l10n.dictionarySourceSheetMissing(error.sheetName);
+    }
+    return l10n.dictionaryDatabaseRebuildFailed('$error');
   }
 
   @override

@@ -67,6 +67,7 @@ class DownloadService {
 
   final Dio _dio;
   late final ValueNotifier<DownloadSnapshot> snapshot;
+  String defaultErrorMessage = 'Download failed';
 
   CancelToken? _cancelToken;
   int _sessionId = 0;
@@ -322,6 +323,6 @@ class DownloadService {
     if (message != null && message.isNotEmpty) {
       return message;
     }
-    return error.error?.toString() ?? '下載失敗';
+    return error.error?.toString() ?? defaultErrorMessage;
   }
 }

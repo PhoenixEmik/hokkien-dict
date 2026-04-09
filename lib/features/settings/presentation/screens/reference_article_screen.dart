@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 
 class ReferenceArticleScreen extends StatelessWidget {
   const ReferenceArticleScreen({
@@ -17,6 +18,7 @@ class ReferenceArticleScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(title: Text(title)),
@@ -108,7 +110,7 @@ class ReferenceArticleScreen extends StatelessWidget {
                     }),
                     const Divider(height: 32),
                     Text(
-                      '資料來源',
+                      l10n.referenceSource,
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w800,
                         color: theme.colorScheme.primary,

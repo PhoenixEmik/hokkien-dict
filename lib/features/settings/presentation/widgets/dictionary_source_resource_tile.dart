@@ -52,57 +52,71 @@ class DictionarySourceResourceTile extends StatelessWidget {
             ? null
             : () => onDownload();
 
-        return ListTile(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 4,
-          ),
-          leading: const Icon(
-            Icons.description_outlined,
-            color: Color(0xFF17454C),
-          ),
-          title: Text(
-            l10n.dictionarySourceArchive,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF18363C),
+        return MergeSemantics(
+          child: Semantics(
+            container: true,
+            label: l10n.semanticsJoined([
+              l10n.dictionarySourceArchive,
+              dictionaryLibrary.fileName,
+              statusText,
+            ]),
+            value: l10n.semanticsProgressValue(
+              snapshot.downloadedBytes,
+              snapshot.totalBytes,
             ),
-          ),
-          subtitle: Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  dictionaryLibrary.fileName,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: const Color(0xFF66797D),
-                  ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 4,
+              ),
+              leading: const Icon(
+                Icons.description_outlined,
+                color: Color(0xFF17454C),
+              ),
+              title: Text(
+                l10n.dictionarySourceArchive,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF18363C),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  statusText,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: const Color(0xFF5A6D71),
-                  ),
+              ),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      dictionaryLibrary.fileName,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: const Color(0xFF66797D),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      statusText,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: const Color(0xFF5A6D71),
+                      ),
+                    ),
+                    if (progress != null &&
+                        snapshot.state != DownloadState.idle) ...[
+                      const SizedBox(height: 8),
+                      LinearProgressIndicator(
+                        value: snapshot.state == DownloadState.completed
+                            ? 1
+                            : progress,
+                      ),
+                    ],
+                  ],
                 ),
-                if (progress != null &&
-                    snapshot.state != DownloadState.idle) ...[
-                  const SizedBox(height: 8),
-                  LinearProgressIndicator(
-                    value: snapshot.state == DownloadState.completed
-                        ? 1
-                        : progress,
-                  ),
-                ],
-              ],
+              ),
+              trailing: IconButton.filledTonal(
+                tooltip: actionTooltip,
+                onPressed: onPressed,
+                icon: Icon(actionIcon),
+              ),
             ),
-          ),
-          trailing: IconButton.filledTonal(
-            tooltip: actionTooltip,
-            onPressed: onPressed,
-            icon: Icon(actionIcon),
           ),
         );
       },

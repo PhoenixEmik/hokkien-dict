@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 import 'package:hokkien_dictionary/features/dictionary/domain/dictionary_models.dart';
 
 class EntryListItem extends StatelessWidget {
@@ -9,11 +10,12 @@ class EntryListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return MergeSemantics(
       child: Semantics(
         button: true,
-        label: _semanticLabel(entry),
-        hint: '雙擊開啟詞條詳細資料',
+        label: _semanticLabel(entry, l10n),
+        hint: l10n.entryOpenDetailsHint,
         child: ExcludeSemantics(
           child: Card(
             clipBehavior: Clip.antiAlias,
@@ -24,7 +26,7 @@ class EntryListItem extends StatelessWidget {
               ),
               titleAlignment: ListTileTitleAlignment.top,
               title: Text(
-                entry.hanji.isEmpty ? '未標記漢字' : entry.hanji,
+                entry.hanji.isEmpty ? l10n.unlabeledHanji : entry.hanji,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w800,
                   color: const Color(0xFF18363C),
@@ -69,15 +71,15 @@ class EntryListItem extends StatelessWidget {
   }
 }
 
-String _semanticLabel(DictionaryEntry entry) {
+String _semanticLabel(DictionaryEntry entry, AppLocalizations l10n) {
   final parts = <String>[
-    entry.hanji.isEmpty ? '未標記漢字' : entry.hanji,
+    entry.hanji.isEmpty ? l10n.unlabeledHanji : entry.hanji,
   ];
   if (entry.romanization.isNotEmpty) {
-    parts.add('白話字 ${entry.romanization}');
+    parts.add(l10n.romanizationLabel(entry.romanization));
   }
   if (entry.briefSummary.isNotEmpty) {
-    parts.add('釋義 ${entry.briefSummary}');
+    parts.add(l10n.definitionLabel(entry.briefSummary));
   }
-  return parts.join('。');
+  return l10n.semanticsJoined(parts);
 }

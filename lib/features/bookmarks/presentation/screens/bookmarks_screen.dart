@@ -77,7 +77,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
                   child: Padding(
                     padding: const EdgeInsets.all(24),
                     child: Text(
-                      '資料載入失敗：${snapshot.error}',
+                      l10n.loadDataFailed('${snapshot.error}'),
                       style: Theme.of(context).textTheme.titleMedium,
                       textAlign: TextAlign.center,
                     ),

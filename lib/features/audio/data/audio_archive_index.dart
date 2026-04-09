@@ -2,6 +2,20 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+class StoredZipEntryFormatException implements Exception {
+  const StoredZipEntryFormatException({required this.fileName});
+
+  final String fileName;
+}
+
+class ZipLocalHeaderFormatException implements Exception {
+  const ZipLocalHeaderFormatException();
+}
+
+class ZipIndexNotFoundException implements Exception {
+  const ZipIndexNotFoundException();
+}
+
 class EndOfCentralDirectory {
   const EndOfCentralDirectory({
     required this.entryCount,
@@ -54,7 +68,7 @@ Future<Map<String, ZipEntryLocation>> buildStoredZipIndex(
       );
 
       if (compressionMethod != 0) {
-        throw FormatException('zip 內的音檔不是 stored 模式：$fileName');
+        throw StoredZipEntryFormatException(fileName: fileName);
       }
 
       final clipId = clipIdFromPath(fileName);
@@ -90,7 +104,7 @@ Future<File> materializeStoredZipEntry({
     await archive.setPosition(entry.localHeaderOffset);
     final localHeader = Uint8List.fromList(await archive.read(30));
     if (readUint32(localHeader, 0) != 0x04034b50) {
-      throw const FormatException('zip 的 local header 格式不正確。');
+      throw const ZipLocalHeaderFormatException();
     }
 
     final fileNameLength = readUint16(localHeader, 26);
@@ -131,7 +145,7 @@ Future<EndOfCentralDirectory> readEndOfCentralDirectory(
     await archive.close();
   }
 
-  throw const FormatException('找不到 zip 索引資訊。');
+  throw const ZipIndexNotFoundException();
 }
 
 Future<Map<String, ZipEntryLocation>> readZipIndex(File indexFile) async {

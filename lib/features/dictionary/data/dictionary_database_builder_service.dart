@@ -12,9 +12,12 @@ class MissingDictionarySourceException implements Exception {
   const MissingDictionarySourceException({required this.path});
 
   final String path;
+}
 
-  @override
-  String toString() => '請先下載詞典原始檔 (kautian.ods)';
+class MissingDictionarySheetException implements Exception {
+  const MissingDictionarySheetException({required this.sheetName});
+
+  final String sheetName;
 }
 
 class DictionaryDatabaseBuildResult {
@@ -419,7 +422,7 @@ class DictionaryDatabaseBuilderService {
   ) {
     final table = workbook.tables[sheetName];
     if (table == null) {
-      throw FormatException('ODS 內找不到工作表：$sheetName');
+      throw MissingDictionarySheetException(sheetName: sheetName);
     }
 
     final rows = table.rows;

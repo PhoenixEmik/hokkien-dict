@@ -21,6 +21,9 @@ class AudioResourceTile extends StatelessWidget {
       valueListenable: audioLibrary.downloadListenable(type),
       builder: (context, snapshot, child) {
         final isReady = audioLibrary.isArchiveReady(type);
+        final titleText = type == AudioArchiveType.word
+            ? l10n.audioWordArchive
+            : l10n.audioSentenceArchive;
         final progress = snapshot.progress;
         final statusText = switch (snapshot.state) {
           DownloadState.downloading =>
@@ -57,61 +60,73 @@ class AudioResourceTile extends StatelessWidget {
             ? null
             : () => onDownload(type);
 
-        return ListTile(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 4,
-          ),
-          leading: Icon(
-            type == AudioArchiveType.word
-                ? Icons.record_voice_over_outlined
-                : Icons.chat_bubble_outline,
-            color: const Color(0xFF17454C),
-          ),
-          title: Text(
-            type == AudioArchiveType.word
-                ? l10n.audioWordArchive
-                : l10n.audioSentenceArchive,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF18363C),
+        return MergeSemantics(
+          child: Semantics(
+            container: true,
+            label: l10n.semanticsJoined([
+              titleText,
+              '${type.archiveFileName} • ${formatBytes(type.archiveBytes)}',
+              statusText,
+            ]),
+            value: l10n.semanticsProgressValue(
+              snapshot.downloadedBytes,
+              snapshot.totalBytes > 0 ? snapshot.totalBytes : type.archiveBytes,
             ),
-          ),
-          subtitle: Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '${type.archiveFileName} • ${formatBytes(type.archiveBytes)}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: const Color(0xFF66797D),
-                  ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 4,
+              ),
+              leading: Icon(
+                type == AudioArchiveType.word
+                    ? Icons.record_voice_over_outlined
+                    : Icons.chat_bubble_outline,
+                color: const Color(0xFF17454C),
+              ),
+              title: Text(
+                titleText,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF18363C),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  statusText,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: const Color(0xFF5A6D71),
-                  ),
+              ),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${type.archiveFileName} • ${formatBytes(type.archiveBytes)}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: const Color(0xFF66797D),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      statusText,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: const Color(0xFF5A6D71),
+                      ),
+                    ),
+                    if (progress != null &&
+                        (snapshot.state != DownloadState.idle || isReady)) ...[
+                      const SizedBox(height: 8),
+                      LinearProgressIndicator(
+                        value: snapshot.state == DownloadState.completed
+                            ? 1
+                            : progress,
+                      ),
+                    ],
+                  ],
                 ),
-                if (progress != null &&
-                    (snapshot.state != DownloadState.idle || isReady)) ...[
-                  const SizedBox(height: 8),
-                  LinearProgressIndicator(
-                    value: snapshot.state == DownloadState.completed
-                        ? 1
-                        : progress,
-                  ),
-                ],
-              ],
+              ),
+              trailing: IconButton.filledTonal(
+                tooltip: actionTooltip,
+                onPressed: onPressed,
+                icon: Icon(actionIcon),
+              ),
             ),
-          ),
-          trailing: IconButton.filledTonal(
-            tooltip: actionTooltip,
-            onPressed: onPressed,
-            icon: Icon(actionIcon),
           ),
         );
       },

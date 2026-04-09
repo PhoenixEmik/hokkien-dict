@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 import 'package:hokkien_dictionary/features/dictionary/domain/dictionary_models.dart';
 import 'package:hokkien_dictionary/offline_audio.dart';
 import 'audio_button.dart';
@@ -19,6 +20,7 @@ class WordDetailHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final subtitle = [
       if (entry.type.isNotEmpty) entry.type,
       if (entry.category.isNotEmpty) entry.category,
@@ -33,7 +35,7 @@ class WordDetailHeader extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              entry.hanji.isEmpty ? '未標記漢字' : entry.hanji,
+              entry.hanji.isEmpty ? l10n.unlabeledHanji : entry.hanji,
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w800,
                 color: const Color(0xFF0E2F35),
@@ -151,11 +153,13 @@ class ExampleListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final mergedSemanticsLabel = [
       if (example.hanji.isNotEmpty) example.hanji,
-      if (example.romanization.isNotEmpty) '白話字 ${example.romanization}',
-      if (example.mandarin.isNotEmpty) '華語 ${example.mandarin}',
-    ].join('。');
+      if (example.romanization.isNotEmpty)
+        l10n.romanizationLabel(example.romanization),
+      if (example.mandarin.isNotEmpty) l10n.mandarinLabel(example.mandarin),
+    ];
 
     return Card.outlined(
       margin: const EdgeInsets.only(bottom: 8),
@@ -164,7 +168,9 @@ class ExampleListTile extends StatelessWidget {
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         title: MergeSemantics(
           child: Semantics(
-            label: mergedSemanticsLabel.isEmpty ? null : mergedSemanticsLabel,
+            label: mergedSemanticsLabel.isEmpty
+                ? null
+                : l10n.semanticsJoined(mergedSemanticsLabel),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
