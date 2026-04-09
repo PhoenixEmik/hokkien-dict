@@ -138,6 +138,20 @@ class AppLocalizations {
           'Dictionary database rebuilt successfully.',
       'downloadDictionarySourceFirst':
           'Please download the dictionary source file (kautian.ods) first.',
+      'dictionarySourceCorrupted':
+          'The downloaded kautian.ods file is empty or corrupted. It will be downloaded again.',
+      'initializingAppTitle': 'Preparing Offline Dictionary',
+      'initializationBlockingNotice':
+          'The app is downloading and building the local dictionary before search becomes available.',
+      'initializationCheckingResources': 'Checking local resources...',
+      'initializationDownloadingSource': 'Downloading kautian.ods...',
+      'initializationParsingSource': 'Parsing dictionary source...',
+      'initializationWritingDatabase': 'Writing local SQLite database...',
+      'initializationFinalizingDatabase': 'Finalizing local dictionary...',
+      'initializationFailed': 'Initialization failed',
+      'initializationRetryHint':
+          'Fix the issue and try again. The app will stay locked until the local dictionary is ready.',
+      'retryInitialization': 'Retry initialization',
       'loadingAudioPrefix': 'Loading',
       'playAudioPrefix': 'Play',
       'stopAudioPrefix': 'Stop',
@@ -212,6 +226,17 @@ class AppLocalizations {
       'rebuildingDictionaryDatabase': '正在重新构建词典资料库…',
       'rebuildDictionaryDatabaseSuccess': '词典资料库已重新构建完成。',
       'downloadDictionarySourceFirst': '请先下载词典原始档 (kautian.ods)',
+      'dictionarySourceCorrupted': '已下载的 kautian.ods 为空或已损坏，系统会重新下载。',
+      'initializingAppTitle': '准备离线词典',
+      'initializationBlockingNotice': '系统会先下载并建立本机词典资料库，完成前无法进入搜索。',
+      'initializationCheckingResources': '正在检查本地资源…',
+      'initializationDownloadingSource': '正在下载 kautian.ods…',
+      'initializationParsingSource': '正在解析词典原始档…',
+      'initializationWritingDatabase': '正在写入本机 SQLite 词典资料库…',
+      'initializationFinalizingDatabase': '正在完成本机词典资料库…',
+      'initializationFailed': '初始化失败',
+      'initializationRetryHint': '请排除问题后再重试，完成前 app 会维持锁定状态。',
+      'retryInitialization': '重新尝试初始化',
       'loadingAudioPrefix': '正在载入',
       'playAudioPrefix': '播放',
       'stopAudioPrefix': '停止播放',
@@ -283,6 +308,17 @@ class AppLocalizations {
       'rebuildingDictionaryDatabase': '正在重新構建詞典資料庫…',
       'rebuildDictionaryDatabaseSuccess': '詞典資料庫已重新構建完成。',
       'downloadDictionarySourceFirst': '請先下載詞典原始檔 (kautian.ods)',
+      'dictionarySourceCorrupted': '已下載的 kautian.ods 為空或已損壞，系統會重新下載。',
+      'initializingAppTitle': '準備離線詞典',
+      'initializationBlockingNotice': '系統會先下載並建立本機詞典資料庫，完成前無法進入搜尋。',
+      'initializationCheckingResources': '正在檢查本地資源…',
+      'initializationDownloadingSource': '正在下載 kautian.ods…',
+      'initializationParsingSource': '正在解析詞典原始檔…',
+      'initializationWritingDatabase': '正在寫入本機 SQLite 詞典資料庫…',
+      'initializationFinalizingDatabase': '正在完成本機詞典資料庫…',
+      'initializationFailed': '初始化失敗',
+      'initializationRetryHint': '請排除問題後再重試，完成前 app 會維持鎖定狀態。',
+      'retryInitialization': '重新嘗試初始化',
       'loadingAudioPrefix': '正在載入',
       'playAudioPrefix': '播放',
       'stopAudioPrefix': '停止播放',
@@ -365,6 +401,23 @@ class AppLocalizations {
       _text('rebuildDictionaryDatabaseSuccess');
   String get downloadDictionarySourceFirst =>
       _text('downloadDictionarySourceFirst');
+  String get dictionarySourceCorrupted => _text('dictionarySourceCorrupted');
+  String get initializingAppTitle => _text('initializingAppTitle');
+  String get initializationBlockingNotice =>
+      _text('initializationBlockingNotice');
+  String get initializationCheckingResources =>
+      _text('initializationCheckingResources');
+  String get initializationDownloadingSource =>
+      _text('initializationDownloadingSource');
+  String get initializationParsingSource =>
+      _text('initializationParsingSource');
+  String get initializationWritingDatabase =>
+      _text('initializationWritingDatabase');
+  String get initializationFinalizingDatabase =>
+      _text('initializationFinalizingDatabase');
+  String get initializationFailed => _text('initializationFailed');
+  String get initializationRetryHint => _text('initializationRetryHint');
+  String get retryInitialization => _text('retryInitialization');
   String get loadingAudioPrefix => _text('loadingAudioPrefix');
   String get playAudioPrefix => _text('playAudioPrefix');
   String get stopAudioPrefix => _text('stopAudioPrefix');
@@ -554,6 +607,31 @@ class AppLocalizations {
     'ODS 內找不到工作表：$sheetName',
   );
 
+  String initializationDownloadProgress(String status, String speed) =>
+      _selectText(
+        'Downloaded $status at $speed',
+        '已下载 $status，速度 $speed',
+        '已下載 $status，速度 $speed',
+      );
+
+  String initializationParsingRows(int processed, int total) => _selectText(
+    'Parsing row ${_formatInteger(processed)} of ${_formatInteger(total)}...',
+    '正在解析第 ${_formatInteger(processed)} / ${_formatInteger(total)} 列…',
+    '正在解析第 ${_formatInteger(processed)} / ${_formatInteger(total)} 列…',
+  );
+
+  String initializationWritingRows(int processed, int total) => _selectText(
+    total > 0
+        ? 'Writing ${_formatInteger(processed)} of ${_formatInteger(total)} records...'
+        : 'Writing local database records...',
+    total > 0
+        ? '正在写入 ${_formatInteger(processed)} / ${_formatInteger(total)} 笔资料…'
+        : '正在写入本机资料库…',
+    total > 0
+        ? '正在寫入 ${_formatInteger(processed)} / ${_formatInteger(total)} 筆資料…'
+        : '正在寫入本機資料庫…',
+  );
+
   String audioArchivePaused(String label) => _selectText(
     'Paused downloading $label.',
     '已暂停下载 $label。',
@@ -623,6 +701,19 @@ class AppLocalizations {
       return '';
     }
     return _languageTag == 'en' ? filtered.join('. ') : filtered.join('。');
+  }
+
+  String _formatInteger(int value) {
+    final digits = value.toString();
+    final buffer = StringBuffer();
+    for (var index = 0; index < digits.length; index++) {
+      final remaining = digits.length - index;
+      buffer.write(digits[index]);
+      if (remaining > 1 && remaining % 3 == 1) {
+        buffer.write(',');
+      }
+    }
+    return buffer.toString();
   }
 }
 

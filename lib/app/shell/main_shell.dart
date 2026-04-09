@@ -1,15 +1,18 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:hokkien_dictionary/app/initialization/app_initialization_controller.dart';
+import 'package:hokkien_dictionary/app/initialization/app_initialization_screen.dart';
 import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 import 'package:hokkien_dictionary/features/bookmarks/application/bookmark_store.dart';
 import 'package:hokkien_dictionary/features/bookmarks/presentation/screens/bookmarks_screen.dart';
 import 'package:hokkien_dictionary/features/dictionary/data/dictionary_database_builder_service.dart';
-import 'package:hokkien_dictionary/features/dictionary/data/offline_dictionary_library.dart';
 import 'package:hokkien_dictionary/features/dictionary/data/dictionary_repository.dart';
+import 'package:hokkien_dictionary/features/dictionary/data/offline_dictionary_library.dart';
 import 'package:hokkien_dictionary/features/dictionary/presentation/screens/dictionary_screen.dart';
 import 'package:hokkien_dictionary/features/settings/presentation/screens/settings_screen.dart';
 import 'package:hokkien_dictionary/offline_audio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -26,37 +29,54 @@ class _MainScreenState extends State<MainScreen> {
       OfflineDictionaryLibrary();
   final OfflineAudioLibrary _audioLibrary = OfflineAudioLibrary();
   final BookmarkStore _bookmarkStore = BookmarkStore();
+  late final AppInitializationController _initializationController =
+      AppInitializationController(
+        builderService: _dictionaryDatabaseBuilderService,
+        dictionaryLibrary: _dictionaryLibrary,
+      );
 
   int _selectedIndex = 0;
-  int _dictionaryDataVersion = 0;
+  bool _startupRequested = false;
 
   @override
   void initState() {
     super.initState();
-    unawaited(_initializeDictionaryResources());
     unawaited(_audioLibrary.initialize());
     unawaited(_bookmarkStore.initialize());
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_startupRequested) {
+      return;
+    }
+    _startupRequested = true;
+    unawaited(_startInitialization());
+  }
+
+  @override
   void dispose() {
+    _initializationController.dispose();
     _bookmarkStore.dispose();
     _dictionaryLibrary.dispose();
     _audioLibrary.dispose();
     super.dispose();
   }
 
-  Future<void> _initializeDictionaryResources() async {
-    await _dictionaryLibrary.initialize();
-    final needsRebuild = await _dictionaryDatabaseBuilderService.needsRebuild();
-    if (!needsRebuild) {
-      return;
-    }
-
+  Future<void> _startInitialization() async {
     try {
-      await _rebuildDictionaryDatabaseInternal();
+      await _initializationController.initialize(AppLocalizations.of(context));
     } catch (_) {
-      // Leave the explicit rebuild action in Settings as the recovery path.
+      // The blocking startup screen reads the controller error state directly.
+    }
+  }
+
+  Future<void> _retryInitialization() async {
+    try {
+      await _initializationController.retry(AppLocalizations.of(context));
+    } catch (_) {
+      // The blocking startup screen reads the controller error state directly.
     }
   }
 
@@ -95,13 +115,16 @@ class _MainScreenState extends State<MainScreen> {
 
   Future<void> _rebuildDictionaryDatabaseInternal() async {
     await _dictionaryDatabaseBuilderService.rebuildFromDownloadedOds();
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setBool(
+      AppInitializationController.databaseReadyPreferenceKey,
+      true,
+    );
     DictionaryRepository.clearBundleCache();
     if (!mounted) {
       return;
     }
-    setState(() {
-      _dictionaryDataVersion++;
-    });
+    setState(() {});
   }
 
   void _showResult(AudioActionResult result) {
@@ -126,6 +149,9 @@ class _MainScreenState extends State<MainScreen> {
     if (error is MissingDictionarySourceException) {
       return l10n.downloadDictionarySourceFirst;
     }
+    if (error is CorruptedDictionarySourceException) {
+      return l10n.dictionarySourceCorrupted;
+    }
     if (error is MissingDictionarySheetException) {
       return l10n.dictionarySourceSheetMissing(error.sheetName);
     }
@@ -135,57 +161,81 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final screens = [
-      DictionaryScreen(
-        key: ValueKey('dictionary-$_dictionaryDataVersion'),
-        repository: _repository,
-        audioLibrary: _audioLibrary,
-        bookmarkStore: _bookmarkStore,
-        onActionResult: _showResult,
-      ),
-      BookmarksScreen(
-        key: ValueKey('bookmarks-$_dictionaryDataVersion'),
-        repository: _repository,
-        audioLibrary: _audioLibrary,
-        bookmarkStore: _bookmarkStore,
-        onActionResult: _showResult,
-      ),
-      SettingsScreen(
-        audioLibrary: _audioLibrary,
-        dictionaryLibrary: _dictionaryLibrary,
-        onDownloadArchive: _handleArchiveDownloadAction,
-        onDownloadDictionarySource: _handleDictionarySourceDownloadAction,
-        onRebuildDictionaryDatabase: _rebuildDictionaryDatabase,
-      ),
-    ];
+    final bypassInitialization =
+        !DictionaryRepository.preferLocalDatabase &&
+        DictionaryRepository.hasDebugFallbackBundle;
 
-    return Scaffold(
-      body: IndexedStack(index: _selectedIndex, children: screens),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.menu_book_outlined),
-            selectedIcon: const Icon(Icons.menu_book),
-            label: l10n.dictionaryTab,
+    return AnimatedBuilder(
+      animation: Listenable.merge([
+        _initializationController,
+        _dictionaryLibrary,
+      ]),
+      builder: (context, child) {
+        if (!_initializationController.isReady && !bypassInitialization) {
+          return AppInitializationScreen(
+            controller: _initializationController,
+            dictionaryLibrary: _dictionaryLibrary,
+            onRetry: _retryInitialization,
+          );
+        }
+
+        final screens = [
+          DictionaryScreen(
+            key: ValueKey(
+              'dictionary-${_initializationController.databaseGeneration}',
+            ),
+            repository: _repository,
+            audioLibrary: _audioLibrary,
+            bookmarkStore: _bookmarkStore,
+            onActionResult: _showResult,
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.bookmark_border),
-            selectedIcon: const Icon(Icons.bookmark),
-            label: l10n.bookmarksTab,
+          BookmarksScreen(
+            key: ValueKey(
+              'bookmarks-${_initializationController.databaseGeneration}',
+            ),
+            repository: _repository,
+            audioLibrary: _audioLibrary,
+            bookmarkStore: _bookmarkStore,
+            onActionResult: _showResult,
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.settings_outlined),
-            selectedIcon: const Icon(Icons.settings),
-            label: l10n.settingsTab,
+          SettingsScreen(
+            audioLibrary: _audioLibrary,
+            dictionaryLibrary: _dictionaryLibrary,
+            onDownloadArchive: _handleArchiveDownloadAction,
+            onDownloadDictionarySource: _handleDictionarySourceDownloadAction,
+            onRebuildDictionaryDatabase: _rebuildDictionaryDatabase,
           ),
-        ],
-      ),
+        ];
+
+        return Scaffold(
+          body: IndexedStack(index: _selectedIndex, children: screens),
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: (index) {
+              setState(() {
+                _selectedIndex = index;
+              });
+            },
+            destinations: [
+              NavigationDestination(
+                icon: const Icon(Icons.menu_book_outlined),
+                selectedIcon: const Icon(Icons.menu_book),
+                label: l10n.dictionaryTab,
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.bookmark_border),
+                selectedIcon: const Icon(Icons.bookmark),
+                label: l10n.bookmarksTab,
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.settings_outlined),
+                selectedIcon: const Icon(Icons.settings),
+                label: l10n.settingsTab,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

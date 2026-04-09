@@ -53,17 +53,8 @@ class OfflineDictionaryLibrary extends ChangeNotifier {
     if (_initialized) {
       return;
     }
-
-    try {
-      final sourceFile = await _builderService.locateDownloadedOdsFile();
-      await sourceFile.parent.create(recursive: true);
-      await _restoreDownloadSnapshot(sourceFile);
-    } catch (_) {
-      _initializationFailed = true;
-    }
-
+    await reloadState();
     _initialized = true;
-    notifyListeners();
   }
 
   Future<AudioActionResult> handleDownloadAction(AppLocalizations l10n) async {
@@ -99,6 +90,11 @@ class OfflineDictionaryLibrary extends ChangeNotifier {
     final tempFile = File('${sourceFile.path}.download');
 
     try {
+      if (await sourceFile.exists() && await sourceFile.length() <= 0) {
+        await _builderService.deleteDownloadedSourceFiles();
+        await _restoreDownloadSnapshot(sourceFile);
+      }
+
       await _downloadService.download(
         url: AppConstants.dictionaryOdsUrl,
         targetFile: tempFile,
@@ -142,6 +138,32 @@ class OfflineDictionaryLibrary extends ChangeNotifier {
         isError: true,
       );
     }
+  }
+
+  Future<void> reloadState() async {
+    _initializationFailed = false;
+    try {
+      final sourceFile = await _builderService.locateDownloadedOdsFile();
+      await sourceFile.parent.create(recursive: true);
+      final removedInvalidFile = await _builderService
+          .deleteInvalidDownloadedOdsIfNeeded();
+      if (removedInvalidFile) {
+        _sourceReady = false;
+      }
+      await _restoreDownloadSnapshot(sourceFile);
+    } catch (_) {
+      _initializationFailed = true;
+    }
+
+    _initialized = true;
+    notifyListeners();
+  }
+
+  Future<void> invalidateSource() async {
+    await _builderService.deleteDownloadedSourceFiles();
+    final sourceFile = await _builderService.locateDownloadedOdsFile();
+    await _restoreDownloadSnapshot(sourceFile);
+    notifyListeners();
   }
 
   Future<void> _restoreDownloadSnapshot(File sourceFile) async {

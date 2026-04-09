@@ -95,6 +95,8 @@ class SettingsScreen extends StatelessWidget {
                 ? l10n.rebuildDictionaryDatabaseSuccess
                 : error is MissingDictionarySourceException
                 ? l10n.downloadDictionarySourceFirst
+                : error is CorruptedDictionarySourceException
+                ? l10n.dictionarySourceCorrupted
                 : error is MissingDictionarySheetException
                 ? l10n.dictionarySourceSheetMissing(error.sheetName)
                 : l10n.dictionaryDatabaseRebuildFailed('$error'),

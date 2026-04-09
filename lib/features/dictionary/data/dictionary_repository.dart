@@ -22,6 +22,8 @@ class DictionaryRepository {
     _bundleFuture = null;
   }
 
+  static bool get hasDebugFallbackBundle => debugFallbackBundle != null;
+
   Future<DictionaryBundle> loadBundle() {
     return _bundleFuture ??= _loadBundle();
   }

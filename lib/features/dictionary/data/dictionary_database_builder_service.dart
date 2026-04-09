@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:hokkien_dictionary/core/constants/app_constants.dart';
 import 'package:hokkien_dictionary/features/dictionary/domain/dictionary_models.dart';
@@ -8,8 +10,21 @@ import 'package:path_provider/path_provider.dart';
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 import 'package:sqflite/sqflite.dart';
 
+const _entriesTable = 'dictionary_entries';
+const _sensesTable = 'dictionary_senses';
+const _examplesTable = 'dictionary_examples';
+const _metadataTable = 'dictionary_metadata';
+const _buildChunkSize = 250;
+const _progressUpdateInterval = 200;
+
 class MissingDictionarySourceException implements Exception {
   const MissingDictionarySourceException({required this.path});
+
+  final String path;
+}
+
+class CorruptedDictionarySourceException implements Exception {
+  const CorruptedDictionarySourceException({required this.path});
 
   final String path;
 }
@@ -32,13 +47,40 @@ class DictionaryDatabaseBuildResult {
   final int exampleCount;
 }
 
+enum DictionaryBuildPhase {
+  validatingSource,
+  parsingSource,
+  writingDatabase,
+  finalizing,
+}
+
+class DictionaryBuildProgress {
+  const DictionaryBuildProgress({
+    required this.phase,
+    required this.processedUnits,
+    required this.totalUnits,
+    this.entryCount = 0,
+    this.senseCount = 0,
+    this.exampleCount = 0,
+  });
+
+  final DictionaryBuildPhase phase;
+  final int processedUnits;
+  final int totalUnits;
+  final int entryCount;
+  final int senseCount;
+  final int exampleCount;
+
+  double? get progress {
+    if (totalUnits <= 0) {
+      return null;
+    }
+    return (processedUnits / totalUnits).clamp(0.0, 1.0);
+  }
+}
+
 class DictionaryDatabaseBuilderService {
   const DictionaryDatabaseBuilderService();
-
-  static const _entriesTable = 'dictionary_entries';
-  static const _sensesTable = 'dictionary_senses';
-  static const _examplesTable = 'dictionary_examples';
-  static const _metadataTable = 'dictionary_metadata';
 
   Future<File> locateDownloadedOdsFile() async {
     final directory = await _dictionaryRootDirectory();
@@ -53,17 +95,51 @@ class DictionaryDatabaseBuilderService {
   }
 
   Future<bool> hasDownloadedOdsFile() async {
-    return (await locateDownloadedOdsFile()).exists();
+    final sourceFile = await locateDownloadedOdsFile();
+    return sourceFile.exists();
   }
 
   Future<bool> hasBuiltDatabase() async {
-    return (await locateDatabaseFile()).exists();
+    final databaseFile = await locateDatabaseFile();
+    if (!await databaseFile.exists()) {
+      return false;
+    }
+    return await databaseFile.length() > 0;
+  }
+
+  Future<bool> deleteInvalidDownloadedOdsIfNeeded() async {
+    final sourceFile = await locateDownloadedOdsFile();
+    if (!await sourceFile.exists()) {
+      return false;
+    }
+
+    final fileLength = await sourceFile.length();
+    if (fileLength > 0) {
+      return false;
+    }
+
+    await deleteDownloadedSourceFiles();
+    return true;
+  }
+
+  Future<void> deleteDownloadedSourceFiles() async {
+    final sourceFile = await locateDownloadedOdsFile();
+    final tempFile = File('${sourceFile.path}.download');
+    if (await sourceFile.exists()) {
+      await sourceFile.delete();
+    }
+    if (await tempFile.exists()) {
+      await tempFile.delete();
+    }
   }
 
   Future<bool> needsRebuild() async {
     final odsFile = await locateDownloadedOdsFile();
     if (!await odsFile.exists()) {
       return false;
+    }
+    if (await odsFile.length() <= 0) {
+      return true;
     }
 
     final databaseFile = await locateDatabaseFile();
@@ -76,109 +152,41 @@ class DictionaryDatabaseBuilderService {
     return odsStat.modified.isAfter(databaseStat.modified);
   }
 
-  Future<DictionaryDatabaseBuildResult> rebuildFromDownloadedOds() async {
+  Future<DictionaryDatabaseBuildResult> rebuildFromDownloadedOds({
+    void Function(DictionaryBuildProgress progress)? onProgress,
+  }) async {
     final odsFile = await locateDownloadedOdsFile();
     if (!await odsFile.exists()) {
       throw MissingDictionarySourceException(path: odsFile.path);
     }
 
+    final sourceLength = await odsFile.length();
+    if (sourceLength <= 0) {
+      await deleteDownloadedSourceFiles();
+      throw CorruptedDictionarySourceException(path: odsFile.path);
+    }
+
+    onProgress?.call(
+      const DictionaryBuildProgress(
+        phase: DictionaryBuildPhase.validatingSource,
+        processedUnits: 0,
+        totalUnits: 0,
+      ),
+    );
+
     final databaseFile = await locateDatabaseFile();
     await databaseFile.parent.create(recursive: true);
 
-    final workbook = SpreadsheetDecoder.decodeBytes(
-      await odsFile.readAsBytes(),
-    );
-    final headwordRows = _recordsForSheet(workbook, '詞目');
-    final senseRows = _recordsForSheet(workbook, '義項');
-    final exampleRows = _recordsForSheet(workbook, '例句');
+    final tempDatabaseFile = File('${databaseFile.path}.building');
+    await deleteDatabase(tempDatabaseFile.path);
 
-    final entryRowsById = <int, _EntrySeed>{};
-    for (final row in headwordRows) {
-      final headwordId = _parseInt(row['詞目id']);
-      if (headwordId == null) {
-        continue;
-      }
-      entryRowsById[headwordId] = _EntrySeed(
-        id: headwordId,
-        type: row['詞目類型'] ?? '',
-        hanji: row['漢字'] ?? '',
-        romanization: row['羅馬字'] ?? '',
-        category: row['分類'] ?? '',
-        audioId: row['羅馬字音檔檔名'] ?? '',
-      );
-    }
-
-    final senseRowsByKey = <(int, int), _SenseSeed>{};
-    for (final row in senseRows) {
-      final headwordId = _parseInt(row['詞目id']);
-      final senseId = _parseInt(row['義項id']);
-      if (headwordId == null || senseId == null) {
-        continue;
-      }
-
-      final entry = entryRowsById[headwordId];
-      if (entry == null) {
-        continue;
-      }
-
-      final sense = _SenseSeed(
-        entryId: headwordId,
-        senseId: senseId,
-        partOfSpeech: row['詞性'] ?? '',
-        definition: row['解說'] ?? '',
-      );
-      entry.senses.add(sense);
-      senseRowsByKey[(headwordId, senseId)] = sense;
-    }
-
-    var exampleCount = 0;
-    for (final row in exampleRows) {
-      final headwordId = _parseInt(row['詞目id']);
-      final senseId = _parseInt(row['義項id']);
-      if (headwordId == null || senseId == null) {
-        continue;
-      }
-
-      final sense = senseRowsByKey[(headwordId, senseId)];
-      if (sense == null) {
-        continue;
-      }
-
-      sense.examples.add(
-        _ExampleSeed(
-          order: _parseInt(row['例句順序']) ?? 0,
-          hanji: row['漢字'] ?? '',
-          romanization: row['羅馬字'] ?? '',
-          mandarin: row['華語'] ?? '',
-          audioId: row['音檔檔名'] ?? '',
-        ),
-      );
-      exampleCount++;
-    }
-
-    final entries = entryRowsById.values.toList()
-      ..sort((left, right) => left.id.compareTo(right.id));
-
-    for (final entry in entries) {
-      final mandarinSegments = <String>[];
-      for (final sense in entry.senses) {
-        if (sense.definition.isNotEmpty) {
-          mandarinSegments.add(sense.definition);
-        }
-        for (final example in sense.examples) {
-          if (example.mandarin.isNotEmpty) {
-            mandarinSegments.add(example.mandarin);
-          }
-        }
-      }
-
-      final hokkienSegments = [entry.hanji, entry.romanization, entry.category];
-      entry.hokkienSearch = _normalizeForSearch(hokkienSegments.join(' '));
-      entry.mandarinSearch = _normalizeForSearch(mandarinSegments.join(' '));
-    }
+    final sourceModifiedAt = (await odsFile.stat()).modified
+        .toUtc()
+        .toIso8601String();
+    final builtAt = DateTime.now().toUtc().toIso8601String();
 
     final database = await openDatabase(
-      databaseFile.path,
+      tempDatabaseFile.path,
       version: 1,
       onCreate: (db, version) async {
         await _createSchema(db);
@@ -189,81 +197,125 @@ class DictionaryDatabaseBuilderService {
       },
     );
 
+    final receivePort = ReceivePort();
+    final isolate = await Isolate.spawn<List<Object?>>(
+      _parseDictionaryOdsIsolateEntryPoint,
+      <Object?>[receivePort.sendPort, odsFile.path],
+    );
+
+    var insertedRows = 0;
+    var totalInsertRows = 0;
+    var entryCount = 0;
+    var senseCount = 0;
+    var exampleCount = 0;
+
     try {
-      await database.transaction((txn) async {
-        await _clearExistingData(txn);
-        final batch = txn.batch();
+      await _clearExistingData(database);
 
-        for (final entry in entries) {
-          batch.insert(_entriesTable, <String, Object?>{
-            'id': entry.id,
-            'type': entry.type,
-            'hanji': entry.hanji,
-            'romanization': entry.romanization,
-            'category': entry.category,
-            'audio_id': entry.audioId,
-            'hokkien_search': entry.hokkienSearch,
-            'mandarin_search': entry.mandarinSearch,
-          });
-
-          for (final sense in entry.senses) {
-            batch.insert(_sensesTable, <String, Object?>{
-              'entry_id': entry.id,
-              'sense_id': sense.senseId,
-              'part_of_speech': sense.partOfSpeech,
-              'definition': sense.definition,
-            });
-
-            for (final example in sense.examples) {
-              batch.insert(_examplesTable, <String, Object?>{
-                'entry_id': entry.id,
-                'sense_id': sense.senseId,
-                'example_order': example.order,
-                'hanji': example.hanji,
-                'romanization': example.romanization,
-                'mandarin': example.mandarin,
-                'audio_id': example.audioId,
-              });
-            }
-          }
+      await for (final message in receivePort) {
+        if (message is! Map<Object?, Object?>) {
+          continue;
         }
 
-        final builtAt = DateTime.now().toUtc().toIso8601String();
-        final sourceModifiedAt = (await odsFile.stat()).modified
-            .toUtc()
-            .toIso8601String();
-        batch.insert(_metadataTable, {'key': 'built_at', 'value': builtAt});
-        batch.insert(_metadataTable, {
-          'key': 'source_modified_at',
-          'value': sourceModifiedAt,
-        });
-        batch.insert(_metadataTable, {
-          'key': 'entry_count',
-          'value': entries.length.toString(),
-        });
-        batch.insert(_metadataTable, {
-          'key': 'sense_count',
-          'value': entries
-              .fold<int>(0, (sum, entry) => sum + entry.senses.length)
-              .toString(),
-        });
-        batch.insert(_metadataTable, {
-          'key': 'example_count',
-          'value': exampleCount.toString(),
-        });
+        final type = message['type'] as String? ?? '';
+        if (type == 'progress') {
+          onProgress?.call(
+            DictionaryBuildProgress(
+              phase: DictionaryBuildPhase.parsingSource,
+              processedUnits: message['processed'] as int? ?? 0,
+              totalUnits: message['total'] as int? ?? 0,
+            ),
+          );
+          continue;
+        }
 
-        await batch.commit(noResult: true);
-      });
+        if (type == 'chunk') {
+          final table = message['table'] as String? ?? '';
+          final rows = (message['rows'] as List<Object?>? ?? const [])
+              .cast<Map<Object?, Object?>>()
+              .map(
+                (row) => row.map<String, Object?>(
+                  (key, value) => MapEntry(key as String, value),
+                ),
+              )
+              .toList(growable: false);
+          if (rows.isEmpty) {
+            continue;
+          }
+
+          await _insertChunk(database, table: table, rows: rows);
+          insertedRows += rows.length;
+          onProgress?.call(
+            DictionaryBuildProgress(
+              phase: DictionaryBuildPhase.writingDatabase,
+              processedUnits: insertedRows,
+              totalUnits: totalInsertRows,
+              entryCount: entryCount,
+              senseCount: senseCount,
+              exampleCount: exampleCount,
+            ),
+          );
+          continue;
+        }
+
+        if (type == 'summary') {
+          entryCount = message['entryCount'] as int? ?? 0;
+          senseCount = message['senseCount'] as int? ?? 0;
+          exampleCount = message['exampleCount'] as int? ?? 0;
+          totalInsertRows = message['totalInsertRows'] as int? ?? 0;
+          onProgress?.call(
+            DictionaryBuildProgress(
+              phase: DictionaryBuildPhase.writingDatabase,
+              processedUnits: insertedRows,
+              totalUnits: totalInsertRows,
+              entryCount: entryCount,
+              senseCount: senseCount,
+              exampleCount: exampleCount,
+            ),
+          );
+          continue;
+        }
+
+        if (type == 'done') {
+          break;
+        }
+
+        if (type == 'error') {
+          throw _parseIsolateError(message);
+        }
+      }
+
+      onProgress?.call(
+        DictionaryBuildProgress(
+          phase: DictionaryBuildPhase.finalizing,
+          processedUnits: totalInsertRows,
+          totalUnits: totalInsertRows,
+          entryCount: entryCount,
+          senseCount: senseCount,
+          exampleCount: exampleCount,
+        ),
+      );
+
+      await _writeMetadata(
+        database,
+        builtAt: builtAt,
+        sourceModifiedAt: sourceModifiedAt,
+        entryCount: entryCount,
+        senseCount: senseCount,
+        exampleCount: exampleCount,
+      );
     } finally {
+      receivePort.close();
+      isolate.kill(priority: Isolate.immediate);
       await database.close();
     }
 
+    await deleteDatabase(databaseFile.path);
+    await tempDatabaseFile.rename(databaseFile.path);
+
     return DictionaryDatabaseBuildResult(
-      entryCount: entries.length,
-      senseCount: entries.fold<int>(
-        0,
-        (sum, entry) => sum + entry.senses.length,
-      ),
+      entryCount: entryCount,
+      senseCount: senseCount,
       exampleCount: exampleCount,
     );
   }
@@ -348,6 +400,47 @@ class DictionaryDatabaseBuilderService {
     }
   }
 
+  Future<void> _insertChunk(
+    Database database, {
+    required String table,
+    required List<Map<String, Object?>> rows,
+  }) async {
+    final batch = database.batch();
+    for (final row in rows) {
+      batch.insert(table, row);
+    }
+    await batch.commit(noResult: true);
+  }
+
+  Future<void> _writeMetadata(
+    Database database, {
+    required String builtAt,
+    required String sourceModifiedAt,
+    required int entryCount,
+    required int senseCount,
+    required int exampleCount,
+  }) async {
+    final batch = database.batch();
+    batch.insert(_metadataTable, {'key': 'built_at', 'value': builtAt});
+    batch.insert(_metadataTable, {
+      'key': 'source_modified_at',
+      'value': sourceModifiedAt,
+    });
+    batch.insert(_metadataTable, {
+      'key': 'entry_count',
+      'value': entryCount.toString(),
+    });
+    batch.insert(_metadataTable, {
+      'key': 'sense_count',
+      'value': senseCount.toString(),
+    });
+    batch.insert(_metadataTable, {
+      'key': 'example_count',
+      'value': exampleCount.toString(),
+    });
+    await batch.commit(noResult: true);
+  }
+
   Future<void> _createSchema(DatabaseExecutor db) async {
     await db.execute('''
       CREATE TABLE IF NOT EXISTS $_entriesTable (
@@ -416,120 +509,336 @@ class DictionaryDatabaseBuilderService {
     await db.delete(_entriesTable);
   }
 
-  List<Map<String, String>> _recordsForSheet(
-    SpreadsheetDecoder workbook,
-    String sheetName,
-  ) {
-    final table = workbook.tables[sheetName];
-    if (table == null) {
-      throw MissingDictionarySheetException(sheetName: sheetName);
-    }
-
-    final rows = table.rows;
-    if (rows.isEmpty) {
-      return const [];
-    }
-
-    final headers = rows.first.map(_cellToString).toList(growable: false);
-    final records = <Map<String, String>>[];
-
-    for (final row in rows.skip(1)) {
-      final values = List<String>.generate(headers.length, (index) {
-        if (index >= row.length) {
-          return '';
-        }
-        return _cellToString(row[index]);
-      }, growable: false);
-      if (values.every((value) => value.isEmpty)) {
-        continue;
-      }
-      records.add(<String, String>{
-        for (var index = 0; index < headers.length; index++)
-          headers[index]: values[index].trim(),
-      });
-    }
-
-    return records;
-  }
-
   Future<Directory> _dictionaryRootDirectory() async {
-    final supportDirectory = await getApplicationSupportDirectory();
+    final documentsDirectory = await getApplicationDocumentsDirectory();
     return Directory(
       path.join(
-        supportDirectory.path,
+        documentsDirectory.path,
         AppConstants.offlineDictionaryDirectoryName,
       ),
     );
   }
+}
 
-  int? _parseInt(String? value) {
-    if (value == null || value.isEmpty) {
-      return null;
+void _parseDictionaryOdsIsolateEntryPoint(List<Object?> args) async {
+  final sendPort = args[0]! as SendPort;
+  final filePath = args[1]! as String;
+
+  try {
+    final odsFile = File(filePath);
+    if (!await odsFile.exists()) {
+      sendPort.send({
+        'type': 'error',
+        'errorType': 'missing_source',
+        'path': filePath,
+      });
+      return;
     }
-    return int.tryParse(value) ??
-        int.tryParse(double.parse(value).toInt().toString());
+
+    final fileBytes = await odsFile.readAsBytes();
+    if (fileBytes.isEmpty) {
+      sendPort.send({
+        'type': 'error',
+        'errorType': 'corrupted_source',
+        'path': filePath,
+      });
+      return;
+    }
+
+    final workbook = SpreadsheetDecoder.decodeBytes(fileBytes);
+    final headwordTable = _requireSheet(workbook, '詞目');
+    final senseTable = _requireSheet(workbook, '義項');
+    final exampleTable = _requireSheet(workbook, '例句');
+
+    final totalRows =
+        _dataRowCount(headwordTable) +
+        _dataRowCount(senseTable) +
+        _dataRowCount(exampleTable);
+
+    final headwordHeaders = _headersForRows(headwordTable.rows);
+    final senseHeaders = _headersForRows(senseTable.rows);
+    final exampleHeaders = _headersForRows(exampleTable.rows);
+
+    var processedRows = 0;
+    final entryRowsById = <int, Map<String, Object?>>{};
+    final mandarinByEntryId = <int, StringBuffer>{};
+
+    void sendProgress() {
+      sendPort.send({
+        'type': 'progress',
+        'processed': processedRows,
+        'total': totalRows,
+      });
+    }
+
+    for (final row in headwordTable.rows.skip(1)) {
+      processedRows++;
+      final record = _recordForRow(headwordHeaders, row);
+      if (record.isEmpty) {
+        if (processedRows % _progressUpdateInterval == 0) {
+          sendProgress();
+        }
+        continue;
+      }
+
+      final headwordId = _parseInt(record['詞目id']);
+      if (headwordId != null) {
+        entryRowsById[headwordId] = <String, Object?>{
+          'id': headwordId,
+          'type': record['詞目類型'] ?? '',
+          'hanji': record['漢字'] ?? '',
+          'romanization': record['羅馬字'] ?? '',
+          'category': record['分類'] ?? '',
+          'audio_id': record['羅馬字音檔檔名'] ?? '',
+        };
+      }
+
+      if (processedRows % _progressUpdateInterval == 0) {
+        sendProgress();
+      }
+    }
+
+    final knownSenseKeys = <String>{};
+    final senseChunk = <Map<String, Object?>>[];
+    var senseCount = 0;
+    for (final row in senseTable.rows.skip(1)) {
+      processedRows++;
+      final record = _recordForRow(senseHeaders, row);
+      if (record.isEmpty) {
+        if (processedRows % _progressUpdateInterval == 0) {
+          sendProgress();
+        }
+        continue;
+      }
+
+      final headwordId = _parseInt(record['詞目id']);
+      final senseId = _parseInt(record['義項id']);
+      if (headwordId != null &&
+          senseId != null &&
+          entryRowsById.containsKey(headwordId)) {
+        final definition = record['解說'] ?? '';
+        final partOfSpeech = record['詞性'] ?? '';
+        senseChunk.add(<String, Object?>{
+          'entry_id': headwordId,
+          'sense_id': senseId,
+          'part_of_speech': partOfSpeech,
+          'definition': definition,
+        });
+        if (definition.isNotEmpty) {
+          mandarinByEntryId
+              .putIfAbsent(headwordId, StringBuffer.new)
+              .write('$definition ');
+        }
+        knownSenseKeys.add('$headwordId:$senseId');
+        senseCount++;
+        if (senseChunk.length >= _buildChunkSize) {
+          sendPort.send({
+            'type': 'chunk',
+            'table': _sensesTable,
+            'rows': List<Map<String, Object?>>.from(senseChunk),
+          });
+          senseChunk.clear();
+        }
+      }
+
+      if (processedRows % _progressUpdateInterval == 0) {
+        sendProgress();
+      }
+    }
+    if (senseChunk.isNotEmpty) {
+      sendPort.send({
+        'type': 'chunk',
+        'table': _sensesTable,
+        'rows': List<Map<String, Object?>>.from(senseChunk),
+      });
+    }
+
+    final exampleChunk = <Map<String, Object?>>[];
+    var exampleCount = 0;
+    for (final row in exampleTable.rows.skip(1)) {
+      processedRows++;
+      final record = _recordForRow(exampleHeaders, row);
+      if (record.isEmpty) {
+        if (processedRows % _progressUpdateInterval == 0) {
+          sendProgress();
+        }
+        continue;
+      }
+
+      final headwordId = _parseInt(record['詞目id']);
+      final senseId = _parseInt(record['義項id']);
+      if (headwordId != null &&
+          senseId != null &&
+          knownSenseKeys.contains('$headwordId:$senseId')) {
+        final mandarin = record['華語'] ?? '';
+        exampleChunk.add(<String, Object?>{
+          'entry_id': headwordId,
+          'sense_id': senseId,
+          'example_order': _parseInt(record['例句順序']) ?? 0,
+          'hanji': record['漢字'] ?? '',
+          'romanization': record['羅馬字'] ?? '',
+          'mandarin': mandarin,
+          'audio_id': record['音檔檔名'] ?? '',
+        });
+        if (mandarin.isNotEmpty) {
+          mandarinByEntryId
+              .putIfAbsent(headwordId, StringBuffer.new)
+              .write('$mandarin ');
+        }
+        exampleCount++;
+        if (exampleChunk.length >= _buildChunkSize) {
+          sendPort.send({
+            'type': 'chunk',
+            'table': _examplesTable,
+            'rows': List<Map<String, Object?>>.from(exampleChunk),
+          });
+          exampleChunk.clear();
+        }
+      }
+
+      if (processedRows % _progressUpdateInterval == 0) {
+        sendProgress();
+      }
+    }
+    if (exampleChunk.isNotEmpty) {
+      sendPort.send({
+        'type': 'chunk',
+        'table': _examplesTable,
+        'rows': List<Map<String, Object?>>.from(exampleChunk),
+      });
+    }
+
+    sendProgress();
+
+    final entryIds = entryRowsById.keys.toList()..sort();
+    final entryChunk = <Map<String, Object?>>[];
+    for (final entryId in entryIds) {
+      final row = entryRowsById[entryId]!;
+      final hokkienSearch = normalizeQuery(
+        '${row['hanji'] ?? ''} ${row['romanization'] ?? ''} ${row['category'] ?? ''}',
+      );
+      final mandarinSearch = normalizeQuery(
+        mandarinByEntryId[entryId]?.toString() ?? '',
+      );
+      entryChunk.add(<String, Object?>{
+        ...row,
+        'hokkien_search': hokkienSearch,
+        'mandarin_search': mandarinSearch,
+      });
+      if (entryChunk.length >= _buildChunkSize) {
+        sendPort.send({
+          'type': 'chunk',
+          'table': _entriesTable,
+          'rows': List<Map<String, Object?>>.from(entryChunk),
+        });
+        entryChunk.clear();
+      }
+    }
+    if (entryChunk.isNotEmpty) {
+      sendPort.send({
+        'type': 'chunk',
+        'table': _entriesTable,
+        'rows': List<Map<String, Object?>>.from(entryChunk),
+      });
+    }
+
+    final entryCount = entryRowsById.length;
+    sendPort.send({
+      'type': 'summary',
+      'entryCount': entryCount,
+      'senseCount': senseCount,
+      'exampleCount': exampleCount,
+      'totalInsertRows': entryCount + senseCount + exampleCount + 5,
+    });
+    sendPort.send({'type': 'done'});
+  } catch (error, stackTrace) {
+    final errorType = switch (error) {
+      MissingDictionarySheetException _ => 'missing_sheet',
+      FormatException _ => 'corrupted_source',
+      _ => 'unexpected',
+    };
+    sendPort.send({
+      'type': 'error',
+      'errorType': errorType,
+      'message': '$error',
+      'stackTrace': '$stackTrace',
+      'sheetName': error is MissingDictionarySheetException
+          ? error.sheetName
+          : null,
+      'path': filePath,
+    });
+  }
+}
+
+SpreadsheetTable _requireSheet(SpreadsheetDecoder workbook, String sheetName) {
+  final table = workbook.tables[sheetName];
+  if (table == null) {
+    throw MissingDictionarySheetException(sheetName: sheetName);
+  }
+  return table;
+}
+
+int _dataRowCount(SpreadsheetTable table) {
+  if (table.rows.isEmpty) {
+    return 0;
+  }
+  return table.rows.length - 1;
+}
+
+List<String> _headersForRows(List<List<dynamic>> rows) {
+  if (rows.isEmpty) {
+    return const [];
+  }
+  return rows.first.map(_cellToString).toList(growable: false);
+}
+
+Map<String, String> _recordForRow(List<String> headers, List<dynamic> row) {
+  if (headers.isEmpty) {
+    return const {};
   }
 
-  String _cellToString(dynamic value) {
-    if (value == null) {
+  final values = List<String>.generate(headers.length, (index) {
+    if (index >= row.length) {
       return '';
     }
-    return value.toString().trim();
+    return _cellToString(row[index]);
+  }, growable: false);
+  if (values.every((value) => value.isEmpty)) {
+    return const {};
   }
+  return <String, String>{
+    for (var index = 0; index < headers.length; index++)
+      headers[index]: values[index].trim(),
+  };
+}
 
-  String _normalizeForSearch(String text) {
-    return normalizeQuery(text);
+Object _parseIsolateError(Map<Object?, Object?> message) {
+  final errorType = message['errorType'] as String? ?? 'unexpected';
+  return switch (errorType) {
+    'missing_source' => MissingDictionarySourceException(
+      path: message['path'] as String? ?? '',
+    ),
+    'corrupted_source' => CorruptedDictionarySourceException(
+      path: message['path'] as String? ?? '',
+    ),
+    'missing_sheet' => MissingDictionarySheetException(
+      sheetName: message['sheetName'] as String? ?? '',
+    ),
+    _ => Exception(message['message'] as String? ?? 'Dictionary build failed'),
+  };
+}
+
+int? _parseInt(String? value) {
+  if (value == null || value.isEmpty) {
+    return null;
   }
+  return int.tryParse(value) ??
+      int.tryParse(double.parse(value).toInt().toString());
 }
 
-class _EntrySeed {
-  _EntrySeed({
-    required this.id,
-    required this.type,
-    required this.hanji,
-    required this.romanization,
-    required this.category,
-    required this.audioId,
-  });
-
-  final int id;
-  final String type;
-  final String hanji;
-  final String romanization;
-  final String category;
-  final String audioId;
-  String hokkienSearch = '';
-  String mandarinSearch = '';
-  final List<_SenseSeed> senses = <_SenseSeed>[];
-}
-
-class _SenseSeed {
-  _SenseSeed({
-    required this.entryId,
-    required this.senseId,
-    required this.partOfSpeech,
-    required this.definition,
-  });
-
-  final int entryId;
-  final int senseId;
-  final String partOfSpeech;
-  final String definition;
-  final List<_ExampleSeed> examples = <_ExampleSeed>[];
-}
-
-class _ExampleSeed {
-  _ExampleSeed({
-    required this.order,
-    required this.hanji,
-    required this.romanization,
-    required this.mandarin,
-    required this.audioId,
-  });
-
-  final int order;
-  final String hanji;
-  final String romanization;
-  final String mandarin;
-  final String audioId;
+String _cellToString(dynamic value) {
+  if (value == null) {
+    return '';
+  }
+  return value.toString().trim();
 }
