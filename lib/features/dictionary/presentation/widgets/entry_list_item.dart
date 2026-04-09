@@ -63,7 +63,6 @@ class EntryListItem extends StatelessWidget {
               ),
               trailing: Icon(
                 Icons.chevron_right,
-                color: colorScheme.onSurfaceVariant,
               ),
               onTap: onTap,
             ),
