@@ -9,6 +9,7 @@ import 'package:hokkien_dictionary/features/dictionary/domain/dictionary_models.
 import 'package:hokkien_dictionary/features/dictionary/presentation/widgets/word_detail_sections.dart';
 import 'package:hokkien_dictionary/features/settings/presentation/widgets/liquid_glass.dart';
 import 'package:hokkien_dictionary/offline_audio.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart' as glass;
 import 'package:share_plus/share_plus.dart';
 
 class WordDetailScreen extends StatelessWidget {
@@ -63,55 +64,50 @@ class WordDetailScreen extends StatelessWidget {
           final title = entry.hanji.isEmpty
               ? l10n.wordDetailFallbackTitle
               : entry.hanji;
-          final secondaryTint = resolveLiquidGlassSecondaryTint(
-            context,
-          ).withValues(alpha: 0.72);
           final tint = resolveLiquidGlassTint(context);
-          return CupertinoPageScaffold(
-            navigationBar: CupertinoNavigationBar(
-              backgroundColor: secondaryTint,
-              border: null,
-              middle: Text(
+          return Scaffold(
+            appBar: glass.GlassAppBar(
+              useOwnLayer: true,
+              quality: glass.GlassQuality.premium,
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              title: Text(
                 title,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w800,
                   color: resolveLiquidGlassForeground(context),
                 ),
               ),
-              leading: CupertinoNavigationBarBackButton(
-                color: tint,
+              leading: IconButton(
+                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
                 onPressed: () => Navigator.of(context).maybePop(),
+                icon: Icon(CupertinoIcons.back, color: tint, size: 22),
               ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    minimumSize: const Size(28, 28),
-                    onPressed: () {
-                      unawaited(_shareEntry(l10n));
-                    },
-                    child: Icon(CupertinoIcons.share, color: tint, size: 21),
+              actions: [
+                IconButton(
+                  tooltip: l10n.shareEntry,
+                  onPressed: () {
+                    unawaited(_shareEntry(l10n));
+                  },
+                  icon: Icon(CupertinoIcons.share, color: tint, size: 21),
+                ),
+                IconButton(
+                  tooltip: isBookmarked
+                      ? l10n.removeBookmark
+                      : l10n.addBookmark,
+                  onPressed: () {
+                    unawaited(bookmarkStore.toggleBookmark(entry.id));
+                  },
+                  icon: Icon(
+                    isBookmarked
+                        ? CupertinoIcons.bookmark_fill
+                        : CupertinoIcons.bookmark,
+                    color: tint,
+                    size: 21,
                   ),
-                  const SizedBox(width: 8),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    minimumSize: const Size(28, 28),
-                    onPressed: () {
-                      unawaited(bookmarkStore.toggleBookmark(entry.id));
-                    },
-                    child: Icon(
-                      isBookmarked
-                          ? CupertinoIcons.bookmark_fill
-                          : CupertinoIcons.bookmark,
-                      color: tint,
-                      size: 21,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            child: LiquidGlassBackground(child: body),
+            body: LiquidGlassBackground(child: body),
           );
         }
 
@@ -194,15 +190,8 @@ class WordDetailBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final readingTextScale = AppPreferencesScope.of(context).readingTextScale;
-    final applePlatform = isApplePlatform(context);
-    final topInset = applePlatform
-        ? MediaQuery.viewPaddingOf(context).top +
-              kMinInteractiveDimensionCupertino +
-              12
-        : 12.0;
 
     return SafeArea(
-      top: !applePlatform,
       child: LayoutBuilder(
         builder: (context, constraints) {
           return Align(
@@ -213,10 +202,10 @@ class WordDetailBody extends StatelessWidget {
               ),
               child: ListView(
                 padding: EdgeInsets.fromLTRB(
-                  applePlatform ? 16 : 20,
-                  topInset,
-                  applePlatform ? 16 : 20,
-                  applePlatform ? 34 : 24,
+                  isApplePlatform(context) ? 16 : 20,
+                  12,
+                  isApplePlatform(context) ? 16 : 20,
+                  isApplePlatform(context) ? 34 : 24,
                 ),
                 children: [
                   SelectionArea(

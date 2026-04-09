@@ -44,6 +44,7 @@ dependencies:
   shared_preferences: ^2.5.5
   share_plus: ^12.0.2
   sqflite: ^2.4.2
+  liquid_glass_widgets: ^0.7.7
 
 dev_dependencies:
   flutter_test:

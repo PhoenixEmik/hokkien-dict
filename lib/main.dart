@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hokkien_dictionary/app/app.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart' as glass;
 
 export 'app/app.dart';
 export 'core/localization/app_localizations.dart';
@@ -14,6 +15,8 @@ export 'features/dictionary/presentation/screens/dictionary_screen.dart';
 export 'features/dictionary/presentation/screens/word_detail_screen.dart';
 export 'features/dictionary/presentation/widgets/entry_list_item.dart';
 
-void main() {
-  runApp(const HokkienDictionaryApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await glass.LiquidGlassWidgets.initialize();
+  runApp(glass.LiquidGlassWidgets.wrap(const HokkienDictionaryApp()));
 }

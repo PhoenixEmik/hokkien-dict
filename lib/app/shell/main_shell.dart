@@ -14,6 +14,7 @@ import 'package:hokkien_dictionary/features/dictionary/presentation/screens/dict
 import 'package:hokkien_dictionary/features/settings/presentation/screens/settings_screen.dart';
 import 'package:hokkien_dictionary/features/settings/presentation/widgets/liquid_glass.dart';
 import 'package:hokkien_dictionary/offline_audio.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart' as glass;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MainScreen extends StatefulWidget {
@@ -216,33 +217,39 @@ class _MainScreenState extends State<MainScreen> {
         if (isApplePlatform(context)) {
           return Scaffold(
             body: IndexedStack(index: _selectedIndex, children: screens),
-            bottomNavigationBar: CupertinoTabBar(
-              currentIndex: _selectedIndex,
-              onTap: (index) {
+            bottomNavigationBar: glass.GlassBottomBar(
+              selectedIndex: _selectedIndex,
+              onTabSelected: (index) {
                 setState(() {
                   _selectedIndex = index;
                 });
               },
-              backgroundColor: resolveLiquidGlassSecondaryTint(
+              quality: glass.GlassQuality.premium,
+              selectedIconColor: resolveLiquidGlassForeground(context),
+              unselectedIconColor: resolveLiquidGlassSecondaryForeground(
                 context,
-              ).withValues(alpha: 0.88),
-              activeColor: resolveLiquidGlassTint(context),
-              inactiveColor: resolveLiquidGlassSecondaryForeground(context),
-              items: [
-                BottomNavigationBarItem(
+              ),
+              indicatorColor: resolveLiquidGlassTint(
+                context,
+              ).withValues(alpha: 0.20),
+              tabs: [
+                glass.GlassBottomBarTab(
+                  label: l10n.dictionaryTab,
                   icon: const Icon(CupertinoIcons.book),
                   activeIcon: const Icon(CupertinoIcons.book_fill),
-                  label: l10n.dictionaryTab,
+                  glowColor: resolveLiquidGlassTint(context),
                 ),
-                BottomNavigationBarItem(
+                glass.GlassBottomBarTab(
+                  label: l10n.bookmarksTab,
                   icon: const Icon(CupertinoIcons.bookmark),
                   activeIcon: const Icon(CupertinoIcons.bookmark_fill),
-                  label: l10n.bookmarksTab,
+                  glowColor: resolveLiquidGlassTint(context),
                 ),
-                BottomNavigationBarItem(
+                glass.GlassBottomBarTab(
+                  label: l10n.settingsTab,
                   icon: const Icon(CupertinoIcons.gear),
                   activeIcon: const Icon(CupertinoIcons.gear_solid),
-                  label: l10n.settingsTab,
+                  glowColor: resolveLiquidGlassTint(context),
                 ),
               ],
             ),

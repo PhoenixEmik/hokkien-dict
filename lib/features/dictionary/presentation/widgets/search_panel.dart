@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 import 'package:hokkien_dictionary/features/settings/presentation/widgets/liquid_glass.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart' as glass;
 
 class SearchWorkspaceCard extends StatelessWidget {
   const SearchWorkspaceCard({
@@ -19,50 +20,22 @@ class SearchWorkspaceCard extends StatelessWidget {
     final applePlatform = isApplePlatform(context);
 
     if (applePlatform) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(22),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: resolveLiquidGlassSecondaryTint(
-              context,
-            ).withValues(alpha: 0.84),
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 18,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-            child: CupertinoSearchTextField(
-              controller: controller,
-              placeholder: l10n.searchHint,
-              onSubmitted: onSubmitted,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: resolveLiquidGlassForeground(context),
-                fontWeight: FontWeight.w600,
-              ),
-              placeholderStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: resolveLiquidGlassSecondaryForeground(context),
-              ),
-              prefixIcon: Icon(
-                CupertinoIcons.search,
-                color: resolveLiquidGlassSecondaryForeground(context),
-                size: 20,
-              ),
-              suffixIcon: Icon(
-                CupertinoIcons.clear_circled_solid,
-                color: resolveLiquidGlassSecondaryForeground(context),
-                size: 18,
-              ),
-              backgroundColor: Colors.transparent,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            ),
-          ),
+      return glass.GlassSearchBar(
+        controller: controller,
+        placeholder: l10n.searchHint,
+        onSubmitted: onSubmitted,
+        onChanged: (_) {},
+        useOwnLayer: true,
+        quality: glass.GlassQuality.standard,
+        searchIconColor: resolveLiquidGlassSecondaryForeground(context),
+        clearIconColor: resolveLiquidGlassSecondaryForeground(context),
+        cancelButtonColor: resolveLiquidGlassTint(context),
+        textStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
+          color: resolveLiquidGlassForeground(context),
+          fontWeight: FontWeight.w600,
+        ),
+        placeholderStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
+          color: resolveLiquidGlassSecondaryForeground(context),
         ),
       );
     }
