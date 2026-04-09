@@ -77,7 +77,6 @@ class WordDetailBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final readingTextScale = AppPreferencesScope.of(context).readingTextScale;
 
     return SafeArea(
@@ -111,15 +110,6 @@ class WordDetailBody extends StatelessWidget {
                             textScale: readingTextScale,
                           );
                         }),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            '顯示符合查詢的台語詞目與華語義項',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: const Color(0xFF617176),
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ),
