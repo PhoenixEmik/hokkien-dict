@@ -4,16 +4,20 @@ ThemeData buildLightAppTheme() {
   const canvas = Color(0xFFF7F1E7);
   const surface = Color(0xFFFFFFFF);
   const deepInk = Color(0xFF0E2F35);
+  const primary = Color(0xFF17454C);
+  const tertiary = Color(0xFFC9752D);
   const outline = Color(0xFFD7D0C4);
   const mutedText = Color(0xFF5F6C70);
 
   return _buildAppTheme(
     brightness: Brightness.light,
-    seedColor: deepInk,
+    seedColor: primary,
     scaffoldBackgroundColor: canvas,
     surfaceColor: surface,
-    primaryColor: deepInk,
+    primaryColor: primary,
+    tertiaryColor: tertiary,
     onSurfaceColor: deepInk,
+    onSurfaceVariantColor: mutedText,
     outlineColor: outline,
     mutedTextColor: mutedText,
     surfaceContainerLow: const Color(0xFFFFFBF5),
@@ -27,10 +31,11 @@ ThemeData buildLightAppTheme() {
 ThemeData buildDarkAppTheme() {
   const canvas = Color(0xFF101417);
   const surface = Color(0xFF171C1F);
-  const primary = Color(0xFF8AB7C0);
+  const primary = Color(0xFFA8D3DC);
+  const tertiary = Color(0xFFFFB74D);
   const onSurface = Color(0xFFF3F7F8);
   const outline = Color(0xFF314046);
-  const mutedText = Color(0xFFB2C0C4);
+  const mutedText = Color(0xFFC4D0D4);
 
   return _buildAppTheme(
     brightness: Brightness.dark,
@@ -38,7 +43,9 @@ ThemeData buildDarkAppTheme() {
     scaffoldBackgroundColor: canvas,
     surfaceColor: surface,
     primaryColor: primary,
+    tertiaryColor: tertiary,
     onSurfaceColor: onSurface,
+    onSurfaceVariantColor: mutedText,
     outlineColor: outline,
     mutedTextColor: mutedText,
     surfaceContainerLow: const Color(0xFF1D2529),
@@ -52,6 +59,7 @@ ThemeData buildDarkAppTheme() {
 ThemeData buildAmoledAppTheme() {
   const black = Color(0xFF000000);
   const primary = Color(0xFF8CC8FF);
+  const tertiary = Color(0xFFFFB866);
   const onSurface = Color(0xFFF9F9F9);
   const outline = Color(0xFF2C2C2C);
   const mutedText = Color(0xFFB8B8B8);
@@ -62,7 +70,9 @@ ThemeData buildAmoledAppTheme() {
     scaffoldBackgroundColor: black,
     surfaceColor: black,
     primaryColor: primary,
+    tertiaryColor: tertiary,
     onSurfaceColor: onSurface,
+    onSurfaceVariantColor: mutedText,
     outlineColor: outline,
     mutedTextColor: mutedText,
     surfaceContainerLow: black,
@@ -79,7 +89,9 @@ ThemeData _buildAppTheme({
   required Color scaffoldBackgroundColor,
   required Color surfaceColor,
   required Color primaryColor,
+  required Color tertiaryColor,
   required Color onSurfaceColor,
+  required Color onSurfaceVariantColor,
   required Color outlineColor,
   required Color mutedTextColor,
   required Color surfaceContainerLow,
@@ -94,9 +106,12 @@ ThemeData _buildAppTheme({
         brightness: brightness,
       ).copyWith(
         primary: primaryColor,
+        tertiary: tertiaryColor,
         surface: surfaceColor,
         onSurface: onSurfaceColor,
+        onSurfaceVariant: onSurfaceVariantColor,
         onPrimary: brightness == Brightness.dark ? Colors.black : Colors.white,
+        outline: outlineColor,
         outlineVariant: outlineColor,
         surfaceContainerLowest: surfaceColor,
         surfaceContainerLow: surfaceContainerLow,

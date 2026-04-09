@@ -11,6 +11,9 @@ class EntryListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return MergeSemantics(
       child: Semantics(
         button: true,
@@ -27,9 +30,10 @@ class EntryListItem extends StatelessWidget {
               titleAlignment: ListTileTitleAlignment.top,
               title: Text(
                 entry.hanji.isEmpty ? l10n.unlabeledHanji : entry.hanji,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w800,
-                  color: const Color(0xFF18363C),
+                  color:
+                      theme.textTheme.titleLarge?.color ?? colorScheme.primary,
                 ),
               ),
               subtitle: Column(
@@ -39,8 +43,8 @@ class EntryListItem extends StatelessWidget {
                   if (entry.romanization.isNotEmpty)
                     Text(
                       entry.romanization,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: const Color(0xFFC9752D),
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: colorScheme.tertiary,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -50,17 +54,17 @@ class EntryListItem extends StatelessWidget {
                       entry.briefSummary,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF5A6D71),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
                         height: 1.45,
                       ),
                     ),
                   ],
                 ],
               ),
-              trailing: const Icon(
+              trailing: Icon(
                 Icons.chevron_right,
-                color: Color(0xFF708286),
+                color: theme.iconTheme.color ?? colorScheme.onSurfaceVariant,
               ),
               onTap: onTap,
             ),

@@ -50,6 +50,7 @@ class SearchHistorySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
 
     return Card(
       child: Padding(
@@ -62,9 +63,8 @@ class SearchHistorySection extends StatelessWidget {
                 Expanded(
                   child: Text(
                     l10n.searchHistory,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF18363C),
                     ),
                   ),
                 ),
@@ -131,7 +131,7 @@ class EmptyState extends StatelessWidget {
             Text(
               body,
               style: theme.textTheme.bodyLarge?.copyWith(
-                color: const Color(0xFF5A6D71),
+                color: theme.colorScheme.onSurfaceVariant,
                 height: 1.55,
               ),
             ),
@@ -152,7 +152,7 @@ class NoResultsState extends StatelessWidget {
         AppLocalizations.of(context).noResultsShort,
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
           fontWeight: FontWeight.w700,
-          color: const Color(0xFF5A6D71),
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
         textAlign: TextAlign.center,
       ),
