@@ -26,7 +26,8 @@ lookup, and downloads large offline resources directly to the user's device.
 - On-device SQLite database build from the downloaded ODS file using `spreadsheet_decoder` and `sqflite`
 - Localized UI for Traditional Chinese, Simplified Chinese, and English
 - Accessibility improvements for semantics labels, merged semantics on complex settings tiles, and localized tooltips
-- Reading text size adjustment and Material 3 theme selection
+- Platform-adaptive UI: Android keeps the app's branded Material palette, while iOS uses Cupertino navigation and Liquid Glass surfaces
+- Reading text size adjustment and system-aware light / dark / AMOLED theme selection
 
 ## Data And Licensing
 
@@ -54,6 +55,7 @@ Important distribution note:
 - Flutter
 - `dio` for resumable downloads
 - `just_audio` for offline audio playback
+- `liquid_glass_widgets` for iOS-style Liquid Glass surfaces
 - `path` and `path_provider` for local file management
 - `shared_preferences` for user settings, bookmarks, and search history
 - `share_plus` for native sharing
@@ -92,6 +94,7 @@ The iOS project is configured with:
 
 - deployment target `iOS 13.0`
 - localized app metadata for `zh-Hant`, `zh-Hans`, and `en`
+- adaptive iOS UI surfaces using Cupertino navigation plus `liquid_glass_widgets`
 
 After dependency or Pod changes:
 
@@ -116,6 +119,11 @@ Current release-build caveat:
 
 - Android `release` still uses the debug signing config so local release APKs can be installed for testing.
 - Configure your own Android keystore and Apple signing settings before store distribution.
+
+## UI Notes
+
+- iOS uses adaptive Cupertino navigation, glass bottom bars, glass search bars, and glass settings sections.
+- Android intentionally does not reuse the iOS palette; it keeps the app's warmer branded Material styling for better platform fit.
 
 ## License
 
