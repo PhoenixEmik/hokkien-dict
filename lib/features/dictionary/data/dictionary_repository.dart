@@ -98,13 +98,22 @@ class DictionaryRepository {
       if (normalizeQuery(entry.hanji) == query) {
         return entry;
       }
+      if (entry.variantChars.any(
+        (variant) => normalizeQuery(variant) == query,
+      )) {
+        return entry;
+      }
       if (romanizationMatch == null &&
           normalizeQuery(entry.romanization) == query) {
         romanizationMatch = entry;
       }
     }
 
-    return romanizationMatch;
+    if (romanizationMatch != null) {
+      return romanizationMatch;
+    }
+
+    return null;
   }
 
   List<DictionaryEntry> _resolveSearchResults(

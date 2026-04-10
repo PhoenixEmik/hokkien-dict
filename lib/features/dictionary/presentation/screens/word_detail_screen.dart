@@ -274,6 +274,7 @@ class _WordDetailContent extends StatelessWidget {
           entry: entry,
           audioLibrary: audioLibrary,
           onPlayClip: onPlayClip,
+          onWordTapped: onWordTapped,
         ),
         const SizedBox(height: 20),
         ...entry.senses.map((sense) {

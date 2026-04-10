@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 import 'package:hokkien_dictionary/features/dictionary/domain/dictionary_models.dart';
@@ -12,11 +14,13 @@ class WordDetailHeader extends StatelessWidget {
     required this.entry,
     required this.audioLibrary,
     required this.onPlayClip,
+    required this.onWordTapped,
   });
 
   final DictionaryEntry entry;
   final OfflineAudioLibrary audioLibrary;
   final Future<void> Function(AudioArchiveType type, String clipId) onPlayClip;
+  final Future<void> Function(String word) onWordTapped;
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +73,30 @@ class WordDetailHeader extends StatelessWidget {
                     ? resolveLiquidGlassSecondaryForeground(context)
                     : colorScheme.onSurfaceVariant,
               ),
+            ),
+          ],
+          if (entry.variantChars.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            RelationshipChipGroup(
+              label: l10n.variantCharactersLabel,
+              values: entry.variantChars,
+              onWordTapped: onWordTapped,
+            ),
+          ],
+          if (entry.wordSynonyms.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            RelationshipChipGroup(
+              label: l10n.synonymsLabel,
+              values: entry.wordSynonyms,
+              onWordTapped: onWordTapped,
+            ),
+          ],
+          if (entry.wordAntonyms.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            RelationshipChipGroup(
+              label: l10n.antonymsLabel,
+              values: entry.wordAntonyms,
+              onWordTapped: onWordTapped,
             ),
           ],
         ],
@@ -197,6 +225,40 @@ class SenseSection extends StatelessWidget {
             textScale: textScale,
           );
         }),
+      );
+    }
+
+    if (sense.definitionSynonyms.isNotEmpty ||
+        sense.definitionAntonyms.isNotEmpty) {
+      sectionChildren.add(
+        Padding(
+          padding: EdgeInsets.fromLTRB(
+            applePlatform ? appleInset : 0,
+            0,
+            applePlatform ? appleInset : 0,
+            applePlatform ? 18 : 0,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (sense.definitionSynonyms.isNotEmpty)
+                RelationshipChipGroup(
+                  label: AppLocalizations.of(context).synonymsLabel,
+                  values: sense.definitionSynonyms,
+                  onWordTapped: onWordTapped,
+                ),
+              if (sense.definitionSynonyms.isNotEmpty &&
+                  sense.definitionAntonyms.isNotEmpty)
+                const SizedBox(height: 10),
+              if (sense.definitionAntonyms.isNotEmpty)
+                RelationshipChipGroup(
+                  label: AppLocalizations.of(context).antonymsLabel,
+                  values: sense.definitionAntonyms,
+                  onWordTapped: onWordTapped,
+                ),
+            ],
+          ),
+        ),
       );
     }
 
@@ -414,6 +476,109 @@ class _SensePill extends StatelessWidget {
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w700,
             color: foregroundColor,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class RelationshipChipGroup extends StatelessWidget {
+  const RelationshipChipGroup({
+    super.key,
+    required this.label,
+    required this.values,
+    required this.onWordTapped,
+  });
+
+  final String label;
+  final List<String> values;
+  final Future<void> Function(String word) onWordTapped;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final uniqueValues = values.toSet().toList(growable: false);
+    if (uniqueValues.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: isApplePlatform(context)
+                ? resolveLiquidGlassSecondaryForeground(context)
+                : theme.colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: uniqueValues
+              .map(
+                (value) => RelationshipChip(
+                  word: value,
+                  onTap: () => onWordTapped(value),
+                ),
+              )
+              .toList(growable: false),
+        ),
+      ],
+    );
+  }
+}
+
+class RelationshipChip extends StatelessWidget {
+  const RelationshipChip({super.key, required this.word, required this.onTap});
+
+  final String word;
+  final Future<void> Function() onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final fillColor = brightness == Brightness.light
+        ? Colors.white.withValues(alpha: 0.12)
+        : Colors.black.withValues(alpha: 0.18);
+    final strokeColor = brightness == Brightness.light
+        ? Colors.black.withValues(alpha: 0.08)
+        : Colors.white.withValues(alpha: 0.15);
+    final textColor = isApplePlatform(context)
+        ? resolveLiquidGlassForeground(context)
+        : Theme.of(context).colorScheme.onSurface;
+    final l10n = AppLocalizations.of(context);
+
+    return Semantics(
+      button: true,
+      label: l10n.linkedDefinitionWordLabel(word),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            unawaited(onTap());
+          },
+          child: Ink(
+            decoration: BoxDecoration(
+              color: fillColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: strokeColor, width: 0.5),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Text(
+                word,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: textColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           ),
         ),
       ),

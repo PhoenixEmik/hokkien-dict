@@ -708,6 +708,13 @@ class AppLocalizations {
   String linkedDefinitionWordLabel(String word) =>
       _selectText('Open linked entry $word', '开启关联词条 $word', '開啟關聯詞條 $word');
 
+  String get variantCharactersLabel =>
+      _selectText('Variant Characters', '异用字', '異用字');
+
+  String get synonymsLabel => _selectText('Synonyms', '近义', '近義');
+
+  String get antonymsLabel => _selectText('Antonyms', '反义', '反義');
+
   String semanticsProgressValue(int downloadedBytes, int totalBytes) =>
       _selectText(
         totalBytes > 0

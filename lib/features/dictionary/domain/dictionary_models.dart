@@ -35,6 +35,9 @@ class DictionaryEntry {
     required this.audioId,
     required this.hokkienSearch,
     required this.mandarinSearch,
+    this.variantChars = const [],
+    this.wordSynonyms = const [],
+    this.wordAntonyms = const [],
     required this.senses,
   });
 
@@ -52,6 +55,9 @@ class DictionaryEntry {
       audioId: json['audio'] as String? ?? '',
       hokkienSearch: json['hokkienSearch'] as String? ?? '',
       mandarinSearch: json['mandarinSearch'] as String? ?? '',
+      variantChars: _stringListFromJson(json['variantChars']),
+      wordSynonyms: _stringListFromJson(json['wordSynonyms']),
+      wordAntonyms: _stringListFromJson(json['wordAntonyms']),
       senses: senses,
     );
   }
@@ -64,6 +70,9 @@ class DictionaryEntry {
   final String audioId;
   final String hokkienSearch;
   final String mandarinSearch;
+  final List<String> variantChars;
+  final List<String> wordSynonyms;
+  final List<String> wordAntonyms;
   final List<DictionarySense> senses;
 
   String get briefSummary {
@@ -89,6 +98,8 @@ class DictionarySense {
   const DictionarySense({
     required this.partOfSpeech,
     required this.definition,
+    this.definitionSynonyms = const [],
+    this.definitionAntonyms = const [],
     required this.examples,
   });
 
@@ -100,12 +111,16 @@ class DictionarySense {
     return DictionarySense(
       partOfSpeech: json['partOfSpeech'] as String? ?? '',
       definition: json['definition'] as String? ?? '',
+      definitionSynonyms: _stringListFromJson(json['definitionSynonyms']),
+      definitionAntonyms: _stringListFromJson(json['definitionAntonyms']),
       examples: examples,
     );
   }
 
   final String partOfSpeech;
   final String definition;
+  final List<String> definitionSynonyms;
+  final List<String> definitionAntonyms;
   final List<DictionaryExample> examples;
 }
 
@@ -130,4 +145,14 @@ class DictionaryExample {
   final String romanization;
   final String mandarin;
   final String audioId;
+}
+
+List<String> _stringListFromJson(dynamic value) {
+  if (value is! List<dynamic>) {
+    return const [];
+  }
+  return value
+      .map((item) => item?.toString().trim() ?? '')
+      .where((item) => item.isNotEmpty)
+      .toList(growable: false);
 }

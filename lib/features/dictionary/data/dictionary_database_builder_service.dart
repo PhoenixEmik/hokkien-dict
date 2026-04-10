@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
@@ -16,6 +17,13 @@ const _examplesTable = 'dictionary_examples';
 const _metadataTable = 'dictionary_metadata';
 const _buildChunkSize = 250;
 const _progressUpdateInterval = 200;
+const _variantSheet = '異用字';
+const _senseToSenseSynonymSheet = '義項tuì義項近義';
+const _senseToSenseAntonymSheet = '義項tuì義項反義';
+const _senseToWordSynonymSheet = '義項tuì詞目近義';
+const _senseToWordAntonymSheet = '義項tuì詞目反義';
+const _wordToWordSynonymSheet = '詞目tuì詞目近義';
+const _wordToWordAntonymSheet = '詞目tuì詞目反義';
 
 class MissingDictionarySourceException implements Exception {
   const MissingDictionarySourceException({required this.path});
@@ -104,7 +112,16 @@ class DictionaryDatabaseBuilderService {
     if (!await databaseFile.exists()) {
       return false;
     }
-    return await databaseFile.length() > 0;
+    if (await databaseFile.length() <= 0) {
+      return false;
+    }
+
+    final database = await openDatabase(databaseFile.path, readOnly: true);
+    try {
+      return await _hasRelationshipSchema(database);
+    } finally {
+      await database.close();
+    }
   }
 
   Future<bool> deleteInvalidDownloadedOdsIfNeeded() async {
@@ -145,6 +162,15 @@ class DictionaryDatabaseBuilderService {
     final databaseFile = await locateDatabaseFile();
     if (!await databaseFile.exists()) {
       return true;
+    }
+
+    final database = await openDatabase(databaseFile.path, readOnly: true);
+    try {
+      if (!await _hasRelationshipSchema(database)) {
+        return true;
+      }
+    } finally {
+      await database.close();
     }
 
     final odsStat = await odsFile.stat();
@@ -328,6 +354,10 @@ class DictionaryDatabaseBuilderService {
 
     final database = await openDatabase(databaseFile.path, readOnly: true);
     try {
+      if (!await _hasRelationshipSchema(database)) {
+        return null;
+      }
+
       final entryRows = await database.query(_entriesTable, orderBy: 'id ASC');
       if (entryRows.isEmpty) {
         return null;
@@ -368,6 +398,12 @@ class DictionaryDatabaseBuilderService {
               DictionarySense(
                 partOfSpeech: row['part_of_speech'] as String? ?? '',
                 definition: row['definition'] as String? ?? '',
+                definitionSynonyms: _decodeStoredStringList(
+                  row['definition_synonyms'],
+                ),
+                definitionAntonyms: _decodeStoredStringList(
+                  row['definition_antonyms'],
+                ),
                 examples: examplesBySense[(entryId, senseId)] ?? const [],
               ),
             );
@@ -384,6 +420,9 @@ class DictionaryDatabaseBuilderService {
               audioId: row['audio_id'] as String? ?? '',
               hokkienSearch: row['hokkien_search'] as String? ?? '',
               mandarinSearch: row['mandarin_search'] as String? ?? '',
+              variantChars: _decodeStoredStringList(row['variant_chars']),
+              wordSynonyms: _decodeStoredStringList(row['word_synonyms']),
+              wordAntonyms: _decodeStoredStringList(row['word_antonyms']),
               senses: sensesByEntry[row['id'] as int] ?? const [],
             ),
           )
@@ -450,6 +489,9 @@ class DictionaryDatabaseBuilderService {
         romanization TEXT NOT NULL,
         category TEXT NOT NULL,
         audio_id TEXT NOT NULL,
+        variant_chars TEXT NOT NULL,
+        word_synonyms TEXT NOT NULL,
+        word_antonyms TEXT NOT NULL,
         hokkien_search TEXT NOT NULL,
         mandarin_search TEXT NOT NULL
       )
@@ -460,6 +502,8 @@ class DictionaryDatabaseBuilderService {
         sense_id INTEGER NOT NULL,
         part_of_speech TEXT NOT NULL,
         definition TEXT NOT NULL,
+        definition_synonyms TEXT NOT NULL,
+        definition_antonyms TEXT NOT NULL,
         PRIMARY KEY (entry_id, sense_id)
       )
     ''');
@@ -509,6 +553,23 @@ class DictionaryDatabaseBuilderService {
     await db.delete(_entriesTable);
   }
 
+  Future<bool> _hasRelationshipSchema(DatabaseExecutor db) async {
+    final entryColumns = await db.rawQuery('PRAGMA table_info($_entriesTable)');
+    final senseColumns = await db.rawQuery('PRAGMA table_info($_sensesTable)');
+    final entryColumnNames = entryColumns
+        .map((row) => row['name']?.toString() ?? '')
+        .toSet();
+    final senseColumnNames = senseColumns
+        .map((row) => row['name']?.toString() ?? '')
+        .toSet();
+
+    return entryColumnNames.contains('variant_chars') &&
+        entryColumnNames.contains('word_synonyms') &&
+        entryColumnNames.contains('word_antonyms') &&
+        senseColumnNames.contains('definition_synonyms') &&
+        senseColumnNames.contains('definition_antonyms');
+  }
+
   Future<Directory> _dictionaryRootDirectory() async {
     final documentsDirectory = await getApplicationDocumentsDirectory();
     return Directory(
@@ -549,19 +610,76 @@ void _parseDictionaryOdsIsolateEntryPoint(List<Object?> args) async {
     final headwordTable = _requireSheet(workbook, '詞目');
     final senseTable = _requireSheet(workbook, '義項');
     final exampleTable = _requireSheet(workbook, '例句');
+    final variantTable = _optionalSheet(workbook, _variantSheet);
+    final senseToSenseSynonymTable = _optionalSheet(
+      workbook,
+      _senseToSenseSynonymSheet,
+    );
+    final senseToSenseAntonymTable = _optionalSheet(
+      workbook,
+      _senseToSenseAntonymSheet,
+    );
+    final senseToWordSynonymTable = _optionalSheet(
+      workbook,
+      _senseToWordSynonymSheet,
+    );
+    final senseToWordAntonymTable = _optionalSheet(
+      workbook,
+      _senseToWordAntonymSheet,
+    );
+    final wordToWordSynonymTable = _optionalSheet(
+      workbook,
+      _wordToWordSynonymSheet,
+    );
+    final wordToWordAntonymTable = _optionalSheet(
+      workbook,
+      _wordToWordAntonymSheet,
+    );
 
     final totalRows =
         _dataRowCount(headwordTable) +
         _dataRowCount(senseTable) +
-        _dataRowCount(exampleTable);
+        _dataRowCount(exampleTable) +
+        _dataRowCount(variantTable) +
+        _dataRowCount(senseToSenseSynonymTable) +
+        _dataRowCount(senseToSenseAntonymTable) +
+        _dataRowCount(senseToWordSynonymTable) +
+        _dataRowCount(senseToWordAntonymTable) +
+        _dataRowCount(wordToWordSynonymTable) +
+        _dataRowCount(wordToWordAntonymTable);
 
     final headwordHeaders = _headersForRows(headwordTable.rows);
     final senseHeaders = _headersForRows(senseTable.rows);
     final exampleHeaders = _headersForRows(exampleTable.rows);
+    final variantHeaders = _headersForRows(variantTable.rows);
+    final senseToSenseSynonymHeaders = _headersForRows(
+      senseToSenseSynonymTable.rows,
+    );
+    final senseToSenseAntonymHeaders = _headersForRows(
+      senseToSenseAntonymTable.rows,
+    );
+    final senseToWordSynonymHeaders = _headersForRows(
+      senseToWordSynonymTable.rows,
+    );
+    final senseToWordAntonymHeaders = _headersForRows(
+      senseToWordAntonymTable.rows,
+    );
+    final wordToWordSynonymHeaders = _headersForRows(
+      wordToWordSynonymTable.rows,
+    );
+    final wordToWordAntonymHeaders = _headersForRows(
+      wordToWordAntonymTable.rows,
+    );
 
     var processedRows = 0;
     final entryRowsById = <int, Map<String, Object?>>{};
     final mandarinByEntryId = <int, StringBuffer>{};
+    final variantCharsByEntryId = <int, Set<String>>{};
+    final wordSynonymsByEntryId = <int, Set<String>>{};
+    final wordAntonymsByEntryId = <int, Set<String>>{};
+    final definitionSynonymsBySenseId = <int, Set<String>>{};
+    final definitionAntonymsBySenseId = <int, Set<String>>{};
+    final entryIdBySenseId = <int, int>{};
 
     void sendProgress() {
       sendPort.send({
@@ -590,6 +708,9 @@ void _parseDictionaryOdsIsolateEntryPoint(List<Object?> args) async {
           'romanization': record['羅馬字'] ?? '',
           'category': record['分類'] ?? '',
           'audio_id': record['羅馬字音檔檔名'] ?? '',
+          'variant_chars': '[]',
+          'word_synonyms': '[]',
+          'word_antonyms': '[]',
         };
       }
 
@@ -599,7 +720,7 @@ void _parseDictionaryOdsIsolateEntryPoint(List<Object?> args) async {
     }
 
     final knownSenseKeys = <String>{};
-    final senseChunk = <Map<String, Object?>>[];
+    final senseRowsByKey = <String, Map<String, Object?>>{};
     var senseCount = 0;
     for (final row in senseTable.rows.skip(1)) {
       processedRows++;
@@ -616,43 +737,31 @@ void _parseDictionaryOdsIsolateEntryPoint(List<Object?> args) async {
       if (headwordId != null &&
           senseId != null &&
           entryRowsById.containsKey(headwordId)) {
+        entryIdBySenseId[senseId] = headwordId;
         final definition = record['解說'] ?? '';
         final partOfSpeech = record['詞性'] ?? '';
-        senseChunk.add(<String, Object?>{
+        final senseKey = '$headwordId:$senseId';
+        senseRowsByKey[senseKey] = <String, Object?>{
           'entry_id': headwordId,
           'sense_id': senseId,
           'part_of_speech': partOfSpeech,
           'definition': definition,
-        });
+          'definition_synonyms': '[]',
+          'definition_antonyms': '[]',
+        };
         if (definition.isNotEmpty) {
           mandarinByEntryId
               .putIfAbsent(headwordId, StringBuffer.new)
               .write('$definition ');
         }
-        knownSenseKeys.add('$headwordId:$senseId');
+        knownSenseKeys.add(senseKey);
         senseCount++;
-        if (senseChunk.length >= _buildChunkSize) {
-          sendPort.send({
-            'type': 'chunk',
-            'table': _sensesTable,
-            'rows': List<Map<String, Object?>>.from(senseChunk),
-          });
-          senseChunk.clear();
-        }
       }
 
       if (processedRows % _progressUpdateInterval == 0) {
         sendProgress();
       }
     }
-    if (senseChunk.isNotEmpty) {
-      sendPort.send({
-        'type': 'chunk',
-        'table': _sensesTable,
-        'rows': List<Map<String, Object?>>.from(senseChunk),
-      });
-    }
-
     final exampleChunk = <Map<String, Object?>>[];
     var exampleCount = 0;
     for (final row in exampleTable.rows.skip(1)) {
@@ -708,20 +817,188 @@ void _parseDictionaryOdsIsolateEntryPoint(List<Object?> args) async {
       });
     }
 
+    for (final row in variantTable.rows.skip(1)) {
+      processedRows++;
+      final record = _recordForRow(variantHeaders, row);
+      if (record.isEmpty) {
+        if (processedRows % _progressUpdateInterval == 0) {
+          sendProgress();
+        }
+        continue;
+      }
+
+      final headwordId = _parseInt(record['詞目id']);
+      final variant = record['異用字'] ?? '';
+      if (headwordId != null &&
+          variant.isNotEmpty &&
+          entryRowsById.containsKey(headwordId)) {
+        variantCharsByEntryId
+            .putIfAbsent(headwordId, () => <String>{})
+            .add(variant);
+      }
+
+      if (processedRows % _progressUpdateInterval == 0) {
+        sendProgress();
+      }
+    }
+
+    void collectSenseLinks({
+      required SpreadsheetTable table,
+      required List<String> headers,
+      required Map<int, Set<String>> target,
+      required String targetWordColumn,
+    }) {
+      for (final row in table.rows.skip(1)) {
+        processedRows++;
+        final record = _recordForRow(headers, row);
+        if (record.isEmpty) {
+          if (processedRows % _progressUpdateInterval == 0) {
+            sendProgress();
+          }
+          continue;
+        }
+
+        final senseId = _parseInt(record['義項id']);
+        final linkedWord = record[targetWordColumn] ?? '';
+        if (senseId != null &&
+            linkedWord.isNotEmpty &&
+            entryIdBySenseId.containsKey(senseId)) {
+          target.putIfAbsent(senseId, () => <String>{}).add(linkedWord);
+        }
+
+        if (processedRows % _progressUpdateInterval == 0) {
+          sendProgress();
+        }
+      }
+    }
+
+    void collectWordLinks({
+      required SpreadsheetTable table,
+      required List<String> headers,
+      required Map<int, Set<String>> target,
+    }) {
+      for (final row in table.rows.skip(1)) {
+        processedRows++;
+        final record = _recordForRow(headers, row);
+        if (record.isEmpty) {
+          if (processedRows % _progressUpdateInterval == 0) {
+            sendProgress();
+          }
+          continue;
+        }
+
+        final entryId = _parseInt(record['詞目id']);
+        final linkedWord = record['對應詞目漢字'] ?? '';
+        if (entryId != null &&
+            linkedWord.isNotEmpty &&
+            entryRowsById.containsKey(entryId)) {
+          target.putIfAbsent(entryId, () => <String>{}).add(linkedWord);
+        }
+
+        if (processedRows % _progressUpdateInterval == 0) {
+          sendProgress();
+        }
+      }
+    }
+
+    collectSenseLinks(
+      table: senseToSenseSynonymTable,
+      headers: senseToSenseSynonymHeaders,
+      target: definitionSynonymsBySenseId,
+      targetWordColumn: '對應詞目漢字',
+    );
+    collectSenseLinks(
+      table: senseToWordSynonymTable,
+      headers: senseToWordSynonymHeaders,
+      target: definitionSynonymsBySenseId,
+      targetWordColumn: '對應詞目漢字',
+    );
+    collectSenseLinks(
+      table: senseToSenseAntonymTable,
+      headers: senseToSenseAntonymHeaders,
+      target: definitionAntonymsBySenseId,
+      targetWordColumn: '對應詞目漢字',
+    );
+    collectSenseLinks(
+      table: senseToWordAntonymTable,
+      headers: senseToWordAntonymHeaders,
+      target: definitionAntonymsBySenseId,
+      targetWordColumn: '對應詞目漢字',
+    );
+    collectWordLinks(
+      table: wordToWordSynonymTable,
+      headers: wordToWordSynonymHeaders,
+      target: wordSynonymsByEntryId,
+    );
+    collectWordLinks(
+      table: wordToWordAntonymTable,
+      headers: wordToWordAntonymHeaders,
+      target: wordAntonymsByEntryId,
+    );
+
+    final senseChunk = <Map<String, Object?>>[];
+    final sortedSenseKeys = senseRowsByKey.keys.toList()
+      ..sort((a, b) {
+        final left = a.split(':').map(int.parse).toList(growable: false);
+        final right = b.split(':').map(int.parse).toList(growable: false);
+        final entryCompare = left.first.compareTo(right.first);
+        if (entryCompare != 0) {
+          return entryCompare;
+        }
+        return left.last.compareTo(right.last);
+      });
+    for (final senseKey in sortedSenseKeys) {
+      final row = senseRowsByKey[senseKey]!;
+      final senseId = row['sense_id'] as int;
+      row['definition_synonyms'] = jsonEncode(
+        _sortedStringList(definitionSynonymsBySenseId[senseId]),
+      );
+      row['definition_antonyms'] = jsonEncode(
+        _sortedStringList(definitionAntonymsBySenseId[senseId]),
+      );
+      senseChunk.add(Map<String, Object?>.from(row));
+      if (senseChunk.length >= _buildChunkSize) {
+        sendPort.send({
+          'type': 'chunk',
+          'table': _sensesTable,
+          'rows': List<Map<String, Object?>>.from(senseChunk),
+        });
+        senseChunk.clear();
+      }
+    }
+    if (senseChunk.isNotEmpty) {
+      sendPort.send({
+        'type': 'chunk',
+        'table': _sensesTable,
+        'rows': List<Map<String, Object?>>.from(senseChunk),
+      });
+    }
+
     sendProgress();
 
     final entryIds = entryRowsById.keys.toList()..sort();
     final entryChunk = <Map<String, Object?>>[];
     for (final entryId in entryIds) {
       final row = entryRowsById[entryId]!;
+      final variantChars = _sortedStringList(variantCharsByEntryId[entryId]);
+      final wordSynonyms = _sortedStringList(wordSynonymsByEntryId[entryId]);
+      final wordAntonyms = _sortedStringList(wordAntonymsByEntryId[entryId]);
       final hokkienSearch = normalizeQuery(
-        '${row['hanji'] ?? ''} ${row['romanization'] ?? ''} ${row['category'] ?? ''}',
+        [
+          row['hanji'] ?? '',
+          row['romanization'] ?? '',
+          row['category'] ?? '',
+          ...variantChars,
+        ].join(' '),
       );
       final mandarinSearch = normalizeQuery(
         mandarinByEntryId[entryId]?.toString() ?? '',
       );
       entryChunk.add(<String, Object?>{
         ...row,
+        'variant_chars': jsonEncode(variantChars),
+        'word_synonyms': jsonEncode(wordSynonyms),
+        'word_antonyms': jsonEncode(wordAntonyms),
         'hokkien_search': hokkienSearch,
         'mandarin_search': mandarinSearch,
       });
@@ -776,6 +1053,10 @@ SpreadsheetTable _requireSheet(SpreadsheetDecoder workbook, String sheetName) {
     throw MissingDictionarySheetException(sheetName: sheetName);
   }
   return table;
+}
+
+SpreadsheetTable _optionalSheet(SpreadsheetDecoder workbook, String sheetName) {
+  return workbook.tables[sheetName] ?? SpreadsheetTable(sheetName);
 }
 
 int _dataRowCount(SpreadsheetTable table) {
@@ -841,4 +1122,38 @@ String _cellToString(dynamic value) {
     return '';
   }
   return value.toString().trim();
+}
+
+List<String> _decodeStoredStringList(Object? value) {
+  final raw = value as String? ?? '';
+  if (raw.isEmpty) {
+    return const [];
+  }
+
+  try {
+    final decoded = jsonDecode(raw);
+    if (decoded is! List<dynamic>) {
+      return const [];
+    }
+    return decoded
+        .map((item) => item?.toString().trim() ?? '')
+        .where((item) => item.isNotEmpty)
+        .toList(growable: false);
+  } catch (_) {
+    return const [];
+  }
+}
+
+List<String> _sortedStringList(Set<String>? values) {
+  if (values == null || values.isEmpty) {
+    return const [];
+  }
+  final sorted =
+      values
+          .map((value) => value.trim())
+          .where((value) => value.isNotEmpty)
+          .toSet()
+          .toList(growable: false)
+        ..sort();
+  return sorted;
 }
