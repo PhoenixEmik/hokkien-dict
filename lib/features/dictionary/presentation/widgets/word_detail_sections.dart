@@ -327,12 +327,7 @@ class SenseSection extends StatelessWidget {
           if (sense.partOfSpeech.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              child: Chip(
-                label: Text(sense.partOfSpeech),
-                labelStyle: theme.textTheme.labelLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              child: _MaterialSensePill(label: sense.partOfSpeech),
             ),
           if (sense.definition.isNotEmpty)
             InteractiveDefinitionText(
@@ -547,6 +542,35 @@ class _SensePill extends StatelessWidget {
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w700,
             color: foregroundColor,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MaterialSensePill extends StatelessWidget {
+  const _MaterialSensePill({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        child: Text(
+          label,
+          textAlign: TextAlign.left,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: colorScheme.onSecondaryContainer,
           ),
         ),
       ),
