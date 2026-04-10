@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
 import 'package:hokkien_dictionary/features/dictionary/domain/dictionary_models.dart';
@@ -18,9 +20,95 @@ class EntryListItem extends StatelessWidget {
 
     Widget content;
     if (applePlatform) {
-      content = LiquidGlassSection(
-        children: [
-          InkWell(
+      content = _AppleSearchResultCard(entry: entry, onTap: onTap);
+    } else {
+      content = Card(
+        clipBehavior: Clip.antiAlias,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8,
+          ),
+          titleAlignment: ListTileTitleAlignment.top,
+          title: Text(
+            entry.hanji.isEmpty ? l10n.unlabeledHanji : entry.hanji,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: colorScheme.primary,
+            ),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (entry.romanization.isNotEmpty)
+                Text(
+                  entry.romanization,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: colorScheme.tertiary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              if (entry.briefSummary.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  entry.briefSummary,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.45,
+                  ),
+                ),
+              ],
+            ],
+          ),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: onTap,
+        ),
+      );
+    }
+
+    return MergeSemantics(
+      child: Semantics(
+        button: true,
+        label: _semanticLabel(entry, l10n),
+        hint: l10n.entryOpenDetailsHint,
+        child: ExcludeSemantics(child: content),
+      ),
+    );
+  }
+}
+
+class _AppleSearchResultCard extends StatelessWidget {
+  const _AppleSearchResultCard({required this.entry, required this.onTap});
+
+  final DictionaryEntry entry;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final brightness = theme.brightness;
+    final fillColor = brightness == Brightness.dark
+        ? Colors.black.withValues(alpha: 0.15)
+        : Colors.white.withValues(alpha: 0.06);
+    final strokeColor = brightness == Brightness.dark
+        ? Colors.white.withValues(alpha: 0.10)
+        : Colors.white.withValues(alpha: 0.55);
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(28),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 26, sigmaY: 26),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: fillColor,
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: strokeColor),
+          ),
+          child: InkWell(
             onTap: onTap,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(18, 18, 16, 16),
@@ -78,62 +166,7 @@ class EntryListItem extends StatelessWidget {
               ),
             ),
           ),
-        ],
-      );
-    } else {
-      content = Card(
-        clipBehavior: Clip.antiAlias,
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 8,
-          ),
-          titleAlignment: ListTileTitleAlignment.top,
-          title: Text(
-            entry.hanji.isEmpty ? l10n.unlabeledHanji : entry.hanji,
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: colorScheme.primary,
-            ),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (entry.romanization.isNotEmpty)
-                Text(
-                  entry.romanization,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: colorScheme.tertiary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              if (entry.briefSummary.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Text(
-                  entry.briefSummary,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                    height: 1.45,
-                  ),
-                ),
-              ],
-            ],
-          ),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: onTap,
         ),
-      );
-    }
-
-    return MergeSemantics(
-      child: Semantics(
-        button: true,
-        label: _semanticLabel(entry, l10n),
-        hint: l10n.entryOpenDetailsHint,
-        child: ExcludeSemantics(child: content),
       ),
     );
   }
