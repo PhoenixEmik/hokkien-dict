@@ -708,6 +708,9 @@ class AppLocalizations {
   String linkedDefinitionWordLabel(String word) =>
       _selectText('Open linked entry $word', '开启关联词条 $word', '開啟關聯詞條 $word');
 
+  String get searchThisWordHint =>
+      _selectText('Double tap to search this word', '双击搜寻这个词', '雙擊搜尋這個詞');
+
   String get variantCharactersLabel =>
       _selectText('Variant Characters', '异用字', '異用字');
 

@@ -538,6 +538,7 @@ class RelationshipChipGroup extends StatelessWidget {
     this.labelStyle,
     this.labelPadding = const EdgeInsets.only(bottom: 8),
     this.wrapAlignment = WrapAlignment.start,
+    this.semanticLabelBuilder,
   });
 
   final String label;
@@ -546,6 +547,8 @@ class RelationshipChipGroup extends StatelessWidget {
   final TextStyle? labelStyle;
   final EdgeInsetsGeometry labelPadding;
   final WrapAlignment wrapAlignment;
+  final String Function(BuildContext context, String word)?
+  semanticLabelBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -581,6 +584,7 @@ class RelationshipChipGroup extends StatelessWidget {
               .map(
                 (value) => RelationshipChip(
                   word: value,
+                  semanticLabel: semanticLabelBuilder?.call(context, value),
                   onTap: onWordTapped == null
                       ? null
                       : () => onWordTapped!(value),
@@ -594,9 +598,15 @@ class RelationshipChipGroup extends StatelessWidget {
 }
 
 class RelationshipChip extends StatelessWidget {
-  const RelationshipChip({super.key, required this.word, this.onTap});
+  const RelationshipChip({
+    super.key,
+    required this.word,
+    this.semanticLabel,
+    this.onTap,
+  });
 
   final String word;
+  final String? semanticLabel;
   final Future<void> Function()? onTap;
 
   @override
@@ -615,30 +625,38 @@ class RelationshipChip extends StatelessWidget {
     final isInteractive = onTap != null;
 
     return Semantics(
+      container: true,
       button: isInteractive,
-      label: isInteractive ? l10n.linkedDefinitionWordLabel(word) : word,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: isInteractive
-              ? () {
-                  unawaited(onTap!());
-                }
-              : null,
-          child: Ink(
-            decoration: BoxDecoration(
-              color: fillColor,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: strokeColor, width: 0.5),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Text(
-                word,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: textColor,
-                  fontWeight: FontWeight.w600,
+      enabled: isInteractive,
+      label: semanticLabel ?? word,
+      onTapHint: isInteractive ? l10n.searchThisWordHint : null,
+      child: ExcludeSemantics(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: isInteractive
+                ? () {
+                    unawaited(onTap!());
+                  }
+                : null,
+            child: Ink(
+              decoration: BoxDecoration(
+                color: fillColor,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: strokeColor, width: 0.5),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                child: Text(
+                  word,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: textColor,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
