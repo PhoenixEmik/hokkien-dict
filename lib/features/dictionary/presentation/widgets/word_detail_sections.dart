@@ -186,7 +186,14 @@ class SenseSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final brightness = theme.brightness;
     final applePlatform = isApplePlatform(context);
+    final relationshipDividerColor = brightness == Brightness.light
+        ? Colors.black.withValues(alpha: 0.08)
+        : Colors.white.withValues(alpha: 0.15);
+    final relationshipLabelColor = brightness == Brightness.light
+        ? Colors.grey.shade600
+        : Colors.grey.shade400;
     const appleInset = 20.0;
     final sectionChildren = <Widget>[
       Padding(
@@ -261,11 +268,23 @@ class SenseSection extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Divider(
+                height: 1,
+                thickness: 0.5,
+                color: relationshipDividerColor,
+              ),
               if (sense.definitionSynonyms.isNotEmpty)
                 RelationshipChipGroup(
                   label: AppLocalizations.of(context).synonymsLabel,
                   values: sense.definitionSynonyms,
                   onWordTapped: onWordTapped,
+                  labelStyle: theme.textTheme.labelMedium?.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: relationshipLabelColor,
+                  ),
+                  labelPadding: const EdgeInsets.only(top: 12, bottom: 8),
+                  wrapAlignment: WrapAlignment.start,
                 ),
               if (sense.definitionSynonyms.isNotEmpty &&
                   sense.definitionAntonyms.isNotEmpty)
@@ -275,6 +294,13 @@ class SenseSection extends StatelessWidget {
                   label: AppLocalizations.of(context).antonymsLabel,
                   values: sense.definitionAntonyms,
                   onWordTapped: onWordTapped,
+                  labelStyle: theme.textTheme.labelMedium?.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: relationshipLabelColor,
+                  ),
+                  labelPadding: const EdgeInsets.only(top: 12, bottom: 8),
+                  wrapAlignment: WrapAlignment.start,
                 ),
             ],
           ),
@@ -509,11 +535,17 @@ class RelationshipChipGroup extends StatelessWidget {
     required this.label,
     required this.values,
     this.onWordTapped,
+    this.labelStyle,
+    this.labelPadding = const EdgeInsets.only(bottom: 8),
+    this.wrapAlignment = WrapAlignment.start,
   });
 
   final String label;
   final List<String> values;
   final Future<void> Function(String word)? onWordTapped;
+  final TextStyle? labelStyle;
+  final EdgeInsetsGeometry labelPadding;
+  final WrapAlignment wrapAlignment;
 
   @override
   Widget build(BuildContext context) {
@@ -526,17 +558,23 @@ class RelationshipChipGroup extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: theme.textTheme.labelLarge?.copyWith(
-            color: isApplePlatform(context)
-                ? resolveLiquidGlassSecondaryForeground(context)
-                : theme.colorScheme.onSurfaceVariant,
-            fontWeight: FontWeight.w700,
+        Padding(
+          padding: labelPadding,
+          child: Text(
+            label,
+            textAlign: TextAlign.left,
+            style:
+                labelStyle ??
+                theme.textTheme.labelLarge?.copyWith(
+                  color: isApplePlatform(context)
+                      ? resolveLiquidGlassSecondaryForeground(context)
+                      : theme.colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w700,
+                ),
           ),
         ),
-        const SizedBox(height: 8),
         Wrap(
+          alignment: wrapAlignment,
           spacing: 8,
           runSpacing: 8,
           children: uniqueValues
