@@ -78,9 +78,11 @@ class WordDetailScreen extends StatelessWidget {
                       pinned: true,
                       stretch: false,
                       centerTitle: false,
+                      elevation: 0,
                       backgroundColor: Colors.transparent,
                       foregroundColor: resolveLiquidGlassForeground(context),
                       surfaceTintColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
                       scrolledUnderElevation: 0,
                       forceMaterialTransparency: true,
                       expandedHeight: 116,
@@ -325,28 +327,13 @@ class _AppleLargeTitleAppBarBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
     final fillColor = brightness == Brightness.dark
-        ? Colors.black.withValues(alpha: 0.16)
-        : Colors.white.withValues(alpha: 0.10);
-    final edgeColor = brightness == Brightness.dark
-        ? Colors.white.withValues(alpha: 0.08)
-        : Colors.white.withValues(alpha: 0.55);
+        ? Colors.black.withValues(alpha: 0.24)
+        : Colors.white.withValues(alpha: 0.50);
 
-    return ClipRect(
+    return ClipRRect(
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                fillColor,
-                fillColor.withValues(alpha: fillColor.a * 0.72),
-              ],
-            ),
-            border: Border(bottom: BorderSide(color: edgeColor, width: 0.6)),
-          ),
-        ),
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: DecoratedBox(decoration: BoxDecoration(color: fillColor)),
       ),
     );
   }

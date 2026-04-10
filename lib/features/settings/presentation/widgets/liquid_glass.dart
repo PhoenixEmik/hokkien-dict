@@ -5,11 +5,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 const _liquidGlassFill = CupertinoDynamicColor.withBrightness(
-  color: Color(0x0D000000),
-  darkColor: Color(0x26FFFFFF),
+  color: Color(0x26FFFFFF),
+  darkColor: Color(0x26000000),
 );
 const _liquidGlassStroke = CupertinoDynamicColor.withBrightness(
-  color: Color(0x1A000000),
+  color: Color(0x40FFFFFF),
   darkColor: Color(0x33FFFFFF),
 );
 const _liquidGlassDivider = CupertinoDynamicColor.withBrightness(
@@ -131,13 +131,6 @@ class LiquidGlassSection extends StatelessWidget {
             color: fill,
             borderRadius: BorderRadius.circular(28),
             border: Border.all(color: stroke),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.12),
-                blurRadius: 30,
-                offset: const Offset(0, 18),
-              ),
-            ],
           ),
           child: Column(
             children: [
