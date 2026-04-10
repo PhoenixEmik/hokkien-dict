@@ -95,8 +95,8 @@ class _AppleSearchResultCard extends StatelessWidget {
         ? Colors.black.withValues(alpha: 0.15)
         : Colors.white.withValues(alpha: 0.06);
     final strokeColor = brightness == Brightness.dark
-        ? Colors.white.withValues(alpha: 0.10)
-        : Colors.white.withValues(alpha: 0.55);
+        ? Colors.white.withValues(alpha: 0.15)
+        : Colors.black.withValues(alpha: 0.12);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(28),
@@ -106,7 +106,7 @@ class _AppleSearchResultCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: fillColor,
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: strokeColor),
+            border: Border.all(color: strokeColor, width: 0.5),
           ),
           child: InkWell(
             onTap: onTap,
