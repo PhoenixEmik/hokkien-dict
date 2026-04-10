@@ -3,13 +3,13 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
-import 'package:hokkien_dictionary/core/preferences/app_preferences.dart';
-import 'package:hokkien_dictionary/features/bookmarks/application/bookmark_store.dart';
-import 'package:hokkien_dictionary/features/dictionary/domain/dictionary_models.dart';
-import 'package:hokkien_dictionary/features/dictionary/presentation/widgets/word_detail_sections.dart';
-import 'package:hokkien_dictionary/features/settings/presentation/widgets/liquid_glass.dart';
-import 'package:hokkien_dictionary/offline_audio.dart';
+import 'package:taigi_dict/core/localization/app_localizations.dart';
+import 'package:taigi_dict/core/preferences/app_preferences.dart';
+import 'package:taigi_dict/features/bookmarks/application/bookmark_store.dart';
+import 'package:taigi_dict/features/dictionary/domain/dictionary_models.dart';
+import 'package:taigi_dict/features/dictionary/presentation/widgets/word_detail_sections.dart';
+import 'package:taigi_dict/features/settings/presentation/widgets/liquid_glass.dart';
+import 'package:taigi_dict/offline_audio.dart';
 import 'package:share_plus/share_plus.dart';
 
 class WordDetailScreen extends StatelessWidget {

@@ -1,9 +1,9 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
-import 'package:hokkien_dictionary/features/dictionary/domain/dictionary_models.dart';
-import 'package:hokkien_dictionary/features/settings/presentation/widgets/liquid_glass.dart';
+import 'package:taigi_dict/core/localization/app_localizations.dart';
+import 'package:taigi_dict/features/dictionary/domain/dictionary_models.dart';
+import 'package:taigi_dict/features/settings/presentation/widgets/liquid_glass.dart';
 
 class EntryListItem extends StatelessWidget {
   const EntryListItem({super.key, required this.entry, required this.onTap});

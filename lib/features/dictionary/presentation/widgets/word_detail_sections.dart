@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
-import 'package:hokkien_dictionary/features/dictionary/domain/dictionary_models.dart';
-import 'package:hokkien_dictionary/features/settings/presentation/widgets/liquid_glass.dart';
-import 'package:hokkien_dictionary/offline_audio.dart';
+import 'package:taigi_dict/core/localization/app_localizations.dart';
+import 'package:taigi_dict/features/dictionary/domain/dictionary_models.dart';
+import 'package:taigi_dict/features/settings/presentation/widgets/liquid_glass.dart';
+import 'package:taigi_dict/offline_audio.dart';
 import 'audio_button.dart';
 import 'interactive_definition_text.dart';
 

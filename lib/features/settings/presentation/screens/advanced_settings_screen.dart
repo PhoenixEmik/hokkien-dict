@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
-import 'package:hokkien_dictionary/core/utils/dialog_utils.dart';
-import 'package:hokkien_dictionary/features/dictionary/data/dictionary_database_builder_service.dart';
-import 'package:hokkien_dictionary/features/settings/presentation/widgets/liquid_glass.dart';
-import 'package:hokkien_dictionary/features/settings/presentation/widgets/settings_section_header.dart';
+import 'package:taigi_dict/core/localization/app_localizations.dart';
+import 'package:taigi_dict/core/utils/dialog_utils.dart';
+import 'package:taigi_dict/features/dictionary/data/dictionary_database_builder_service.dart';
+import 'package:taigi_dict/features/settings/presentation/widgets/liquid_glass.dart';
+import 'package:taigi_dict/features/settings/presentation/widgets/settings_section_header.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart' as glass;
 
 class AdvancedSettingsScreen extends StatelessWidget {

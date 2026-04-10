@@ -3,9 +3,9 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
-import 'package:hokkien_dictionary/core/constants/app_constants.dart';
-import 'package:hokkien_dictionary/features/dictionary/domain/dictionary_models.dart';
-import 'package:hokkien_dictionary/features/dictionary/domain/dictionary_search_service.dart';
+import 'package:taigi_dict/core/constants/app_constants.dart';
+import 'package:taigi_dict/features/dictionary/domain/dictionary_models.dart';
+import 'package:taigi_dict/features/dictionary/domain/dictionary_search_service.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';

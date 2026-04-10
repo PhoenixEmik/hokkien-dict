@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:hokkien_dictionary/core/constants/app_constants.dart';
-import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
-import 'package:hokkien_dictionary/features/audio/data/download_service.dart';
-import 'package:hokkien_dictionary/features/dictionary/data/dictionary_database_builder_service.dart';
-import 'package:hokkien_dictionary/features/dictionary/data/dictionary_repository.dart';
-import 'package:hokkien_dictionary/features/dictionary/data/offline_dictionary_library.dart';
+import 'package:taigi_dict/core/constants/app_constants.dart';
+import 'package:taigi_dict/core/localization/app_localizations.dart';
+import 'package:taigi_dict/features/audio/data/download_service.dart';
+import 'package:taigi_dict/features/dictionary/data/dictionary_database_builder_service.dart';
+import 'package:taigi_dict/features/dictionary/data/dictionary_repository.dart';
+import 'package:taigi_dict/features/dictionary/data/offline_dictionary_library.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum AppInitializationPhase {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
+import 'package:taigi_dict/core/localization/app_localizations.dart';
 
 class ReferenceArticleScreen extends StatelessWidget {
   const ReferenceArticleScreen({

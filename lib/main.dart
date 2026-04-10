@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hokkien_dictionary/app/app.dart';
+import 'package:taigi_dict/app/app.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart' as glass;
 
 export 'app/app.dart';

@@ -1,4 +1,4 @@
-import 'package:hokkien_dictionary/features/dictionary/domain/dictionary_models.dart';
+import 'package:taigi_dict/features/dictionary/domain/dictionary_models.dart';
 
 List<Map<String, Object>> buildDictionarySearchIndex(
   List<DictionaryEntry> entries,

@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:hokkien_dictionary/features/audio/data/audio_archive_index.dart';
-import 'package:hokkien_dictionary/features/audio/domain/audio_archive.dart';
+import 'package:taigi_dict/features/audio/data/audio_archive_index.dart';
+import 'package:taigi_dict/features/audio/domain/audio_archive.dart';
 
 class AudioArchiveStorage {
   const AudioArchiveStorage(this.supportDirectory);

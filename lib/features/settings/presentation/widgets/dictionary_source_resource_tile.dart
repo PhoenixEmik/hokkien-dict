@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
-import 'package:hokkien_dictionary/features/dictionary/data/offline_dictionary_library.dart';
-import 'package:hokkien_dictionary/offline_audio.dart';
-import 'package:hokkien_dictionary/features/settings/presentation/widgets/liquid_glass.dart';
+import 'package:taigi_dict/core/localization/app_localizations.dart';
+import 'package:taigi_dict/features/dictionary/data/offline_dictionary_library.dart';
+import 'package:taigi_dict/offline_audio.dart';
+import 'package:taigi_dict/features/settings/presentation/widgets/liquid_glass.dart';
 
 class DictionarySourceResourceTile extends StatelessWidget {
   const DictionarySourceResourceTile({

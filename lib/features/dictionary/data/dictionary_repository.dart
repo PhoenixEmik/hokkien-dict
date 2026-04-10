@@ -1,9 +1,9 @@
 import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
-import 'package:hokkien_dictionary/features/dictionary/data/dictionary_database_builder_service.dart';
-import 'package:hokkien_dictionary/features/dictionary/domain/dictionary_models.dart';
-import 'package:hokkien_dictionary/features/dictionary/domain/dictionary_search_service.dart';
+import 'package:taigi_dict/features/dictionary/data/dictionary_database_builder_service.dart';
+import 'package:taigi_dict/features/dictionary/domain/dictionary_models.dart';
+import 'package:taigi_dict/features/dictionary/domain/dictionary_search_service.dart';
 
 class DictionaryRepository {
   static Future<DictionaryBundle>? _bundleFuture;

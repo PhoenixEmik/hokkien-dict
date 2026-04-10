@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
-import 'package:hokkien_dictionary/core/translation/chinese_translation_service.dart';
-import 'package:hokkien_dictionary/features/dictionary/data/dictionary_repository.dart';
-import 'package:hokkien_dictionary/features/dictionary/domain/dictionary_models.dart';
-import 'package:hokkien_dictionary/features/dictionary/domain/dictionary_search_service.dart';
+import 'package:taigi_dict/core/localization/app_localizations.dart';
+import 'package:taigi_dict/core/translation/chinese_translation_service.dart';
+import 'package:taigi_dict/features/dictionary/data/dictionary_repository.dart';
+import 'package:taigi_dict/features/dictionary/domain/dictionary_models.dart';
+import 'package:taigi_dict/features/dictionary/domain/dictionary_search_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DictionarySearchController extends ChangeNotifier {

@@ -1,4 +1,4 @@
-import 'package:hokkien_dictionary/core/constants/app_constants.dart';
+import 'package:taigi_dict/core/constants/app_constants.dart';
 
 enum AudioArchiveType { word, sentence }
 

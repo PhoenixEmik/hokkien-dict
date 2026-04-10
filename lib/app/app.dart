@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:hokkien_dictionary/app/shell/main_shell.dart';
-import 'package:hokkien_dictionary/app/theme/app_theme.dart';
-import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
-import 'package:hokkien_dictionary/core/localization/locale_provider.dart';
-import 'package:hokkien_dictionary/core/preferences/app_preferences.dart';
-import 'package:hokkien_dictionary/core/translation/chinese_translation_service.dart';
+import 'package:taigi_dict/app/shell/main_shell.dart';
+import 'package:taigi_dict/app/theme/app_theme.dart';
+import 'package:taigi_dict/core/localization/app_localizations.dart';
+import 'package:taigi_dict/core/localization/locale_provider.dart';
+import 'package:taigi_dict/core/preferences/app_preferences.dart';
+import 'package:taigi_dict/core/translation/chinese_translation_service.dart';
 
 class HokkienDictionaryApp extends StatefulWidget {
   const HokkienDictionaryApp({super.key});

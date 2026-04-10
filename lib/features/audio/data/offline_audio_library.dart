@@ -3,12 +3,12 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
-import 'package:hokkien_dictionary/features/audio/data/audio_archive_index.dart';
-import 'package:hokkien_dictionary/features/audio/data/audio_archive_storage.dart';
-import 'package:hokkien_dictionary/features/audio/data/download_service.dart';
-import 'package:hokkien_dictionary/features/audio/data/audio_playback_diagnostics.dart';
-import 'package:hokkien_dictionary/features/audio/domain/audio_archive.dart';
+import 'package:taigi_dict/core/localization/app_localizations.dart';
+import 'package:taigi_dict/features/audio/data/audio_archive_index.dart';
+import 'package:taigi_dict/features/audio/data/audio_archive_storage.dart';
+import 'package:taigi_dict/features/audio/data/download_service.dart';
+import 'package:taigi_dict/features/audio/data/audio_playback_diagnostics.dart';
+import 'package:taigi_dict/features/audio/domain/audio_archive.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 

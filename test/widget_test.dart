@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hokkien_dictionary/features/dictionary/presentation/widgets/audio_button.dart';
-import 'package:hokkien_dictionary/features/dictionary/presentation/widgets/interactive_definition_text.dart';
+import 'package:taigi_dict/features/dictionary/presentation/widgets/audio_button.dart';
+import 'package:taigi_dict/features/dictionary/presentation/widgets/interactive_definition_text.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:hokkien_dictionary/main.dart';
-import 'package:hokkien_dictionary/offline_audio.dart';
+import 'package:taigi_dict/main.dart';
+import 'package:taigi_dict/offline_audio.dart';
 
 void main() {
   final searchField = find.byType(EditableText);

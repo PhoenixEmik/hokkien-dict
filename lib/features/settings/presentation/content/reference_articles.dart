@@ -1,5 +1,5 @@
-import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
-import 'package:hokkien_dictionary/features/settings/presentation/screens/reference_article_screen.dart';
+import 'package:taigi_dict/core/localization/app_localizations.dart';
+import 'package:taigi_dict/features/settings/presentation/screens/reference_article_screen.dart';
 
 class LocalizedReferenceArticle {
   const LocalizedReferenceArticle({

@@ -2,8 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
-import 'package:hokkien_dictionary/features/settings/presentation/widgets/liquid_glass.dart';
+import 'package:taigi_dict/core/localization/app_localizations.dart';
+import 'package:taigi_dict/features/settings/presentation/widgets/liquid_glass.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart' as glass;
 
 class SearchWorkspaceCard extends StatelessWidget {

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:hokkien_dictionary/core/localization/app_localizations.dart';
-import 'package:hokkien_dictionary/features/bookmarks/application/bookmark_store.dart';
-import 'package:hokkien_dictionary/features/bookmarks/presentation/widgets/bookmark_empty_state.dart';
-import 'package:hokkien_dictionary/features/dictionary/data/dictionary_repository.dart';
-import 'package:hokkien_dictionary/features/dictionary/domain/dictionary_models.dart';
-import 'package:hokkien_dictionary/features/dictionary/presentation/coordinators/word_detail_coordinator.dart';
-import 'package:hokkien_dictionary/features/dictionary/presentation/widgets/entry_list_item.dart';
-import 'package:hokkien_dictionary/features/settings/presentation/widgets/liquid_glass.dart';
-import 'package:hokkien_dictionary/offline_audio.dart';
+import 'package:taigi_dict/core/localization/app_localizations.dart';
+import 'package:taigi_dict/features/bookmarks/application/bookmark_store.dart';
+import 'package:taigi_dict/features/bookmarks/presentation/widgets/bookmark_empty_state.dart';
+import 'package:taigi_dict/features/dictionary/data/dictionary_repository.dart';
+import 'package:taigi_dict/features/dictionary/domain/dictionary_models.dart';
+import 'package:taigi_dict/features/dictionary/presentation/coordinators/word_detail_coordinator.dart';
+import 'package:taigi_dict/features/dictionary/presentation/widgets/entry_list_item.dart';
+import 'package:taigi_dict/features/settings/presentation/widgets/liquid_glass.dart';
+import 'package:taigi_dict/offline_audio.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart' as glass;
 
 class BookmarksScreen extends StatefulWidget {
