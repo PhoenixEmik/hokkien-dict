@@ -101,7 +101,6 @@ class WordDetailHeader extends StatelessWidget {
             RelationshipChipGroup(
               label: l10n.variantCharactersLabel,
               values: entry.variantChars,
-              onWordTapped: onWordTapped,
             ),
           ],
           if (entry.wordSynonyms.isNotEmpty) ...[
@@ -509,12 +508,12 @@ class RelationshipChipGroup extends StatelessWidget {
     super.key,
     required this.label,
     required this.values,
-    required this.onWordTapped,
+    this.onWordTapped,
   });
 
   final String label;
   final List<String> values;
-  final Future<void> Function(String word) onWordTapped;
+  final Future<void> Function(String word)? onWordTapped;
 
   @override
   Widget build(BuildContext context) {
@@ -544,7 +543,9 @@ class RelationshipChipGroup extends StatelessWidget {
               .map(
                 (value) => RelationshipChip(
                   word: value,
-                  onTap: () => onWordTapped(value),
+                  onTap: onWordTapped == null
+                      ? null
+                      : () => onWordTapped!(value),
                 ),
               )
               .toList(growable: false),
@@ -555,10 +556,10 @@ class RelationshipChipGroup extends StatelessWidget {
 }
 
 class RelationshipChip extends StatelessWidget {
-  const RelationshipChip({super.key, required this.word, required this.onTap});
+  const RelationshipChip({super.key, required this.word, this.onTap});
 
   final String word;
-  final Future<void> Function() onTap;
+  final Future<void> Function()? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -573,17 +574,20 @@ class RelationshipChip extends StatelessWidget {
         ? resolveLiquidGlassForeground(context)
         : Theme.of(context).colorScheme.onSurface;
     final l10n = AppLocalizations.of(context);
+    final isInteractive = onTap != null;
 
     return Semantics(
-      button: true,
-      label: l10n.linkedDefinitionWordLabel(word),
+      button: isInteractive,
+      label: isInteractive ? l10n.linkedDefinitionWordLabel(word) : word,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            unawaited(onTap());
-          },
+          onTap: isInteractive
+              ? () {
+                  unawaited(onTap!());
+                }
+              : null,
           child: Ink(
             decoration: BoxDecoration(
               color: fillColor,
