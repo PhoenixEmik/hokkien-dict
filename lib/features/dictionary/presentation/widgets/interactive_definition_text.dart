@@ -10,11 +10,13 @@ class InteractiveDefinitionText extends StatefulWidget {
     required this.text,
     required this.onWordTapped,
     this.style,
+    this.textAlign = TextAlign.start,
   });
 
   final String text;
   final Future<void> Function(String word) onWordTapped;
   final TextStyle? style;
+  final TextAlign textAlign;
 
   @override
   State<InteractiveDefinitionText> createState() =>
@@ -43,6 +45,7 @@ class _InteractiveDefinitionTextState extends State<InteractiveDefinitionText> {
     );
 
     return Text.rich(
+      textAlign: widget.textAlign,
       TextSpan(
         style: baseStyle,
         children: _buildDefinitionSpans(

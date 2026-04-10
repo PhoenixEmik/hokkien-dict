@@ -101,9 +101,16 @@ class LiquidGlassBackground extends StatelessWidget {
 }
 
 class LiquidGlassSection extends StatelessWidget {
-  const LiquidGlassSection({super.key, required this.children});
+  const LiquidGlassSection({
+    super.key,
+    required this.children,
+    this.dividerIndent = 72,
+    this.dividerEndIndent = 0,
+  });
 
   final List<Widget> children;
+  final double dividerIndent;
+  final double dividerEndIndent;
 
   @override
   Widget build(BuildContext context) {
@@ -138,7 +145,10 @@ class LiquidGlassSection extends StatelessWidget {
                 children[index],
                 if (index < children.length - 1)
                   Padding(
-                    padding: const EdgeInsets.only(left: 72),
+                    padding: EdgeInsets.only(
+                      left: dividerIndent,
+                      right: dividerEndIndent,
+                    ),
                     child: Divider(height: 1, thickness: 0.6, color: divider),
                   ),
               ],
