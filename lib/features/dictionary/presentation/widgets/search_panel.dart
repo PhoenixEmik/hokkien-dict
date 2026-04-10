@@ -365,6 +365,8 @@ class SearchLoadingState extends StatelessWidget {
         curve: Curves.easeInOut,
         builder: (context, opacity, child) {
           return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: List.generate(3, (index) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 10),
@@ -403,6 +405,8 @@ class SearchLoadingState extends StatelessWidget {
       curve: Curves.easeInOut,
       builder: (context, opacity, child) {
         return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: List.generate(3, (index) {
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),

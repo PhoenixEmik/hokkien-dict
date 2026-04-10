@@ -25,7 +25,20 @@ class DictionaryRepository {
   static bool get hasDebugFallbackBundle => debugFallbackBundle != null;
 
   Future<DictionaryBundle> loadBundle() {
-    return _bundleFuture ??= _loadBundle();
+    final cachedFuture = _bundleFuture;
+    if (cachedFuture != null) {
+      return cachedFuture;
+    }
+
+    late final Future<DictionaryBundle> future;
+    future = _loadBundle().catchError((error, stackTrace) {
+      if (identical(_bundleFuture, future)) {
+        _bundleFuture = null;
+      }
+      throw error;
+    });
+    _bundleFuture = future;
+    return future;
   }
 
   Future<DictionaryBundle> _loadBundle() async {

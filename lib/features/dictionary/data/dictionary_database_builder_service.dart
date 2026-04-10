@@ -121,7 +121,7 @@ class DictionaryDatabaseBuilderService {
       return false;
     }
 
-    final database = await openDatabase(databaseFile.path, readOnly: true);
+    final database = await _openReadOnlyDatabase(databaseFile.path);
     try {
       return await _hasRelationshipSchema(database);
     } finally {
@@ -169,7 +169,7 @@ class DictionaryDatabaseBuilderService {
       return true;
     }
 
-    final database = await openDatabase(databaseFile.path, readOnly: true);
+    final database = await _openReadOnlyDatabase(databaseFile.path);
     try {
       if (!await _hasRelationshipSchema(database)) {
         return true;
@@ -218,6 +218,7 @@ class DictionaryDatabaseBuilderService {
 
     final database = await openDatabase(
       tempDatabaseFile.path,
+      singleInstance: false,
       version: 1,
       onCreate: (db, version) async {
         await _createSchema(db);
@@ -357,7 +358,7 @@ class DictionaryDatabaseBuilderService {
       return null;
     }
 
-    final database = await openDatabase(databaseFile.path, readOnly: true);
+    final database = await _openReadOnlyDatabase(databaseFile.path);
     try {
       if (!await _hasRelationshipSchema(database)) {
         return null;
@@ -607,6 +608,14 @@ class DictionaryDatabaseBuilderService {
         documentsDirectory.path,
         AppConstants.offlineDictionaryDirectoryName,
       ),
+    );
+  }
+
+  Future<Database> _openReadOnlyDatabase(String databasePath) {
+    return openDatabase(
+      databasePath,
+      readOnly: true,
+      singleInstance: false,
     );
   }
 }

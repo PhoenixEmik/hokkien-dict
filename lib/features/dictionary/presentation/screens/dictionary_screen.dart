@@ -178,17 +178,11 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                                     )
                                   : isSearching
                                   ? const SliverToBoxAdapter(
-                                      child: SizedBox(
-                                        height: 220,
-                                        child: SearchLoadingState(),
-                                      ),
+                                      child: SearchLoadingState(),
                                     )
                                   : filteredResults.isEmpty
                                   ? const SliverToBoxAdapter(
-                                      child: SizedBox(
-                                        height: 220,
-                                        child: NoResultsState(),
-                                      ),
+                                      child: NoResultsState(),
                                     )
                                   : SliverList.separated(
                                       itemCount: filteredResults.length,
