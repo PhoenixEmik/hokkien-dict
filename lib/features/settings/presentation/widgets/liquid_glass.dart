@@ -9,12 +9,12 @@ const _liquidGlassFill = CupertinoDynamicColor.withBrightness(
   darkColor: Color(0x26000000),
 );
 const _liquidGlassStroke = CupertinoDynamicColor.withBrightness(
-  color: Color(0x40FFFFFF),
-  darkColor: Color(0x33FFFFFF),
+  color: Color(0x14000000),
+  darkColor: Color(0x26FFFFFF),
 );
 const _liquidGlassDivider = CupertinoDynamicColor.withBrightness(
   color: Color(0x14000000),
-  darkColor: Color(0x24FFFFFF),
+  darkColor: Color(0x26FFFFFF),
 );
 const _liquidGlassTint = CupertinoDynamicColor.withBrightness(
   color: CupertinoColors.activeBlue,
@@ -144,7 +144,7 @@ class LiquidGlassSection extends StatelessWidget {
           decoration: BoxDecoration(
             color: fill,
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: stroke),
+            border: Border.all(color: stroke, width: 0.5),
           ),
           child: Column(
             children: [
@@ -156,7 +156,7 @@ class LiquidGlassSection extends StatelessWidget {
                       left: dividerIndent,
                       right: dividerEndIndent,
                     ),
-                    child: Divider(height: 1, thickness: 0.6, color: divider),
+                    child: Divider(height: 1, thickness: 0.5, color: divider),
                   ),
               ],
             ],
