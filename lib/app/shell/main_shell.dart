@@ -40,18 +40,21 @@ class _MainScreenState extends State<MainScreen> {
 
   int _selectedIndex = 0;
   bool _startupRequested = false;
+  bool _startupGateResolved = false;
+  bool _shouldBlockInitialization = true;
 
   @override
   void initState() {
     super.initState();
     unawaited(_audioLibrary.initialize());
     unawaited(_bookmarkStore.initialize());
+    unawaited(_prepareStartupGate());
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_startupRequested) {
+    if (_startupRequested || !_startupGateResolved) {
       return;
     }
     _startupRequested = true;
@@ -72,6 +75,31 @@ class _MainScreenState extends State<MainScreen> {
       await _initializationController.initialize(AppLocalizations.of(context));
     } catch (_) {
       // The blocking startup screen reads the controller error state directly.
+    }
+  }
+
+  Future<void> _prepareStartupGate() async {
+    final preferences = await SharedPreferences.getInstance();
+    final readyFlag =
+        preferences.getBool(
+          AppInitializationController.databaseReadyPreferenceKey,
+        ) ??
+        false;
+    final hasDatabase = await _dictionaryDatabaseBuilderService
+        .hasBuiltDatabase();
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _shouldBlockInitialization = !readyFlag || !hasDatabase;
+      _startupGateResolved = true;
+    });
+
+    if (!_startupRequested) {
+      _startupRequested = true;
+      unawaited(_startInitialization());
     }
   }
 
@@ -178,7 +206,16 @@ class _MainScreenState extends State<MainScreen> {
         _dictionaryLibrary,
       ]),
       builder: (context, child) {
-        if (!_initializationController.isReady && !bypassInitialization) {
+        if (!_startupGateResolved && !bypassInitialization) {
+          return Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            body: const SizedBox.expand(),
+          );
+        }
+
+        if (_shouldBlockInitialization &&
+            !_initializationController.isReady &&
+            !bypassInitialization) {
           return AppInitializationScreen(
             controller: _initializationController,
             dictionaryLibrary: _dictionaryLibrary,
