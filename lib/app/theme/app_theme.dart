@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+const _fontFamilyFallback = <String>['TauhuOo'];
+
 ThemeData buildLightAppTheme({required bool applePlatform}) {
   const iosCanvas = Color(0xFFF2F2F7);
   const iosDeepInk = Color(0xFF111111);
@@ -167,6 +169,7 @@ ThemeData _buildAppTheme({
   return ThemeData(
     useMaterial3: true,
     brightness: brightness,
+    fontFamilyFallback: _fontFamilyFallback,
     scaffoldBackgroundColor: scaffoldBackgroundColor,
     colorScheme: colorScheme,
     textTheme: textTheme,
