@@ -784,36 +784,47 @@ class DetailNoteCard extends StatelessWidget {
     final applePlatform = isApplePlatform(context);
     final content = Padding(
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            textAlign: TextAlign.left,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: applePlatform
-                  ? resolveLiquidGlassForeground(context)
-                  : theme.colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 10),
-          ...lines.map((line) {
-            return Padding(
+      child: SizedBox(
+        width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                line,
-                textAlign: TextAlign.left,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  height: 1.55,
-                  color: applePlatform
-                      ? resolveLiquidGlassSecondaryForeground(context)
-                      : theme.colorScheme.onSurfaceVariant,
+              child: SizedBox(
+                width: double.infinity,
+                child: Text(
+                  title,
+                  textAlign: TextAlign.left,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: applePlatform
+                        ? resolveLiquidGlassForeground(context)
+                        : theme.colorScheme.onSurface,
+                  ),
                 ),
               ),
-            );
-          }),
-        ],
+            ),
+            ...lines.map((line) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Text(
+                    line,
+                    textAlign: TextAlign.left,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      height: 1.6,
+                      color: applePlatform
+                          ? resolveLiquidGlassSecondaryForeground(context)
+                          : theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ],
+        ),
       ),
     );
 
