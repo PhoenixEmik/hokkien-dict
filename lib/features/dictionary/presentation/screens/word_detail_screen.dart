@@ -68,86 +68,95 @@ class WordDetailScreen extends StatelessWidget {
           return Scaffold(
             backgroundColor: Colors.transparent,
             body: LiquidGlassBackground(
-              child: CustomScrollView(
-                slivers: [
-                  SliverAppBar.large(
-                    pinned: true,
-                    stretch: false,
-                    centerTitle: false,
-                    backgroundColor: Colors.transparent,
-                    foregroundColor: resolveLiquidGlassForeground(context),
-                    surfaceTintColor: Colors.transparent,
-                    scrolledUnderElevation: 0,
-                    forceMaterialTransparency: true,
-                    expandedHeight: 132,
-                    title: Text(
-                      title,
-                      style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: resolveLiquidGlassForeground(context),
-                          ),
-                    ),
-                    leading: IconButton(
-                      tooltip: MaterialLocalizations.of(
-                        context,
-                      ).backButtonTooltip,
-                      onPressed: () => Navigator.of(context).maybePop(),
-                      icon: Icon(CupertinoIcons.back, color: tint, size: 22),
-                    ),
-                    actions: [
-                      IconButton(
-                        tooltip: l10n.shareEntry,
-                        onPressed: () {
-                          unawaited(_shareEntry(l10n));
-                        },
-                        icon: Icon(CupertinoIcons.share, color: tint, size: 21),
+              child: SafeArea(
+                top: true,
+                bottom: false,
+                child: CustomScrollView(
+                  slivers: [
+                    SliverAppBar.large(
+                      primary: false,
+                      pinned: true,
+                      stretch: false,
+                      centerTitle: false,
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: resolveLiquidGlassForeground(context),
+                      surfaceTintColor: Colors.transparent,
+                      scrolledUnderElevation: 0,
+                      forceMaterialTransparency: true,
+                      expandedHeight: 116,
+                      title: Text(
+                        title,
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: resolveLiquidGlassForeground(context),
+                            ),
                       ),
-                      IconButton(
-                        tooltip: isBookmarked
-                            ? l10n.removeBookmark
-                            : l10n.addBookmark,
-                        onPressed: () {
-                          unawaited(bookmarkStore.toggleBookmark(entry.id));
-                        },
-                        icon: Icon(
-                          isBookmarked
-                              ? CupertinoIcons.bookmark_fill
-                              : CupertinoIcons.bookmark,
-                          color: tint,
-                          size: 21,
+                      leading: IconButton(
+                        tooltip: MaterialLocalizations.of(
+                          context,
+                        ).backButtonTooltip,
+                        onPressed: () => Navigator.of(context).maybePop(),
+                        icon: Icon(CupertinoIcons.back, color: tint, size: 22),
+                      ),
+                      actions: [
+                        IconButton(
+                          tooltip: l10n.shareEntry,
+                          onPressed: () {
+                            unawaited(_shareEntry(l10n));
+                          },
+                          icon: Icon(
+                            CupertinoIcons.share,
+                            color: tint,
+                            size: 21,
+                          ),
                         ),
-                      ),
-                    ],
-                    flexibleSpace: const _AppleLargeTitleAppBarBackground(),
-                  ),
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 34),
-                    sliver: SliverToBoxAdapter(
-                      child: Align(
-                        alignment: Alignment.topCenter,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: MediaQuery.sizeOf(context).width >= 900
-                                ? 920
-                                : 720,
+                        IconButton(
+                          tooltip: isBookmarked
+                              ? l10n.removeBookmark
+                              : l10n.addBookmark,
+                          onPressed: () {
+                            unawaited(bookmarkStore.toggleBookmark(entry.id));
+                          },
+                          icon: Icon(
+                            isBookmarked
+                                ? CupertinoIcons.bookmark_fill
+                                : CupertinoIcons.bookmark,
+                            color: tint,
+                            size: 21,
                           ),
-                          child: SelectionArea(
-                            child: _WordDetailContent(
-                              entry: entry,
-                              audioLibrary: audioLibrary,
-                              onPlayClip: onPlayClip,
-                              onWordTapped: onWordTapped,
-                              readingTextScale: AppPreferencesScope.of(
-                                context,
-                              ).readingTextScale,
+                        ),
+                      ],
+                      flexibleSpace: const _AppleLargeTitleAppBarBackground(),
+                    ),
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 34),
+                      sliver: SliverToBoxAdapter(
+                        child: Align(
+                          alignment: Alignment.topCenter,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth: MediaQuery.sizeOf(context).width >= 900
+                                  ? 920
+                                  : 720,
+                            ),
+                            child: SelectionArea(
+                              child: _WordDetailContent(
+                                entry: entry,
+                                audioLibrary: audioLibrary,
+                                onPlayClip: onPlayClip,
+                                onWordTapped: onWordTapped,
+                                readingTextScale: AppPreferencesScope.of(
+                                  context,
+                                ).readingTextScale,
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );

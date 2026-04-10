@@ -148,47 +148,41 @@ class SenseSection extends StatelessWidget {
           applePlatform ? appleInset : 0,
           applePlatform ? 18 : 0,
         ),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (sense.partOfSpeech.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: applePlatform
-                        ? _SensePill(label: sense.partOfSpeech)
-                        : Chip(
-                            label: Text(sense.partOfSpeech),
-                            labelStyle: theme.textTheme.labelLarge?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                  ),
-                ),
-              if (sense.definition.isNotEmpty)
-                SizedBox(
-                  width: double.infinity,
-                  child: InteractiveDefinitionText(
-                    text: sense.definition,
-                    onWordTapped: onWordTapped,
-                    textAlign: TextAlign.start,
-                    style: scaledTextStyle(
-                      theme.textTheme.bodyLarge?.copyWith(
-                        height: applePlatform ? 1.6 : 1.55,
-                        fontWeight: FontWeight.w700,
-                        color: applePlatform
-                            ? resolveLiquidGlassForeground(context)
-                            : null,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (sense.partOfSpeech.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: applePlatform
+                    ? _SensePill(label: sense.partOfSpeech)
+                    : Chip(
+                        label: Text(sense.partOfSpeech),
+                        labelStyle: theme.textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                      textScale,
+              ),
+            if (sense.definition.isNotEmpty)
+              SizedBox(
+                width: double.infinity,
+                child: InteractiveDefinitionText(
+                  text: sense.definition,
+                  onWordTapped: onWordTapped,
+                  textAlign: TextAlign.left,
+                  style: scaledTextStyle(
+                    theme.textTheme.bodyLarge?.copyWith(
+                      height: applePlatform ? 1.6 : 1.55,
+                      fontWeight: FontWeight.w700,
+                      color: applePlatform
+                          ? resolveLiquidGlassForeground(context)
+                          : null,
                     ),
+                    textScale,
                   ),
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     ];
