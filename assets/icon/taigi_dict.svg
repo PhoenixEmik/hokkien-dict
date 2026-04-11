@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 1080 1080" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(0.539335,0,0,0.539335,540,540)">
+        <g transform="matrix(1,0,0,1,-800,-800)">
+            <g transform="matrix(80,0,0,80,0,0)">
+                <rect x="0" y="0" width="20" height="20" style="fill:none;"/>
+            </g>
+            <g transform="matrix(80,0,0,80,0,0)">
+                <path d="M16,3L18,3L18,19L5,19C3.34,19 2,17.66 2,16L2,4C2,2.34 3.34,1 5,1L14,1L14,15L5,15C4.45,15 4,15.45 4,16C4,16.55 4.45,17 5,17L16,17L16,3Z" style="fill:rgb(26,54,93);fill-rule:nonzero;"/>
+            </g>
+        </g>
+    </g>
+    <g transform="matrix(1,0,0,1,-602.513,158.162)">
+        <g transform="matrix(500,0,0,500,1304.58,469.676)">
+        </g>
+        <text x="804.584px" y="469.676px" style="font-family:'jf-openhuninn-2.1', sans-serif;font-size:500px;fill:white;">台</text>
+    </g>
+</svg>
