@@ -1,6 +1,6 @@
 # 台語辭典
 
-[繁體中文說明](README.zh-Hant.md)
+[正體中文說明](README.zh-Hant.md)
 
 Flutter dictionary app for Taiwanese Hokkien and Mandarin on Android and iOS.
 The app is built around the Ministry of Education dataset, supports offline

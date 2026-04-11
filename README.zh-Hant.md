@@ -26,7 +26,7 @@
 - 透過 `dio` 與 HTTP range requests 支援大型 ZIP 的暫停、續傳與斷點續傳
 - 支援下載離線詞典原始檔 `kautian.ods`
 - 使用 `spreadsheet_decoder` 與 `sqflite` 在裝置上把 ODS 建成 SQLite 詞典資料庫
-- 提供繁體中文、簡體中文與英文介面
+- 提供正體中文、簡體中文與英文介面
 - 使用原生 OpenCC 引擎做執行期繁簡轉換，並套用台灣詞彙轉換設定
 - 已補強語意標籤、複合設定列 merged semantics 與本地化 tooltip 的無障礙支援
 - 採用平台自適應 UI：Android 維持品牌化 Material 風格，iOS 使用 Cupertino 導覽與 Liquid Glass 視覺
