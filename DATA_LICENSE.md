@@ -5,7 +5,10 @@ The following files are derived from the Ministry of Education Taiwanese
 Hokkien dictionary dataset and should be treated as separate content:
 
 - `data/source/kautian.ods`
-- audio archives downloaded in-app from the Ministry of Education source URLs
+- dictionary audio archive downloaded in-app from:
+  `https://sutian.moe.edu.tw/media/senn/sutiau-mp3.zip`
+- example audio archive downloaded in-app from:
+  `https://sutian.moe.edu.tw/media/senn/leku-mp3.zip`
 
 Requested data license:
 
@@ -31,3 +34,8 @@ Reference pages:
 Primary dataset file:
 
 - `https://sutian.moe.edu.tw/media/senn/ods/kautian.ods`
+
+Audio archive source files:
+
+- `https://sutian.moe.edu.tw/media/senn/sutiau-mp3.zip`
+- `https://sutian.moe.edu.tw/media/senn/leku-mp3.zip`
