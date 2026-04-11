@@ -5,6 +5,23 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+fun sanitizePackagedResources(project: Project) {
+    val packagedResDir = project.layout.buildDirectory.dir("intermediates/packaged_res").get().asFile
+    if (!packagedResDir.exists()) {
+        return
+    }
+
+    packagedResDir
+        .walkTopDown()
+        .filter { file ->
+            file.isFile && Regex(""".+ \d+\.(png|xml|webp)$""").matches(file.name)
+        }
+        .forEach { file ->
+            project.logger.lifecycle("Deleting invalid generated resource ${file.absolutePath}")
+            file.delete()
+        }
+}
+
 android {
     namespace = "com.example.hokkien_dictionary"
     compileSdk = flutter.compileSdkVersion
@@ -45,4 +62,20 @@ flutter {
 
 tasks.withType<JavaCompile>().configureEach {
     exclude("io/flutter/plugins/GeneratedPluginRegistrant.java")
+}
+
+tasks.matching { task ->
+    task.name.startsWith("package") && task.name.endsWith("Resources")
+}.configureEach {
+    doLast {
+        sanitizePackagedResources(project)
+    }
+}
+
+tasks.matching { task ->
+    task.name.startsWith("parse") && task.name.endsWith("LocalResources")
+}.configureEach {
+    doFirst {
+        sanitizePackagedResources(project)
+    }
 }
