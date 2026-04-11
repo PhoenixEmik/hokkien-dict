@@ -1,5 +1,7 @@
 # 台語辭典
 
+<img src="assets/icon/taigi_dict.png" alt="台語辭典 App Icon" width="120" />
+
 [正體中文說明](README.zh-Hant.md)
 
 Flutter dictionary app for Taiwanese Hokkien and Mandarin on Android and iOS.
