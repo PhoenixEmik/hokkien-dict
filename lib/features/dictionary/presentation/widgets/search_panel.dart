@@ -11,12 +11,10 @@ class SearchWorkspaceCard extends StatelessWidget {
     super.key,
     required this.controller,
     required this.onSubmitted,
-    this.autofocus = false,
   });
 
   final TextEditingController controller;
   final ValueChanged<String> onSubmitted;
-  final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +27,6 @@ class SearchWorkspaceCard extends StatelessWidget {
         placeholder: l10n.searchHint,
         onSubmitted: onSubmitted,
         onChanged: (_) {},
-        autofocus: autofocus,
         useOwnLayer: true,
         quality: glass.GlassQuality.standard,
         searchIconColor: resolveLiquidGlassSecondaryForeground(context),
@@ -48,7 +45,6 @@ class SearchWorkspaceCard extends StatelessWidget {
     return SearchBar(
       controller: controller,
       hintText: l10n.searchHint,
-      autoFocus: autofocus,
       leading: const Icon(Icons.search),
       trailing: controller.text.isEmpty
           ? null
@@ -62,60 +58,6 @@ class SearchWorkspaceCard extends StatelessWidget {
               ),
             ],
       onSubmitted: onSubmitted,
-    );
-  }
-}
-
-class AppleSearchFloatingButton extends StatelessWidget {
-  const AppleSearchFloatingButton({
-    super.key,
-    required this.label,
-    required this.onTap,
-  });
-
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final tint = resolveLiquidGlassTint(context);
-
-    return Semantics(
-      button: true,
-      label: label,
-      child: glass.GlassButton.custom(
-        onTap: onTap,
-        label: label,
-        width: 156,
-        height: 58,
-        useOwnLayer: true,
-        quality: glass.GlassQuality.premium,
-        shape: const glass.LiquidRoundedSuperellipse(borderRadius: 28),
-        glowColor: tint.withValues(alpha: 0.28),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                CupertinoIcons.search,
-                size: 18,
-                color: resolveLiquidGlassForeground(context),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: theme.textTheme.labelLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: resolveLiquidGlassForeground(context),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

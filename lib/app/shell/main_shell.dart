@@ -253,42 +253,53 @@ class _MainScreenState extends State<MainScreen> {
 
         if (isApplePlatform(context)) {
           return Scaffold(
+            extendBody: true,
+            backgroundColor: Colors.transparent,
             body: IndexedStack(index: _selectedIndex, children: screens),
-            bottomNavigationBar: glass.GlassBottomBar(
-              selectedIndex: _selectedIndex,
-              onTabSelected: (index) {
-                setState(() {
-                  _selectedIndex = index;
-                });
-              },
-              quality: glass.GlassQuality.premium,
-              selectedIconColor: resolveLiquidGlassForeground(context),
-              unselectedIconColor: resolveLiquidGlassSecondaryForeground(
-                context,
+            bottomNavigationBar: SafeArea(
+              top: false,
+              minimum: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              child: glass.GlassBottomBar(
+                selectedIndex: _selectedIndex,
+                onTabSelected: (index) {
+                  setState(() {
+                    _selectedIndex = index;
+                  });
+                },
+                quality: glass.GlassQuality.premium,
+                barHeight: 68,
+                horizontalPadding: 14,
+                verticalPadding: 14,
+                spacing: 10,
+                barBorderRadius: 30,
+                selectedIconColor: resolveLiquidGlassForeground(context),
+                unselectedIconColor: resolveLiquidGlassSecondaryForeground(
+                  context,
+                ),
+                indicatorColor: resolveLiquidGlassTint(
+                  context,
+                ).withValues(alpha: 0.20),
+                tabs: [
+                  glass.GlassBottomBarTab(
+                    label: l10n.dictionaryTab,
+                    icon: const Icon(CupertinoIcons.book),
+                    activeIcon: const Icon(CupertinoIcons.book_fill),
+                    glowColor: resolveLiquidGlassTint(context),
+                  ),
+                  glass.GlassBottomBarTab(
+                    label: l10n.bookmarksTab,
+                    icon: const Icon(CupertinoIcons.bookmark),
+                    activeIcon: const Icon(CupertinoIcons.bookmark_fill),
+                    glowColor: resolveLiquidGlassTint(context),
+                  ),
+                  glass.GlassBottomBarTab(
+                    label: l10n.settingsTab,
+                    icon: const Icon(CupertinoIcons.gear),
+                    activeIcon: const Icon(CupertinoIcons.gear_solid),
+                    glowColor: resolveLiquidGlassTint(context),
+                  ),
+                ],
               ),
-              indicatorColor: resolveLiquidGlassTint(
-                context,
-              ).withValues(alpha: 0.20),
-              tabs: [
-                glass.GlassBottomBarTab(
-                  label: l10n.dictionaryTab,
-                  icon: const Icon(CupertinoIcons.book),
-                  activeIcon: const Icon(CupertinoIcons.book_fill),
-                  glowColor: resolveLiquidGlassTint(context),
-                ),
-                glass.GlassBottomBarTab(
-                  label: l10n.bookmarksTab,
-                  icon: const Icon(CupertinoIcons.bookmark),
-                  activeIcon: const Icon(CupertinoIcons.bookmark_fill),
-                  glowColor: resolveLiquidGlassTint(context),
-                ),
-                glass.GlassBottomBarTab(
-                  label: l10n.settingsTab,
-                  icon: const Icon(CupertinoIcons.gear),
-                  activeIcon: const Icon(CupertinoIcons.gear_solid),
-                  glowColor: resolveLiquidGlassTint(context),
-                ),
-              ],
             ),
           );
         }

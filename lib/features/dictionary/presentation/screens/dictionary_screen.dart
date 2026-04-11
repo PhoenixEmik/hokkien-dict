@@ -32,15 +32,11 @@ class DictionaryScreen extends StatefulWidget {
 
 class _DictionaryScreenState extends State<DictionaryScreen> {
   late final DictionarySearchController _searchController;
-  late final ScrollController _scrollController;
   Locale? _lastResolvedLocale;
-  int _searchBarVersion = 0;
-  bool _requestSearchAutofocus = false;
 
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
     _searchController = DictionarySearchController(
       repository: widget.repository,
     )..initialize();
@@ -61,33 +57,8 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
 
   @override
   void dispose() {
-    _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
-  }
-
-  void _focusSearchField() {
-    if (_scrollController.hasClients) {
-      _scrollController.animateTo(
-        0,
-        duration: const Duration(milliseconds: 280),
-        curve: Curves.easeOutCubic,
-      );
-    }
-
-    setState(() {
-      _searchBarVersion += 1;
-      _requestSearchAutofocus = true;
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _requestSearchAutofocus = false;
-      });
-    });
   }
 
   Future<void> _showEntryDetails(
@@ -147,10 +118,8 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
             final filteredResults = _searchController.filteredResults;
             final isSearching = _searchController.isSearching;
             final searchHistory = _searchController.searchHistory;
-            final showAppleStartSearchFab =
-                applePlatform && !hasActiveQuery && !isSearching;
 
-            final content = LiquidGlassBackground(
+            return LiquidGlassBackground(
               child: SafeArea(
                 child: LayoutBuilder(
                   builder: (context, constraints) {
@@ -161,7 +130,6 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                           maxWidth: constraints.maxWidth >= 900 ? 920 : 720,
                         ),
                         child: CustomScrollView(
-                          controller: _scrollController,
                           keyboardDismissBehavior:
                               ScrollViewKeyboardDismissBehavior.onDrag,
                           slivers: [
@@ -174,12 +142,8 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                               ),
                               sliver: SliverToBoxAdapter(
                                 child: SearchWorkspaceCard(
-                                  key: ValueKey(
-                                    'search-bar-$_searchBarVersion',
-                                  ),
                                   controller:
                                       _searchController.searchController,
-                                  autofocus: _requestSearchAutofocus,
                                   onSubmitted: (_) {
                                     unawaited(_searchController.submitQuery());
                                   },
@@ -209,7 +173,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                                 16,
                                 0,
                                 16,
-                                showAppleStartSearchFab ? 112 : 28,
+                                applePlatform ? 120 : 28,
                               ),
                               sliver: !hasActiveQuery
                                   ? SliverToBoxAdapter(
@@ -251,23 +215,6 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                 ),
               ),
             );
-
-            if (applePlatform) {
-              return Scaffold(
-                backgroundColor: Colors.transparent,
-                body: content,
-                floatingActionButton: showAppleStartSearchFab
-                    ? AppleSearchFloatingButton(
-                        label: l10n.startSearch,
-                        onTap: _focusSearchField,
-                      )
-                    : null,
-                floatingActionButtonLocation:
-                    FloatingActionButtonLocation.endFloat,
-              );
-            }
-
-            return content;
           },
         );
       },
