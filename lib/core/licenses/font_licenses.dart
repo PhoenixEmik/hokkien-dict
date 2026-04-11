@@ -20,4 +20,23 @@ verbatim display is required.
 ''',
     );
   });
+
+  LicenseRegistry.addLicense(() async* {
+    yield const LicenseEntryWithLineBreaks(
+      <String>['jf open-huninn font'],
+      '''
+jf open-huninn (jf open 粉圓)
+Source repository: https://github.com/justfont/open-huninn-font
+
+This app uses jf open-huninn in the application icon artwork.
+
+Copyright (c) jf open-huninn contributors.
+
+Licensed under the SIL Open Font License, Version 1.1.
+This is a summarized placeholder notice for the bundled font registration.
+Replace this text with the full OFL 1.1 license text if full in-app license
+verbatim display is required.
+''',
+    );
+  });
 }

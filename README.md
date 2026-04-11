@@ -136,6 +136,7 @@ Current release-build caveat:
 
 - Ministry of Education Taiwanese Hokkien Dictionary: `https://sutian.moe.edu.tw/`
 - Tauhu-oo (豆腐烏) 20.05 font for Taiwanese Hanzi and specific CJK Extension glyph coverage: `https://github.com/tauhu-tw/tauhu-oo`
+- jf open-huninn (jf open 粉圓) font used in the app icon artwork: `https://github.com/justfont/open-huninn-font`
 - Liquid Glass Widgets for iOS-style glass surfaces: `https://github.com/sdegenaar/liquid_glass_widgets`
 - Open Chinese Convert for Flutter for runtime OpenCC conversion: `https://github.com/zonble/flutter_open_chinese_convert`
 
