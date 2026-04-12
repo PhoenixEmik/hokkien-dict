@@ -173,7 +173,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                                 16,
                                 0,
                                 16,
-                                applePlatform ? 120 : 28,
+                                applePlatform ? 140 : 28,
                               ),
                               sliver: !hasActiveQuery
                                   ? SliverToBoxAdapter(

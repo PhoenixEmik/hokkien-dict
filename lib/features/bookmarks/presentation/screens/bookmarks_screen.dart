@@ -144,7 +144,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
           16,
           applePlatform ? 24 : 16,
           16,
-          applePlatform ? 120 : 28,
+          applePlatform ? 140 : 28,
         ),
         child: const BookmarkEmptyState(),
       );
@@ -155,7 +155,7 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
         16,
         applePlatform ? 12 : 16,
         16,
-        applePlatform ? 120 : 28,
+        applePlatform ? 140 : 28,
       ),
       itemCount: bookmarkedEntries.length,
       itemBuilder: (context, index) {

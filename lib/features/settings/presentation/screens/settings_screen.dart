@@ -212,7 +212,7 @@ class SettingsScreen extends StatelessWidget {
                         16,
                         applePlatform ? 12 : 8,
                         16,
-                        applePlatform ? 120 : 28,
+                        applePlatform ? 140 : 28,
                       ),
                       children: [
                         SettingsSectionHeader(title: l10n.offlineResources),

@@ -193,6 +193,53 @@ class _MainScreenState extends State<MainScreen> {
     return l10n.dictionaryDatabaseRebuildFailed('$error');
   }
 
+  Widget _buildAppleFloatingDock(BuildContext context, AppLocalizations l10n) {
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+
+    return Positioned(
+      left: 20,
+      right: 20,
+      bottom: bottomInset + 20,
+      child: glass.GlassBottomBar(
+        selectedIndex: _selectedIndex,
+        onTabSelected: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        quality: glass.GlassQuality.premium,
+        barHeight: 68,
+        horizontalPadding: 14,
+        verticalPadding: 14,
+        spacing: 10,
+        barBorderRadius: 30,
+        selectedIconColor: resolveLiquidGlassForeground(context),
+        unselectedIconColor: resolveLiquidGlassSecondaryForeground(context),
+        indicatorColor: resolveLiquidGlassTint(context).withValues(alpha: 0.20),
+        tabs: [
+          glass.GlassBottomBarTab(
+            label: l10n.dictionaryTab,
+            icon: const Icon(CupertinoIcons.book),
+            activeIcon: const Icon(CupertinoIcons.book_fill),
+            glowColor: resolveLiquidGlassTint(context),
+          ),
+          glass.GlassBottomBarTab(
+            label: l10n.bookmarksTab,
+            icon: const Icon(CupertinoIcons.bookmark),
+            activeIcon: const Icon(CupertinoIcons.bookmark_fill),
+            glowColor: resolveLiquidGlassTint(context),
+          ),
+          glass.GlassBottomBarTab(
+            label: l10n.settingsTab,
+            icon: const Icon(CupertinoIcons.gear),
+            activeIcon: const Icon(CupertinoIcons.gear_solid),
+            glowColor: resolveLiquidGlassTint(context),
+          ),
+        ],
+      ),
+    );
+  }
+
   PreferredSizeWidget? _buildRootAppBar(
     BuildContext context,
     AppLocalizations l10n,
@@ -300,51 +347,14 @@ class _MainScreenState extends State<MainScreen> {
             extendBody: true,
             backgroundColor: Colors.transparent,
             appBar: _buildRootAppBar(context, l10n),
-            body: IndexedStack(index: _selectedIndex, children: screens),
-            bottomNavigationBar: SafeArea(
-              top: false,
-              minimum: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              child: glass.GlassBottomBar(
-                selectedIndex: _selectedIndex,
-                onTabSelected: (index) {
-                  setState(() {
-                    _selectedIndex = index;
-                  });
-                },
-                quality: glass.GlassQuality.premium,
-                barHeight: 68,
-                horizontalPadding: 14,
-                verticalPadding: 14,
-                spacing: 10,
-                barBorderRadius: 30,
-                selectedIconColor: resolveLiquidGlassForeground(context),
-                unselectedIconColor: resolveLiquidGlassSecondaryForeground(
-                  context,
+            body: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned.fill(
+                  child: IndexedStack(index: _selectedIndex, children: screens),
                 ),
-                indicatorColor: resolveLiquidGlassTint(
-                  context,
-                ).withValues(alpha: 0.20),
-                tabs: [
-                  glass.GlassBottomBarTab(
-                    label: l10n.dictionaryTab,
-                    icon: const Icon(CupertinoIcons.book),
-                    activeIcon: const Icon(CupertinoIcons.book_fill),
-                    glowColor: resolveLiquidGlassTint(context),
-                  ),
-                  glass.GlassBottomBarTab(
-                    label: l10n.bookmarksTab,
-                    icon: const Icon(CupertinoIcons.bookmark),
-                    activeIcon: const Icon(CupertinoIcons.bookmark_fill),
-                    glowColor: resolveLiquidGlassTint(context),
-                  ),
-                  glass.GlassBottomBarTab(
-                    label: l10n.settingsTab,
-                    icon: const Icon(CupertinoIcons.gear),
-                    activeIcon: const Icon(CupertinoIcons.gear_solid),
-                    glowColor: resolveLiquidGlassTint(context),
-                  ),
-                ],
-              ),
+                _buildAppleFloatingDock(context, l10n),
+              ],
             ),
           );
         }
