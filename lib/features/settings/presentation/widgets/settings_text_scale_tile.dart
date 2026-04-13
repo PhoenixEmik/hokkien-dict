@@ -1,3 +1,4 @@
+import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart' as glass;
 import 'package:taigi_dict/core/localization/app_localizations.dart';
@@ -25,7 +26,7 @@ class SettingsTextScaleTile extends StatelessWidget {
           AppPreferences.maxReadingTextScale,
         )
         .toDouble();
-    final sliderStep = _valueToSliderStep(sliderValue);
+
     final trailing = SizedBox(
       width: 50,
       child: Text(
@@ -37,40 +38,25 @@ class SettingsTextScaleTile extends StatelessWidget {
         ),
       ),
     );
+
+    // AdaptiveSlider accepts the true domain (min: 0.9, max: 1.4) directly.
+    // The zero-based index workaround that GlassSlider 0.7.8 required is gone.
+    final slider = AdaptiveSlider(
+      value: sliderValue,
+      min: AppPreferences.minReadingTextScale,
+      max: AppPreferences.maxReadingTextScale,
+      divisions: AppPreferences.readingTextScaleDivisions,
+      label: l10n.readingTextScaleLabel(sliderValue),
+      activeColor: applePlatform ? resolveLiquidGlassTint(context) : null,
+      onChanged: _handleDiscreteValueChanged,
+    );
+
     final subtitle = Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (applePlatform)
-            glass.GlassSlider(
-              // GlassSlider 0.7.8 snaps incorrectly when min is non-zero.
-              // Keep the package widget on a zero-based discrete scale and
-              // map it back to 0.9..1.4 in the callback.
-              value: sliderStep,
-              min: 0,
-              max: AppPreferences.readingTextScaleDivisions.toDouble(),
-              divisions: AppPreferences.readingTextScaleDivisions,
-              label: l10n.readingTextScaleLabel(sliderValue),
-              activeColor: resolveLiquidGlassTint(context),
-              inactiveColor: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white.withValues(alpha: 0.16)
-                  : Colors.black.withValues(alpha: 0.12),
-              thumbColor: Colors.white,
-              trackHeight: 4,
-              thumbRadius: 13,
-              quality: glass.GlassQuality.standard,
-              onChanged: _handleDiscreteStepChanged,
-            )
-          else
-            Slider.adaptive(
-              value: sliderValue,
-              min: AppPreferences.minReadingTextScale,
-              max: AppPreferences.maxReadingTextScale,
-              divisions: AppPreferences.readingTextScaleDivisions,
-              label: l10n.readingTextScaleLabel(sliderValue),
-              onChanged: _handleDiscreteValueChanged,
-            ),
+          slider,
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -115,34 +101,6 @@ class SettingsTextScaleTile extends StatelessWidget {
       title: Text(l10n.fontSize),
       trailing: trailing,
       subtitle: subtitle,
-    );
-  }
-
-  double _valueToSliderStep(double currentValue) {
-    final step =
-        (AppPreferences.maxReadingTextScale -
-            AppPreferences.minReadingTextScale) /
-        AppPreferences.readingTextScaleDivisions;
-    final index = ((currentValue - AppPreferences.minReadingTextScale) / step)
-        .round();
-    return index.clamp(0, AppPreferences.readingTextScaleDivisions).toDouble();
-  }
-
-  void _handleDiscreteStepChanged(double rawStep) {
-    final index = rawStep.round().clamp(
-      0,
-      AppPreferences.readingTextScaleDivisions,
-    );
-    final step =
-        (AppPreferences.maxReadingTextScale -
-            AppPreferences.minReadingTextScale) /
-        AppPreferences.readingTextScaleDivisions;
-    onChanged(
-      double.parse(
-        (AppPreferences.minReadingTextScale + (index * step)).toStringAsFixed(
-          2,
-        ),
-      ),
     );
   }
 
