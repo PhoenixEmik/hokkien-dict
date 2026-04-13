@@ -213,7 +213,6 @@ class _MainScreenState extends State<MainScreen> {
             child: glass.GlassBottomBar(
               selectedIndex: _selectedIndex,
               glassSettings: _dockGlassSettings(context),
-              indicatorColor: _dockIndicatorColor(context),
               selectedIconColor: selectedItemColor,
               unselectedIconColor: unselectedItemColor,
               onTabSelected: (index) {
@@ -264,15 +263,15 @@ class _MainScreenState extends State<MainScreen> {
     final isLight = Theme.of(context).brightness == Brightness.light;
     return glass.LiquidGlassSettings(
       glassColor: isLight
-          ? Colors.white.withValues(alpha: 0.82)
+          ? Colors.white.withValues(alpha: 0.58)
           : Colors.white.withValues(alpha: 0.24),
-      thickness: isLight ? 34 : 30,
-      blur: isLight ? 25 : 3,
+      thickness: 30,
+      blur: 3,
       chromaticAberration: 0.3,
-      lightIntensity: isLight ? 0.75 : 0.6,
+      lightIntensity: 0.6,
       refractiveIndex: 1.59,
-      saturation: isLight ? 1.1 : 0.7,
-      ambientStrength: isLight ? 0.85 : 1,
+      saturation: 0.7,
+      ambientStrength: 1,
     );
   }
 
@@ -285,16 +284,6 @@ class _MainScreenState extends State<MainScreen> {
     return isLight
         ? Colors.black87
         : CupertinoDynamicColor.resolve(CupertinoColors.systemGrey, context);
-  }
-
-  Color _dockIndicatorColor(BuildContext context) {
-    final isLight = Theme.of(context).brightness == Brightness.light;
-    return isLight
-        ? CupertinoDynamicColor.resolve(
-            CupertinoColors.activeBlue,
-            context,
-          ).withValues(alpha: 0.18)
-        : Colors.white.withValues(alpha: 0.12);
   }
 
   PreferredSizeWidget? _buildRootAppBar(
