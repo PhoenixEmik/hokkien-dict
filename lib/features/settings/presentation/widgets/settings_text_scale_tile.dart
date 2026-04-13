@@ -26,7 +26,7 @@ class SettingsTextScaleTile extends StatelessWidget {
         )
         .toDouble();
     final trailing = Text(
-      '${(sliderValue * 100).round()}%',
+      '${(sliderValue * 100).toInt()}%',
       style: theme.textTheme.labelLarge?.copyWith(
         color: applePlatform ? resolveLiquidGlassForeground(context) : null,
         fontWeight: FontWeight.w700,
@@ -39,7 +39,7 @@ class SettingsTextScaleTile extends StatelessWidget {
         children: [
           if (applePlatform)
             glass.GlassSlider(
-              value: value,
+              value: sliderValue,
               min: AppPreferences.minReadingTextScale,
               max: AppPreferences.maxReadingTextScale,
               divisions: AppPreferences.readingTextScaleDivisions,
