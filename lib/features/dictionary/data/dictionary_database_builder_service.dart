@@ -29,6 +29,7 @@ const _contractedPronunciationSheet = '合音唸作';
 const _colloquialPronunciationSheet = '俗唸作';
 const _phoneticDifferencesSheet = '語音差異';
 const _vocabularyComparisonSheet = '詞彙比較';
+const _unlistedRelationEntryType = '近反義詞不單列詞目者';
 
 class MissingDictionarySourceException implements Exception {
   const MissingDictionarySourceException({required this.path});
@@ -460,6 +461,7 @@ class DictionaryDatabaseBuilderService {
         colloquial_pronunciations TEXT NOT NULL,
         phonetic_differences TEXT NOT NULL,
         vocabulary_comparisons TEXT NOT NULL,
+        alias_target_entry_id INTEGER,
         hokkien_search TEXT NOT NULL,
         mandarin_search TEXT NOT NULL
       )
@@ -539,6 +541,7 @@ class DictionaryDatabaseBuilderService {
         entryColumnNames.contains('colloquial_pronunciations') &&
         entryColumnNames.contains('phonetic_differences') &&
         entryColumnNames.contains('vocabulary_comparisons') &&
+        entryColumnNames.contains('alias_target_entry_id') &&
         senseColumnNames.contains('definition_synonyms') &&
         senseColumnNames.contains('definition_antonyms');
   }
@@ -701,6 +704,7 @@ void _parseDictionaryOdsIsolateEntryPoint(List<Object?> args) async {
     final vocabularyComparisonsByEntryId = <int, List<String>>{};
     final definitionSynonymsBySenseId = <int, List<String>>{};
     final definitionAntonymsBySenseId = <int, List<String>>{};
+    final aliasTargetByEntryId = <int, int>{};
     final entryIdBySenseId = <int, int>{};
     final entryIdsByHanji = <String, Set<int>>{};
 
@@ -739,6 +743,7 @@ void _parseDictionaryOdsIsolateEntryPoint(List<Object?> args) async {
           'colloquial_pronunciations': '[]',
           'phonetic_differences': '[]',
           'vocabulary_comparisons': '[]',
+          'alias_target_entry_id': null,
         };
         final hanji = record['漢字'] ?? '';
         if (hanji.isNotEmpty) {
@@ -872,6 +877,28 @@ void _parseDictionaryOdsIsolateEntryPoint(List<Object?> args) async {
       }
     }
 
+    bool isUnlistedRelationEntry(int entryId) {
+      return entryRowsById[entryId]?['type'] == _unlistedRelationEntryType;
+    }
+
+    void registerAliasTarget(int sourceEntryId, int targetEntryId) {
+      if (sourceEntryId == targetEntryId ||
+          !entryRowsById.containsKey(sourceEntryId) ||
+          !entryRowsById.containsKey(targetEntryId)) {
+        return;
+      }
+
+      final sourceIsAlias = isUnlistedRelationEntry(sourceEntryId);
+      final targetIsAlias = isUnlistedRelationEntry(targetEntryId);
+      if (sourceIsAlias == targetIsAlias) {
+        return;
+      }
+
+      final aliasEntryId = sourceIsAlias ? sourceEntryId : targetEntryId;
+      final primaryEntryId = sourceIsAlias ? targetEntryId : sourceEntryId;
+      aliasTargetByEntryId.putIfAbsent(aliasEntryId, () => primaryEntryId);
+    }
+
     void collectSenseLinks({
       required SpreadsheetTable table,
       required List<String> headers,
@@ -890,10 +917,19 @@ void _parseDictionaryOdsIsolateEntryPoint(List<Object?> args) async {
 
         final senseId = _parseInt(record['義項id']);
         final linkedWord = record[targetWordColumn] ?? '';
+        final sourceEntryId = senseId == null
+            ? null
+            : entryIdBySenseId[senseId];
+        final targetEntryId =
+            _parseInt(record['對應詞目id']) ??
+            entryIdBySenseId[_parseInt(record['對應義項id'])];
         if (senseId != null &&
             linkedWord.isNotEmpty &&
             entryIdBySenseId.containsKey(senseId)) {
           _appendUniqueValue(target, senseId, linkedWord);
+        }
+        if (sourceEntryId != null && targetEntryId != null) {
+          registerAliasTarget(sourceEntryId, targetEntryId);
         }
 
         if (processedRows % _progressUpdateInterval == 0) {
@@ -918,11 +954,15 @@ void _parseDictionaryOdsIsolateEntryPoint(List<Object?> args) async {
         }
 
         final entryId = _parseInt(record['詞目id']);
+        final targetEntryId = _parseInt(record['對應詞目id']);
         final linkedWord = record['對應詞目漢字'] ?? '';
         if (entryId != null &&
             linkedWord.isNotEmpty &&
             entryRowsById.containsKey(entryId)) {
           _appendUniqueValue(target, entryId, linkedWord);
+        }
+        if (entryId != null && targetEntryId != null) {
+          registerAliasTarget(entryId, targetEntryId);
         }
 
         if (processedRows % _progressUpdateInterval == 0) {
@@ -1171,6 +1211,7 @@ void _parseDictionaryOdsIsolateEntryPoint(List<Object?> args) async {
         'colloquial_pronunciations': jsonEncode(colloquialPronunciations),
         'phonetic_differences': jsonEncode(phoneticDifferences),
         'vocabulary_comparisons': jsonEncode(vocabularyComparisons),
+        'alias_target_entry_id': aliasTargetByEntryId[entryId],
         'hokkien_search': hokkienSearch,
         'mandarin_search': mandarinSearch,
       });

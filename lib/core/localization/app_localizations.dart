@@ -718,6 +718,9 @@ class AppLocalizations {
 
   String get antonymsLabel => _selectText('Antonyms', '反义', '反義');
 
+  String get seePrimaryEntryLabel =>
+      _selectText('See main entry', '查阅主词条', '查閱主詞條');
+
   String get alternativePronunciationLabel =>
       _selectText('Alternative Pronunciation', '又唸作', '又唸作');
 

@@ -47,6 +47,7 @@ class DictionaryEntry {
     this.colloquialPronunciations = const [],
     this.phoneticDifferences = const [],
     this.vocabularyComparisons = const [],
+    this.aliasTargetEntryId,
     required this.senses,
   });
 
@@ -78,6 +79,7 @@ class DictionaryEntry {
       ),
       phoneticDifferences: _stringListFromJson(json['phoneticDifferences']),
       vocabularyComparisons: _stringListFromJson(json['vocabularyComparisons']),
+      aliasTargetEntryId: json['aliasTargetEntryId'] as int?,
       senses: senses,
     );
   }
@@ -98,9 +100,16 @@ class DictionaryEntry {
   final List<String> colloquialPronunciations;
   final List<String> phoneticDifferences;
   final List<String> vocabularyComparisons;
+  final int? aliasTargetEntryId;
   final List<DictionarySense> senses;
 
+  bool get redirectsToPrimaryEntry => aliasTargetEntryId != null;
+
   String get briefSummary {
+    if (redirectsToPrimaryEntry) {
+      return '';
+    }
+
     for (final sense in senses) {
       if (sense.definition.isNotEmpty) {
         return sense.definition;

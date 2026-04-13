@@ -774,6 +774,54 @@ void main() {
     }
   });
 
+  testWidgets('alias entry list item points to the primary entry', (
+    WidgetTester tester,
+  ) async {
+    final semanticsHandle = tester.ensureSemantics();
+    try {
+      const entry = DictionaryEntry(
+        id: 18343,
+        type: '近反義詞不單列詞目者',
+        hanji: '男人',
+        romanization: 'lâm-jîn',
+        category: '',
+        audioId: '',
+        hokkienSearch: '男人 lam-jin lâm-jîn',
+        mandarinSearch: '',
+        aliasTargetEntryId: 3347,
+        senses: [
+          DictionarySense(
+            partOfSpeech: '',
+            definition: '近反義詞不單列詞目者',
+            examples: [],
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        _buildLocalizedTestApp(
+          locale: traditionalChineseLocale,
+          home: Scaffold(
+            body: EntryListItem(entry: entry, onTap: () {}),
+          ),
+        ),
+      );
+
+      expect(find.text('→ 查閱主詞條'), findsOneWidget);
+      expect(find.text('近反義詞不單列詞目者'), findsNothing);
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('男人。白話字 lâm-jîn。查閱主詞條')),
+        matchesSemantics(
+          label: '男人。白話字 lâm-jîn。查閱主詞條',
+          hint: '雙擊開啟詞條詳細資料',
+          isButton: true,
+        ),
+      );
+    } finally {
+      semanticsHandle.dispose();
+    }
+  });
+
   testWidgets('audio button exposes descriptive semantics', (
     WidgetTester tester,
   ) async {

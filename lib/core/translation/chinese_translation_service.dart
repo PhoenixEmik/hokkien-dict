@@ -128,6 +128,7 @@ class ChineseTranslationService {
       colloquialPronunciations: entry.colloquialPronunciations,
       phoneticDifferences: await translatedPhoneticDifferences,
       vocabularyComparisons: await translatedVocabularyComparisons,
+      aliasTargetEntryId: entry.aliasTargetEntryId,
       senses: await translatedSenses,
     );
   }

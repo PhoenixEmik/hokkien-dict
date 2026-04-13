@@ -209,6 +209,14 @@ class DictionaryRepository {
     }, fallback: () => _entriesByIdsFromDatabase(databasePath, uniqueIds));
   }
 
+  Future<DictionaryEntry?> entryByIdAsync(
+    DictionaryBundle bundle,
+    int id,
+  ) async {
+    final entries = await entriesByIdsAsync(bundle, [id]);
+    return entries.isEmpty ? null : entries.first;
+  }
+
   List<DictionaryEntry> _resolveSearchResults(
     DictionaryBundle bundle,
     List<int> matchedIds,
@@ -480,6 +488,7 @@ Future<List<DictionaryEntry>> _entriesByIds(
               vocabularyComparisons: _decodeStoredStringList(
                 row['vocabulary_comparisons'],
               ),
+              aliasTargetEntryId: row['alias_target_entry_id'] as int?,
               senses: sensesByEntry[entryId] ?? const [],
             );
           })

@@ -34,17 +34,26 @@ class WordDetailCoordinator {
       Localizations.localeOf(context),
     );
     final translationService = ChineseTranslationService.instance;
+    final resolvedEntry = await _resolveAliasEntry(
+      repository: repository,
+      bundle: bundle,
+      entry: entry,
+    );
+    if (!context.mounted) {
+      return;
+    }
+
     final sourceEntry = bundle.isDatabaseBacked
-        ? entry
+        ? resolvedEntry
         : bundle.entries
               .where((candidate) {
-                return candidate.id == entry.id;
+                return candidate.id == resolvedEntry.id;
               })
               .fold<DictionaryEntry?>(null, (previous, candidate) {
                 return previous ?? candidate;
               });
     final localizedEntry = await translationService.translateEntryForDisplay(
-      sourceEntry ?? entry,
+      sourceEntry ?? resolvedEntry,
       locale: resolvedLocale,
     );
     if (!context.mounted) {
@@ -104,5 +113,29 @@ class WordDetailCoordinator {
         ),
       ),
     );
+  }
+
+  static Future<DictionaryEntry> _resolveAliasEntry({
+    required DictionaryRepository repository,
+    required DictionaryBundle bundle,
+    required DictionaryEntry entry,
+  }) async {
+    var current = entry;
+    final visitedIds = <int>{};
+
+    while (current.aliasTargetEntryId != null) {
+      final targetId = current.aliasTargetEntryId!;
+      if (!visitedIds.add(current.id)) {
+        return current;
+      }
+
+      final target = await repository.entryByIdAsync(bundle, targetId);
+      if (target == null) {
+        return current;
+      }
+      current = target;
+    }
+
+    return current;
   }
 }

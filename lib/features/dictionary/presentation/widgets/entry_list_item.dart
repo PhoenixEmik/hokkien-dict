@@ -17,10 +17,17 @@ class EntryListItem extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final applePlatform = isApplePlatform(context);
+    final summary = entry.redirectsToPrimaryEntry
+        ? '→ ${l10n.seePrimaryEntryLabel}'
+        : entry.briefSummary;
 
     Widget content;
     if (applePlatform) {
-      content = _AppleSearchResultCard(entry: entry, onTap: onTap);
+      content = _AppleSearchResultCard(
+        entry: entry,
+        summary: summary,
+        onTap: onTap,
+      );
     } else {
       content = Card(
         clipBehavior: Clip.antiAlias,
@@ -49,10 +56,10 @@ class EntryListItem extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-              if (entry.briefSummary.isNotEmpty) ...[
+              if (summary.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
-                  entry.briefSummary,
+                  summary,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodyMedium?.copyWith(
@@ -81,9 +88,14 @@ class EntryListItem extends StatelessWidget {
 }
 
 class _AppleSearchResultCard extends StatelessWidget {
-  const _AppleSearchResultCard({required this.entry, required this.onTap});
+  const _AppleSearchResultCard({
+    required this.entry,
+    required this.summary,
+    required this.onTap,
+  });
 
   final DictionaryEntry entry;
+  final String summary;
   final VoidCallback onTap;
 
   @override
@@ -140,10 +152,10 @@ class _AppleSearchResultCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                        if (entry.briefSummary.isNotEmpty) ...[
+                        if (summary.isNotEmpty) ...[
                           const SizedBox(height: 8),
                           Text(
-                            entry.briefSummary,
+                            summary,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.bodyMedium?.copyWith(
@@ -181,6 +193,8 @@ String _semanticLabel(DictionaryEntry entry, AppLocalizations l10n) {
   }
   if (entry.briefSummary.isNotEmpty) {
     parts.add(l10n.definitionLabel(entry.briefSummary));
+  } else if (entry.redirectsToPrimaryEntry) {
+    parts.add(l10n.seePrimaryEntryLabel);
   }
   return l10n.semanticsJoined(parts);
 }
