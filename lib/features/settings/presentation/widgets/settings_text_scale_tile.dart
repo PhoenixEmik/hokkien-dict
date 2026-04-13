@@ -25,6 +25,7 @@ class SettingsTextScaleTile extends StatelessWidget {
           AppPreferences.maxReadingTextScale,
         )
         .toDouble();
+    final sliderStep = _valueToSliderStep(sliderValue);
     final trailing = Text(
       '${(sliderValue * 100).toInt()}%',
       style: theme.textTheme.labelLarge?.copyWith(
@@ -39,9 +40,12 @@ class SettingsTextScaleTile extends StatelessWidget {
         children: [
           if (applePlatform)
             glass.GlassSlider(
-              value: sliderValue,
-              min: AppPreferences.minReadingTextScale,
-              max: AppPreferences.maxReadingTextScale,
+              // GlassSlider 0.7.8 snaps incorrectly when min is non-zero.
+              // Keep the package widget on a zero-based discrete scale and
+              // map it back to 0.9..1.4 in the callback.
+              value: sliderStep,
+              min: 0,
+              max: AppPreferences.readingTextScaleDivisions.toDouble(),
               divisions: AppPreferences.readingTextScaleDivisions,
               label: l10n.readingTextScaleLabel(sliderValue),
               activeColor: resolveLiquidGlassTint(context),
@@ -52,7 +56,7 @@ class SettingsTextScaleTile extends StatelessWidget {
               trackHeight: 4,
               thumbRadius: 13,
               quality: glass.GlassQuality.standard,
-              onChanged: _handleDiscreteValueChanged,
+              onChanged: _handleDiscreteStepChanged,
             )
           else
             Slider.adaptive(
@@ -107,6 +111,34 @@ class SettingsTextScaleTile extends StatelessWidget {
       title: Text(l10n.fontSize),
       trailing: trailing,
       subtitle: subtitle,
+    );
+  }
+
+  double _valueToSliderStep(double currentValue) {
+    final step =
+        (AppPreferences.maxReadingTextScale -
+            AppPreferences.minReadingTextScale) /
+        AppPreferences.readingTextScaleDivisions;
+    final index = ((currentValue - AppPreferences.minReadingTextScale) / step)
+        .round();
+    return index.clamp(0, AppPreferences.readingTextScaleDivisions).toDouble();
+  }
+
+  void _handleDiscreteStepChanged(double rawStep) {
+    final index = rawStep.round().clamp(
+      0,
+      AppPreferences.readingTextScaleDivisions,
+    );
+    final step =
+        (AppPreferences.maxReadingTextScale -
+            AppPreferences.minReadingTextScale) /
+        AppPreferences.readingTextScaleDivisions;
+    onChanged(
+      double.parse(
+        (AppPreferences.minReadingTextScale + (index * step)).toStringAsFixed(
+          2,
+        ),
+      ),
     );
   }
 
