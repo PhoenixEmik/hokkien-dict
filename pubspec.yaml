@@ -48,6 +48,7 @@ dependencies:
     path: third_party/liquid_glass_widgets
   flutter_open_chinese_convert: ^0.9.0
   flutter_svg: ^2.2.1
+  adaptive_platform_ui: ^0.1.104
 
 dev_dependencies:
   flutter_test:
