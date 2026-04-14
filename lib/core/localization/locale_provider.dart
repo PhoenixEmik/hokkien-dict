@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:taigi_dict/core/localization/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:taigi_dict/core/core.dart';
 
 class LocaleProvider extends ChangeNotifier {
   static const _localeKey = 'interface_locale';

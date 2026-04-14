@@ -1,12 +1,10 @@
 import 'dart:convert';
 import 'dart:isolate';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:taigi_dict/features/dictionary/data/dictionary_database_builder_service.dart';
-import 'package:taigi_dict/features/dictionary/domain/dictionary_models.dart';
-import 'package:taigi_dict/features/dictionary/domain/dictionary_search_service.dart';
+import 'package:taigi_dict/features/dictionary/dictionary.dart';
+
 
 const _entriesTable = 'dictionary_entries';
 const _sensesTable = 'dictionary_senses';

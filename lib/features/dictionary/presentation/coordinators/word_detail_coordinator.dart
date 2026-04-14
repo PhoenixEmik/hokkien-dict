@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:taigi_dict/core/localization/app_localizations.dart';
-import 'package:taigi_dict/core/translation/chinese_translation_service.dart';
-import 'package:taigi_dict/features/bookmarks/application/bookmark_store.dart';
-import 'package:taigi_dict/features/dictionary/data/dictionary_repository.dart';
-import 'package:taigi_dict/features/dictionary/domain/dictionary_models.dart';
-import 'package:taigi_dict/features/dictionary/presentation/screens/word_detail_screen.dart';
-import 'package:taigi_dict/offline_audio.dart';
+import 'package:taigi_dict/core/core.dart';
+import 'package:taigi_dict/features/audio/audio.dart';
+import 'package:taigi_dict/features/bookmarks/bookmarks.dart';
+import 'package:taigi_dict/features/dictionary/dictionary.dart';
 
 class WordDetailCoordinator {
   const WordDetailCoordinator._();

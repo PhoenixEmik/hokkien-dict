@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:taigi_dict/core/localization/app_localizations.dart';
+import 'package:taigi_dict/core/core.dart';
 
 class SearchWorkspaceCard extends StatelessWidget {
   const SearchWorkspaceCard({

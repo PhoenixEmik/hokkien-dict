@@ -1,13 +1,11 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:taigi_dict/core/localization/app_localizations.dart';
-import 'package:taigi_dict/core/preferences/app_preferences.dart';
-import 'package:taigi_dict/features/bookmarks/application/bookmark_store.dart';
-import 'package:taigi_dict/features/dictionary/domain/dictionary_models.dart';
-import 'package:taigi_dict/features/dictionary/presentation/widgets/word_detail_sections.dart';
-import 'package:taigi_dict/offline_audio.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:taigi_dict/core/core.dart';
+import 'package:taigi_dict/features/audio/audio.dart';
+import 'package:taigi_dict/features/bookmarks/bookmarks.dart';
+import 'package:taigi_dict/features/dictionary/dictionary.dart';
+
 
 class WordDetailScreen extends StatelessWidget {
   const WordDetailScreen({

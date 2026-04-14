@@ -1,9 +1,9 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:taigi_dict/core/localization/app_localizations.dart';
-import 'package:taigi_dict/features/dictionary/data/dictionary_database_builder_service.dart';
-import 'package:taigi_dict/features/settings/presentation/widgets/notification.dart';
+import 'package:taigi_dict/core/core.dart';
+import 'package:taigi_dict/features/dictionary/dictionary.dart';
+import 'package:taigi_dict/features/settings/settings.dart';
+
 
 class AdvancedSettingsScreen extends StatelessWidget {
   const AdvancedSettingsScreen({

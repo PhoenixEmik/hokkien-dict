@@ -1,19 +1,13 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:taigi_dict/app/initialization/app_initialization_controller.dart';
-import 'package:taigi_dict/app/initialization/app_initialization_screen.dart';
-import 'package:taigi_dict/core/localization/app_localizations.dart';
-import 'package:taigi_dict/features/bookmarks/application/bookmark_store.dart';
-import 'package:taigi_dict/features/bookmarks/presentation/screens/bookmarks_screen.dart';
-import 'package:taigi_dict/features/dictionary/data/dictionary_database_builder_service.dart';
-import 'package:taigi_dict/features/dictionary/data/dictionary_repository.dart';
-import 'package:taigi_dict/features/dictionary/data/offline_dictionary_library.dart';
-import 'package:taigi_dict/features/dictionary/presentation/screens/dictionary_screen.dart';
-import 'package:taigi_dict/features/settings/presentation/screens/settings_screen.dart';
-import 'package:taigi_dict/features/settings/presentation/widgets/notification.dart';
-import 'package:taigi_dict/offline_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:taigi_dict/app/app_module.dart';
+import 'package:taigi_dict/core/core.dart';
+import 'package:taigi_dict/features/audio/audio.dart';
+import 'package:taigi_dict/features/bookmarks/bookmarks.dart';
+import 'package:taigi_dict/features/dictionary/dictionary.dart';
+import 'package:taigi_dict/features/settings/settings.dart';
+
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});

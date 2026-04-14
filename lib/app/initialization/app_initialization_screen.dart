@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:taigi_dict/app/initialization/app_initialization_controller.dart';
-import 'package:taigi_dict/core/localization/app_localizations.dart';
-import 'package:taigi_dict/features/dictionary/data/offline_dictionary_library.dart';
+import 'package:taigi_dict/app/app_module.dart';
+import 'package:taigi_dict/core/core.dart';
+import 'package:taigi_dict/features/dictionary/dictionary.dart';
 
 class AppInitializationScreen extends StatelessWidget {
   const AppInitializationScreen({

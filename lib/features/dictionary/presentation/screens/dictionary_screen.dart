@@ -1,15 +1,10 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:taigi_dict/core/localization/app_localizations.dart';
-import 'package:taigi_dict/features/bookmarks/application/bookmark_store.dart';
-import 'package:taigi_dict/features/dictionary/application/dictionary_search_controller.dart';
-import 'package:taigi_dict/features/dictionary/data/dictionary_repository.dart';
-import 'package:taigi_dict/features/dictionary/domain/dictionary_models.dart';
-import 'package:taigi_dict/features/dictionary/presentation/coordinators/word_detail_coordinator.dart';
-import 'package:taigi_dict/features/dictionary/presentation/widgets/entry_list_item.dart';
-import 'package:taigi_dict/features/dictionary/presentation/widgets/search_panel.dart';
-import 'package:taigi_dict/offline_audio.dart';
+import 'package:taigi_dict/core/core.dart';
+import 'package:taigi_dict/features/audio/audio.dart';
+import 'package:taigi_dict/features/bookmarks/bookmarks.dart';
+import 'package:taigi_dict/features/dictionary/dictionary.dart';
+
 
 class DictionaryScreen extends StatefulWidget {
   const DictionaryScreen({

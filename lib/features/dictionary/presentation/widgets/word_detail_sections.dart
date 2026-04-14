@@ -1,11 +1,9 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:taigi_dict/core/localization/app_localizations.dart';
-import 'package:taigi_dict/features/dictionary/domain/dictionary_models.dart';
-import 'package:taigi_dict/offline_audio.dart';
-import 'audio_button.dart';
-import 'interactive_definition_text.dart';
+import 'package:taigi_dict/core/core.dart';
+import 'package:taigi_dict/features/audio/audio.dart';
+import 'package:taigi_dict/features/dictionary/dictionary.dart';
+
 
 class WordDetailHeader extends StatelessWidget {
   const WordDetailHeader({

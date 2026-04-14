@@ -1,20 +1,11 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:taigi_dict/core/localization/app_localizations.dart';
-import 'package:taigi_dict/core/localization/locale_provider.dart';
-import 'package:taigi_dict/core/preferences/app_preferences.dart';
-import 'package:taigi_dict/features/dictionary/data/offline_dictionary_library.dart';
-import 'package:taigi_dict/features/settings/presentation/content/reference_articles.dart';
-import 'package:taigi_dict/features/settings/presentation/screens/advanced_settings_screen.dart';
-import 'package:taigi_dict/features/settings/presentation/screens/reference_article_screen.dart';
-import 'package:taigi_dict/features/settings/presentation/widgets/audio_resource_tile.dart';
-import 'package:taigi_dict/features/settings/presentation/widgets/dictionary_source_resource_tile.dart';
-import 'package:taigi_dict/features/settings/presentation/widgets/settings_locale_tile.dart';
-import 'package:taigi_dict/features/settings/presentation/widgets/settings_theme_mode_tile.dart';
-import 'package:taigi_dict/features/settings/presentation/widgets/settings_text_scale_tile.dart';
-import 'package:taigi_dict/offline_audio.dart';
+import 'package:taigi_dict/core/core.dart';
+import 'package:taigi_dict/features/audio/audio.dart';
+import 'package:taigi_dict/features/dictionary/dictionary.dart';
+import 'package:taigi_dict/features/settings/settings.dart';
+
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({

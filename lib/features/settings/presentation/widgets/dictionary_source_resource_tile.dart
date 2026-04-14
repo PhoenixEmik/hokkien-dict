@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:taigi_dict/core/localization/app_localizations.dart';
-import 'package:taigi_dict/features/dictionary/data/offline_dictionary_library.dart';
-import 'package:taigi_dict/offline_audio.dart';
+import 'package:taigi_dict/core/core.dart';
+import 'package:taigi_dict/features/audio/audio.dart';
+import 'package:taigi_dict/features/dictionary/dictionary.dart';
 
 class DictionarySourceResourceTile extends StatelessWidget {
   const DictionarySourceResourceTile({

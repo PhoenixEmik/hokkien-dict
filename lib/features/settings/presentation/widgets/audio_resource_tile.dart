@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:taigi_dict/core/localization/app_localizations.dart';
-import 'package:taigi_dict/offline_audio.dart';
+import 'package:taigi_dict/core/core.dart';
+import 'package:taigi_dict/features/audio/audio.dart';
 
 class AudioResourceTile extends StatelessWidget {
   const AudioResourceTile({

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:taigi_dict/core/localization/app_localizations.dart';
-import 'package:taigi_dict/core/preferences/app_preferences.dart';
+import 'package:taigi_dict/core/core.dart';
 
 class SettingsTextScaleTile extends StatelessWidget {
   const SettingsTextScaleTile({

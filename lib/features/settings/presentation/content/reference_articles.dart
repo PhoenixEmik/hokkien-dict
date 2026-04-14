@@ -1,5 +1,5 @@
-import 'package:taigi_dict/core/localization/app_localizations.dart';
-import 'package:taigi_dict/features/settings/presentation/screens/reference_article_screen.dart';
+import 'package:taigi_dict/core/core.dart';
+import 'package:taigi_dict/features/settings/settings.dart';
 
 class LocalizedReferenceArticle {
   const LocalizedReferenceArticle({

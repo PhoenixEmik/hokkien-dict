@@ -1,7 +1,6 @@
 import 'dart:io';
+import 'package:taigi_dict/features/audio/audio.dart';
 
-import 'package:taigi_dict/features/audio/data/audio_archive_index.dart';
-import 'package:taigi_dict/features/audio/domain/audio_archive.dart';
 
 class AudioArchiveStorage {
   const AudioArchiveStorage(this.supportDirectory);

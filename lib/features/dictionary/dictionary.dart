@@ -1,0 +1,14 @@
+export 'application/dictionary_search_controller.dart';
+export 'data/dictionary_database_builder_service.dart';
+export 'data/dictionary_repository.dart';
+export 'data/offline_dictionary_library.dart';
+export 'domain/dictionary_models.dart';
+export 'domain/dictionary_search_service.dart';
+export 'presentation/coordinators/word_detail_coordinator.dart';
+export 'presentation/screens/dictionary_screen.dart';
+export 'presentation/screens/word_detail_screen.dart';
+export 'presentation/widgets/audio_button.dart';
+export 'presentation/widgets/entry_list_item.dart';
+export 'presentation/widgets/interactive_definition_text.dart';
+export 'presentation/widgets/search_panel.dart';
+export 'presentation/widgets/word_detail_sections.dart';

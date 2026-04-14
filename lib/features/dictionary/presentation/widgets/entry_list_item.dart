@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:taigi_dict/core/localization/app_localizations.dart';
-import 'package:taigi_dict/features/dictionary/domain/dictionary_models.dart';
+import 'package:taigi_dict/core/core.dart';
+import 'package:taigi_dict/features/dictionary/dictionary.dart';
 
 class EntryListItem extends StatelessWidget {
   const EntryListItem({super.key, required this.entry, required this.onTap});

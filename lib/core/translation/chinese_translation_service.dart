@@ -1,9 +1,9 @@
 import 'dart:ui';
-
 import 'package:flutter/services.dart';
 import 'package:flutter_open_chinese_convert/flutter_open_chinese_convert.dart';
-import 'package:taigi_dict/core/localization/app_localizations.dart';
-import 'package:taigi_dict/features/dictionary/domain/dictionary_models.dart';
+import 'package:taigi_dict/core/core.dart';
+import 'package:taigi_dict/features/dictionary/dictionary.dart';
+
 
 class ChineseTranslationService {
   ChineseTranslationService._();

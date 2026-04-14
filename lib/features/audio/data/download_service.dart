@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
-
-import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+
 
 enum DownloadState { idle, downloading, paused, completed, error }
 

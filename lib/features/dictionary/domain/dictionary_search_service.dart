@@ -1,4 +1,4 @@
-import 'package:taigi_dict/features/dictionary/domain/dictionary_models.dart';
+import 'package:taigi_dict/features/dictionary/dictionary.dart';
 
 List<Map<String, Object>> buildDictionarySearchIndex(
   List<DictionaryEntry> entries,
