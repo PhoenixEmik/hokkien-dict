@@ -15,25 +15,40 @@ class SettingsThemeModeTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final darkEnabled =
-        value == AppThemePreference.dark || value == AppThemePreference.amoled;
 
-      return AdaptiveListTile(
-        leading: const Icon(Icons.dark_mode_outlined),
-        title: Text(l10n.theme),
-        subtitle: Text(
-          darkEnabled
-              ? _themeLabel(AppThemePreference.dark, l10n)
-              : _themeLabel(AppThemePreference.light, l10n),
-        ),
-        trailing: AdaptiveSwitch(
-          value: darkEnabled,
-          onChanged: (enabled) {
-            onSelected(
-              enabled ? AppThemePreference.dark : AppThemePreference.light,
-            );
-          },
-        ),
+    return AdaptiveListTile(
+      leading: const Icon(Icons.dark_mode_outlined),
+      title: Text(l10n.theme),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(_themeLabel(value, l10n)),
+          AdaptivePopupMenuButton.icon<AppThemePreference>(
+            icon: PlatformInfo.isIOS
+                ? 'chevron.up.chevron.down'
+                : Icons.arrow_drop_down,
+            items: const [
+              AppThemePreference.system,
+              AppThemePreference.light,
+              AppThemePreference.dark,
+              AppThemePreference.amoled,
+            ]
+                .map(
+                  (preference) => AdaptivePopupMenuItem<AppThemePreference>(
+                    label: _themeLabel(preference, l10n),
+                    value: preference,
+                  ),
+                )
+                .toList(growable: false),
+            onSelected: (index, entry) {
+              final selectedPreference = entry.value;
+              if (selectedPreference != null) {
+                onSelected(selectedPreference);
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 }
