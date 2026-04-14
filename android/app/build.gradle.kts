@@ -86,10 +86,6 @@ flutter {
     source = "../.."
 }
 
-tasks.withType<JavaCompile>().configureEach {
-    exclude("io/flutter/plugins/GeneratedPluginRegistrant.java")
-}
-
 tasks.matching { task ->
     task.name.startsWith("package") && task.name.endsWith("Resources")
 }.configureEach {
