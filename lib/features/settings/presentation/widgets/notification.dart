@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-void showGlassNotification(
+void showAppNotification(
   BuildContext context, {
   required String message,
   bool isError = false,

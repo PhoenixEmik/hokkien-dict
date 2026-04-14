@@ -21,7 +21,6 @@ class AppLocalizations {
     AppLocalizationsDelegate(),
     GlobalMaterialLocalizations.delegate,
     GlobalWidgetsLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
   ];
 
   static AppLocalizations of(BuildContext context) {

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/localization/app_localizations.dart';
 import 'package:taigi_dict/features/dictionary/data/dictionary_database_builder_service.dart';
-import 'package:taigi_dict/features/settings/presentation/widgets/glass_notification.dart';
+import 'package:taigi_dict/features/settings/presentation/widgets/notification.dart';
 
 class AdvancedSettingsScreen extends StatelessWidget {
   const AdvancedSettingsScreen({
@@ -80,7 +80,7 @@ class AdvancedSettingsScreen extends StatelessWidget {
 
     Navigator.of(context, rootNavigator: true).pop();
 
-    showGlassNotification(
+    showAppNotification(
       context,
       message: error == null
           ? l10n.rebuildDictionaryDatabaseSuccess

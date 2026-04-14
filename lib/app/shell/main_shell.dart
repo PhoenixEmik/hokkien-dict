@@ -11,7 +11,7 @@ import 'package:taigi_dict/features/dictionary/data/dictionary_repository.dart';
 import 'package:taigi_dict/features/dictionary/data/offline_dictionary_library.dart';
 import 'package:taigi_dict/features/dictionary/presentation/screens/dictionary_screen.dart';
 import 'package:taigi_dict/features/settings/presentation/screens/settings_screen.dart';
-import 'package:taigi_dict/features/settings/presentation/widgets/glass_notification.dart';
+import 'package:taigi_dict/features/settings/presentation/widgets/notification.dart';
 import 'package:taigi_dict/offline_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -168,7 +168,7 @@ class _MainScreenState extends State<MainScreen> {
       return;
     }
 
-    showGlassNotification(context, message: message, isError: result.isError);
+    showAppNotification(context, message: message, isError: result.isError);
   }
 
   String _describeDatabaseRebuildError(Object error, AppLocalizations l10n) {
