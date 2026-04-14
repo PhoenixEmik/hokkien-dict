@@ -1,4 +1,3 @@
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/localization/app_localizations.dart';
 import 'package:taigi_dict/features/bookmarks/application/bookmark_store.dart';
@@ -63,12 +62,6 @@ class _BookmarksScreenState extends State<BookmarksScreen>
   Widget build(BuildContext context) {
     super.build(context);
     final l10n = AppLocalizations.of(context);
-    final platform = Theme.of(context).platform;
-    final applePlatform =
-        platform == TargetPlatform.iOS || platform == TargetPlatform.macOS;
-    final bottomContentPadding = platform == TargetPlatform.iOS
-      ? MediaQuery.paddingOf(context).bottom + 88
-      : 28.0;
 
     return AnimatedBuilder(
       animation: widget.bookmarkStore,
@@ -91,9 +84,7 @@ class _BookmarksScreenState extends State<BookmarksScreen>
 
             if (!snapshot.hasData) {
               return Center(
-                child: applePlatform
-                    ? const CircularProgressIndicator.adaptive()
-                    : const CircularProgressIndicator(),
+                child: const CircularProgressIndicator(),
               );
             }
 
@@ -101,23 +92,9 @@ class _BookmarksScreenState extends State<BookmarksScreen>
                 .toList(growable: false)
               ..sort();
             if (bookmarkedIds.isEmpty) {
-              return LayoutBuilder(
-                builder: (context, constraints) {
-                  return Align(
-                    alignment: Alignment.topCenter,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: constraints.maxWidth >= 900 ? 920 : 720,
-                      ),
-                      child: bookmarkedContent(
-                        const [],
-                        snapshot.data!,
-                        applePlatform,
-                        bottomContentPadding,
-                      ),
-                    ),
-                  );
-                },
+              return bookmarkedContent(
+                const [],
+                snapshot.data!,
               );
             }
 
@@ -148,29 +125,13 @@ class _BookmarksScreenState extends State<BookmarksScreen>
 
                 if (!entriesSnapshot.hasData) {
                   return Center(
-                    child: applePlatform
-                        ? const CircularProgressIndicator.adaptive()
-                        : const CircularProgressIndicator(),
+                    child: const CircularProgressIndicator(),
                   );
                 }
 
-                return LayoutBuilder(
-                  builder: (context, constraints) {
-                    return Align(
-                      alignment: Alignment.topCenter,
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: constraints.maxWidth >= 900 ? 920 : 720,
-                        ),
-                        child: bookmarkedContent(
-                          entriesSnapshot.data!,
-                          snapshot.data!,
-                          applePlatform,
-                          bottomContentPadding,
-                        ),
-                      ),
-                    );
-                  },
+                return bookmarkedContent(
+                  entriesSnapshot.data!,
+                  snapshot.data!,
                 );
               },
             );
@@ -181,11 +142,8 @@ class _BookmarksScreenState extends State<BookmarksScreen>
           return content;
         }
 
-        return AdaptiveScaffold(
-          appBar: AdaptiveAppBar(
-            title: l10n.bookmarksTitle,
-            useNativeToolbar: true,
-          ),
+        return Scaffold(
+          appBar: AppBar(title: Text(l10n.bookmarksTitle)),
           body: content,
         );
       },
@@ -195,28 +153,16 @@ class _BookmarksScreenState extends State<BookmarksScreen>
   Widget bookmarkedContent(
     List<DictionaryEntry> bookmarkedEntries,
     DictionaryBundle bundle,
-    bool applePlatform,
-    double bottomContentPadding,
   ) {
     if (bookmarkedEntries.isEmpty) {
       return Padding(
-        padding: EdgeInsets.fromLTRB(
-          16,
-          applePlatform ? 24 : 16,
-          16,
-          bottomContentPadding,
-        ),
+        padding: const EdgeInsets.all(16),
         child: const BookmarkEmptyState(),
       );
     }
 
     return ListView.builder(
-      padding: EdgeInsets.fromLTRB(
-        16,
-        applePlatform ? 12 : 16,
-        16,
-        bottomContentPadding,
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       itemCount: bookmarkedEntries.length,
       itemBuilder: (context, index) {
         return Padding(
