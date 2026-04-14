@@ -1,14 +1,11 @@
 import 'dart:async';
-import 'dart:ui';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/localization/app_localizations.dart';
 import 'package:taigi_dict/core/preferences/app_preferences.dart';
 import 'package:taigi_dict/features/bookmarks/application/bookmark_store.dart';
 import 'package:taigi_dict/features/dictionary/domain/dictionary_models.dart';
 import 'package:taigi_dict/features/dictionary/presentation/widgets/word_detail_sections.dart';
-import 'package:taigi_dict/features/settings/presentation/widgets/liquid_glass.dart';
 import 'package:taigi_dict/offline_audio.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -59,77 +56,6 @@ class WordDetailScreen extends StatelessWidget {
             );
           },
         );
-
-        if (isApplePlatform(context)) {
-          final title = entry.hanji.isEmpty
-              ? l10n.wordDetailFallbackTitle
-              : entry.hanji;
-          final tint = resolveLiquidGlassTint(context);
-          final topPadding =
-              MediaQuery.of(context).padding.top + kToolbarHeight + 16;
-          return Scaffold(
-            extendBodyBehindAppBar: true,
-            backgroundColor: Colors.transparent,
-            appBar: AppBar(
-              elevation: 0,
-              scrolledUnderElevation: 0,
-              backgroundColor: Colors.transparent,
-              surfaceTintColor: Colors.transparent,
-              shadowColor: Colors.transparent,
-              title: Text(
-                title,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: resolveLiquidGlassForeground(context),
-                ),
-              ),
-              leading: IconButton(
-                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-                onPressed: () => Navigator.of(context).maybePop(),
-                icon: Icon(CupertinoIcons.back, color: tint, size: 22),
-              ),
-              actions: [
-                IconButton(
-                  tooltip: l10n.shareEntry,
-                  onPressed: () {
-                    unawaited(_shareEntry(l10n));
-                  },
-                  icon: Icon(CupertinoIcons.share, color: tint, size: 21),
-                ),
-                IconButton(
-                  tooltip: isBookmarked
-                      ? l10n.removeBookmark
-                      : l10n.addBookmark,
-                  onPressed: () {
-                    unawaited(bookmarkStore.toggleBookmark(entry.id));
-                  },
-                  icon: Icon(
-                    isBookmarked
-                        ? CupertinoIcons.bookmark_fill
-                        : CupertinoIcons.bookmark,
-                    color: tint,
-                    size: 21,
-                  ),
-                ),
-              ],
-              flexibleSpace: ClipRect(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
-                  child: Container(color: Colors.transparent),
-                ),
-              ),
-            ),
-            body: LiquidGlassBackground(
-              child: WordDetailBody(
-                entry: entry,
-                audioLibrary: audioLibrary,
-                onPlayClip: onPlayClip,
-                onWordTapped: onWordTapped,
-                topPadding: topPadding,
-              ),
-            ),
-          );
-        }
 
         return Scaffold(
           appBar: AppBar(
@@ -200,52 +126,42 @@ class WordDetailBody extends StatelessWidget {
     required this.audioLibrary,
     required this.onPlayClip,
     required this.onWordTapped,
-    this.topPadding = 12,
   });
 
   final DictionaryEntry entry;
   final OfflineAudioLibrary audioLibrary;
   final Future<void> Function(AudioArchiveType type, String clipId) onPlayClip;
   final Future<void> Function(String word) onWordTapped;
-  final double topPadding;
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return Align(
-            alignment: Alignment.topCenter,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: constraints.maxWidth >= 900 ? 920 : 720,
-              ),
-              child: ListView(
-                padding: EdgeInsets.fromLTRB(
-                  isApplePlatform(context) ? 16 : 20,
-                  topPadding,
-                  isApplePlatform(context) ? 16 : 20,
-                  isApplePlatform(context) ? 34 : 24,
-                ),
-                children: [
-                  SelectionArea(
-                    child: _WordDetailContent(
-                      entry: entry,
-                      audioLibrary: audioLibrary,
-                      onPlayClip: onPlayClip,
-                      onWordTapped: onWordTapped,
-                      readingTextScale: AppPreferencesScope.of(
-                        context,
-                      ).readingTextScale,
-                    ),
-                  ),
-                ],
-              ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: constraints.maxWidth >= 900 ? 920 : 720,
             ),
-          );
-        },
-      ),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              children: [
+                SelectionArea(
+                  child: _WordDetailContent(
+                    entry: entry,
+                    audioLibrary: audioLibrary,
+                    onPlayClip: onPlayClip,
+                    onWordTapped: onWordTapped,
+                    readingTextScale: AppPreferencesScope.of(
+                      context,
+                    ).readingTextScale,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
