@@ -1,3 +1,4 @@
+import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/core.dart';
 
@@ -19,10 +20,17 @@ class ReferenceArticleScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
+    final topBodyInset = PlatformInfo.isIOS
+        ? MediaQuery.paddingOf(context).top + kToolbarHeight
+        : 0.0;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: SafeArea(
+    return AdaptiveScaffold(
+      appBar: AdaptiveAppBar(
+        title: title,
+        useNativeToolbar: true,
+      ),
+      body: Padding(
+        padding: EdgeInsets.only(top: topBodyInset),
         child: LayoutBuilder(
           builder: (context, constraints) {
             return Align(

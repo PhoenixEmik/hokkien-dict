@@ -232,9 +232,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                     unawaited(
                       shouldOpenLicenses.future.then((openLicenses) {
                         if (openLicenses == true && context.mounted) {
-                          showLicensePage(
-                            context: context,
-                            applicationName: l10n.appTitle,
+                          Navigator.of(context).push(
+                            PlatformInfo.isIOS
+                                ? CupertinoPageRoute<void>(
+                                    builder: (_) => LicenseOverviewScreen(
+                                      applicationName: l10n.appTitle,
+                                    ),
+                                  )
+                                : MaterialPageRoute<void>(
+                                    builder: (_) => LicenseOverviewScreen(
+                                      applicationName: l10n.appTitle,
+                                    ),
+                                  ),
                           );
                         }
                       }),

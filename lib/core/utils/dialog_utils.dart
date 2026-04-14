@@ -59,7 +59,7 @@ Future<VoidCallback> showAdaptiveBlockingProgressDialog({
   var closed = false;
 
   unawaited(
-    AdaptiveAlertDialog.show<void>(
+    AdaptiveAlertDialog.show(
       context: context,
       title: title,
       message: message,
