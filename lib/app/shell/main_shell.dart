@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/app/initialization/app_initialization_controller.dart';
 import 'package:taigi_dict/app/initialization/app_initialization_screen.dart';
@@ -195,22 +196,66 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   List<AdaptiveNavigationDestination> _buildNavigationDestinations(
+    BuildContext context,
     AppLocalizations l10n,
   ) {
+    final isIOS26 = PlatformInfo.isIOS26OrHigher();
+    final isIOS = Theme.of(context).platform == TargetPlatform.iOS;
+
+    if (isIOS26) {
+      return [
+        AdaptiveNavigationDestination(
+          icon: 'book',
+          selectedIcon: 'book.fill',
+          label: l10n.dictionaryTab,
+        ),
+        AdaptiveNavigationDestination(
+          icon: 'bookmark',
+          selectedIcon: 'bookmark.fill',
+          label: l10n.bookmarksTab,
+        ),
+        AdaptiveNavigationDestination(
+          icon: 'gearshape',
+          selectedIcon: 'gearshape.fill',
+          label: l10n.settingsTab,
+        ),
+      ];
+    }
+
+    if (isIOS) {
+      return [
+        AdaptiveNavigationDestination(
+          icon: CupertinoIcons.book,
+          selectedIcon: CupertinoIcons.book_fill,
+          label: l10n.dictionaryTab,
+        ),
+        AdaptiveNavigationDestination(
+          icon: CupertinoIcons.bookmark,
+          selectedIcon: CupertinoIcons.bookmark_fill,
+          label: l10n.bookmarksTab,
+        ),
+        AdaptiveNavigationDestination(
+          icon: CupertinoIcons.settings,
+          selectedIcon: CupertinoIcons.settings,
+          label: l10n.settingsTab,
+        ),
+      ];
+    }
+
     return [
       AdaptiveNavigationDestination(
-        icon: const Icon(Icons.menu_book),
-        selectedIcon: const Icon(Icons.menu_book),
+        icon: Icons.menu_book,
+        selectedIcon: Icons.menu_book,
         label: l10n.dictionaryTab,
       ),
       AdaptiveNavigationDestination(
-        icon: const Icon(Icons.bookmark_border),
-        selectedIcon: const Icon(Icons.bookmark),
+        icon: Icons.bookmark_border,
+        selectedIcon: Icons.bookmark,
         label: l10n.bookmarksTab,
       ),
       AdaptiveNavigationDestination(
-        icon: const Icon(Icons.settings),
-        selectedIcon: const Icon(Icons.settings),
+        icon: Icons.settings,
+        selectedIcon: Icons.settings,
         label: l10n.settingsTab,
       ),
     ];
@@ -280,7 +325,7 @@ class _MainScreenState extends State<MainScreen> {
           appBar: _buildRootAppBar(l10n),
           body: IndexedStack(index: _selectedIndex, children: screens),
           bottomNavigationBar: AdaptiveBottomNavigationBar(
-            items: _buildNavigationDestinations(l10n),
+            items: _buildNavigationDestinations(context, l10n),
             selectedIndex: _selectedIndex,
             onTap: (index) {
               setState(() {
