@@ -67,6 +67,9 @@ class _SettingsScreenState extends State<SettingsScreen>
     final appPreferences = AppPreferencesScope.of(context);
     final localeProvider = LocaleProviderScope.of(context);
     final l10n = AppLocalizations.of(context);
+    final topBodyInset = PlatformInfo.isIOS
+      ? MediaQuery.paddingOf(context).top + kToolbarHeight
+      : 0.0;
     final bottomBodyInset = PlatformInfo.isIOS
         ? MediaQuery.paddingOf(context).bottom + kBottomNavigationBarHeight + 24
         : 24.0;
@@ -224,12 +227,9 @@ class _SettingsScreenState extends State<SettingsScreen>
     return AdaptiveScaffold(
       appBar: AdaptiveAppBar(title: '設定', useNativeToolbar: true),
       extendBodyBehindAppBar: false,
+      useHeroBackButton: false,
       body: Padding(
-        padding: EdgeInsets.only(
-          top: PlatformInfo.isIOS
-              ? MediaQuery.paddingOf(context).top + kToolbarHeight
-              : 0,
-        ),
+        padding: EdgeInsets.only(top: topBodyInset),
         child: content,
       ),
     );

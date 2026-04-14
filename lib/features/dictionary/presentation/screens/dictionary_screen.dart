@@ -1,3 +1,4 @@
+import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/core.dart';
@@ -13,12 +14,14 @@ class DictionaryScreen extends StatefulWidget {
     required this.audioLibrary,
     required this.bookmarkStore,
     required this.onActionResult,
+    this.showOwnScaffold = false,
   });
 
   final DictionaryRepository repository;
   final OfflineAudioLibrary audioLibrary;
   final BookmarkStore bookmarkStore;
   final ValueChanged<AudioActionResult> onActionResult;
+  final bool showOwnScaffold;
 
   @override
   State<DictionaryScreen> createState() => _DictionaryScreenState();
@@ -87,6 +90,9 @@ class _DictionaryScreenState extends State<DictionaryScreen>
     final platform = Theme.of(context).platform;
     final applePlatform =
         platform == TargetPlatform.iOS || platform == TargetPlatform.macOS;
+    final topBodyInset = PlatformInfo.isIOS
+      ? MediaQuery.paddingOf(context).top + kToolbarHeight
+      : 0.0;
     final bottomContentPadding = platform == TargetPlatform.iOS
       ? MediaQuery.paddingOf(context).bottom + 88
       : 28.0;
@@ -94,7 +100,7 @@ class _DictionaryScreenState extends State<DictionaryScreen>
     return AnimatedBuilder(
       animation: _searchController,
       builder: (context, child) {
-        return FutureBuilder<DictionaryBundle>(
+        final content = FutureBuilder<DictionaryBundle>(
           future: _searchController.bundleFuture,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
@@ -219,6 +225,23 @@ class _DictionaryScreenState extends State<DictionaryScreen>
               ),
             );
           },
+        );
+
+        if (!widget.showOwnScaffold) {
+          return content;
+        }
+
+        return AdaptiveScaffold(
+          appBar: AdaptiveAppBar(
+            title: l10n.dictionaryTab,
+            useNativeToolbar: true,
+          ),
+          extendBodyBehindAppBar: false,
+          useHeroBackButton: false,
+          body: Padding(
+            padding: EdgeInsets.only(top: topBodyInset),
+            child: content,
+          ),
         );
       },
     );

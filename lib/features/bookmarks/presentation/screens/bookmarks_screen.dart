@@ -62,6 +62,9 @@ class _BookmarksScreenState extends State<BookmarksScreen>
   Widget build(BuildContext context) {
     super.build(context);
     final l10n = AppLocalizations.of(context);
+    final topBodyInset = PlatformInfo.isIOS
+        ? MediaQuery.paddingOf(context).top + kToolbarHeight
+        : 0.0;
 
     return AnimatedBuilder(
       animation: widget.bookmarkStore,
@@ -156,9 +159,17 @@ class _BookmarksScreenState extends State<BookmarksScreen>
           return content;
         }
 
-        return Scaffold(
-          appBar: AppBar(title: Text(l10n.bookmarksTitle)),
-          body: content,
+        return AdaptiveScaffold(
+          appBar: AdaptiveAppBar(
+            title: l10n.bookmarksTitle,
+            useNativeToolbar: true,
+          ),
+          extendBodyBehindAppBar: false,
+          useHeroBackButton: false,
+          body: Padding(
+            padding: EdgeInsets.only(top: topBodyInset),
+            child: content,
+          ),
         );
       },
     );
