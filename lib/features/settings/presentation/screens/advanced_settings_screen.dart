@@ -1,12 +1,9 @@
 import 'dart:async';
 
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/localization/app_localizations.dart';
-import 'package:taigi_dict/core/utils/dialog_utils.dart';
 import 'package:taigi_dict/features/dictionary/data/dictionary_database_builder_service.dart';
 import 'package:taigi_dict/features/settings/presentation/widgets/glass_notification.dart';
-import 'package:taigi_dict/features/settings/presentation/widgets/liquid_glass.dart';
 
 class AdvancedSettingsScreen extends StatelessWidget {
   const AdvancedSettingsScreen({
@@ -16,16 +13,26 @@ class AdvancedSettingsScreen extends StatelessWidget {
 
   final Future<void> Function() onRebuildDictionaryDatabase;
 
-
-
   Future<void> _confirmAndRebuild(BuildContext context) async {
     final l10n = AppLocalizations.of(context);
-    final confirmed = await showAdaptiveConfirmationDialog(
+    final confirmed = await showDialog<bool>(
       context: context,
-      title: l10n.confirmRebuildDictionaryTitle,
-      content: l10n.confirmRebuildDictionaryBody,
-      cancelLabel: l10n.cancelAction,
-      confirmLabel: l10n.confirmAction,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(l10n.confirmRebuildDictionaryTitle),
+          content: Text(l10n.confirmRebuildDictionaryBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(l10n.cancelAction),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(l10n.confirmAction),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirmed != true || !context.mounted) {
@@ -91,48 +98,25 @@ class AdvancedSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final applePlatform = isApplePlatform(context);
-    final sectionChildren = [
-      AdaptiveListTile(
-        leading: const Icon(Icons.storage_outlined),
-        title: Text(l10n.rebuildDictionaryDatabase),
-        subtitle: Text(l10n.rebuildDictionaryDatabaseSubtitle),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () {
-          unawaited(_confirmAndRebuild(context));
-        },
-      ),
-    ];
-
-    final body = Align(
-      alignment: Alignment.topCenter,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 720),
-        child: ListView(
-          padding: EdgeInsets.fromLTRB(16, applePlatform ? 12 : 8, 16, 28),
-          children: [
-            AdaptiveFormSection.insetGrouped(
-              header: Text(l10n.advancedSettings),
-              children: sectionChildren,
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.advancedSettings)),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        children: [
+          Card(
+            clipBehavior: Clip.hardEdge,
+            child: ListTile(
+              leading: const Icon(Icons.storage_outlined),
+              title: Text(l10n.rebuildDictionaryDatabase),
+              subtitle: Text(l10n.rebuildDictionaryDatabaseSubtitle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                unawaited(_confirmAndRebuild(context));
+              },
             ),
-          ],
-        ),
-      ),
-    );
-
-    return AdaptiveScaffold(
-      appBar: AdaptiveAppBar(
-        title: l10n.advancedSettings,
-        useNativeToolbar: true,
-        leading: Tooltip(
-          message: MaterialLocalizations.of(context).backButtonTooltip,
-          child: AdaptiveButton.child(
-            onPressed: () => Navigator.of(context).maybePop(),
-            child: const Icon(Icons.arrow_back),
           ),
-        ),
+        ],
       ),
-      body: applePlatform ? LiquidGlassBackground(child: body) : body,
     );
   }
 }
