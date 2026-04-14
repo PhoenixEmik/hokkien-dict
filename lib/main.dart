@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/app/app.dart';
 import 'package:taigi_dict/core/licenses/font_licenses.dart';
-import 'package:liquid_glass_widgets/liquid_glass_widgets.dart' as glass;
 
 export 'app/app.dart';
 export 'core/localization/app_localizations.dart';
@@ -19,6 +18,5 @@ export 'features/dictionary/presentation/widgets/entry_list_item.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   registerBundledFontLicenses();
-  await glass.LiquidGlassWidgets.initialize();
-  runApp(glass.LiquidGlassWidgets.wrap(const HokkienDictionaryApp()));
+  runApp(const HokkienDictionaryApp());
 }

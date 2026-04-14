@@ -101,26 +101,23 @@ class _BookmarksScreenState extends State<BookmarksScreen>
                 .toList(growable: false)
               ..sort();
             if (bookmarkedIds.isEmpty) {
-              return SafeArea(
-                top: false,
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return Align(
-                      alignment: Alignment.topCenter,
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: constraints.maxWidth >= 900 ? 920 : 720,
-                        ),
-                        child: bookmarkedContent(
-                          const [],
-                          snapshot.data!,
-                          applePlatform,
-                          bottomContentPadding,
-                        ),
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  return Align(
+                    alignment: Alignment.topCenter,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: constraints.maxWidth >= 900 ? 920 : 720,
                       ),
-                    );
-                  },
-                ),
+                      child: bookmarkedContent(
+                        const [],
+                        snapshot.data!,
+                        applePlatform,
+                        bottomContentPadding,
+                      ),
+                    ),
+                  );
+                },
               );
             }
 
@@ -133,52 +130,49 @@ class _BookmarksScreenState extends State<BookmarksScreen>
               );
             }
 
-            return SafeArea(
-              top: false,
-              child: FutureBuilder<List<DictionaryEntry>>(
-                future: _entriesFuture,
-                builder: (context, entriesSnapshot) {
-                  if (entriesSnapshot.hasError) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Text(
-                          l10n.loadDataFailed('${entriesSnapshot.error}'),
-                          style: Theme.of(context).textTheme.titleMedium,
-                          textAlign: TextAlign.center,
+            return FutureBuilder<List<DictionaryEntry>>(
+              future: _entriesFuture,
+              builder: (context, entriesSnapshot) {
+                if (entriesSnapshot.hasError) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text(
+                        l10n.loadDataFailed('${entriesSnapshot.error}'),
+                        style: Theme.of(context).textTheme.titleMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  );
+                }
+
+                if (!entriesSnapshot.hasData) {
+                  return Center(
+                    child: applePlatform
+                        ? const CircularProgressIndicator.adaptive()
+                        : const CircularProgressIndicator(),
+                  );
+                }
+
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: constraints.maxWidth >= 900 ? 920 : 720,
+                        ),
+                        child: bookmarkedContent(
+                          entriesSnapshot.data!,
+                          snapshot.data!,
+                          applePlatform,
+                          bottomContentPadding,
                         ),
                       ),
                     );
-                  }
-
-                  if (!entriesSnapshot.hasData) {
-                    return Center(
-                      child: applePlatform
-                          ? const CircularProgressIndicator.adaptive()
-                          : const CircularProgressIndicator(),
-                    );
-                  }
-
-                  return LayoutBuilder(
-                    builder: (context, constraints) {
-                      return Align(
-                        alignment: Alignment.topCenter,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: constraints.maxWidth >= 900 ? 920 : 720,
-                          ),
-                          child: bookmarkedContent(
-                            entriesSnapshot.data!,
-                            snapshot.data!,
-                            applePlatform,
-                            bottomContentPadding,
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
+                  },
+                );
+              },
             );
           },
         );

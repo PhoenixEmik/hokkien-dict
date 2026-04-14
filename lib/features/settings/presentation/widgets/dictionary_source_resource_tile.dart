@@ -1,9 +1,7 @@
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/localization/app_localizations.dart';
 import 'package:taigi_dict/features/dictionary/data/offline_dictionary_library.dart';
 import 'package:taigi_dict/offline_audio.dart';
-import 'package:taigi_dict/features/settings/presentation/widgets/liquid_glass.dart';
 
 class DictionarySourceResourceTile extends StatelessWidget {
   const DictionarySourceResourceTile({
@@ -19,21 +17,19 @@ class DictionarySourceResourceTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final applePlatform = isApplePlatform(context);
     return ValueListenableBuilder<DownloadSnapshot>(
       valueListenable: dictionaryLibrary.downloadListenable,
       builder: (context, snapshot, child) {
         final progress = snapshot.progress;
         final statusText = switch (snapshot.state) {
           DownloadState.downloading =>
-            '${dictionaryLibrary.downloadStatus()} • ${dictionaryLibrary.downloadSpeed()}',
+            '${dictionaryLibrary.downloadStatus()} \u2022 ${dictionaryLibrary.downloadSpeed()}',
           DownloadState.paused =>
-            '${l10n.pause} • ${dictionaryLibrary.downloadStatus()}',
+            '${l10n.pause} \u2022 ${dictionaryLibrary.downloadStatus()}',
           DownloadState.completed => l10n.dictionarySourceReady,
           DownloadState.error =>
             snapshot.errorMessage ??
-                '${l10n.retry} • ${dictionaryLibrary.downloadStatus()}',
+                '${l10n.retry} \u2022 ${dictionaryLibrary.downloadStatus()}',
           DownloadState.idle => l10n.dictionarySourceSubtitle,
         };
 
@@ -56,62 +52,26 @@ class DictionarySourceResourceTile extends StatelessWidget {
         final onPressed = snapshot.state == DownloadState.completed
             ? null
             : () => onDownload();
-        final leading = const Icon(Icons.description_outlined);
-        final title = Text(
-          l10n.dictionarySourceArchive,
-          style: applePlatform
-              ? null
-              : theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-        );
+
         final subtitle = Padding(
           padding: const EdgeInsets.only(top: 4),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                dictionaryLibrary.fileName,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: applePlatform
-                      ? resolveLiquidGlassSecondaryForeground(context)
-                      : colorScheme.onSurfaceVariant,
-                ),
-              ),
+              Text(dictionaryLibrary.fileName, style: theme.textTheme.bodySmall),
               const SizedBox(height: 2),
-              Text(
-                statusText,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: applePlatform
-                      ? resolveLiquidGlassSecondaryForeground(context)
-                      : colorScheme.onSurfaceVariant,
-                ),
-              ),
+              Text(statusText, style: theme.textTheme.bodySmall),
               if (progress != null && snapshot.state != DownloadState.idle) ...[
                 const SizedBox(height: 8),
                 LinearProgressIndicator(
-                  minHeight: applePlatform ? 4 : null,
                   value: snapshot.state == DownloadState.completed
                       ? 1
                       : progress,
-                  borderRadius: applePlatform
-                      ? BorderRadius.circular(999)
-                      : null,
-                  backgroundColor: applePlatform
-                      ? resolveLiquidGlassSecondaryTint(
-                          context,
-                        ).withValues(alpha: 0.45)
-                      : null,
                 ),
               ],
             ],
           ),
-        );
-        final trailing = AdaptiveSettingsActionButton(
-          tooltip: actionTooltip,
-          onPressed: onPressed,
-          icon: actionIcon,
         );
 
         return MergeSemantics(
@@ -126,11 +86,15 @@ class DictionarySourceResourceTile extends StatelessWidget {
               snapshot.downloadedBytes,
               snapshot.totalBytes,
             ),
-            child: AdaptiveListTile(
-              leading: leading,
-              title: title,
+            child: ListTile(
+              leading: const Icon(Icons.description_outlined),
+              title: Text(l10n.dictionarySourceArchive),
               subtitle: subtitle,
-              trailing: trailing,
+              trailing: IconButton(
+                tooltip: actionTooltip,
+                onPressed: onPressed,
+                icon: Icon(actionIcon),
+              ),
             ),
           ),
         );

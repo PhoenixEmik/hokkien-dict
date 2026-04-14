@@ -1,5 +1,3 @@
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 void showGlassNotification(
@@ -12,12 +10,7 @@ void showGlassNotification(
     return;
   }
 
-  AdaptiveSnackBar.show(
-    context,
-    message: message,
-    type: isError
-        ? AdaptiveSnackBarType.error
-        : AdaptiveSnackBarType.success,
-    duration: duration,
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(message), duration: duration),
   );
 }

@@ -1,8 +1,6 @@
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/localization/app_localizations.dart';
 import 'package:taigi_dict/offline_audio.dart';
-import 'package:taigi_dict/features/settings/presentation/widgets/liquid_glass.dart';
 
 class AudioResourceTile extends StatelessWidget {
   const AudioResourceTile({
@@ -20,8 +18,6 @@ class AudioResourceTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final applePlatform = isApplePlatform(context);
     return ValueListenableBuilder<DownloadSnapshot>(
       valueListenable: audioLibrary.downloadListenable(type),
       builder: (context, snapshot, child) {
@@ -32,13 +28,13 @@ class AudioResourceTile extends StatelessWidget {
         final progress = snapshot.progress;
         final statusText = switch (snapshot.state) {
           DownloadState.downloading =>
-            '${audioLibrary.downloadStatus(type)} • ${audioLibrary.downloadSpeed(type)}',
+            '${audioLibrary.downloadStatus(type)} \u2022 ${audioLibrary.downloadSpeed(type)}',
           DownloadState.paused =>
-            '${l10n.pause} • ${audioLibrary.downloadStatus(type)}',
+            '${l10n.pause} \u2022 ${audioLibrary.downloadStatus(type)}',
           DownloadState.completed => l10n.downloadReady,
           DownloadState.error =>
             snapshot.errorMessage ??
-                '${l10n.retry} • ${audioLibrary.downloadStatus(type)}',
+                '${l10n.retry} \u2022 ${audioLibrary.downloadStatus(type)}',
           DownloadState.idle =>
             isReady
                 ? l10n.downloadReady
@@ -67,14 +63,7 @@ class AudioResourceTile extends StatelessWidget {
         final leadingIcon = type == AudioArchiveType.word
             ? Icons.record_voice_over_outlined
             : Icons.chat_bubble_outline;
-        final title = Text(
-          titleText,
-          style: applePlatform
-              ? null
-              : theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-        );
+
         final subtitle = Padding(
           padding: const EdgeInsets.only(top: 4),
           child: Column(
@@ -82,47 +71,22 @@ class AudioResourceTile extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                '${type.archiveFileName} • ${formatBytes(type.archiveBytes)}',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: applePlatform
-                      ? resolveLiquidGlassSecondaryForeground(context)
-                      : colorScheme.onSurfaceVariant,
-                ),
+                '${type.archiveFileName} \u2022 ${formatBytes(type.archiveBytes)}',
+                style: theme.textTheme.bodySmall,
               ),
               const SizedBox(height: 2),
-              Text(
-                statusText,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: applePlatform
-                      ? resolveLiquidGlassSecondaryForeground(context)
-                      : colorScheme.onSurfaceVariant,
-                ),
-              ),
+              Text(statusText, style: theme.textTheme.bodySmall),
               if (progress != null &&
                   (snapshot.state != DownloadState.idle || isReady)) ...[
                 const SizedBox(height: 8),
                 LinearProgressIndicator(
-                  minHeight: applePlatform ? 4 : null,
                   value: snapshot.state == DownloadState.completed
                       ? 1
                       : progress,
-                  borderRadius: applePlatform
-                      ? BorderRadius.circular(999)
-                      : null,
-                  backgroundColor: applePlatform
-                      ? resolveLiquidGlassSecondaryTint(
-                          context,
-                        ).withValues(alpha: 0.45)
-                      : null,
                 ),
               ],
             ],
           ),
-        );
-        final trailing = AdaptiveSettingsActionButton(
-          tooltip: actionTooltip,
-          onPressed: onPressed,
-          icon: actionIcon,
         );
 
         return MergeSemantics(
@@ -130,18 +94,22 @@ class AudioResourceTile extends StatelessWidget {
             container: true,
             label: l10n.semanticsJoined([
               titleText,
-              '${type.archiveFileName} • ${formatBytes(type.archiveBytes)}',
+              '${type.archiveFileName} \u2022 ${formatBytes(type.archiveBytes)}',
               statusText,
             ]),
             value: l10n.semanticsProgressValue(
               snapshot.downloadedBytes,
               snapshot.totalBytes > 0 ? snapshot.totalBytes : type.archiveBytes,
             ),
-            child: AdaptiveListTile(
+            child: ListTile(
               leading: Icon(leadingIcon),
-              title: title,
+              title: Text(titleText),
               subtitle: subtitle,
-              trailing: trailing,
+              trailing: IconButton(
+                tooltip: actionTooltip,
+                onPressed: onPressed,
+                icon: Icon(actionIcon),
+              ),
             ),
           ),
         );
