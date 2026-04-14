@@ -3,7 +3,6 @@
 <img src="assets/icon/taigi_dict.png" alt="台語辭典 App Icon" width="120" />
 
 [![Download APK](https://img.shields.io/github/v/release/PhoenixEmik/taigi-dict?label=Download%20APK&color=success&logo=android)](https://github.com/PhoenixEmik/taigi-dict/releases/latest)
-[![Get it from GitHub](https://img.shields.io/badge/Get%20it%20from-GitHub-24292f?logo=github)](https://github.com/PhoenixEmik/taigi-dict/releases/latest)
 
 [正體中文說明](README.zh-Hant.md)
 
