@@ -23,7 +23,7 @@ fun sanitizePackagedResources(project: Project) {
 }
 
 android {
-    namespace = "corg.taigidict.app"
+    namespace = "org.taigidict.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
