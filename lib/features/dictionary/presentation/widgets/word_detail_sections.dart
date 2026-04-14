@@ -349,40 +349,6 @@ class ExampleListTile extends StatelessWidget {
   }
 }
 
-class _SensePill extends StatelessWidget {
-  const _SensePill({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    final backgroundColor = brightness == Brightness.light
-        ? Colors.black.withValues(alpha: 0.06)
-        : Colors.white.withValues(alpha: 0.15);
-    final foregroundColor = brightness == Brightness.light
-        ? Colors.black87
-        : Colors.white;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        child: Text(
-          label,
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: foregroundColor,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _MaterialSensePill extends StatelessWidget {
   const _MaterialSensePill({required this.label});
 
