@@ -163,6 +163,89 @@ class SenseSection extends StatelessWidget {
   }
 }
 
+class _MaterialSenseSection extends StatelessWidget {
+  const _MaterialSenseSection({
+    required this.sense,
+    required this.audioLibrary,
+    required this.onPlayClip,
+    required this.onWordTapped,
+    required this.textScale,
+  });
+
+  final DictionarySense sense;
+  final OfflineAudioLibrary audioLibrary;
+  final Future<void> Function(AudioArchiveType type, String clipId) onPlayClip;
+  final Future<void> Function(String word) onWordTapped;
+  final double textScale;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (sense.partOfSpeech.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _MaterialSensePill(label: sense.partOfSpeech),
+            ),
+          if (sense.definition.isNotEmpty)
+            InteractiveDefinitionText(
+              text: sense.definition,
+              onWordTapped: onWordTapped,
+              style: scaledTextStyle(
+                theme.textTheme.bodyLarge?.copyWith(
+                  height: 1.55,
+                  fontWeight: FontWeight.w700,
+                ),
+                textScale,
+              ),
+            ),
+          if (sense.examples.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            ...sense.examples.take(3).map((example) {
+              return ExampleListTile(
+                example: example,
+                audioLibrary: audioLibrary,
+                onPlayClip: onPlayClip,
+                textScale: textScale,
+              );
+            }),
+          ],
+          if (sense.definitionSynonyms.isNotEmpty ||
+              sense.definitionAntonyms.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Divider(
+              height: 1,
+              thickness: 0.5,
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.7),
+            ),
+            const SizedBox(height: 12),
+            if (sense.definitionSynonyms.isNotEmpty)
+              MaterialRelationshipChipGroup(
+                label: AppLocalizations.of(context).synonymsLabel,
+                values: sense.definitionSynonyms,
+                onWordTapped: onWordTapped,
+              ),
+            if (sense.definitionSynonyms.isNotEmpty &&
+                sense.definitionAntonyms.isNotEmpty)
+              const SizedBox(height: 12),
+            if (sense.definitionAntonyms.isNotEmpty)
+              MaterialRelationshipChipGroup(
+                label: AppLocalizations.of(context).antonymsLabel,
+                values: sense.definitionAntonyms,
+                onWordTapped: onWordTapped,
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
 class ExampleListTile extends StatelessWidget {
   const ExampleListTile({
     super.key,
@@ -548,7 +631,6 @@ class DetailNoteCard extends StatelessWidget {
     }
 
     final theme = Theme.of(context);
-    final applePlatform = isApplePlatform(context);
     final content = Padding(
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
       child: SizedBox(
@@ -565,9 +647,7 @@ class DetailNoteCard extends StatelessWidget {
                   textAlign: TextAlign.left,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: applePlatform
-                        ? resolveLiquidGlassForeground(context)
-                        : theme.colorScheme.onSurface,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
               ),
@@ -582,9 +662,7 @@ class DetailNoteCard extends StatelessWidget {
                     textAlign: TextAlign.left,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       height: 1.6,
-                      color: applePlatform
-                          ? resolveLiquidGlassSecondaryForeground(context)
-                          : theme.colorScheme.onSurfaceVariant,
+                      color: theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ),
@@ -594,13 +672,6 @@ class DetailNoteCard extends StatelessWidget {
         ),
       ),
     );
-
-    if (applePlatform) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 16),
-        child: LiquidGlassSection(children: [content]),
-      );
-    }
 
     return Card(margin: const EdgeInsets.only(bottom: 16), child: content);
   }
@@ -615,9 +686,7 @@ class _PronunciationNoteLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final mutedColor = isApplePlatform(context)
-        ? resolveLiquidGlassSecondaryForeground(context)
-        : theme.colorScheme.onSurfaceVariant;
+    final mutedColor = theme.colorScheme.onSurfaceVariant;
     final text = '$label：${values.join('、')}';
 
     return Text(
