@@ -1,3 +1,4 @@
+import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/localization/app_localizations.dart';
 import 'package:taigi_dict/features/bookmarks/application/bookmark_store.dart';
@@ -169,8 +170,11 @@ class _BookmarksScreenState extends State<BookmarksScreen> {
           return content;
         }
 
-        return Scaffold(
-          appBar: AppBar(title: Text(l10n.bookmarksTitle)),
+        return AdaptiveScaffold(
+          appBar: AdaptiveAppBar(
+            title: l10n.bookmarksTitle,
+            useNativeToolbar: true,
+          ),
           body: content,
         );
       },

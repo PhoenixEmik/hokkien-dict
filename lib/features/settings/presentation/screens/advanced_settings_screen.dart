@@ -1,15 +1,12 @@
 import 'dart:async';
 
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/localization/app_localizations.dart';
 import 'package:taigi_dict/core/utils/dialog_utils.dart';
 import 'package:taigi_dict/features/dictionary/data/dictionary_database_builder_service.dart';
 import 'package:taigi_dict/features/settings/presentation/widgets/glass_notification.dart';
 import 'package:taigi_dict/features/settings/presentation/widgets/liquid_glass.dart';
-import 'package:taigi_dict/features/settings/presentation/widgets/settings_section_header.dart';
-import 'package:liquid_glass_widgets/liquid_glass_widgets.dart' as glass;
 
 class AdvancedSettingsScreen extends StatelessWidget {
   const AdvancedSettingsScreen({
@@ -94,7 +91,6 @@ class AdvancedSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
     final applePlatform = isApplePlatform(context);
     final sectionChildren = [
       AdaptiveListTile(
@@ -124,33 +120,18 @@ class AdvancedSettingsScreen extends StatelessWidget {
       ),
     );
 
-    return Scaffold(
-      backgroundColor: applePlatform
-          ? Colors.transparent
-          : Theme.of(context).scaffoldBackgroundColor,
-      appBar: applePlatform
-          ? glass.GlassAppBar(
-              useOwnLayer: true,
-              quality: glass.GlassQuality.premium,
-              backgroundColor: Theme.of(context).colorScheme.surface,
-              leading: IconButton(
-                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-                onPressed: () => Navigator.of(context).maybePop(),
-                icon: Icon(
-                  CupertinoIcons.back,
-                  color: resolveLiquidGlassTint(context),
-                  size: 22,
-                ),
-              ),
-              title: Text(
-                l10n.advancedSettings,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: resolveLiquidGlassForeground(context),
-                ),
-              ),
-            )
-          : AppBar(title: Text(l10n.advancedSettings)),
+    return AdaptiveScaffold(
+      appBar: AdaptiveAppBar(
+        title: l10n.advancedSettings,
+        useNativeToolbar: true,
+        leading: Tooltip(
+          message: MaterialLocalizations.of(context).backButtonTooltip,
+          child: AdaptiveButton.child(
+            onPressed: () => Navigator.of(context).maybePop(),
+            child: const Icon(Icons.arrow_back),
+          ),
+        ),
+      ),
       body: applePlatform ? LiquidGlassBackground(child: body) : body,
     );
   }

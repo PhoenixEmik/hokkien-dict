@@ -17,7 +17,6 @@ import 'package:taigi_dict/features/settings/presentation/widgets/settings_local
 import 'package:taigi_dict/features/settings/presentation/widgets/settings_theme_mode_tile.dart';
 import 'package:taigi_dict/features/settings/presentation/widgets/settings_text_scale_tile.dart';
 import 'package:taigi_dict/offline_audio.dart';
-import 'package:liquid_glass_widgets/liquid_glass_widgets.dart' as glass;
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({
@@ -59,7 +58,6 @@ class SettingsScreen extends StatelessWidget {
     final appPreferences = AppPreferencesScope.of(context);
     final localeProvider = LocaleProviderScope.of(context);
     final l10n = AppLocalizations.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
     final selectedLocale =
         localeProvider.locale ??
         AppLocalizations.resolveLocale(Localizations.localeOf(context));
@@ -224,22 +222,11 @@ class SettingsScreen extends StatelessWidget {
           return content;
         }
 
-        return Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: applePlatform
-              ? glass.GlassAppBar(
-                  useOwnLayer: true,
-                  quality: glass.GlassQuality.premium,
-                  backgroundColor: Theme.of(context).colorScheme.surface,
-                  title: Text(
-                    l10n.settingsTitle,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: resolveLiquidGlassForeground(context),
-                    ),
-                  ),
-                )
-              : AppBar(title: Text(l10n.settingsTitle)),
+        return AdaptiveScaffold(
+          appBar: AdaptiveAppBar(
+            title: l10n.settingsTitle,
+            useNativeToolbar: true,
+          ),
           body: content,
         );
       },
