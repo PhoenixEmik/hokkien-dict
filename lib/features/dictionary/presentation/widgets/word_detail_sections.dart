@@ -464,12 +464,20 @@ class RelationshipChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final fillColor = colorScheme.surfaceContainerHighest;
     final strokeColor = colorScheme.outlineVariant.withValues(alpha: 0.75);
     final textColor = colorScheme.onSurface;
     final l10n = AppLocalizations.of(context);
     final isInteractive = onTap != null;
+    final isMaterialPlatform =
+        theme.platform == TargetPlatform.android ||
+        theme.platform == TargetPlatform.fuchsia;
+    final labelStyle = theme.textTheme.bodyMedium?.copyWith(
+      color: textColor,
+      fontWeight: FontWeight.w600,
+    );
 
     return Semantics(
       container: true,
@@ -478,37 +486,52 @@ class RelationshipChip extends StatelessWidget {
       label: semanticLabel ?? word,
       onTapHint: isInteractive ? l10n.searchThisWordHint : null,
       child: ExcludeSemantics(
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: isInteractive
-                ? () {
-                    unawaited(onTap!());
-                  }
-                : null,
-            child: Ink(
-              decoration: BoxDecoration(
-                color: fillColor,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: strokeColor, width: 0.5),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
+        child: isMaterialPlatform
+            ? Material(
+                color: Colors.transparent,
+                child: ActionChip(
+                  label: Text(word),
+                  onPressed: isInteractive
+                      ? () {
+                          unawaited(onTap!());
+                        }
+                      : null,
+                  labelStyle: labelStyle,
+                  backgroundColor: fillColor,
+                  surfaceTintColor: Colors.transparent,
+                  side: BorderSide(color: strokeColor, width: 0.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
                 ),
-                child: Text(
-                  word,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: textColor,
-                    fontWeight: FontWeight.w600,
+              )
+            : Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: isInteractive
+                      ? () {
+                          unawaited(onTap!());
+                        }
+                      : null,
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      color: fillColor,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: strokeColor, width: 0.5),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      child: Text(word, style: labelStyle),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
-        ),
       ),
     );
   }
