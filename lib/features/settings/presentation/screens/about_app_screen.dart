@@ -1,12 +1,22 @@
+import 'dart:async';
+
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/core.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'license_summary_screen.dart';
 
 class AboutAppScreen extends StatelessWidget {
   const AboutAppScreen({super.key});
+
+  Future<void> _openRepository() async {
+    await launchUrl(
+      Uri.parse(AppConstants.appRepositoryUrl),
+      mode: LaunchMode.externalApplication,
+    );
+  }
 
   void _openLicenseSummary(BuildContext context) {
     Navigator.of(context).push(
@@ -51,10 +61,24 @@ class AboutAppScreen extends StatelessWidget {
                   title: Text(l10n.aboutAuthor),
                   subtitle: const Text(AppConstants.appAuthor),
                 ),
-                AdaptiveListTile(
-                  leading: const Icon(Icons.code_outlined),
-                  title: Text(l10n.aboutRepository),
-                  subtitle: const Text(AppConstants.appRepositoryUrl),
+                Semantics(
+                  label:
+                      '${l10n.aboutRepository}。${AppConstants.appRepositoryUrl}',
+                  button: true,
+                  onTap: () {
+                    unawaited(_openRepository());
+                  },
+                  child: ExcludeSemantics(
+                    child: AdaptiveListTile(
+                      leading: const Icon(Icons.code_outlined),
+                      title: Text(l10n.aboutRepository),
+                      subtitle: const Text(AppConstants.appRepositoryUrl),
+                      trailing: const Icon(Icons.open_in_new),
+                      onTap: () {
+                        unawaited(_openRepository());
+                      },
+                    ),
+                  ),
                 ),
               ],
             ),

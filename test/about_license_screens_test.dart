@@ -68,7 +68,7 @@ void main() {
 
   group('new settings pages a11y', () {
     testWidgets(
-      'about page exposes readable semantics and license entry button',
+      'about page exposes readable semantics and action rows as buttons',
       (WidgetTester tester) async {
         final semanticsHandle = tester.ensureSemantics();
         try {
@@ -93,6 +93,16 @@ void main() {
               RegExp(RegExp.escape(AppConstants.appAuthor)),
             ),
             findsWidgets,
+          );
+          expect(
+            tester.getSemantics(
+              find.bySemanticsLabel('GitHub。${AppConstants.appRepositoryUrl}'),
+            ),
+            matchesSemantics(
+              label: 'GitHub。${AppConstants.appRepositoryUrl}',
+              isButton: true,
+              hasTapAction: true,
+            ),
           );
           expect(
             tester.getSemantics(
