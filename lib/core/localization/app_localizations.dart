@@ -759,6 +759,12 @@ class AppLocalizations {
     '已下載 $label，之後可離線播放。',
   );
 
+  String redownloadConfirmationTitle(String label) => _selectText(
+    'Confirm re-download of $label?',
+    '确认要重新下载 $label？',
+    '確認要重新下載 $label？',
+  );
+
   String audioArchiveDownloadFailed(String label, String error) => _selectText(
     'Failed to download $label: $error',
     '下载 $label 失败：$error',

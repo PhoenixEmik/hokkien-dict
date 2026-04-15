@@ -26,11 +26,10 @@ class AdvancedSettingsScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final confirmed = await showConfirmationDialog(
       context: context,
-      title: '${l10n.redownload} ${l10n.dictionarySourceArchive}',
-      content: l10n.dictionarySourceSubtitle,
+      title: l10n.redownloadConfirmationTitle(l10n.dictionarySourceArchive),
+      content: '',
       cancelLabel: l10n.cancelAction,
       confirmLabel: l10n.redownload,
-      icon: const Icon(Icons.description_outlined, size: 28),
     );
     if (confirmed != true || !context.mounted) {
       return;
@@ -53,16 +52,10 @@ class AdvancedSettingsScreen extends StatelessWidget {
         : l10n.audioSentenceArchive;
     final confirmed = await showConfirmationDialog(
       context: context,
-      title: '${l10n.redownload} $archiveLabel',
-      content: l10n.downloadApproximateSize(formatBytes(type.archiveBytes)),
+      title: l10n.redownloadConfirmationTitle(archiveLabel),
+      content: '',
       cancelLabel: l10n.cancelAction,
       confirmLabel: l10n.redownload,
-      icon: Icon(
-        type == AudioArchiveType.word
-            ? Icons.record_voice_over_outlined
-            : Icons.chat_bubble_outline,
-        size: 28,
-      ),
     );
     if (confirmed != true || !context.mounted) {
       return;
@@ -83,7 +76,6 @@ class AdvancedSettingsScreen extends StatelessWidget {
       content: l10n.confirmRebuildDictionaryBody,
       cancelLabel: l10n.cancelAction,
       confirmLabel: l10n.confirmAction,
-      icon: const Icon(Icons.storage_outlined, size: 28),
     );
 
     if (confirmed != true || !context.mounted) {
