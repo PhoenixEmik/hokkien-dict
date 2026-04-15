@@ -87,16 +87,49 @@ class AdvancedSettingsScreen extends StatelessWidget {
 
   Future<void> _handleRebuildDictionaryDatabase(BuildContext context) async {
     final l10n = AppLocalizations.of(context);
-    final closeProgressDialog = await showAdaptiveBlockingProgressDialog(
-      context: context,
-      title: l10n.rebuildingDictionaryDatabase,
-      actionLabel: l10n.confirmAction,
-      icon: const SizedBox(
-        width: 24,
-        height: 24,
-        child: CircularProgressIndicator.adaptive(strokeWidth: 2.5),
+    final navigator = Navigator.of(context, rootNavigator: true);
+    var closed = false;
+
+    unawaited(
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        useRootNavigator: true,
+        builder: (dialogContext) {
+          return PopScope(
+            canPop: false,
+            child: AlertDialog(
+              content: Row(
+                children: [
+                  const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator.adaptive(strokeWidth: 2.5),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      l10n.rebuildingDictionaryDatabase,
+                      style: Theme.of(dialogContext).textTheme.titleMedium,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
+
+    await Future<void>.delayed(Duration.zero);
+
+    void closeProgressDialog() {
+      if (closed) {
+        return;
+      }
+      closed = true;
+      unawaited(navigator.maybePop());
+    }
 
     Object? error;
     try {
@@ -109,9 +142,7 @@ class AdvancedSettingsScreen extends StatelessWidget {
       return;
     }
 
-    if (context.mounted) {
-      closeProgressDialog();
-    }
+    closeProgressDialog();
 
     showAppNotification(
       context,
