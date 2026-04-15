@@ -275,8 +275,8 @@ class _MainScreenState extends State<MainScreen> {
               ),
               AdaptiveNavigationDestination(
                 icon: PlatformInfo.isIOS
-                    ? 'gearshape'
-                    : Icons.settings_outlined,
+                    ? 'gearshape.fill'
+                    : Icons.settings,
                 selectedIcon:
                     PlatformInfo.isIOS ? 'gearshape.fill' : Icons.settings,
                 label: l10n.settingsTab,
