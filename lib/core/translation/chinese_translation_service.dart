@@ -92,6 +92,19 @@ class ChineseTranslationService {
     );
   }
 
+  Future<List<DictionaryEntry>> translateEntriesForSearchResults(
+    List<DictionaryEntry> entries, {
+    required Locale locale,
+  }) async {
+    if (entries.isEmpty || !shouldUseSimplifiedDisplay(locale)) {
+      return entries;
+    }
+
+    return Future.wait(
+      entries.map((entry) => _translateEntrySummaryForDisplay(entry, locale)),
+    );
+  }
+
   Future<DictionaryEntry> translateEntryForDisplay(
     DictionaryEntry entry, {
     required Locale locale,
@@ -147,6 +160,54 @@ class ChineseTranslationService {
       colloquialPronunciations: entry.colloquialPronunciations,
       phoneticDifferences: await translatedPhoneticDifferences,
       vocabularyComparisons: await translatedVocabularyComparisons,
+      aliasTargetEntryId: entry.aliasTargetEntryId,
+      senses: await translatedSenses,
+    );
+  }
+
+  Future<DictionaryEntry> _translateEntrySummaryForDisplay(
+    DictionaryEntry entry,
+    Locale locale,
+  ) async {
+    final translatedHanji = translateForDisplay(entry.hanji, locale: locale);
+    final translatedType = translateForDisplay(entry.type, locale: locale);
+    final translatedCategory = translateForDisplay(
+      entry.category,
+      locale: locale,
+    );
+    final translatedSenses = Future.wait(
+      entry.senses.map((sense) async {
+        final translatedDefinition = await translateForDisplay(
+          sense.definition,
+          locale: locale,
+        );
+        return DictionarySense(
+          partOfSpeech: sense.partOfSpeech,
+          definition: translatedDefinition,
+          definitionSynonyms: sense.definitionSynonyms,
+          definitionAntonyms: sense.definitionAntonyms,
+          examples: sense.examples,
+        );
+      }),
+    );
+
+    return DictionaryEntry(
+      id: entry.id,
+      type: await translatedType,
+      hanji: await translatedHanji,
+      romanization: entry.romanization,
+      category: await translatedCategory,
+      audioId: entry.audioId,
+      hokkienSearch: entry.hokkienSearch,
+      mandarinSearch: entry.mandarinSearch,
+      variantChars: entry.variantChars,
+      wordSynonyms: entry.wordSynonyms,
+      wordAntonyms: entry.wordAntonyms,
+      alternativePronunciations: entry.alternativePronunciations,
+      contractedPronunciations: entry.contractedPronunciations,
+      colloquialPronunciations: entry.colloquialPronunciations,
+      phoneticDifferences: entry.phoneticDifferences,
+      vocabularyComparisons: entry.vocabularyComparisons,
       aliasTargetEntryId: entry.aliasTargetEntryId,
       senses: await translatedSenses,
     );
