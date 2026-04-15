@@ -11,9 +11,6 @@ PODS:
     - Flutter
     - FlutterMacOS
   - OpenCC (0.3.3)
-  - path_provider_foundation (0.0.1):
-    - Flutter
-    - FlutterMacOS
   - share_plus (0.0.1):
     - Flutter
   - shared_preferences_foundation (0.0.1):
@@ -29,7 +26,6 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_open_chinese_convert (from `.symlinks/plugins/flutter_open_chinese_convert/ios`)
   - just_audio (from `.symlinks/plugins/just_audio/darwin`)
-  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
@@ -49,8 +45,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_open_chinese_convert/ios"
   just_audio:
     :path: ".symlinks/plugins/just_audio/darwin"
-  path_provider_foundation:
-    :path: ".symlinks/plugins/path_provider_foundation/darwin"
   share_plus:
     :path: ".symlinks/plugins/share_plus/ios"
   shared_preferences_foundation:
@@ -65,7 +59,6 @@ SPEC CHECKSUMS:
   flutter_open_chinese_convert: 8b440f57a1666d3deb57b3c9da6318685a061812
   just_audio: 4e391f57b79cad2b0674030a00453ca5ce817eed
   OpenCC: 290dcf27e18ef926aa4fbc0f0a9c116c36145bc5
-  path_provider_foundation: bb55f6dbba17d0dccd6737fe6f7f34fbd0376880
   share_plus: 50da8cb520a8f0f65671c6c6a99b3617ed10a58a
   shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0

@@ -8,6 +8,36 @@ FRAMEWORK_DIR="${BUILD_ROOT}/native_assets/ios/objective_c.framework"
 BINARY_PATH="${FRAMEWORK_DIR}/objective_c"
 INFO_PLIST_PATH="${FRAMEWORK_DIR}/Info.plist"
 IOS_OUTPUT_DIR="${BUILD_ROOT}/ios/${CONFIGURATION}${EFFECTIVE_PLATFORM_NAME}"
+APP_BUNDLE_DIR="${TARGET_BUILD_DIR}/${CONTENTS_FOLDER_PATH}"
+APP_FRAMEWORKS_DIR="${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}"
+
+copy_framework_to_app_bundle() {
+  source_framework="$1"
+
+  if [ ! -d "${source_framework}" ] || [ ! -d "${APP_BUNDLE_DIR}" ]; then
+    return
+  fi
+
+  mkdir -p "${APP_FRAMEWORKS_DIR}"
+
+  if [ "${source_framework}" != "${APP_FRAMEWORKS_DIR}/objective_c.framework" ]; then
+    rm -rf "${APP_FRAMEWORKS_DIR}/objective_c.framework"
+    cp -R "${source_framework}" "${APP_FRAMEWORKS_DIR}/"
+  fi
+
+  rm -rf "${APP_BUNDLE_DIR}/objective_c.framework"
+  cp -R "${APP_FRAMEWORKS_DIR}/objective_c.framework" "${APP_BUNDLE_DIR}/"
+}
+
+if [ -d "${APP_FRAMEWORKS_DIR}/objective_c.framework" ]; then
+  copy_framework_to_app_bundle "${APP_FRAMEWORKS_DIR}/objective_c.framework"
+  exit 0
+fi
+
+if [ -d "${FRAMEWORK_DIR}" ]; then
+  copy_framework_to_app_bundle "${FRAMEWORK_DIR}"
+  exit 0
+fi
 
 if [ ! -d "${HOOKS_ROOT}" ]; then
   exit 0
@@ -74,3 +104,5 @@ EOF
 if [ -d "${IOS_OUTPUT_DIR}" ]; then
   xattr -cr "${IOS_OUTPUT_DIR}"
 fi
+
+copy_framework_to_app_bundle "${FRAMEWORK_DIR}"
