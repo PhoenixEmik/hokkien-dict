@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/core.dart';
 import 'package:taigi_dict/features/audio/audio.dart';
 import 'package:taigi_dict/features/bookmarks/bookmarks.dart';
@@ -33,6 +33,9 @@ class _BookmarksScreenState extends State<BookmarksScreen>
   DictionaryBundle? _cachedBundle;
   final Map<String, List<DictionaryEntry>> _entriesCacheByKey =
       <String, List<DictionaryEntry>>{};
+  Locale _displayLocale = AppLocalizations.traditionalChineseLocale;
+  final ChineseTranslationService _translationService =
+      ChineseTranslationService.instance;
 
   @override
   bool get wantKeepAlive => true;
@@ -41,6 +44,21 @@ class _BookmarksScreenState extends State<BookmarksScreen>
   void initState() {
     super.initState();
     _bundleFuture = widget.repository.loadBundle();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final resolvedLocale = AppLocalizations.resolveLocale(
+      Localizations.localeOf(context),
+    );
+    if (_displayLocale == resolvedLocale) {
+      return;
+    }
+    _displayLocale = resolvedLocale;
+    _entriesFuture = null;
+    _entriesFutureKey = '';
+    _entriesCacheByKey.clear();
   }
 
   Future<void> _showEntryDetails(
@@ -106,13 +124,20 @@ class _BookmarksScreenState extends State<BookmarksScreen>
               );
             }
 
-            final entriesFutureKey = bookmarkedIds.join(',');
-            if (_entriesFuture == null || _entriesFutureKey != entriesFutureKey) {
+            final entriesFutureKey =
+                '${bookmarkedIds.join(',')}_${_displayLocale.toLanguageTag()}';
+            if (_entriesFuture == null ||
+                _entriesFutureKey != entriesFutureKey) {
               _entriesFutureKey = entriesFutureKey;
-              _entriesFuture = widget.repository.entriesByIdsAsync(
-                bundle,
-                bookmarkedIds,
-              );
+              _entriesFuture = widget.repository
+                  .entriesByIdsAsync(bundle, bookmarkedIds)
+                  .then(
+                    (entries) =>
+                        _translationService.translateEntriesForSearchResults(
+                          entries,
+                          locale: _displayLocale,
+                        ),
+                  );
             }
 
             final cachedEntries = _entriesCacheByKey[entriesFutureKey];
