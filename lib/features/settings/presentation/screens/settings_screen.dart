@@ -182,72 +182,16 @@ class _SettingsScreenState extends State<SettingsScreen>
                 AdaptiveListTile(
                   leading: const Icon(Icons.info_outline),
                   title: Text(l10n.aboutApp),
+                  trailing: const Icon(Icons.chevron_right),
                   onTap: () {
-                    final aboutMessage = [
-                      l10n.aboutLegalese,
-                      '',
-                      l10n.aboutDescription,
-                      '',
-                      '${l10n.referencePage}: https://sutian.moe.edu.tw/zh-hant/siongkuantsuguan/',
-                      '${l10n.tailoGuide}: https://sutian.moe.edu.tw/zh-hant/piantsip/tailo-phiautsu-suatbing/',
-                      '${l10n.hanjiGuide}: https://sutian.moe.edu.tw/zh-hant/piantsip/hanji-iongji-guantsik/',
-                    ].join('\n');
-
-                    final shouldOpenLicenses = Completer<bool>();
-
-                    unawaited(
-                      AdaptiveAlertDialog.show(
-                        context: context,
-                        title: l10n.appTitle,
-                        message: aboutMessage,
-                        icon: Icons.info_outline,
-                        actions: [
-                          AlertAction(
-                            title: MaterialLocalizations.of(
-                              context,
-                            ).viewLicensesButtonLabel,
-                            style: AlertActionStyle.info,
-                            onPressed: () {
-                              if (!shouldOpenLicenses.isCompleted) {
-                                shouldOpenLicenses.complete(true);
-                              }
-                            },
-                          ),
-                          AlertAction(
-                            title: l10n.confirmAction,
-                            style: AlertActionStyle.primary,
-                            onPressed: () {
-                              if (!shouldOpenLicenses.isCompleted) {
-                                shouldOpenLicenses.complete(false);
-                              }
-                            },
-                          ),
-                        ],
-                      ).then((_) {
-                        if (!shouldOpenLicenses.isCompleted) {
-                          shouldOpenLicenses.complete(false);
-                        }
-                      }),
-                    );
-
-                    unawaited(
-                      shouldOpenLicenses.future.then((openLicenses) {
-                        if (openLicenses == true && context.mounted) {
-                          Navigator.of(context).push(
-                            PlatformInfo.isIOS
-                                ? CupertinoPageRoute<void>(
-                                    builder: (_) => LicenseOverviewScreen(
-                                      applicationName: l10n.appTitle,
-                                    ),
-                                  )
-                                : MaterialPageRoute<void>(
-                                    builder: (_) => LicenseOverviewScreen(
-                                      applicationName: l10n.appTitle,
-                                    ),
-                                  ),
-                          );
-                        }
-                      }),
+                    Navigator.of(context).push(
+                      PlatformInfo.isIOS
+                          ? CupertinoPageRoute<void>(
+                              builder: (_) => const AboutAppScreen(),
+                            )
+                          : MaterialPageRoute<void>(
+                              builder: (_) => const AboutAppScreen(),
+                            ),
                     );
                   },
                 ),

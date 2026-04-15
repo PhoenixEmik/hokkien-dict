@@ -179,6 +179,26 @@ class AppLocalizations {
       'aboutApp': 'About Hokkien Dictionary',
       'aboutDescription':
           'Hokkien Dictionary provides offline bidirectional lookup between Taiwanese and Mandarin, with downloadable ministry audio for words and examples.',
+      'aboutVersion': 'Version',
+      'aboutAuthor': 'Author',
+      'aboutRepository': 'GitHub',
+      'aboutRepositorySubtitle': 'Source code and releases',
+      'aboutResources': 'References',
+      'aboutLicenses': 'Licenses',
+      'licenseInformation': 'License Information',
+      'appCodeLicense': 'App code',
+      'appCodeLicenseDescription': 'MIT License',
+      'dictionaryDataLicense': 'Dictionary data',
+      'dictionaryDataLicenseDescription':
+          'Derived from the Ministry of Education Taiwanese Hokkien Dictionary. Licensed under CC BY-ND 3.0 TW.',
+      'dictionaryAudioLicense': 'Dictionary audio',
+      'dictionaryAudioLicenseDescription':
+          'Derived from the Ministry of Education Taiwanese Hokkien Dictionary audio. Licensed under CC BY-ND 3.0 TW.',
+      'ministryCopyrightNote': 'Ministry copyright note',
+      'flutterLicenses': 'Flutter and package licenses',
+      'flutterLicensesDescription':
+          'View detailed open-source licenses bundled by Flutter.',
+      'copiedToClipboard': 'Copied to clipboard',
       'referencePage': 'Reference page',
       'shareEntry': 'Share entry',
       'addBookmark': 'Add bookmark',
@@ -267,6 +287,25 @@ class AppLocalizations {
       'hanjiGuideSubtitle': '查看教育部页面的重点整理与辞典汉字选用方式。',
       'aboutApp': '关于台语辞典',
       'aboutDescription': '台语辞典提供离线的台语与华语双向查询，并支持下载教育部词目与例句音档。',
+      'aboutVersion': '版本',
+      'aboutAuthor': '作者',
+      'aboutRepository': 'GitHub',
+      'aboutRepositorySubtitle': '原始码与发行版本',
+      'aboutResources': '参考资料',
+      'aboutLicenses': '授权资讯',
+      'licenseInformation': '授权资讯',
+      'appCodeLicense': 'App 程式码',
+      'appCodeLicenseDescription': 'MIT 授权',
+      'dictionaryDataLicense': '词典资料',
+      'dictionaryDataLicenseDescription':
+          '衍生自教育部《台湾台语常用词辞典》，采用 CC BY-ND 3.0 TW。',
+      'dictionaryAudioLicense': '词典音档',
+      'dictionaryAudioLicenseDescription':
+          '衍生自教育部《台湾台语常用词辞典》音档，采用 CC BY-ND 3.0 TW。',
+      'ministryCopyrightNote': '教育部版权说明',
+      'flutterLicenses': 'Flutter 与套件授权',
+      'flutterLicensesDescription': '查看 Flutter 汇整的开源套件详细授权。',
+      'copiedToClipboard': '已复制到剪贴簿',
       'referencePage': '参考页面',
       'shareEntry': '分享词条',
       'addBookmark': '加入书签',
@@ -355,6 +394,25 @@ class AppLocalizations {
       'hanjiGuideSubtitle': '查看教育部頁面的重點整理與辭典漢字選用方式。',
       'aboutApp': '關於台語辭典',
       'aboutDescription': '台語辭典提供離線的台語與華語雙向查詢，並支援下載教育部詞目與例句音檔。',
+      'aboutVersion': '版本',
+      'aboutAuthor': '作者',
+      'aboutRepository': 'GitHub',
+      'aboutRepositorySubtitle': '原始碼與發行版本',
+      'aboutResources': '參考資料',
+      'aboutLicenses': '授權資訊',
+      'licenseInformation': '授權資訊',
+      'appCodeLicense': 'App 程式碼',
+      'appCodeLicenseDescription': 'MIT 授權',
+      'dictionaryDataLicense': '詞典資料',
+      'dictionaryDataLicenseDescription':
+          '衍生自教育部《臺灣台語常用詞辭典》，採 CC BY-ND 3.0 TW。',
+      'dictionaryAudioLicense': '詞典音檔',
+      'dictionaryAudioLicenseDescription':
+          '衍生自教育部《臺灣台語常用詞辭典》音檔，採 CC BY-ND 3.0 TW。',
+      'ministryCopyrightNote': '教育部著作權說明',
+      'flutterLicenses': 'Flutter 與套件授權',
+      'flutterLicensesDescription': '查看 Flutter 彙整的開源套件詳細授權。',
+      'copiedToClipboard': '已複製到剪貼簿',
       'referencePage': '參考頁面',
       'shareEntry': '分享詞條',
       'addBookmark': '加入書籤',
@@ -461,6 +519,25 @@ class AppLocalizations {
   String get hanjiGuideSubtitle => _text('hanjiGuideSubtitle');
   String get aboutApp => _text('aboutApp');
   String get aboutDescription => _text('aboutDescription');
+  String get aboutVersion => _text('aboutVersion');
+  String get aboutAuthor => _text('aboutAuthor');
+  String get aboutRepository => _text('aboutRepository');
+  String get aboutRepositorySubtitle => _text('aboutRepositorySubtitle');
+  String get aboutResources => _text('aboutResources');
+  String get aboutLicenses => _text('aboutLicenses');
+  String get licenseInformation => _text('licenseInformation');
+  String get appCodeLicense => _text('appCodeLicense');
+  String get appCodeLicenseDescription => _text('appCodeLicenseDescription');
+  String get dictionaryDataLicense => _text('dictionaryDataLicense');
+  String get dictionaryDataLicenseDescription =>
+      _text('dictionaryDataLicenseDescription');
+  String get dictionaryAudioLicense => _text('dictionaryAudioLicense');
+  String get dictionaryAudioLicenseDescription =>
+      _text('dictionaryAudioLicenseDescription');
+  String get ministryCopyrightNote => _text('ministryCopyrightNote');
+  String get flutterLicenses => _text('flutterLicenses');
+  String get flutterLicensesDescription => _text('flutterLicensesDescription');
+  String get copiedToClipboard => _text('copiedToClipboard');
   String get referencePage => _text('referencePage');
   String get shareEntry => _text('shareEntry');
   String get addBookmark => _text('addBookmark');

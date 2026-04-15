@@ -1,6 +1,11 @@
 class AppConstants {
   const AppConstants._();
 
+  static const String appVersion = '1.1.2+1';
+  static const String appAuthor = 'PhoenixEmik';
+  static const String appRepositoryUrl =
+      'https://github.com/PhoenixEmik/taigi-dict';
+
   static const String audioWordArchiveUrl =
       'https://app.taigidict.org/assets/sutiau-mp3.zip';
   static const String audioSentenceArchiveUrl =

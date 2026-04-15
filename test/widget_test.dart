@@ -581,8 +581,16 @@ void main() {
       find.textContaining('台語辭典提供離線的台語與華語雙向查詢，並支援下載教育部詞目與例句音檔。'),
       findsOneWidget,
     );
-    expect(find.textContaining('CC BY-ND 3.0 TW'), findsOneWidget);
-    expect(find.textContaining('App code: MIT'), findsOneWidget);
+    expect(find.text('版本'), findsOneWidget);
+    expect(find.text('1.1.2+1'), findsOneWidget);
+    expect(find.text('作者'), findsOneWidget);
+    expect(find.text('PhoenixEmik'), findsOneWidget);
+    expect(find.text('GitHub'), findsOneWidget);
+    expect(
+      find.text('https://github.com/PhoenixEmik/taigi-dict'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('CC BY-ND 3.0 TW'), findsNothing);
     expect(
       find.textContaining(
         'https://sutian.moe.edu.tw/zh-hant/siongkuantsuguan/',
@@ -592,6 +600,25 @@ void main() {
     expect(find.textContaining('tailo-phiautsu-suatbing'), findsOneWidget);
     expect(find.textContaining('hanji-iongji-guantsik'), findsOneWidget);
     expect(find.textContaining('sutian-huliok'), findsNothing);
+
+    expect(find.text('授權資訊'), findsOneWidget);
+    await tester.tap(find.text('授權資訊'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(find.text('App 程式碼'), findsOneWidget);
+    expect(find.text('MIT 授權'), findsOneWidget);
+    expect(find.text('詞典資料'), findsOneWidget);
+    expect(find.text('詞典音檔'), findsOneWidget);
+    expect(find.textContaining('CC BY-ND 3.0 TW'), findsWidgets);
+    expect(find.text('Flutter 與套件授權'), findsOneWidget);
+
+    await tester.tap(find.text('Flutter 與套件授權'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 700));
+
+    expect(find.text('台語辭典'), findsWidgets);
+    expect(find.text('Powered by Flutter'), findsOneWidget);
   });
 
   testWidgets('shows, applies, and clears search history', (
