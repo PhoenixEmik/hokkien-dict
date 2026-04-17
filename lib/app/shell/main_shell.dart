@@ -74,27 +74,33 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _prepareStartupGate() async {
-    final preferences = await SharedPreferences.getInstance();
-    final readyFlag =
-        preferences.getBool(
-          AppInitializationController.databaseReadyPreferenceKey,
-        ) ??
-        false;
-    final hasDatabase = await _dictionaryDatabaseBuilderService
-        .hasBuiltDatabase();
+    var shouldBlockInitialization = true;
 
-    if (!mounted) {
-      return;
-    }
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      final readyFlag =
+          preferences.getBool(
+            AppInitializationController.databaseReadyPreferenceKey,
+          ) ??
+          false;
+      final hasDatabase = await _dictionaryDatabaseBuilderService
+          .hasBuiltDatabase();
+      shouldBlockInitialization = !readyFlag || !hasDatabase;
+    } catch (error, stackTrace) {
+      debugPrint('Failed to prepare startup gate: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _shouldBlockInitialization = shouldBlockInitialization;
+          _startupGateResolved = true;
+        });
 
-    setState(() {
-      _shouldBlockInitialization = !readyFlag || !hasDatabase;
-      _startupGateResolved = true;
-    });
-
-    if (!_startupRequested) {
-      _startupRequested = true;
-      unawaited(_startInitialization());
+        if (!_startupRequested) {
+          _startupRequested = true;
+          unawaited(_startInitialization());
+        }
+      }
     }
   }
 
@@ -233,9 +239,10 @@ class _MainScreenState extends State<MainScreen> {
       ]),
       builder: (context, child) {
         if (!_startupGateResolved && !bypassInitialization) {
-          return Scaffold(
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            body: const SizedBox.expand(),
+          return AppInitializationScreen(
+            controller: _initializationController,
+            dictionaryLibrary: _dictionaryLibrary,
+            onRetry: _retryInitialization,
           );
         }
 
