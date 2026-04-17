@@ -10,6 +10,14 @@ Flutter dictionary app for Taiwanese Hokkien and Mandarin on Android and iOS.
 The app is built around the Ministry of Education dataset, supports offline
 lookup, and downloads large offline resources directly to the user's device.
 
+## Current Status
+
+- Current app version: `1.1.4`
+- Android and iOS builds are both maintained in the same Flutter codebase
+- The current repository state passes `flutter analyze` and `flutter test`
+- Production runtime builds the local SQLite dictionary from the downloaded `kautian.ods` source on the user's device
+- Recent UI polish includes platform-specific search field fixes for both iOS and Android
+
 ## App Identity
 
 - Dart package name: `taigi_dict`
@@ -99,6 +107,9 @@ flutter analyze
 flutter test
 ```
 
+At the time of this README update, both commands run clean in the current
+repository state.
+
 ## iOS Setup
 
 The iOS project is configured with:
@@ -115,6 +126,12 @@ cd ios
 pod install
 cd ..
 ```
+
+## Development Notes
+
+- `pubspec.yaml` currently pins `path_provider_foundation` with `dependency_overrides` to `2.6.0`.
+- Keep that override unless you have verified a newer resolver result against the current iOS project and plugin set.
+- This project uses a git dependency for `spreadsheet_decoder`, so dependency resolution is not fully reproducible from pub.dev alone.
 
 ## Build Release APK
 

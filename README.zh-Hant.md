@@ -7,6 +7,14 @@
 這是一個支援 Android 與 iOS 的 Flutter 台語 / 華語辭典 App。
 專案以教育部辭典資料為核心，支援離線查詢，並將大型離線資源直接下載到使用者裝置上。
 
+## 目前狀態
+
+- 目前 App 版本：`1.1.4`
+- Android 與 iOS 版本都在同一套 Flutter 程式碼中持續維護
+- 目前 repository 狀態可通過 `flutter analyze` 與 `flutter test`
+- 正式執行流程會先下載 `kautian.ods`，再於使用者裝置上建立本機 SQLite 詞典資料庫
+- 最近已針對 iOS 與 Android 的搜尋框做過平台化樣式修整
+
 ## 專案識別
 
 - Dart package name：`taigi_dict`
@@ -96,6 +104,8 @@ flutter analyze
 flutter test
 ```
 
+本 README 更新當下，以上兩個指令都可在目前 repository 狀態下乾淨通過。
+
 ## iOS 設定
 
 iOS 專案目前設定為：
@@ -112,6 +122,12 @@ cd ios
 pod install
 cd ..
 ```
+
+## 開發注意事項
+
+- `pubspec.yaml` 目前以 `dependency_overrides` 固定 `path_provider_foundation: 2.6.0`
+- 除非你已經針對目前 iOS 專案與 plugin 組合驗證過新的依賴解析結果，否則不要直接移除這個 override
+- 本專案的 `spreadsheet_decoder` 來自 git dependency，因此依賴解析不完全只由 pub.dev 決定
 
 ## 建置 Release APK
 
