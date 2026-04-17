@@ -125,8 +125,11 @@ class AppInitializationController extends ChangeNotifier {
     _error = null;
     _buildProgress = null;
 
-    final preferences = await SharedPreferences.getInstance();
-    await _dictionaryLibrary.initialize();
+    final preferencesFuture = SharedPreferences.getInstance();
+    final dictionaryInitializationFuture = _dictionaryLibrary.initialize();
+
+    await dictionaryInitializationFuture;
+    final preferences = await preferencesFuture;
 
     if (!DictionaryRepository.preferLocalDatabase &&
         DictionaryRepository.hasDebugFallbackBundle) {
@@ -135,8 +138,12 @@ class AppInitializationController extends ChangeNotifier {
     }
 
     final hasDatabase = await _builderService.hasBuiltDatabase();
-    final needsRebuild = forceRebuild || await _builderService.needsRebuild();
     final readyFlag = preferences.getBool(databaseReadyPreferenceKey) ?? false;
+    final needsRebuild = forceRebuild
+        ? true
+        : hasDatabase
+        ? await _builderService.needsRebuild()
+        : true;
 
     if (hasDatabase && !needsRebuild) {
       if (!readyFlag) {
