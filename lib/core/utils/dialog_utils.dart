@@ -12,37 +12,6 @@ dynamic _normalizeAdaptiveDialogIcon(dynamic icon) {
   return null;
 }
 
-AlertActionStyle _cancelActionStyle(BuildContext context) {
-  final platform = Theme.of(context).platform;
-  if (platform == TargetPlatform.iOS || platform == TargetPlatform.macOS) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    if (isDark) {
-      return AlertActionStyle.secondary;
-    }
-    return AlertActionStyle.defaultAction;
-  }
-  return AlertActionStyle.cancel;
-}
-
-AlertActionStyle _confirmActionStyle(
-  BuildContext context, {
-  required bool isDestructiveAction,
-}) {
-  if (isDestructiveAction) {
-    return AlertActionStyle.destructive;
-  }
-
-  final platform = Theme.of(context).platform;
-  if (platform == TargetPlatform.iOS || platform == TargetPlatform.macOS) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    if (isDark) {
-      return AlertActionStyle.primary;
-    }
-    return AlertActionStyle.defaultAction;
-  }
-  return AlertActionStyle.primary;
-}
-
 Future<bool?> showConfirmationDialog({
   required BuildContext context,
   required String title,
@@ -67,7 +36,6 @@ Future<bool?> showConfirmationDialog({
     actions: [
       AlertAction(
         title: cancelLabel,
-        style: _cancelActionStyle(context),
         onPressed: () {
           if (!result.isCompleted) {
             result.complete(false);
@@ -76,10 +44,9 @@ Future<bool?> showConfirmationDialog({
       ),
       AlertAction(
         title: confirmLabel,
-        style: _confirmActionStyle(
-          context,
-          isDestructiveAction: isDestructiveAction,
-        ),
+        style: isDestructiveAction
+            ? AlertActionStyle.destructive
+            : AlertActionStyle.defaultAction,
         onPressed: () {
           if (!result.isCompleted) {
             result.complete(true);
