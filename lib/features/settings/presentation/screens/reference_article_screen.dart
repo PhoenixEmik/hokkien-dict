@@ -23,6 +23,7 @@ class ReferenceArticleScreen extends StatelessWidget {
     final topBodyInset = PlatformInfo.isIOS
         ? MediaQuery.paddingOf(context).top + kToolbarHeight
         : 0.0;
+    final bottomBodyInset = MediaQuery.paddingOf(context).bottom + 24;
 
     return AdaptiveScaffold(
       appBar: AdaptiveAppBar(
@@ -40,7 +41,7 @@ class ReferenceArticleScreen extends StatelessWidget {
                   maxWidth: constraints.maxWidth >= 900 ? 920 : 720,
                 ),
                 child: ListView(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
+                  padding: EdgeInsets.fromLTRB(24, 16, 24, bottomBodyInset),
                   children: [
                     Text(
                       introduction,
