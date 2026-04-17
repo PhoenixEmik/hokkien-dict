@@ -583,7 +583,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('版本'), findsOneWidget);
-    expect(find.text('1.1.3'), findsOneWidget);
+    expect(find.text('1.1.4'), findsOneWidget);
     expect(find.text('作者'), findsOneWidget);
     expect(find.text('PhoenixEmik'), findsOneWidget);
     expect(find.text('GitHub'), findsOneWidget);
