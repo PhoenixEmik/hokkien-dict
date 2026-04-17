@@ -7,7 +7,7 @@
 這是一個支援 Android 與 iOS 的 Flutter 台語 / 華語辭典 App。
 專案以教育部辭典資料為核心，支援離線查詢，並將大型離線資源直接下載到使用者裝置上。
 
-## App 目前內容
+## 核心體驗
 
 App 目前主要由三個分頁構成：
 
@@ -29,24 +29,14 @@ App 目前主要由三個分頁構成：
 
 ## 功能
 
-- 支援台語詞目、台羅拼音、華語釋義的離線查詢
-- 支援加權搜尋排序，並可選擇使用 background isolate 執行搜尋
-- 提供搜尋紀錄保存、重用與清除
-- 提供獨立的詞條詳細頁與原生分享功能
-- 支援在釋義中點擊關聯詞並直接開啟對應詞條
-- 提供書籤頁面保存詞條
-- 支援詞目音檔與例句音檔的離線下載
-- 透過 `dio` 與 HTTP range requests 支援大型 ZIP 的暫停、續傳與斷點續傳
-- 支援下載離線詞典原始檔 `kautian.ods`
-- 使用 `spreadsheet_decoder` 與 `sqflite` 在裝置上把 ODS 建成 SQLite 詞典資料庫
-- 提供正體中文、簡體中文與英文介面
-- 使用原生 OpenCC 引擎做執行期繁簡轉換，並套用台灣詞彙轉換設定
-- 支援閱讀字級調整，以及淺色 / 深色 / AMOLED 主題切換
-- 內建台羅與漢字說明文章頁面
-- 提供關於、授權摘要與 Flutter 套件授權畫面
-- 採用平台自適應 UI：Android 維持品牌化 Material 風格，iOS 使用 Cupertino 導覽與自適應元件
-- 已補強語意標籤、複合設定列 merged semantics 與本地化 tooltip 的無障礙支援
-- 內建 `TauhuOo` fallback font，用於補足系統字型缺少的 CJK Ext-C / D / E 字元
+- 支援台語詞目、台羅拼音、華語釋義查詢，並保留搜尋紀錄
+- 提供加權搜尋排序、詞條詳細頁、釋義內關聯詞跳轉與原生分享
+- 提供書籤分頁集中保存與重開詞條
+- 支援詞目音檔與例句音檔的離線下載與播放
+- 支援下載 `kautian.ods`，並在裝置上建立本機 SQLite 詞典資料庫
+- 提供正體中文、簡體中文、英文介面，以及字級與主題切換
+- 內建台羅與漢字說明文章，以及關於與授權頁面
+- 採用平台自適應 UI，並補強語意標籤、本地化 tooltip 與其他無障礙細節
 
 ## 資料與授權
 
@@ -151,18 +141,12 @@ flutter build apk --release
 
 - `build/app/outputs/flutter-apk/app-release.apk`
 
-## UI 說明
-
-- iOS 使用自適應的 Cupertino 導覽，以及平台感知的搜尋、設定與詞條畫面元件
-- Android 不沿用 iOS palette，而是維持較溫暖的品牌化 Material 風格
-- App shell 目前以 `辭典`、`書籤`、`設定` 三個分頁為核心
-
 ## 致謝
 
 - 教育部臺灣台語常用詞辭典：`https://sutian.moe.edu.tw/`
 - Tauhu-oo（豆腐烏）20.05 字型，用於顯示台語漢字與特定 CJK Extension 字元：`https://github.com/tauhu-tw/tauhu-oo`
 - jf open-huninn（jf open 粉圓）字型，用於 App Icon 字樣：`https://github.com/justfont/open-huninn-font`
-- adaptive_platform_ui，提供 Material/Cupertino 自適應介面元件：`https://github.com/berkaycatak/adaptive_platform_ui`
+- Adaptive Platform UI，提供 Material/Cupertino 自適應介面元件：`https://github.com/berkaycatak/adaptive_platform_ui`
 - Open Chinese Convert for Flutter，提供執行期 OpenCC 繁簡轉換：`https://github.com/zonble/flutter_open_chinese_convert`
 
 ## 授權

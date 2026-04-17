@@ -10,7 +10,7 @@ Flutter dictionary app for Taiwanese Hokkien and Mandarin on Android and iOS.
 The app is built around the Ministry of Education dataset, supports offline
 lookup, and downloads large offline resources directly to the user's device.
 
-## What The App Includes
+## Overview
 
 The app is organized around three primary tabs:
 
@@ -33,22 +33,14 @@ and then use that database for subsequent offline lookup.
 
 ## Features
 
-- Offline search across Taiwanese headwords, Tailo romanization, and Mandarin definitions
-- Weighted search ranking with optional background-isolate execution
-- Recent search history with one-tap reuse and clearing
-- Dedicated entry detail screens with share support
-- Interactive linked definitions that open referenced entries
-- Bookmark storage with a separate bookmarked-entry tab
-- Offline ministry audio downloads for word clips and example clips
-- Pause, resume, and breakpoint-resume downloads for large ZIP archives
-- On-device build of the local SQLite dictionary from the downloaded `kautian.ods` source
-- Traditional Chinese, Simplified Chinese, and English UI
-- Runtime Traditional/Simplified Chinese conversion using native OpenCC with Taiwan phrase-aware configs
-- Reading text scale adjustment and theme selection including AMOLED mode
-- Built-in reference article pages for Tailo and Hanji usage guidance
-- About, license summary, and Flutter package license screens
-- Platform-adaptive UI with Cupertino-style navigation on iOS and branded Material styling on Android
-- Accessibility work on semantics labels, merged semantics, and localized tooltips
+- Search Taiwanese headwords, Tailo romanization, and Mandarin definitions with weighted ranking and recent search history
+- Open dedicated entry detail pages with interactive linked definitions and share support
+- Save entries to bookmarks and reopen them from a separate tab
+- Download ministry word audio and example audio for offline playback
+- Download `kautian.ods` and build the local SQLite dictionary on-device
+- Switch UI language, theme, and reading text size
+- Read built-in Tailo and Hanji reference pages plus about and license screens
+- Use adaptive iOS/Android UI with accessibility-focused semantics and localized tooltips
 
 ## Data And Licensing
 
@@ -153,18 +145,12 @@ Generated artifact:
 
 - `build/app/outputs/flutter-apk/app-release.apk`
 
-## UI Notes
-
-- iOS uses adaptive Cupertino navigation plus platform-aware search, settings, and detail surfaces.
-- Android keeps a warmer branded Material look instead of mirroring the iOS palette.
-- The app shell is centered around three tabs: dictionary, bookmarks, and settings.
-
 ## Acknowledgments
 
 - Ministry of Education Taiwanese Hokkien Dictionary: `https://sutian.moe.edu.tw/`
 - Tauhu-oo (豆腐烏) 20.05 font for Taiwanese Hanzi and specific CJK Extension glyph coverage: `https://github.com/tauhu-tw/tauhu-oo`
 - jf open-huninn (jf open 粉圓) font used in the app icon artwork: `https://github.com/justfont/open-huninn-font`
-- adaptive_platform_ui for adaptive Material/Cupertino UI components: `https://github.com/berkaycatak/adaptive_platform_ui`
+- Adaptive Platform UI for adaptive Material/Cupertino UI components: `https://github.com/berkaycatak/adaptive_platform_ui`
 - Open Chinese Convert for Flutter for runtime OpenCC conversion: `https://github.com/zonble/flutter_open_chinese_convert`
 
 ## License
