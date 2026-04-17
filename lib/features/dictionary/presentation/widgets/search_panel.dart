@@ -18,13 +18,33 @@ class SearchWorkspaceCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final borderRadius = BorderRadius.circular(12);
-    final borderColor = theme.colorScheme.outline.withOpacity(
-      isDark ? 0.55 : 0.4,
+    final borderColor = theme.colorScheme.outline.withValues(
+      alpha: isDark ? 0.55 : 0.4,
     );
 
     return ValueListenableBuilder<TextEditingValue>(
       valueListenable: controller,
       builder: (context, value, child) {
+        final showClearButton = value.text.isNotEmpty;
+        final iOSTrailing = SizedBox.square(
+          dimension: 28,
+          child: showClearButton
+              ? IconButton(
+                  tooltip: l10n.clearSearch,
+                  onPressed: () {
+                    controller.clear();
+                    onSubmitted('');
+                  },
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints.tightFor(
+                    width: 28,
+                    height: 28,
+                  ),
+                  icon: const Icon(Icons.close, size: 18),
+                )
+              : const SizedBox.shrink(),
+        );
+
         return Container(
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
@@ -34,7 +54,7 @@ class SearchWorkspaceCard extends StatelessWidget {
             borderRadius: borderRadius,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(isDark ? 0.2 : 0.06),
+                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.06),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -50,16 +70,19 @@ class SearchWorkspaceCard extends StatelessWidget {
             onSubmitted: onSubmitted,
             placeholder: l10n.searchHint,
             prefixIcon: const Icon(Icons.search),
-            suffixIcon: value.text.isEmpty
+            suffix: PlatformInfo.isIOS ? iOSTrailing : null,
+            suffixIcon: PlatformInfo.isIOS
                 ? null
-                : IconButton(
+                : showClearButton
+                ? IconButton(
                     tooltip: l10n.clearSearch,
                     onPressed: () {
                       controller.clear();
                       onSubmitted('');
                     },
                     icon: const Icon(Icons.close),
-                  ),
+                  )
+                : null,
           ),
         );
       },
