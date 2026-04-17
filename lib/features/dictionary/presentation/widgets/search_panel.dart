@@ -44,6 +44,32 @@ class SearchWorkspaceCard extends StatelessWidget {
                 )
               : const SizedBox.shrink(),
         );
+        final materialDecoration = InputDecoration(
+          hintText: l10n.searchHint,
+          prefixIcon: const Icon(Icons.search),
+          suffixIcon: showClearButton
+              ? IconButton(
+                  tooltip: l10n.clearSearch,
+                  onPressed: () {
+                    controller.clear();
+                    onSubmitted('');
+                  },
+                  icon: const Icon(Icons.close),
+                )
+              : null,
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          disabledBorder: InputBorder.none,
+          errorBorder: InputBorder.none,
+          focusedErrorBorder: InputBorder.none,
+          filled: true,
+          fillColor: Colors.transparent,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 16,
+          ),
+        );
 
         return Container(
           clipBehavior: Clip.antiAlias,
@@ -69,19 +95,11 @@ class SearchWorkspaceCard extends StatelessWidget {
             textInputAction: TextInputAction.search,
             onSubmitted: onSubmitted,
             placeholder: l10n.searchHint,
-            prefixIcon: const Icon(Icons.search),
+            decoration: PlatformInfo.isIOS ? null : materialDecoration,
+            prefixIcon: PlatformInfo.isIOS ? const Icon(Icons.search) : null,
             suffix: PlatformInfo.isIOS ? iOSTrailing : null,
             suffixIcon: PlatformInfo.isIOS
                 ? null
-                : showClearButton
-                ? IconButton(
-                    tooltip: l10n.clearSearch,
-                    onPressed: () {
-                      controller.clear();
-                      onSubmitted('');
-                    },
-                    icon: const Icon(Icons.close),
-                  )
                 : null,
           ),
         );
