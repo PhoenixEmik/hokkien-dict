@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:taigi_dict/core/core.dart';
 import 'package:taigi_dict/features/audio/audio.dart';
 import 'package:taigi_dict/features/dictionary/dictionary.dart';
@@ -169,6 +170,39 @@ class OfflineDictionaryLibrary extends ChangeNotifier {
     final sourceFile = await _builderService.locateDownloadedOdsFile();
     await _restoreDownloadSnapshot(sourceFile);
     notifyListeners();
+  }
+
+  Future<bool> restoreBundledSourceIfMissing() async {
+    final sourceFile = await _builderService.locateDownloadedOdsFile();
+    if (await sourceFile.exists()) {
+      return false;
+    }
+
+    final tempFile = File('${sourceFile.path}.download');
+    if (await tempFile.exists()) {
+      return false;
+    }
+
+    try {
+      final assetData = await rootBundle.load(
+        AppConstants.bundledDictionaryOdsAssetPath,
+      );
+      final bytes = assetData.buffer.asUint8List(
+        assetData.offsetInBytes,
+        assetData.lengthInBytes,
+      );
+      if (bytes.isEmpty) {
+        return false;
+      }
+
+      await sourceFile.parent.create(recursive: true);
+      await sourceFile.writeAsBytes(bytes, flush: true);
+      await _restoreDownloadSnapshot(sourceFile);
+      notifyListeners();
+      return true;
+    } on FlutterError {
+      return false;
+    }
   }
 
   Future<void> _restoreDownloadSnapshot(File sourceFile) async {

@@ -184,6 +184,12 @@ class AppInitializationController extends ChangeNotifier {
       return;
     }
 
+    final restoredBundledSource = await _dictionaryLibrary
+        .restoreBundledSourceIfMissing();
+    if (restoredBundledSource) {
+      return;
+    }
+
     _setPhase(AppInitializationPhase.downloadingSource);
     final result = await _dictionaryLibrary.downloadSource(l10n);
     if (result.isError) {

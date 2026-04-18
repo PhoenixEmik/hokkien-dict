@@ -14,6 +14,8 @@ class AppConstants {
       'https://app.taigidict.org/assets/leku-mp3.zip';
   static const String dictionaryOdsUrl =
       'https://app.taigidict.org/assets/kautian.ods';
+  static const String bundledDictionaryOdsAssetPath =
+      'assets/dictionary/kautian.ods';
   static const String offlineDictionaryDirectoryName = 'offline_dictionary';
   static const String dictionaryOdsFileName = 'kautian.ods';
   static const String dictionaryDatabaseFileName = 'dictionary.sqlite';

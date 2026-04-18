@@ -86,6 +86,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icon/taigi_dict.svg
+    - assets/dictionary/kautian.ods
   fonts:
     - family: TauhuOo
       fonts:
