@@ -108,6 +108,20 @@ class WordDetailCoordinator {
       );
     }
 
+    final openableWords = await _resolveOpenableWords(
+      repository: repository,
+      bundle: bundle,
+      entry: localizedEntry,
+      locale: resolvedLocale,
+      translationService: translationService,
+      currentEntryId: resolvedEntry.id,
+    );
+    if (!context.mounted) {
+      return;
+    }
+
+    bool canOpenWord(String word) => openableWords.contains(word);
+
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) => WordDetailScreen(
@@ -116,6 +130,7 @@ class WordDetailCoordinator {
           bookmarkStore: bookmarkStore,
           onPlayClip: onPlayClip,
           onWordTapped: onWordTapped,
+          canOpenWord: canOpenWord,
         ),
       ),
     );
@@ -143,5 +158,47 @@ class WordDetailCoordinator {
     }
 
     return current;
+  }
+
+  static Future<Set<String>> _resolveOpenableWords({
+    required DictionaryRepository repository,
+    required DictionaryBundle bundle,
+    required DictionaryEntry entry,
+    required Locale locale,
+    required ChineseTranslationService translationService,
+    required int currentEntryId,
+  }) async {
+    final uniqueWords = <String>{
+      ...entry.wordSynonyms,
+      ...entry.wordAntonyms,
+      for (final sense in entry.senses) ...sense.definitionSynonyms,
+      for (final sense in entry.senses) ...sense.definitionAntonyms,
+    };
+
+    final results = await Future.wait(
+      uniqueWords.map((word) async {
+        final normalizedLookupWord = await translationService
+            .normalizeSearchInput(word, locale: locale);
+        final linkedEntry = await repository.findLinkedEntryAsync(
+          bundle,
+          normalizedLookupWord,
+        );
+        if (linkedEntry == null) {
+          return MapEntry(word, false);
+        }
+
+        final resolvedLinkedEntry = await _resolveAliasEntry(
+          repository: repository,
+          bundle: bundle,
+          entry: linkedEntry,
+        );
+        return MapEntry(word, resolvedLinkedEntry.id != currentEntryId);
+      }),
+    );
+
+    return {
+      for (final result in results)
+        if (result.value) result.key,
+    };
   }
 }

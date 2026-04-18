@@ -15,6 +15,7 @@ class WordDetailScreen extends StatelessWidget {
     required this.bookmarkStore,
     required this.onPlayClip,
     required this.onWordTapped,
+    required this.canOpenWord,
   });
 
   final DictionaryEntry entry;
@@ -22,6 +23,7 @@ class WordDetailScreen extends StatelessWidget {
   final BookmarkStore bookmarkStore;
   final Future<void> Function(AudioArchiveType type, String clipId) onPlayClip;
   final Future<void> Function(String word) onWordTapped;
+  final bool Function(String word) canOpenWord;
 
   Future<void> _shareEntry(AppLocalizations l10n) async {
     final shareText = _buildShareText(entry, l10n);
@@ -51,6 +53,7 @@ class WordDetailScreen extends StatelessWidget {
               audioLibrary: audioLibrary,
               onPlayClip: onPlayClip,
               onWordTapped: onWordTapped,
+              canOpenWord: canOpenWord,
             );
           },
         );
@@ -131,12 +134,14 @@ class WordDetailBody extends StatelessWidget {
     required this.audioLibrary,
     required this.onPlayClip,
     required this.onWordTapped,
+    required this.canOpenWord,
   });
 
   final DictionaryEntry entry;
   final OfflineAudioLibrary audioLibrary;
   final Future<void> Function(AudioArchiveType type, String clipId) onPlayClip;
   final Future<void> Function(String word) onWordTapped;
+  final bool Function(String word) canOpenWord;
 
   @override
   Widget build(BuildContext context) {
@@ -157,6 +162,7 @@ class WordDetailBody extends StatelessWidget {
                     audioLibrary: audioLibrary,
                     onPlayClip: onPlayClip,
                     onWordTapped: onWordTapped,
+                    canOpenWord: canOpenWord,
                     readingTextScale: AppPreferencesScope.of(
                       context,
                     ).readingTextScale,
@@ -177,6 +183,7 @@ class _WordDetailContent extends StatelessWidget {
     required this.audioLibrary,
     required this.onPlayClip,
     required this.onWordTapped,
+    required this.canOpenWord,
     required this.readingTextScale,
   });
 
@@ -184,6 +191,7 @@ class _WordDetailContent extends StatelessWidget {
   final OfflineAudioLibrary audioLibrary;
   final Future<void> Function(AudioArchiveType type, String clipId) onPlayClip;
   final Future<void> Function(String word) onWordTapped;
+  final bool Function(String word) canOpenWord;
   final double readingTextScale;
 
   @override
@@ -196,6 +204,7 @@ class _WordDetailContent extends StatelessWidget {
           audioLibrary: audioLibrary,
           onPlayClip: onPlayClip,
           onWordTapped: onWordTapped,
+          canOpenWord: canOpenWord,
         ),
         const SizedBox(height: 20),
         ...entry.senses.map((sense) {
@@ -204,6 +213,7 @@ class _WordDetailContent extends StatelessWidget {
             audioLibrary: audioLibrary,
             onPlayClip: onPlayClip,
             onWordTapped: onWordTapped,
+            canOpenWord: canOpenWord,
             textScale: readingTextScale,
           );
         }),

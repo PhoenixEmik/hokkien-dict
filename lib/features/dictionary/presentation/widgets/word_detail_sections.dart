@@ -12,12 +12,14 @@ class WordDetailHeader extends StatelessWidget {
     required this.audioLibrary,
     required this.onPlayClip,
     required this.onWordTapped,
+    required this.canOpenWord,
   });
 
   final DictionaryEntry entry;
   final OfflineAudioLibrary audioLibrary;
   final Future<void> Function(AudioArchiveType type, String clipId) onPlayClip;
   final Future<void> Function(String word) onWordTapped;
+  final bool Function(String word) canOpenWord;
 
   @override
   Widget build(BuildContext context) {
@@ -95,6 +97,7 @@ class WordDetailHeader extends StatelessWidget {
               label: l10n.synonymsLabel,
               values: entry.wordSynonyms,
               onWordTapped: onWordTapped,
+              canOpenWord: canOpenWord,
             ),
           ],
           if (entry.wordAntonyms.isNotEmpty) ...[
@@ -103,6 +106,7 @@ class WordDetailHeader extends StatelessWidget {
               label: l10n.antonymsLabel,
               values: entry.wordAntonyms,
               onWordTapped: onWordTapped,
+              canOpenWord: canOpenWord,
             ),
           ],
         ],
@@ -140,6 +144,7 @@ class SenseSection extends StatelessWidget {
     required this.audioLibrary,
     required this.onPlayClip,
     required this.onWordTapped,
+    required this.canOpenWord,
     required this.textScale,
   });
 
@@ -147,6 +152,7 @@ class SenseSection extends StatelessWidget {
   final OfflineAudioLibrary audioLibrary;
   final Future<void> Function(AudioArchiveType type, String clipId) onPlayClip;
   final Future<void> Function(String word) onWordTapped;
+  final bool Function(String word) canOpenWord;
   final double textScale;
 
   @override
@@ -156,6 +162,7 @@ class SenseSection extends StatelessWidget {
       audioLibrary: audioLibrary,
       onPlayClip: onPlayClip,
       onWordTapped: onWordTapped,
+      canOpenWord: canOpenWord,
       textScale: textScale,
     );
   }
@@ -167,6 +174,7 @@ class _MaterialSenseSection extends StatelessWidget {
     required this.audioLibrary,
     required this.onPlayClip,
     required this.onWordTapped,
+    required this.canOpenWord,
     required this.textScale,
   });
 
@@ -174,6 +182,7 @@ class _MaterialSenseSection extends StatelessWidget {
   final OfflineAudioLibrary audioLibrary;
   final Future<void> Function(AudioArchiveType type, String clipId) onPlayClip;
   final Future<void> Function(String word) onWordTapped;
+  final bool Function(String word) canOpenWord;
   final double textScale;
 
   @override
@@ -227,6 +236,7 @@ class _MaterialSenseSection extends StatelessWidget {
                 label: AppLocalizations.of(context).synonymsLabel,
                 values: sense.definitionSynonyms,
                 onWordTapped: onWordTapped,
+                canOpenWord: canOpenWord,
                 labelStyle: theme.textTheme.labelMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w700,
@@ -240,6 +250,7 @@ class _MaterialSenseSection extends StatelessWidget {
                 label: AppLocalizations.of(context).antonymsLabel,
                 values: sense.definitionAntonyms,
                 onWordTapped: onWordTapped,
+                canOpenWord: canOpenWord,
                 labelStyle: theme.textTheme.labelMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w700,
@@ -390,6 +401,7 @@ class RelationshipChipGroup extends StatelessWidget {
     required this.label,
     required this.values,
     this.onWordTapped,
+    this.canOpenWord,
     this.labelStyle,
     this.labelPadding = const EdgeInsets.only(bottom: 8),
     this.wrapAlignment = WrapAlignment.start,
@@ -399,6 +411,7 @@ class RelationshipChipGroup extends StatelessWidget {
   final String label;
   final List<String> values;
   final Future<void> Function(String word)? onWordTapped;
+  final bool Function(String word)? canOpenWord;
   final TextStyle? labelStyle;
   final EdgeInsetsGeometry labelPadding;
   final WrapAlignment wrapAlignment;
@@ -441,6 +454,7 @@ class RelationshipChipGroup extends StatelessWidget {
                   onTap: onWordTapped == null
                       ? null
                       : () => onWordTapped!(value),
+                  canOpenWord: canOpenWord?.call(value) ?? false,
                 ),
               )
               .toList(growable: false),
@@ -456,61 +470,108 @@ class RelationshipChip extends StatelessWidget {
     required this.word,
     this.semanticLabel,
     this.onTap,
+    this.canOpenWord = false,
   });
 
   final String word;
   final String? semanticLabel;
+  final Future<void> Function()? onTap;
+  final bool canOpenWord;
+
+  @override
+  Widget build(BuildContext context) {
+    final isInteractive = onTap != null && canOpenWord;
+    return _RelationshipChipBody(
+      word: word,
+      semanticLabel: semanticLabel,
+      isInteractive: isInteractive,
+      onTap: onTap,
+    );
+  }
+}
+
+class _RelationshipChipBody extends StatelessWidget {
+  const _RelationshipChipBody({
+    required this.word,
+    required this.semanticLabel,
+    required this.isInteractive,
+    required this.onTap,
+  });
+
+  final String word;
+  final String? semanticLabel;
+  final bool isInteractive;
   final Future<void> Function()? onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final fillColor = colorScheme.surfaceContainerHighest;
-    final strokeColor = colorScheme.outlineVariant.withValues(alpha: 0.75);
-    final textColor = colorScheme.onSurface;
     final l10n = AppLocalizations.of(context);
-    final isInteractive = onTap != null;
     final isMaterialPlatform =
         theme.platform == TargetPlatform.android ||
         theme.platform == TargetPlatform.fuchsia;
     final useMaterial3Chip = isMaterialPlatform && theme.useMaterial3;
+    final fillColor = isInteractive
+        ? colorScheme.primary.withValues(
+            alpha: theme.brightness == Brightness.dark ? 0.18 : 0.10,
+          )
+        : colorScheme.surfaceContainerHighest;
+    final strokeColor = isInteractive
+        ? colorScheme.primary.withValues(
+            alpha: theme.brightness == Brightness.dark ? 0.45 : 0.28,
+          )
+        : colorScheme.outlineVariant.withValues(alpha: 0.75);
+    final textColor = isInteractive
+        ? colorScheme.primary
+        : colorScheme.onSurfaceVariant;
     final labelStyle = theme.textTheme.bodyMedium?.copyWith(
       color: textColor,
       fontWeight: FontWeight.w600,
     );
+    final chipSide = BorderSide(color: strokeColor, width: 1);
 
     return Semantics(
       container: true,
       button: isInteractive,
-      enabled: isInteractive,
       label: semanticLabel ?? word,
       onTapHint: isInteractive ? l10n.searchThisWordHint : null,
       child: ExcludeSemantics(
         child: useMaterial3Chip
             ? Material(
                 color: Colors.transparent,
-                child: ActionChip(
-                  label: Text(word),
-                  onPressed: isInteractive
-                      ? () {
+                child: isInteractive
+                    ? ActionChip(
+                        label: Text(word),
+                        onPressed: () {
                           unawaited(onTap!());
-                        }
-                      : null,
-                  labelStyle: labelStyle,
-                  backgroundColor: fillColor,
-                  surfaceTintColor: Colors.transparent,
-                  side: BorderSide(color: strokeColor, width: 0.5),
-                  shape: const StadiumBorder(),
-                  labelPadding: const EdgeInsets.symmetric(horizontal: 2),
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  visualDensity: VisualDensity.compact,
-                ),
+                        },
+                        labelStyle: labelStyle,
+                        backgroundColor: fillColor,
+                        surfaceTintColor: Colors.transparent,
+                        side: chipSide,
+                        shape: const StadiumBorder(),
+                        labelPadding: const EdgeInsets.symmetric(horizontal: 2),
+                        materialTapTargetSize:
+                            MaterialTapTargetSize.shrinkWrap,
+                        visualDensity: VisualDensity.compact,
+                      )
+                    : Chip(
+                        label: Text(word),
+                        labelStyle: labelStyle,
+                        backgroundColor: fillColor,
+                        side: chipSide,
+                        shape: const StadiumBorder(),
+                        labelPadding: const EdgeInsets.symmetric(horizontal: 2),
+                        materialTapTargetSize:
+                            MaterialTapTargetSize.shrinkWrap,
+                        visualDensity: VisualDensity.compact,
+                      ),
               )
             : Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(999),
                   onTap: isInteractive
                       ? () {
                           unawaited(onTap!());
@@ -519,8 +580,8 @@ class RelationshipChip extends StatelessWidget {
                   child: Ink(
                     decoration: BoxDecoration(
                       color: fillColor,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: strokeColor, width: 0.5),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: strokeColor, width: 1),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(

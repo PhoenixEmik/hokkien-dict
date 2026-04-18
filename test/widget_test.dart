@@ -887,6 +887,42 @@ void main() {
       semanticsHandle.dispose();
     }
   });
+
+  testWidgets('relationship chips distinguish navigable and static terms', (
+    WidgetTester tester,
+  ) async {
+    final semanticsHandle = tester.ensureSemantics();
+    try {
+      await tester.pumpWidget(
+        _buildLocalizedTestApp(
+          locale: traditionalChineseLocale,
+          home: Scaffold(
+            body: RelationshipChipGroup(
+              label: '近義',
+              values: const ['可跳', '不可跳'],
+              onWordTapped: (_) async {},
+              canOpenWord: (word) => word == '可跳',
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('可跳')),
+        matchesSemantics(
+          label: '可跳',
+          isButton: true,
+        ),
+      );
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('不可跳')),
+        matchesSemantics(label: '不可跳'),
+      );
+    } finally {
+      semanticsHandle.dispose();
+    }
+  });
 }
 
 Widget _buildLocalizedTestApp({
