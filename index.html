@@ -1,0 +1,893 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>台語辭典 | Taigi Dict</title>
+    <meta
+      name="description"
+      content="純粹、極速的台語離線辭典。無廣告、免連網、開源免費，隨時隨地探索台語之美。"
+    />
+    <style>
+      :root {
+        --bg: #f7f3e9;
+        --bg-soft: #fdfaf4;
+        --surface: #ffffff;
+        --surface-strong: #f2ebdc;
+        --text: #183531;
+        --muted: #5f6f6a;
+        --line: rgba(24, 53, 49, 0.14);
+        --accent: #2f7f63;
+        --accent-strong: #1d6a51;
+        --shadow: 0 18px 40px rgba(19, 43, 39, 0.08);
+        --radius: 28px;
+        --content-width: 1120px;
+        --nav-height: 76px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          Inter,
+          "SF Pro Text",
+          "PingFang TC",
+          "Noto Sans TC",
+          system-ui,
+          sans-serif;
+        background:
+          radial-gradient(circle at top right, rgba(47, 127, 99, 0.12), transparent 30%),
+          linear-gradient(180deg, #fbf8f1 0%, var(--bg) 100%);
+        color: var(--text);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      img {
+        display: block;
+        max-width: 100%;
+      }
+
+      .page-shell {
+        min-height: 100vh;
+      }
+
+      .site-nav {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        backdrop-filter: blur(16px);
+        background: rgba(247, 243, 233, 0.8);
+        border-bottom: 1px solid rgba(24, 53, 49, 0.08);
+      }
+
+      .nav-inner,
+      .section-inner {
+        width: min(calc(100% - 32px), var(--content-width));
+        margin: 0 auto;
+      }
+
+      .nav-inner {
+        min-height: var(--nav-height);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .brand-lockup {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: 0;
+      }
+
+      .brand-text {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .brand-text strong {
+        font-size: 1.02rem;
+      }
+
+      .brand-text span {
+        color: var(--muted);
+        font-size: 0.96rem;
+        font-weight: 600;
+      }
+
+      .brand-mark {
+        width: 14px;
+        height: 14px;
+        border-radius: 999px;
+        background: var(--accent);
+        box-shadow: 0 0 0 6px rgba(47, 127, 99, 0.12);
+      }
+
+      .github-link {
+        width: 44px;
+        height: 44px;
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.78);
+        transition:
+          transform 180ms ease,
+          background-color 180ms ease,
+          border-color 180ms ease;
+      }
+
+      .github-link:hover {
+        transform: translateY(-2px);
+        background: #ffffff;
+        border-color: rgba(24, 53, 49, 0.22);
+      }
+
+      .hero {
+        padding: 36px 0 26px;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 32px;
+        align-items: center;
+        min-height: calc(100svh - var(--nav-height) - 48px);
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--accent-strong);
+        font-size: 0.9rem;
+        font-weight: 700;
+        margin-bottom: 18px;
+      }
+
+      .eyebrow::before {
+        content: "";
+        width: 28px;
+        height: 1px;
+        background: currentColor;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      .hero-copy h1 {
+        max-width: 12ch;
+        font-size: clamp(2.55rem, 7vw, 5.5rem);
+        line-height: 0.94;
+        letter-spacing: 0;
+      }
+
+      .hero-copy p {
+        margin-top: 18px;
+        max-width: 32rem;
+        font-size: 1rem;
+        line-height: 1.7;
+        color: var(--muted);
+      }
+
+      .cta-row {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 24px;
+      }
+
+      .cta-button {
+        min-height: 52px;
+        padding: 14px 20px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-weight: 700;
+        border: 1px solid transparent;
+        transition:
+          transform 180ms ease,
+          background-color 180ms ease,
+          color 180ms ease,
+          border-color 180ms ease,
+          box-shadow 180ms ease;
+      }
+
+      .cta-button:hover {
+        transform: translateY(-2px) scale(1.01);
+      }
+
+      .cta-button.primary {
+        background: var(--accent);
+        color: #ffffff;
+        box-shadow: 0 16px 36px rgba(47, 127, 99, 0.22);
+      }
+
+      .cta-button.primary:hover {
+        background: var(--accent-strong);
+      }
+
+      .cta-button.secondary {
+        background: transparent;
+        color: var(--text);
+        border-color: var(--line);
+      }
+
+      .cta-button.secondary:hover {
+        background: rgba(255, 255, 255, 0.74);
+      }
+
+      .hero-note {
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .mockup-wrap {
+        position: relative;
+        display: flex;
+        justify-content: center;
+      }
+
+      .device-frame {
+        width: min(100%, 360px);
+        aspect-ratio: 0.5;
+        padding: 12px;
+        border-radius: 42px;
+        background: linear-gradient(180deg, #243b37 0%, #0e1a18 100%);
+        box-shadow:
+          0 30px 64px rgba(17, 34, 30, 0.18),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+      }
+
+      .device-screen {
+        height: 100%;
+        border-radius: 32px;
+        overflow: hidden;
+        background:
+          linear-gradient(180deg, rgba(47, 127, 99, 0.12), rgba(47, 127, 99, 0.03)),
+          var(--bg-soft);
+        position: relative;
+        border: 1px solid rgba(255, 255, 255, 0.28);
+      }
+
+      .device-notch {
+        width: 38%;
+        height: 28px;
+        background: #111;
+        border-radius: 0 0 18px 18px;
+        margin: 0 auto;
+      }
+
+      .screen-content {
+        height: calc(100% - 28px);
+        padding: 26px 22px 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .screen-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+      }
+
+      .screen-title {
+        font-weight: 800;
+        font-size: 1.2rem;
+      }
+
+      .screen-pill {
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        background: rgba(47, 127, 99, 0.12);
+        color: var(--accent-strong);
+      }
+
+      .screen-preview {
+        flex: 1;
+        border-radius: 24px;
+        overflow: hidden;
+        position: relative;
+        background: #efe8da;
+        border: 1px solid rgba(24, 53, 49, 0.08);
+      }
+
+      .screen-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .screen-preview-badge {
+        position: absolute;
+        left: 14px;
+        bottom: 14px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.84);
+        backdrop-filter: blur(10px);
+        color: var(--text);
+        font-size: 0.78rem;
+        font-weight: 700;
+        border: 1px solid rgba(24, 53, 49, 0.08);
+      }
+
+      .showcase-strip {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-top: 18px;
+      }
+
+      .showcase-card {
+        border-radius: 24px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.76);
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        transform: translateY(0);
+        transition:
+          transform 180ms ease,
+          border-color 180ms ease;
+      }
+
+      .showcase-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(47, 127, 99, 0.24);
+      }
+
+      .showcase-card figure {
+        margin: 0;
+      }
+
+      .showcase-card img {
+        width: 100%;
+        aspect-ratio: 9 / 18.5;
+        object-fit: cover;
+        object-position: top center;
+        background: #ece5d8;
+      }
+
+      .showcase-card figcaption {
+        padding: 12px 14px 14px;
+      }
+
+      .showcase-card strong {
+        display: block;
+        font-size: 0.98rem;
+      }
+
+      .showcase-card span {
+        display: block;
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 0.88rem;
+        line-height: 1.5;
+      }
+
+      section {
+        padding: 24px 0;
+      }
+
+      .section-header {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 22px;
+      }
+
+      .section-header h2 {
+        font-size: clamp(1.8rem, 4vw, 3rem);
+        line-height: 1.02;
+      }
+
+      .section-header p {
+        max-width: 36rem;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .features-grid {
+        display: grid;
+        gap: 14px;
+      }
+
+      .feature-card {
+        padding: 22px;
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, 0.74);
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        min-height: 220px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition:
+          transform 180ms ease,
+          border-color 180ms ease;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(47, 127, 99, 0.24);
+      }
+
+      .feature-icon {
+        font-size: 1.7rem;
+      }
+
+      .feature-card h3 {
+        margin-top: 24px;
+        font-size: 1.3rem;
+        line-height: 1.18;
+      }
+
+      .feature-card p {
+        margin-top: 12px;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .download-panel {
+        border-radius: calc(var(--radius) + 6px);
+        background:
+          linear-gradient(135deg, rgba(47, 127, 99, 0.1), rgba(255, 255, 255, 0.82)),
+          var(--surface);
+        border: 1px solid rgba(47, 127, 99, 0.16);
+        padding: 26px 22px;
+        box-shadow: var(--shadow);
+      }
+
+      .store-badge-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-top: 22px;
+        align-items: center;
+      }
+
+      .store-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 60px;
+        transition: transform 180ms ease;
+      }
+
+      .store-badge:hover {
+        transform: translateY(-2px) scale(1.01);
+      }
+
+      .store-badge img {
+        height: 56px;
+        width: auto;
+      }
+
+      .github-badge img {
+        height: 56px;
+        width: auto;
+      }
+
+      .store-badge.is-disabled {
+        opacity: 0.56;
+        filter: saturate(0.65);
+        cursor: not-allowed;
+        position: relative;
+      }
+
+      .store-badge.is-disabled:hover {
+        transform: none;
+      }
+
+      .store-badge-label {
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        background: rgba(24, 53, 49, 0.84);
+        color: #fff;
+        font-size: 0.72rem;
+        padding: 4px 8px;
+        border-radius: 999px;
+      }
+
+      .download-note {
+        margin-top: 18px;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .site-footer {
+        padding: 28px 0 42px;
+      }
+
+      .footer-inner {
+        width: min(calc(100% - 32px), var(--content-width));
+        margin: 0 auto;
+        padding-top: 20px;
+        border-top: 1px solid rgba(24, 53, 49, 0.1);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .footer-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+
+      .footer-links a {
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .reveal {
+        opacity: 0;
+        transform: translateY(20px);
+        transition:
+          opacity 500ms ease,
+          transform 500ms ease;
+      }
+
+      .reveal.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      @media (min-width: 760px) {
+        .hero {
+          padding: 24px 0 34px;
+        }
+
+        .hero-grid {
+          grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.9fr);
+          gap: 46px;
+        }
+
+        .cta-row {
+          flex-direction: row;
+          flex-wrap: wrap;
+        }
+
+        .cta-button {
+          width: auto;
+        }
+
+        .features-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .showcase-strip {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .footer-inner {
+          flex-direction: row;
+          align-items: center;
+          justify-content: space-between;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="site-nav">
+        <div class="nav-inner">
+          <a class="brand-lockup" href="#top" aria-label="台語辭典 Taigi Dict Home">
+            <span class="brand-mark" aria-hidden="true"></span>
+            <span class="brand-text">
+              <strong>台語辭典</strong>
+              <span>Taigi Dict</span>
+            </span>
+          </a>
+          <a
+            class="github-link"
+            href="https://github.com/PhoenixEmik/taigi-dict"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="View Taigi Dict on GitHub"
+          >
+            <svg
+              aria-hidden="true"
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path
+                d="M12 .5C5.65.5.5 5.66.5 12.02c0 5.09 3.3 9.4 7.87 10.92.58.11.79-.25.79-.56 0-.28-.01-1.19-.02-2.16-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.97.1-.75.4-1.26.73-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.45.11-3.02 0 0 .97-.31 3.16 1.17a10.9 10.9 0 0 1 5.76 0c2.2-1.49 3.16-1.17 3.16-1.17.63 1.57.24 2.73.12 3.02.74.8 1.18 1.82 1.18 3.07 0 4.41-2.69 5.39-5.25 5.67.41.36.78 1.08.78 2.18 0 1.58-.02 2.85-.02 3.23 0 .31.21.67.8.56A11.53 11.53 0 0 0 23.5 12C23.5 5.66 18.35.5 12 .5Z"
+              />
+            </svg>
+          </a>
+        </div>
+      </header>
+
+      <main id="top">
+        <section class="hero">
+          <div class="section-inner hero-grid">
+            <div class="hero-copy reveal is-visible">
+              <span class="eyebrow">Flutter / Offline / Open Source</span>
+              <h1>純粹、極速的台語離線辭典</h1>
+              <p>
+                隨時隨地，探索台語之美。無廣告、免連網的開源學習利器。
+              </p>
+              <div class="cta-row">
+                <a
+                  class="cta-button primary"
+                  href="#download"
+                >
+                  立即取得
+                </a>
+                <a
+                  class="cta-button secondary"
+                  href="https://github.com/PhoenixEmik/taigi-dict"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  查看原始碼
+                </a>
+              </div>
+              <p class="hero-note">
+                以教育部資料為基礎，在裝置端建立本機離線詞庫。
+              </p>
+            </div>
+
+            <div class="mockup-wrap reveal">
+              <div class="device-frame" aria-label="Phone mockup placeholder">
+                <div class="device-screen">
+                  <div class="device-notch"></div>
+                  <div class="screen-content">
+                    <div>
+                      <div class="screen-head">
+                        <div class="screen-title">台語辭典</div>
+                        <div class="screen-pill">Offline</div>
+                      </div>
+                    </div>
+                    <div class="screen-preview">
+                      <img
+                        src="assets/site/android-home.png"
+                        alt="台語辭典 Android 首頁畫面"
+                      />
+                      <div class="screen-preview-badge">Android 首頁</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div class="section-inner">
+            <div class="section-header reveal">
+              <h2>把查字這件事，留給學習本身</h2>
+              <p>
+                台語辭典 Taigi Dict 以乾淨、快速、可離線為核心，不把注意力浪費在多餘介面與商業干擾上。
+              </p>
+            </div>
+
+            <div class="features-grid">
+              <article class="feature-card reveal">
+                <div class="feature-icon" aria-hidden="true">🚀</div>
+                <div>
+                  <h3>極速離線搜尋</h3>
+                  <p>
+                    不需網路也能秒查。首次準備完成後，台語詞目、台羅拼音與華語釋義都能在本機即時搜尋。
+                  </p>
+                </div>
+              </article>
+
+              <article class="feature-card reveal">
+                <div class="feature-icon" aria-hidden="true">🌿</div>
+                <div>
+                  <h3>極簡無干擾</h3>
+                  <p>
+                    沒有任何廣告，也沒有多餘資訊噪音。把介面收斂到查詢、收藏、離線資源與閱讀本身。
+                  </p>
+                </div>
+              </article>
+
+              <article class="feature-card reveal">
+                <div class="feature-icon" aria-hidden="true">🤝</div>
+                <div>
+                  <h3>開源與社群</h3>
+                  <p>
+                    基於開源力量打造，原始碼公開，資料流程透明，讓學習工具能持續被改進、檢視與延續。
+                  </p>
+                </div>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div class="section-inner">
+            <div class="section-header reveal">
+              <h2>Android 畫面展示</h2>
+              <p>
+                從搜尋、詞條詳細頁到書籤與設定，維持一致的乾淨排版與低干擾閱讀節奏。
+              </p>
+            </div>
+
+            <div class="showcase-strip">
+              <article class="showcase-card reveal">
+                <figure>
+                  <img
+                    src="assets/site/android-home.png"
+                    alt="台語辭典 Android 首頁"
+                  />
+                  <figcaption>
+                    <strong>首頁</strong>
+                    <span>直接開始搜尋與離線查詢。</span>
+                  </figcaption>
+                </figure>
+              </article>
+
+              <article class="showcase-card reveal">
+                <figure>
+                  <img
+                    src="assets/site/android-search.png"
+                    alt="台語辭典 Android 搜尋結果"
+                  />
+                  <figcaption>
+                    <strong>搜尋結果</strong>
+                    <span>快速列出詞目、台羅與簡要釋義。</span>
+                  </figcaption>
+                </figure>
+              </article>
+
+              <article class="showcase-card reveal">
+                <figure>
+                  <img
+                    src="assets/site/android-detail.png"
+                    alt="台語辭典 Android 詞條詳細頁"
+                  />
+                  <figcaption>
+                    <strong>詞條詳細頁</strong>
+                    <span>閱讀釋義、音標與關聯內容。</span>
+                  </figcaption>
+                </figure>
+              </article>
+
+              <article class="showcase-card reveal">
+                <figure>
+                  <img
+                    src="assets/site/android-bookmarks.png"
+                    alt="台語辭典 Android 書籤頁"
+                  />
+                  <figcaption>
+                    <strong>書籤</strong>
+                    <span>保留常用詞條並快速重開。</span>
+                  </figcaption>
+                </figure>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section id="download">
+          <div class="section-inner">
+            <div class="download-panel reveal">
+              <div class="section-header">
+                <h2>立即取得 台語辭典 Taigi Dict</h2>
+                <p>
+                  先用 GitHub 版本開始使用，後續也能延伸到更多發佈渠道。
+                </p>
+              </div>
+
+              <div class="store-badge-row">
+                <span class="store-badge is-disabled" aria-disabled="true">
+                  <img
+                    src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/en-us?size=250x83"
+                    alt="Download on the App Store"
+                  />
+                  <span class="store-badge-label">Coming soon</span>
+                </span>
+
+                <span class="store-badge is-disabled" aria-disabled="true">
+                  <img
+                    src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png"
+                    alt="Get it on Google Play"
+                  />
+                  <span class="store-badge-label">Coming soon</span>
+                </span>
+
+                <span class="store-badge is-disabled" aria-disabled="true">
+                  <img
+                    src="https://f-droid.org/badge/get-it-on.png"
+                    alt="Get it on F-Droid"
+                  />
+                  <span class="store-badge-label">Coming soon</span>
+                </span>
+              </div>
+
+              <div class="download-note">
+                <div style="margin-bottom: 12px;">或直接從 GitHub 取得 Universal APK</div>
+                <a
+                  class="store-badge github-badge"
+                  href="https://github.com/PhoenixEmik/taigi-dict/releases/latest"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <img
+                    src="https://raw.githubusercontent.com/rubenpgrady/get-it-on-github/main/get-it-on-github.png"
+                    alt="Get it on GitHub"
+                  />
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <div class="footer-inner">
+          <div>© 2026 台語辭典 Taigi Dict. Released under the MIT License.</div>
+          <div class="footer-links">
+            <a
+              href="https://github.com/PhoenixEmik"
+              target="_blank"
+              rel="noreferrer"
+            >
+              作者 GitHub
+            </a>
+            <a
+              href="https://github.com/PhoenixEmik/taigi-dict/issues"
+              target="_blank"
+              rel="noreferrer"
+            >
+              社群回報與討論
+            </a>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+            }
+          });
+        },
+        { threshold: 0.18 }
+      );
+
+      document.querySelectorAll(".reveal").forEach((node) => {
+        if (!node.classList.contains("is-visible")) {
+          observer.observe(node);
+        }
+      });
+    </script>
+  </body>
+</html>
