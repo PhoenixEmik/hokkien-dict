@@ -251,41 +251,16 @@
       }
 
       .hero-banner {
-        display: grid;
-        grid-template-columns: minmax(116px, 0.52fr) minmax(0, 1fr);
-        align-items: center;
-        gap: 18px;
+        overflow: hidden;
+        border-radius: 24px;
+        background: transparent;
+        box-shadow: 0 24px 50px rgba(19, 43, 39, 0.12);
       }
 
-      .hero-banner-icon {
+      .hero-banner img {
         width: 100%;
-        max-width: 220px;
-        aspect-ratio: 1;
+        display: block;
         object-fit: contain;
-        display: block;
-      }
-
-      .hero-banner-copy {
-        display: grid;
-        gap: 8px;
-      }
-
-      .hero-banner-copy strong,
-      .hero-banner-copy span {
-        display: block;
-        line-height: 0.92;
-        letter-spacing: 0;
-        font-weight: 500;
-      }
-
-      .hero-banner-copy strong {
-        font-size: clamp(2rem, 5.3vw, 4.7rem);
-        color: #111111;
-      }
-
-      .hero-banner-copy span {
-        font-size: clamp(2.3rem, 6.2vw, 5.5rem);
-        color: #243f6c;
       }
 
       .showcase-toolbar {
@@ -560,6 +535,10 @@
         width: auto;
       }
 
+      .app-store-badge img {
+        height: 42px;
+      }
+
       .store-badge.is-disabled {
         opacity: 0.56;
         filter: saturate(0.65);
@@ -636,11 +615,6 @@
         .hero-grid {
           grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.9fr);
           gap: 46px;
-        }
-
-        .hero-banner {
-          grid-template-columns: minmax(180px, 0.56fr) minmax(0, 1fr);
-          gap: 22px;
         }
 
         .cta-row {
@@ -739,14 +713,9 @@
             <div class="hero-visual reveal">
               <div class="hero-banner" aria-label="台語辭典 Taigi Dict banner">
                 <img
-                  class="hero-banner-icon"
-                  src="assets/icon/taigi_dict.png"
-                  alt="台語辭典 app icon"
+                  src="assets/site/taigi_dict_banner.png"
+                  alt="台語辭典 Taigi Dict banner"
                 />
-                <div class="hero-banner-copy" aria-hidden="true">
-                  <strong>Tâi-gí Dict</strong>
-                  <span>台語辭典</span>
-                </div>
               </div>
             </div>
           </div>
@@ -943,7 +912,7 @@
               </div>
 
               <div class="store-badge-row">
-                <span class="store-badge is-disabled" aria-disabled="true">
+                <span class="store-badge app-store-badge is-disabled" aria-disabled="true">
                   <img
                     src="assets/site/app-store-badge.svg"
                     alt="Download on the App Store"
