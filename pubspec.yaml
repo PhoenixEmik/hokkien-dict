@@ -35,7 +35,7 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   dio: ^5.9.0
-  adaptive_platform_ui: 0.1.104
+  adaptive_platform_ui: 0.1.105
   just_audio: ^0.10.5
   path: ^1.9.1
   path_provider: ^2.1.5
