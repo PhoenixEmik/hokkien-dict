@@ -101,6 +101,9 @@ class AppLocalizations {
       'noResultsTitle': 'No matching results',
       'noResultsBody': 'Try another spelling or use a different query.',
       'noResultsShort': 'No matching entries found',
+      'tabletPreviewEmptyTitle': 'Select an entry',
+      'tabletPreviewEmptyBody':
+          'Pick a result from the list to preview its details here.',
       'bookmarksTitle': 'Bookmarks',
       'bookmarksEmptyTitle': 'No bookmarks yet',
       'bookmarksEmptyBody':
@@ -227,6 +230,8 @@ class AppLocalizations {
       'noResultsTitle': '找不到符合的结果',
       'noResultsBody': '换个写法试试看，或改用另一个查询方向。',
       'noResultsShort': '找不到符合的词条',
+      'tabletPreviewEmptyTitle': '选择词条',
+      'tabletPreviewEmptyBody': '从左侧结果列表选择一个词条后，会在这里显示详细内容。',
       'bookmarksTitle': '书签',
       'bookmarksEmptyTitle': '尚未加入任何书签',
       'bookmarksEmptyBody': '从词条详细页点选书签图示，就会显示在这里。',
@@ -338,6 +343,8 @@ class AppLocalizations {
       'noResultsTitle': '找不到符合的結果',
       'noResultsBody': '換個寫法試試看，或改用另一個查詢方向。',
       'noResultsShort': '找不到符合的詞條',
+      'tabletPreviewEmptyTitle': '選擇詞條',
+      'tabletPreviewEmptyBody': '從左側結果列表選擇一個詞條後，會在這裡顯示詳細內容。',
       'bookmarksTitle': '書籤',
       'bookmarksEmptyTitle': '尚未加入任何書籤',
       'bookmarksEmptyBody': '從詞條詳細頁點選書籤圖示，就會顯示在這裡。',
@@ -465,6 +472,8 @@ class AppLocalizations {
   String get noResultsTitle => _text('noResultsTitle');
   String get noResultsBody => _text('noResultsBody');
   String get noResultsShort => _text('noResultsShort');
+  String get tabletPreviewEmptyTitle => _text('tabletPreviewEmptyTitle');
+  String get tabletPreviewEmptyBody => _text('tabletPreviewEmptyBody');
   String get bookmarksTitle => _text('bookmarksTitle');
   String get bookmarksEmptyTitle => _text('bookmarksEmptyTitle');
   String get bookmarksEmptyBody => _text('bookmarksEmptyBody');

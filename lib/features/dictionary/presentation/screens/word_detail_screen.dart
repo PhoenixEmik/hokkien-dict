@@ -26,7 +26,7 @@ class WordDetailScreen extends StatelessWidget {
   final bool Function(String word) canOpenWord;
 
   Future<void> _shareEntry(AppLocalizations l10n) async {
-    final shareText = _buildShareText(entry, l10n);
+    final shareText = buildShareTextForEntry(entry, l10n);
     await SharePlus.instance.share(
       ShareParams(
         text: shareText,
@@ -96,7 +96,7 @@ class WordDetailScreen extends StatelessWidget {
   }
 }
 
-String _buildShareText(DictionaryEntry entry, AppLocalizations l10n) {
+String buildShareTextForEntry(DictionaryEntry entry, AppLocalizations l10n) {
   final word = entry.hanji.trim().isEmpty
       ? l10n.unlabeledHanji
       : entry.hanji.trim();
