@@ -542,6 +542,9 @@ class _RelationshipChipBody extends StatelessWidget {
                 word: word,
                 isInteractive: isInteractive,
                 onTap: onTap,
+                fillColor: fillColor,
+                strokeColor: strokeColor,
+                textColor: textColor,
               )
             : useMaterial3Chip
             ? Material(
@@ -607,43 +610,51 @@ class _IOSRelationshipChip extends StatelessWidget {
     required this.word,
     required this.isInteractive,
     required this.onTap,
+    required this.fillColor,
+    required this.strokeColor,
+    required this.textColor,
   });
 
   final String word;
   final bool isInteractive;
   final Future<void> Function()? onTap;
+  final Color fillColor;
+  final Color strokeColor;
+  final Color textColor;
 
   @override
   Widget build(BuildContext context) {
-    if (isInteractive) {
-      return AdaptiveButton.child(
-        onPressed: () {
-          unawaited(onTap!());
-        },
-        style: AdaptiveButtonStyle.gray,
-        size: AdaptiveButtonSize.small,
-        child: Text(word),
-      );
-    }
-
     final theme = Theme.of(context);
-    return DecoratedBox(
+    final pill = DecoratedBox(
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
+        color: fillColor,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.75),
-        ),
+        border: Border.all(color: strokeColor),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Text(
           word,
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+            color: textColor,
             fontWeight: FontWeight.w600,
           ),
         ),
+      ),
+    );
+
+    if (!isInteractive) {
+      return pill;
+    }
+
+    return IntrinsicWidth(
+      child: AdaptiveButton.child(
+        onPressed: () {
+          unawaited(onTap!());
+        },
+        style: AdaptiveButtonStyle.plain,
+        padding: EdgeInsets.zero,
+        child: pill,
       ),
     );
   }

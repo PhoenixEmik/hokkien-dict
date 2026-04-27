@@ -173,18 +173,9 @@ class SearchHistorySection extends StatelessWidget {
                       label: '${l10n.searchHistory} $query',
                       hint: l10n.searchHint,
                       child: PlatformInfo.isIOS
-                          ? AdaptiveButton.child(
+                          ? _IOSSearchHistoryChip(
+                              query: query,
                               onPressed: () => onHistoryTap(query),
-                              style: AdaptiveButtonStyle.gray,
-                              size: AdaptiveButtonSize.small,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.history, size: 16),
-                                  const SizedBox(width: 6),
-                                  Text(query),
-                                ],
-                              ),
                             )
                           : ActionChip(
                               label: Text(query),
@@ -196,6 +187,56 @@ class SearchHistorySection extends StatelessWidget {
                   .toList(growable: false),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _IOSSearchHistoryChip extends StatelessWidget {
+  const _IOSSearchHistoryChip({required this.query, required this.onPressed});
+
+  final String query;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return IntrinsicWidth(
+      child: AdaptiveButton.child(
+        onPressed: onPressed,
+        style: AdaptiveButtonStyle.plain,
+        padding: EdgeInsets.zero,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.75),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.history,
+                  size: 16,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  query,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
