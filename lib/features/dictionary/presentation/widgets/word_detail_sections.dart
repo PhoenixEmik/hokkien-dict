@@ -114,6 +114,7 @@ class WordDetailHeader extends StatelessWidget {
     );
 
     return Card(
+      clipBehavior: Clip.antiAlias,
       margin: const EdgeInsets.only(bottom: 20),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
@@ -348,6 +349,7 @@ class ExampleListTile extends StatelessWidget {
     );
 
     return Card.outlined(
+      clipBehavior: Clip.antiAlias,
       margin: const EdgeInsets.only(bottom: 8),
       color: useNeutralAndroidLightColors
           ? _androidLightDetailSurface(colorScheme)
@@ -734,7 +736,11 @@ class DetailNoteCard extends StatelessWidget {
       ),
     );
 
-    return Card(margin: const EdgeInsets.only(bottom: 16), child: content);
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      margin: const EdgeInsets.only(bottom: 16),
+      child: content,
+    );
   }
 }
 
