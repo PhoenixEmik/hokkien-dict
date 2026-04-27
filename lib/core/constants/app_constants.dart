@@ -1,7 +1,7 @@
 class AppConstants {
   const AppConstants._();
 
-  static const String appVersion = '1.1.5';
+  static const String appVersion = '1.1.6';
   static const String appAuthor = 'PhoenixEmik';
   static const String appRepositoryUrl =
       'https://github.com/PhoenixEmik/taigi-dict';
