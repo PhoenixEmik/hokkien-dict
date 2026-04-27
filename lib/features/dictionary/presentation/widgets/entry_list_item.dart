@@ -4,10 +4,16 @@ import 'package:taigi_dict/core/core.dart';
 import 'package:taigi_dict/features/dictionary/dictionary.dart';
 
 class EntryListItem extends StatelessWidget {
-  const EntryListItem({super.key, required this.entry, required this.onTap});
+  const EntryListItem({
+    super.key,
+    required this.entry,
+    required this.onTap,
+    this.selected = false,
+  });
 
   final DictionaryEntry entry;
   final VoidCallback onTap;
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +24,17 @@ class EntryListItem extends StatelessWidget {
 
     final content = Card(
       clipBehavior: Clip.antiAlias,
+      color: selected
+          ? colorScheme.primaryContainer.withValues(alpha: 0.35)
+          : null,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: selected
+              ? colorScheme.primary.withValues(alpha: 0.5)
+              : colorScheme.outlineVariant.withValues(alpha: 0.28),
+        ),
+      ),
       child: AdaptiveListTile(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         title: Text(
@@ -57,6 +74,7 @@ class EntryListItem extends StatelessWidget {
           PlatformInfo.isIOS
               ? Icons.arrow_forward_ios_rounded
               : Icons.chevron_right,
+          color: selected ? colorScheme.primary : null,
           size: PlatformInfo.isIOS ? 18 : 24,
         ),
         onTap: onTap,

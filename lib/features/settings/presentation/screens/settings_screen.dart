@@ -31,6 +31,9 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen>
     with AutomaticKeepAliveClientMixin {
+  static const double _tabletBreakpoint = 960;
+  static const double _tabletMaxContentWidth = 1360;
+
   @override
   bool get wantKeepAlive => true;
 
@@ -83,132 +86,181 @@ class _SettingsScreenState extends State<SettingsScreen>
         final selectedLocale =
             localeProvider.locale ??
             AppLocalizations.resolveLocale(Localizations.localeOf(context));
-
-        return ListView(
-          padding: EdgeInsets.only(bottom: bottomBodyInset),
+        final offlineResourcesSection = AdaptiveFormSection.insetGrouped(
+          header: Text(l10n.offlineResources),
           children: [
-            AdaptiveFormSection.insetGrouped(
-              header: Text(l10n.offlineResources),
-              children: [
-                DictionarySourceResourceTile(
-                  dictionaryLibrary: widget.dictionaryLibrary,
-                  onDownload: widget.onDownloadDictionarySource,
-                ),
-                AudioResourceTile(
-                  type: AudioArchiveType.word,
-                  audioLibrary: widget.audioLibrary,
-                  onDownload: widget.onDownloadArchive,
-                ),
-                AudioResourceTile(
-                  type: AudioArchiveType.sentence,
-                  audioLibrary: widget.audioLibrary,
-                  onDownload: widget.onDownloadArchive,
-                ),
-              ],
+            DictionarySourceResourceTile(
+              dictionaryLibrary: widget.dictionaryLibrary,
+              onDownload: widget.onDownloadDictionarySource,
             ),
-            AdaptiveFormSection.insetGrouped(
-              header: Text(l10n.appearance),
-              children: [
-                SettingsLocaleTile(
-                  value: selectedLocale,
-                  onSelected: (locale) {
-                    unawaited(localeProvider.setLocale(locale));
-                  },
-                ),
-                SettingsThemeModeTile(
-                  value: appPreferences.themePreference,
-                  onSelected: (value) {
-                    unawaited(appPreferences.setThemePreference(value));
-                  },
-                ),
-                SettingsTextScaleTile(
-                  value: appPreferences.readingTextScale,
-                  onChanged: (value) {
-                    unawaited(appPreferences.setReadingTextScale(value));
-                  },
-                ),
-              ],
+            AudioResourceTile(
+              type: AudioArchiveType.word,
+              audioLibrary: widget.audioLibrary,
+              onDownload: widget.onDownloadArchive,
             ),
-            AdaptiveFormSection.insetGrouped(
-              header: Text(l10n.about),
-              children: [
-                AdaptiveListTile(
-                  leading: const Icon(Icons.tune_outlined),
-                  title: Text(l10n.advancedSettings),
-                  subtitle: Text(l10n.advancedSettingsSubtitle),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      PlatformInfo.isIOS
-                          ? CupertinoPageRoute<void>(
-                              builder: (_) => AdvancedSettingsScreen(
-                                audioLibrary: widget.audioLibrary,
-                                dictionaryLibrary: widget.dictionaryLibrary,
-                                onDownloadArchive: widget.onDownloadArchive,
-                                onDownloadDictionarySource:
-                                    widget.onDownloadDictionarySource,
-                                onRebuildDictionaryDatabase:
-                                    widget.onRebuildDictionaryDatabase,
-                              ),
-                            )
-                          : MaterialPageRoute<void>(
-                              builder: (_) => AdvancedSettingsScreen(
-                                audioLibrary: widget.audioLibrary,
-                                dictionaryLibrary: widget.dictionaryLibrary,
-                                onDownloadArchive: widget.onDownloadArchive,
-                                onDownloadDictionarySource:
-                                    widget.onDownloadDictionarySource,
-                                onRebuildDictionaryDatabase:
-                                    widget.onRebuildDictionaryDatabase,
-                              ),
-                            ),
-                    );
-                  },
-                ),
-                AdaptiveListTile(
-                  leading: const Icon(Icons.translate_outlined),
-                  title: Text(l10n.tailoGuide),
-                  subtitle: Text(l10n.tailoGuideSubtitle),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    _showReferenceArticle(
-                      context,
-                      article: buildTailoReferenceArticle(l10n),
-                    );
-                  },
-                ),
-                AdaptiveListTile(
-                  leading: const Icon(Icons.edit_note_outlined),
-                  title: Text(l10n.hanjiGuide),
-                  subtitle: Text(l10n.hanjiGuideSubtitle),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    _showReferenceArticle(
-                      context,
-                      article: buildHanjiReferenceArticle(l10n),
-                    );
-                  },
-                ),
-                AdaptiveListTile(
-                  leading: const Icon(Icons.info_outline),
-                  title: Text(l10n.aboutApp),
-                  subtitle: Text(l10n.aboutAppSubtitle),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      PlatformInfo.isIOS
-                          ? CupertinoPageRoute<void>(
-                              builder: (_) => const AboutAppScreen(),
-                            )
-                          : MaterialPageRoute<void>(
-                              builder: (_) => const AboutAppScreen(),
-                            ),
-                    );
-                  },
-                ),
-              ],
+            AudioResourceTile(
+              type: AudioArchiveType.sentence,
+              audioLibrary: widget.audioLibrary,
+              onDownload: widget.onDownloadArchive,
             ),
           ],
+        );
+        final appearanceSection = AdaptiveFormSection.insetGrouped(
+          header: Text(l10n.appearance),
+          children: [
+            SettingsLocaleTile(
+              value: selectedLocale,
+              onSelected: (locale) {
+                unawaited(localeProvider.setLocale(locale));
+              },
+            ),
+            SettingsThemeModeTile(
+              value: appPreferences.themePreference,
+              onSelected: (value) {
+                unawaited(appPreferences.setThemePreference(value));
+              },
+            ),
+            SettingsTextScaleTile(
+              value: appPreferences.readingTextScale,
+              onChanged: (value) {
+                unawaited(appPreferences.setReadingTextScale(value));
+              },
+            ),
+          ],
+        );
+        final aboutSection = AdaptiveFormSection.insetGrouped(
+          header: Text(l10n.about),
+          children: [
+            AdaptiveListTile(
+              leading: const Icon(Icons.tune_outlined),
+              title: Text(l10n.advancedSettings),
+              subtitle: Text(l10n.advancedSettingsSubtitle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.of(context).push(
+                  PlatformInfo.isIOS
+                      ? CupertinoPageRoute<void>(
+                          builder: (_) => AdvancedSettingsScreen(
+                            audioLibrary: widget.audioLibrary,
+                            dictionaryLibrary: widget.dictionaryLibrary,
+                            onDownloadArchive: widget.onDownloadArchive,
+                            onDownloadDictionarySource:
+                                widget.onDownloadDictionarySource,
+                            onRebuildDictionaryDatabase:
+                                widget.onRebuildDictionaryDatabase,
+                          ),
+                        )
+                      : MaterialPageRoute<void>(
+                          builder: (_) => AdvancedSettingsScreen(
+                            audioLibrary: widget.audioLibrary,
+                            dictionaryLibrary: widget.dictionaryLibrary,
+                            onDownloadArchive: widget.onDownloadArchive,
+                            onDownloadDictionarySource:
+                                widget.onDownloadDictionarySource,
+                            onRebuildDictionaryDatabase:
+                                widget.onRebuildDictionaryDatabase,
+                          ),
+                        ),
+                );
+              },
+            ),
+            AdaptiveListTile(
+              leading: const Icon(Icons.translate_outlined),
+              title: Text(l10n.tailoGuide),
+              subtitle: Text(l10n.tailoGuideSubtitle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                _showReferenceArticle(
+                  context,
+                  article: buildTailoReferenceArticle(l10n),
+                );
+              },
+            ),
+            AdaptiveListTile(
+              leading: const Icon(Icons.edit_note_outlined),
+              title: Text(l10n.hanjiGuide),
+              subtitle: Text(l10n.hanjiGuideSubtitle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                _showReferenceArticle(
+                  context,
+                  article: buildHanjiReferenceArticle(l10n),
+                );
+              },
+            ),
+            AdaptiveListTile(
+              leading: const Icon(Icons.info_outline),
+              title: Text(l10n.aboutApp),
+              subtitle: Text(l10n.aboutAppSubtitle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.of(context).push(
+                  PlatformInfo.isIOS
+                      ? CupertinoPageRoute<void>(
+                          builder: (_) => const AboutAppScreen(),
+                        )
+                      : MaterialPageRoute<void>(
+                          builder: (_) => const AboutAppScreen(),
+                        ),
+                );
+              },
+            ),
+          ],
+        );
+
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final useTabletLayout = constraints.maxWidth >= _tabletBreakpoint;
+
+            if (!useTabletLayout) {
+              return ListView(
+                key: const ValueKey('settings-list'),
+                padding: EdgeInsets.only(bottom: bottomBodyInset),
+                children: [
+                  offlineResourcesSection,
+                  appearanceSection,
+                  aboutSection,
+                ],
+              );
+            }
+
+            return SingleChildScrollView(
+              key: const ValueKey('settings-tablet-layout'),
+              padding: EdgeInsets.only(bottom: bottomBodyInset),
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: _tabletMaxContentWidth,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 16, 12, 0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              offlineResourcesSection,
+                              appearanceSection,
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [aboutSection],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
         );
       },
     );
@@ -218,7 +270,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     }
 
     return AdaptiveScaffold(
-      appBar: AdaptiveAppBar(title: '設定', useNativeToolbar: true),
+      appBar: AdaptiveAppBar(title: l10n.settingsTitle, useNativeToolbar: true),
       extendBodyBehindAppBar: false,
       useHeroBackButton: false,
       body: Padding(

@@ -114,6 +114,7 @@ class WordDetailHeader extends StatelessWidget {
     );
 
     return Card(
+      clipBehavior: Clip.antiAlias,
       margin: const EdgeInsets.only(bottom: 20),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
@@ -282,6 +283,7 @@ class ExampleListTile extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
+    final useNeutralAndroidLightColors = _useNeutralAndroidLightColors(theme);
     final mergedSemanticsLabel = [
       if (example.hanji.isNotEmpty) example.hanji,
       if (example.romanization.isNotEmpty)
@@ -347,8 +349,11 @@ class ExampleListTile extends StatelessWidget {
     );
 
     return Card.outlined(
+      clipBehavior: Clip.antiAlias,
       margin: const EdgeInsets.only(bottom: 8),
-      color: colorScheme.surfaceContainerLow,
+      color: useNeutralAndroidLightColors
+          ? _androidLightDetailSurface(colorScheme)
+          : colorScheme.surfaceContainerLow,
       child: AdaptiveListTile(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         title: content,
@@ -374,10 +379,15 @@ class _MaterialSensePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final useNeutralAndroidLightColors = _useNeutralAndroidLightColors(
+      Theme.of(context),
+    );
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colorScheme.secondaryContainer,
+        color: useNeutralAndroidLightColors
+            ? _androidLightAccentSurface(colorScheme)
+            : colorScheme.secondaryContainer,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Padding(
@@ -387,7 +397,9 @@ class _MaterialSensePill extends StatelessWidget {
           textAlign: TextAlign.left,
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w700,
-            color: colorScheme.onSecondaryContainer,
+            color: useNeutralAndroidLightColors
+                ? colorScheme.primary
+                : colorScheme.onSecondaryContainer,
           ),
         ),
       ),
@@ -512,16 +524,25 @@ class _RelationshipChipBody extends StatelessWidget {
         theme.platform == TargetPlatform.android ||
         theme.platform == TargetPlatform.fuchsia;
     final useMaterial3Chip = isMaterialPlatform && theme.useMaterial3;
+    final useNeutralAndroidLightColors = _useNeutralAndroidLightColors(theme);
     final fillColor = isInteractive
         ? colorScheme.primary.withValues(
             alpha: theme.brightness == Brightness.dark ? 0.18 : 0.10,
           )
+        : useNeutralAndroidLightColors
+        ? _androidLightDetailSurface(colorScheme)
         : colorScheme.surfaceContainerHighest;
     final strokeColor = isInteractive
         ? colorScheme.primary.withValues(
-            alpha: theme.brightness == Brightness.dark ? 0.45 : 0.28,
+            alpha: theme.brightness == Brightness.dark
+                ? 0.45
+                : useNeutralAndroidLightColors
+                ? 0.22
+                : 0.28,
           )
-        : colorScheme.outlineVariant.withValues(alpha: 0.75);
+        : colorScheme.outlineVariant.withValues(
+            alpha: useNeutralAndroidLightColors ? 0.58 : 0.75,
+          );
     final textColor = isInteractive
         ? colorScheme.primary
         : colorScheme.onSurfaceVariant;
@@ -715,7 +736,11 @@ class DetailNoteCard extends StatelessWidget {
       ),
     );
 
-    return Card(margin: const EdgeInsets.only(bottom: 16), child: content);
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      margin: const EdgeInsets.only(bottom: 16),
+      child: content,
+    );
   }
 }
 
@@ -748,4 +773,22 @@ TextStyle? scaledTextStyle(TextStyle? style, double scale) {
     return style;
   }
   return style.copyWith(fontSize: style.fontSize! * scale);
+}
+
+bool _useNeutralAndroidLightColors(ThemeData theme) {
+  return !PlatformInfo.isIOS && theme.brightness == Brightness.light;
+}
+
+Color _androidLightDetailSurface(ColorScheme colorScheme) {
+  return Color.alphaBlend(
+    colorScheme.primary.withValues(alpha: 0.018),
+    colorScheme.surface,
+  );
+}
+
+Color _androidLightAccentSurface(ColorScheme colorScheme) {
+  return Color.alphaBlend(
+    colorScheme.primary.withValues(alpha: 0.075),
+    colorScheme.surface,
+  );
 }

@@ -4,6 +4,20 @@ import 'package:taigi_dict/features/audio/audio.dart';
 import 'package:taigi_dict/features/bookmarks/bookmarks.dart';
 import 'package:taigi_dict/features/dictionary/dictionary.dart';
 
+class PreparedWordDetail {
+  const PreparedWordDetail({
+    required this.entry,
+    required this.resolvedEntryId,
+    required this.openableWords,
+  });
+
+  final DictionaryEntry entry;
+  final int resolvedEntryId;
+  final Set<String> openableWords;
+
+  bool canOpenWord(String word) => openableWords.contains(word);
+}
+
 class WordDetailCoordinator {
   const WordDetailCoordinator._();
 
@@ -27,31 +41,11 @@ class WordDetailCoordinator {
     required BookmarkStore bookmarkStore,
     required ValueChanged<AudioActionResult> onActionResult,
   }) async {
-    final resolvedLocale = AppLocalizations.resolveLocale(
-      Localizations.localeOf(context),
-    );
-    final translationService = ChineseTranslationService.instance;
-    final resolvedEntry = await _resolveAliasEntry(
+    final prepared = await prepareWordDetail(
+      context: context,
+      entry: entry,
       repository: repository,
       bundle: bundle,
-      entry: entry,
-    );
-    if (!context.mounted) {
-      return;
-    }
-
-    final sourceEntry = bundle.isDatabaseBacked
-        ? resolvedEntry
-        : bundle.entries
-              .where((candidate) {
-                return candidate.id == resolvedEntry.id;
-              })
-              .fold<DictionaryEntry?>(null, (previous, candidate) {
-                return previous ?? candidate;
-              });
-    final localizedEntry = await translationService.translateEntryForDisplay(
-      sourceEntry ?? resolvedEntry,
-      locale: resolvedLocale,
     );
     if (!context.mounted) {
       return;
@@ -68,14 +62,12 @@ class WordDetailCoordinator {
     }
 
     Future<void> onWordTapped(String word) async {
-      final normalizedLookupWord = await translationService
-          .normalizeSearchInput(word, locale: resolvedLocale);
-      if (!context.mounted) {
-        return;
-      }
-      final linkedEntry = await repository.findLinkedEntryAsync(
-        bundle,
-        normalizedLookupWord,
+      final linkedEntry = await findNavigableLinkedEntry(
+        context: context,
+        repository: repository,
+        bundle: bundle,
+        currentEntryId: prepared.resolvedEntryId,
+        word: word,
       );
       if (!context.mounted) {
         return;
@@ -88,18 +80,9 @@ class WordDetailCoordinator {
         return;
       }
 
-      final resolvedLinkedEntry = await _resolveAliasEntry(
-        repository: repository,
-        bundle: bundle,
-        entry: linkedEntry,
-      );
-      if (!context.mounted || resolvedLinkedEntry.id == resolvedEntry.id) {
-        return;
-      }
-
       await showWordDetail(
         context: context,
-        entry: resolvedLinkedEntry,
+        entry: linkedEntry,
         repository: repository,
         bundle: bundle,
         audioLibrary: audioLibrary,
@@ -107,6 +90,50 @@ class WordDetailCoordinator {
         onActionResult: onActionResult,
       );
     }
+
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => WordDetailScreen(
+          entry: prepared.entry,
+          audioLibrary: audioLibrary,
+          bookmarkStore: bookmarkStore,
+          onPlayClip: onPlayClip,
+          onWordTapped: onWordTapped,
+          canOpenWord: prepared.canOpenWord,
+        ),
+      ),
+    );
+  }
+
+  static Future<PreparedWordDetail> prepareWordDetail({
+    required BuildContext context,
+    required DictionaryEntry entry,
+    required DictionaryRepository repository,
+    required DictionaryBundle bundle,
+  }) async {
+    final resolvedLocale = AppLocalizations.resolveLocale(
+      Localizations.localeOf(context),
+    );
+    final translationService = ChineseTranslationService.instance;
+    final resolvedEntry = await _resolveAliasEntry(
+      repository: repository,
+      bundle: bundle,
+      entry: entry,
+    );
+
+    final sourceEntry = bundle.isDatabaseBacked
+        ? resolvedEntry
+        : bundle.entries
+              .where((candidate) {
+                return candidate.id == resolvedEntry.id;
+              })
+              .fold<DictionaryEntry?>(null, (previous, candidate) {
+                return previous ?? candidate;
+              });
+    final localizedEntry = await translationService.translateEntryForDisplay(
+      sourceEntry ?? resolvedEntry,
+      locale: resolvedLocale,
+    );
 
     final openableWords = await _resolveOpenableWords(
       repository: repository,
@@ -116,24 +143,46 @@ class WordDetailCoordinator {
       translationService: translationService,
       currentEntryId: resolvedEntry.id,
     );
-    if (!context.mounted) {
-      return;
+
+    return PreparedWordDetail(
+      entry: localizedEntry,
+      resolvedEntryId: resolvedEntry.id,
+      openableWords: openableWords,
+    );
+  }
+
+  static Future<DictionaryEntry?> findNavigableLinkedEntry({
+    required BuildContext context,
+    required DictionaryRepository repository,
+    required DictionaryBundle bundle,
+    required int currentEntryId,
+    required String word,
+  }) async {
+    final resolvedLocale = AppLocalizations.resolveLocale(
+      Localizations.localeOf(context),
+    );
+    final translationService = ChineseTranslationService.instance;
+    final normalizedLookupWord = await translationService.normalizeSearchInput(
+      word,
+      locale: resolvedLocale,
+    );
+    final linkedEntry = await repository.findLinkedEntryAsync(
+      bundle,
+      normalizedLookupWord,
+    );
+    if (linkedEntry == null) {
+      return null;
     }
 
-    bool canOpenWord(String word) => openableWords.contains(word);
-
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) => WordDetailScreen(
-          entry: localizedEntry,
-          audioLibrary: audioLibrary,
-          bookmarkStore: bookmarkStore,
-          onPlayClip: onPlayClip,
-          onWordTapped: onWordTapped,
-          canOpenWord: canOpenWord,
-        ),
-      ),
+    final resolvedLinkedEntry = await _resolveAliasEntry(
+      repository: repository,
+      bundle: bundle,
+      entry: linkedEntry,
     );
+    if (resolvedLinkedEntry.id == currentEntryId) {
+      return null;
+    }
+    return resolvedLinkedEntry;
   }
 
   static Future<DictionaryEntry> _resolveAliasEntry({
