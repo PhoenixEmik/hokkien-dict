@@ -44,8 +44,8 @@ dependencies:
       url: https://github.com/PhoenixEmik/spreadsheet_decoder.git
       ref: master
   shared_preferences: ^2.5.5
-  share_plus: ^13.0.0
-  sqflite: ^2.4.2
+  share_plus: ^13.1.0
+  sqflite: ^2.4.2+1
   flutter_open_chinese_convert: ^0.9.0
   flutter_svg: ^2.2.1
   url_launcher: ^6.3.2
