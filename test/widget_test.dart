@@ -764,6 +764,152 @@ void main() {
     expect(find.text('一'), findsOneWidget);
   });
 
+  testWidgets('dictionary screen keeps split view on tablet widths', (
+    WidgetTester tester,
+  ) async {
+    _setDisplaySize(tester, const Size(1200, 900));
+
+    final repository = _FakeDictionaryRepository(
+      DictionaryBundle(
+        entryCount: 1,
+        senseCount: 1,
+        exampleCount: 0,
+        entries: const [
+          DictionaryEntry(
+            id: 1,
+            type: '',
+            hanji: '狗',
+            romanization: 'kau',
+            category: '',
+            audioId: '',
+            hokkienSearch: '狗 kau',
+            mandarinSearch: '動物 狗',
+            senses: [
+              DictionarySense(partOfSpeech: '', definition: '狗', examples: []),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    await tester.pumpWidget(
+      _buildLocalizedTestApp(
+        locale: traditionalChineseLocale,
+        home: Scaffold(
+          body: DictionaryScreen(
+            repository: repository,
+            audioLibrary: OfflineAudioLibrary(),
+            bookmarkStore: BookmarkStore(),
+            onActionResult: (_) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('選擇詞條'), findsOneWidget);
+
+    await tester.enterText(searchField, '狗');
+    await tester.pump(searchDebounce);
+    await tester.pump(searchAsyncWait);
+
+    expect(find.byType(EntryListItem), findsOneWidget);
+    expect(find.text('選擇詞條'), findsOneWidget);
+  });
+
+  testWidgets('bookmarks screen uses grid layout on tablet widths', (
+    WidgetTester tester,
+  ) async {
+    _setDisplaySize(tester, const Size(1200, 900));
+
+    final repository = _FakeDictionaryRepository(
+      DictionaryBundle(
+        entryCount: 2,
+        senseCount: 2,
+        exampleCount: 0,
+        entries: const [
+          DictionaryEntry(
+            id: 1,
+            type: '',
+            hanji: '一',
+            romanization: 'tsit',
+            category: '',
+            audioId: '',
+            hokkienSearch: '一 tsit',
+            mandarinSearch: '數字 一',
+            senses: [
+              DictionarySense(
+                partOfSpeech: '',
+                definition: '數字一。',
+                examples: [],
+              ),
+            ],
+          ),
+          DictionaryEntry(
+            id: 2,
+            type: '',
+            hanji: '狗',
+            romanization: 'kau',
+            category: '',
+            audioId: '',
+            hokkienSearch: '狗 kau',
+            mandarinSearch: '動物 狗',
+            senses: [
+              DictionarySense(partOfSpeech: '', definition: '狗', examples: []),
+            ],
+          ),
+        ],
+      ),
+    );
+    final bookmarkStore = BookmarkStore();
+    await bookmarkStore.initialize();
+    await bookmarkStore.toggleBookmark(1);
+    await bookmarkStore.toggleBookmark(2);
+
+    await tester.pumpWidget(
+      _buildLocalizedTestApp(
+        locale: traditionalChineseLocale,
+        home: BookmarksScreen(
+          repository: repository,
+          audioLibrary: OfflineAudioLibrary(),
+          bookmarkStore: bookmarkStore,
+          onActionResult: (_) {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('bookmarks-grid')), findsOneWidget);
+    expect(find.byKey(const ValueKey('bookmarks-list')), findsNothing);
+    expect(find.text('一'), findsWidgets);
+    expect(find.text('狗'), findsWidgets);
+  });
+
+  testWidgets('settings screen uses two-column layout on tablet widths', (
+    WidgetTester tester,
+  ) async {
+    _setDisplaySize(tester, const Size(1200, 900));
+
+    SharedPreferences.setMockInitialValues({'interface_locale': 'zh-TW'});
+
+    await tester.pumpWidget(const HokkienDictionaryApp());
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 900));
+
+    await tester.tap(find.text('設定').last);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(
+      find.byKey(const ValueKey('settings-tablet-layout')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('settings-list')), findsNothing);
+    expect(find.text('離線資源'), findsOneWidget);
+    expect(find.text('外觀'), findsOneWidget);
+    expect(find.text('關於'), findsOneWidget);
+  });
+
   testWidgets('entry list item exposes a merged semantics label', (
     WidgetTester tester,
   ) async {
@@ -910,10 +1056,7 @@ void main() {
 
       expect(
         tester.getSemantics(find.bySemanticsLabel('可跳')),
-        matchesSemantics(
-          label: '可跳',
-          isButton: true,
-        ),
+        matchesSemantics(label: '可跳', isButton: true),
       );
       expect(
         tester.getSemantics(find.bySemanticsLabel('不可跳')),
@@ -935,6 +1078,15 @@ Widget _buildLocalizedTestApp({
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     home: home,
   );
+}
+
+void _setDisplaySize(WidgetTester tester, Size size) {
+  tester.view.devicePixelRatio = 1;
+  tester.view.physicalSize = size;
+  addTearDown(() {
+    tester.view.resetPhysicalSize();
+    tester.view.resetDevicePixelRatio();
+  });
 }
 
 class _FakeDictionaryRepository extends DictionaryRepository {

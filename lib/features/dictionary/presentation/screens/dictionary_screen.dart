@@ -7,7 +7,6 @@ import 'package:taigi_dict/features/audio/audio.dart';
 import 'package:taigi_dict/features/bookmarks/bookmarks.dart';
 import 'package:taigi_dict/features/dictionary/dictionary.dart';
 
-
 class DictionaryScreen extends StatefulWidget {
   const DictionaryScreen({
     super.key,
@@ -31,6 +30,8 @@ class DictionaryScreen extends StatefulWidget {
 class _DictionaryScreenState extends State<DictionaryScreen>
     with AutomaticKeepAliveClientMixin {
   static const double _tabletBreakpoint = 960;
+  static const double _tabletMaxContentWidth = 1480;
+  static const double _tabletPaneGap = 20;
 
   late final DictionarySearchController _searchController;
   Locale? _lastResolvedLocale;
@@ -170,11 +171,11 @@ class _DictionaryScreenState extends State<DictionaryScreen>
     final applePlatform =
         platform == TargetPlatform.iOS || platform == TargetPlatform.macOS;
     final topBodyInset = PlatformInfo.isIOS
-      ? MediaQuery.paddingOf(context).top + kToolbarHeight
-      : 0.0;
+        ? MediaQuery.paddingOf(context).top + kToolbarHeight
+        : 0.0;
     final bottomContentPadding = platform == TargetPlatform.iOS
-      ? MediaQuery.paddingOf(context).bottom + 88
-      : 28.0;
+        ? MediaQuery.paddingOf(context).bottom + 88
+        : 28.0;
 
     return AnimatedBuilder(
       animation: _searchController,
@@ -236,62 +237,79 @@ class _DictionaryScreenState extends State<DictionaryScreen>
                   }
 
                   if (useTabletLayout) {
-                    return Padding(
-                      padding: EdgeInsets.fromLTRB(
-                        16,
-                        applePlatform ? 12 : 16,
-                        16,
-                        bottomContentPadding,
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            flex: 5,
-                            child: _TabletSearchPane(
-                              hasActiveQuery: hasActiveQuery,
-                              isSearching: isSearching,
-                              query: query,
-                              filteredResults: filteredResults,
-                              searchHistory: searchHistory,
-                              searchController: _searchController,
-                              selectedEntryId: _selectedTabletSourceEntry?.id,
-                              onEntryTap: (entry) {
-                                unawaited(_selectTabletEntry(bundle, entry));
-                              },
-                            ),
+                    return Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          maxWidth: _tabletMaxContentWidth,
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            20,
+                            applePlatform ? 12 : 16,
+                            20,
+                            bottomContentPadding,
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            flex: 6,
-                            child: _TabletDetailPane(
-                              bundle: bundle,
-                              detail: _selectedTabletDetail,
-                              bookmarkStore: widget.bookmarkStore,
-                              audioLibrary: widget.audioLibrary,
-                              isLoading: _isLoadingTabletDetail,
-                              onPlayClip: (type, clipId) => WordDetailCoordinator.playClip(
-                                audioLibrary: widget.audioLibrary,
-                                type: type,
-                                clipId: clipId,
-                                l10n: AppLocalizations.of(context),
-                                onActionResult: widget.onActionResult,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Flexible(
+                                flex: 4,
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(
+                                    maxWidth: 460,
+                                  ),
+                                  child: _TabletSearchPane(
+                                    hasActiveQuery: hasActiveQuery,
+                                    isSearching: isSearching,
+                                    query: query,
+                                    filteredResults: filteredResults,
+                                    searchHistory: searchHistory,
+                                    searchController: _searchController,
+                                    selectedEntryId:
+                                        _selectedTabletSourceEntry?.id,
+                                    onEntryTap: (entry) {
+                                      unawaited(
+                                        _selectTabletEntry(bundle, entry),
+                                      );
+                                    },
+                                  ),
+                                ),
                               ),
-                              onWordTapped: (word) async {
-                                final detail = _selectedTabletDetail;
-                                if (detail == null) {
-                                  return;
-                                }
-                                await _openLinkedTabletEntry(
-                                  bundle,
-                                  detail,
-                                  word,
-                                );
-                              },
-                              onShare: _shareTabletEntry,
-                            ),
+                              const SizedBox(width: _tabletPaneGap),
+                              Expanded(
+                                flex: 6,
+                                child: _TabletDetailPane(
+                                  bundle: bundle,
+                                  detail: _selectedTabletDetail,
+                                  bookmarkStore: widget.bookmarkStore,
+                                  audioLibrary: widget.audioLibrary,
+                                  isLoading: _isLoadingTabletDetail,
+                                  onPlayClip: (type, clipId) =>
+                                      WordDetailCoordinator.playClip(
+                                        audioLibrary: widget.audioLibrary,
+                                        type: type,
+                                        clipId: clipId,
+                                        l10n: AppLocalizations.of(context),
+                                        onActionResult: widget.onActionResult,
+                                      ),
+                                  onWordTapped: (word) async {
+                                    final detail = _selectedTabletDetail;
+                                    if (detail == null) {
+                                      return;
+                                    }
+                                    await _openLinkedTabletEntry(
+                                      bundle,
+                                      detail,
+                                      word,
+                                    );
+                                  },
+                                  onShare: _shareTabletEntry,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     );
                   }
@@ -454,9 +472,7 @@ class _TabletSearchPane extends StatelessWidget {
           padding: const EdgeInsets.only(top: 12),
           sliver: !hasActiveQuery
               ? SliverToBoxAdapter(
-                  child: SelectionArea(
-                    child: EmptyState(query: query),
-                  ),
+                  child: SelectionArea(child: EmptyState(query: query)),
                 )
               : isSearching
               ? const SliverToBoxAdapter(child: SearchLoadingState())
@@ -508,6 +524,7 @@ class _TabletDetailPane extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -524,26 +541,42 @@ class _TabletDetailPane extends StatelessWidget {
             : detail == null
             ? Padding(
                 key: const ValueKey('tablet-detail-empty'),
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.tabletPreviewEmptyTitle,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 40,
+                  vertical: 32,
+                ),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 420),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.menu_book_outlined,
+                          size: 36,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          l10n.tabletPreviewEmptyTitle,
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          l10n.tabletPreviewEmptyBody,
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                            height: 1.55,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      l10n.tabletPreviewEmptyBody,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        height: 1.55,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               )
             : Column(
@@ -557,7 +590,10 @@ class _TabletDetailPane extends StatelessWidget {
                   const Divider(height: 1),
                   Expanded(
                     child: AnimatedBuilder(
-                      animation: Listenable.merge([bookmarkStore, audioLibrary]),
+                      animation: Listenable.merge([
+                        bookmarkStore,
+                        audioLibrary,
+                      ]),
                       builder: (context, child) {
                         return WordDetailBody(
                           entry: detail!.entry,
@@ -565,6 +601,8 @@ class _TabletDetailPane extends StatelessWidget {
                           onPlayClip: onPlayClip,
                           onWordTapped: onWordTapped,
                           canOpenWord: detail!.canOpenWord,
+                          maxContentWidth: 860,
+                          padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
                         );
                       },
                     ),
@@ -591,6 +629,9 @@ class _TabletDetailToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     final isBookmarked = bookmarkStore.isBookmarked(entry.id);
     final l10n = AppLocalizations.of(context);
+    final actionStyle = PlatformInfo.isIOS
+        ? AdaptiveButtonStyle.gray
+        : AdaptiveButtonStyle.plain;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
@@ -599,26 +640,64 @@ class _TabletDetailToolbar extends StatelessWidget {
           Expanded(
             child: Text(
               entry.hanji.isEmpty ? l10n.wordDetailFallbackTitle : entry.hanji,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          IconButton(
-            tooltip: l10n.shareEntry,
-            onPressed: () {
-              unawaited(onShare(entry));
-            },
-            icon: const Icon(Icons.share),
+          Tooltip(
+            message: l10n.shareEntry,
+            child: PlatformInfo.isIOS
+                ? AdaptiveButton.sfSymbol(
+                    onPressed: () {
+                      unawaited(onShare(entry));
+                    },
+                    sfSymbol: const SFSymbol('square.and.arrow.up', size: 18),
+                    style: actionStyle,
+                    size: AdaptiveButtonSize.small,
+                    minSize: const Size(36, 36),
+                    useSmoothRectangleBorder: false,
+                  )
+                : AdaptiveButton.icon(
+                    onPressed: () {
+                      unawaited(onShare(entry));
+                    },
+                    icon: Icons.share,
+                    style: actionStyle,
+                    size: AdaptiveButtonSize.small,
+                    minSize: const Size(36, 36),
+                    useSmoothRectangleBorder: false,
+                  ),
           ),
-          IconButton(
-            tooltip: isBookmarked ? l10n.removeBookmark : l10n.addBookmark,
-            onPressed: () {
-              unawaited(bookmarkStore.toggleBookmark(entry.id));
-            },
-            icon: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border),
+          const SizedBox(width: 6),
+          Tooltip(
+            message: isBookmarked ? l10n.removeBookmark : l10n.addBookmark,
+            child: PlatformInfo.isIOS
+                ? AdaptiveButton.sfSymbol(
+                    onPressed: () {
+                      unawaited(bookmarkStore.toggleBookmark(entry.id));
+                    },
+                    sfSymbol: SFSymbol(
+                      isBookmarked ? 'bookmark.fill' : 'bookmark',
+                      size: 18,
+                    ),
+                    style: actionStyle,
+                    size: AdaptiveButtonSize.small,
+                    minSize: const Size(36, 36),
+                    useSmoothRectangleBorder: false,
+                  )
+                : AdaptiveButton.icon(
+                    onPressed: () {
+                      unawaited(bookmarkStore.toggleBookmark(entry.id));
+                    },
+                    icon: isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                    style: actionStyle,
+                    size: AdaptiveButtonSize.small,
+                    minSize: const Size(36, 36),
+                    useSmoothRectangleBorder: false,
+                  ),
           ),
         ],
       ),

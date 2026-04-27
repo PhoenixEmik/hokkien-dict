@@ -1,3 +1,4 @@
+import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/core.dart';
 import 'package:taigi_dict/features/dictionary/dictionary.dart';
@@ -34,9 +35,8 @@ class EntryListItem extends StatelessWidget {
               : colorScheme.outlineVariant.withValues(alpha: 0.28),
         ),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        titleAlignment: ListTileTitleAlignment.top,
+      child: AdaptiveListTile(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         title: Text(
           entry.hanji.isEmpty ? l10n.unlabeledHanji : entry.hanji,
           style: theme.textTheme.titleLarge?.copyWith(
@@ -71,8 +71,11 @@ class EntryListItem extends StatelessWidget {
           ],
         ),
         trailing: Icon(
-          Icons.chevron_right,
+          PlatformInfo.isIOS
+              ? Icons.arrow_forward_ios_rounded
+              : Icons.chevron_right,
           color: selected ? colorScheme.primary : null,
+          size: PlatformInfo.isIOS ? 18 : 24,
         ),
         onTap: onTap,
       ),
@@ -90,7 +93,9 @@ class EntryListItem extends StatelessWidget {
 }
 
 String _semanticLabel(DictionaryEntry entry, AppLocalizations l10n) {
-  final parts = <String>[entry.hanji.isEmpty ? l10n.unlabeledHanji : entry.hanji];
+  final parts = <String>[
+    entry.hanji.isEmpty ? l10n.unlabeledHanji : entry.hanji,
+  ];
   if (entry.romanization.isNotEmpty) {
     parts.add(l10n.romanizationLabel(entry.romanization));
   }

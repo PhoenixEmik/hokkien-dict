@@ -37,6 +37,34 @@ It does **not** yet redesign:
 - settings tablet layout
 - article/help/detail pages outside dictionary flow
 
+## Phase 2 Progress
+
+Implemented after the initial split-view pass:
+
+1. dictionary tablet spacing refinement
+2. bookmarks tablet layout
+3. settings tablet layout
+
+### Dictionary spacing refinement
+
+- Tablet dictionary content now uses a centered max-width container.
+- Search pane width is capped so the detail pane gets more useful room.
+- The empty detail placeholder is constrained to readable line lengths.
+- In-place tablet detail content uses tighter internal padding than the phone detail page.
+
+### Bookmarks tablet layout
+
+- Tablet bookmarks now switch to a responsive grid layout.
+- Phone keeps the original single-column scrolling list.
+- Empty bookmarks state stays centered with a narrower readable width.
+
+### Settings tablet layout
+
+- Tablet settings now switch to a two-column grouped layout.
+- Left column holds offline resources and appearance.
+- Right column holds about/help actions.
+- Phone keeps the original single-column section list.
+
 ## Tablet Breakpoints
 
 ### Main shell
@@ -120,6 +148,15 @@ Tablet flow reuses the same preparation logic and renders the result in place.
 
 - [dictionary_screen.dart](/Users/emik/Documents/Hokkien/lib/features/dictionary/presentation/screens/dictionary_screen.dart)
 - [entry_list_item.dart](/Users/emik/Documents/Hokkien/lib/features/dictionary/presentation/widgets/entry_list_item.dart)
+- [word_detail_screen.dart](/Users/emik/Documents/Hokkien/lib/features/dictionary/presentation/screens/word_detail_screen.dart)
+
+### Bookmarks tablet layout
+
+- [bookmarks_screen.dart](/Users/emik/Documents/Hokkien/lib/features/bookmarks/presentation/screens/bookmarks_screen.dart)
+
+### Settings tablet layout
+
+- [settings_screen.dart](/Users/emik/Documents/Hokkien/lib/features/settings/presentation/screens/settings_screen.dart)
 
 ### Shared detail logic
 
@@ -158,15 +195,14 @@ Ran successfully:
 ### Phase 2
 
 1. Refine tablet dictionary spacing
-   - tune left/right pane width ratio
-   - reduce empty whitespace in detail pane
-   - refine search/history card density on large screens
+   - refine search/history card density further on very large screens
+   - verify detail pane typography balance on 11-inch and 13-inch tablets
 
 2. Tablet bookmarks layout
-   - evaluate wider list rows or two-column presentation
+   - evaluate whether dense 3-column mode is worth adding on extra-wide landscape
 
 3. Tablet settings layout
-   - evaluate grouped settings layout with better use of horizontal space
+   - evaluate whether advanced settings should also get tablet grouping
 
 4. Device verification
    - verify on Android tablet

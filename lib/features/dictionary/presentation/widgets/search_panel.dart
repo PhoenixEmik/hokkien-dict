@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/core.dart';
@@ -27,20 +28,21 @@ class SearchWorkspaceCard extends StatelessWidget {
       builder: (context, value, child) {
         final showClearButton = value.text.isNotEmpty;
         final iOSTrailing = SizedBox.square(
-          dimension: 28,
+          dimension: 30,
           child: showClearButton
-              ? IconButton(
-                  tooltip: l10n.clearSearch,
-                  onPressed: () {
-                    controller.clear();
-                    onSubmitted('');
-                  },
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints.tightFor(
-                    width: 28,
-                    height: 28,
+              ? Tooltip(
+                  message: l10n.clearSearch,
+                  child: AdaptiveButton.sfSymbol(
+                    onPressed: () {
+                      controller.clear();
+                      onSubmitted('');
+                    },
+                    sfSymbol: const SFSymbol('xmark.circle.fill', size: 16),
+                    style: AdaptiveButtonStyle.plain,
+                    size: AdaptiveButtonSize.small,
+                    minSize: const Size(28, 28),
+                    useSmoothRectangleBorder: false,
                   ),
-                  icon: const Icon(Icons.close, size: 18),
                 )
               : const SizedBox.shrink(),
         );
@@ -98,9 +100,7 @@ class SearchWorkspaceCard extends StatelessWidget {
             decoration: PlatformInfo.isIOS ? null : materialDecoration,
             prefixIcon: PlatformInfo.isIOS ? const Icon(Icons.search) : null,
             suffix: PlatformInfo.isIOS ? iOSTrailing : null,
-            suffixIcon: PlatformInfo.isIOS
-                ? null
-                : null,
+            suffixIcon: PlatformInfo.isIOS ? null : null,
           ),
         );
       },
@@ -141,11 +141,25 @@ class SearchHistorySection extends StatelessWidget {
                     ),
                   ),
                 ),
-                IconButton(
-                  tooltip: l10n.clearSearchHistory,
-                  onPressed: onClearHistory,
-                  icon: const Icon(Icons.delete_outline),
-                ),
+                PlatformInfo.isIOS
+                    ? Tooltip(
+                        message: l10n.clearSearchHistory,
+                        child: AdaptiveButton.sfSymbol(
+                          onPressed: () {
+                            unawaited(onClearHistory());
+                          },
+                          sfSymbol: const SFSymbol('trash', size: 16),
+                          style: AdaptiveButtonStyle.plain,
+                          size: AdaptiveButtonSize.small,
+                          minSize: const Size(30, 30),
+                          useSmoothRectangleBorder: false,
+                        ),
+                      )
+                    : IconButton(
+                        tooltip: l10n.clearSearchHistory,
+                        onPressed: onClearHistory,
+                        icon: const Icon(Icons.delete_outline),
+                      ),
               ],
             ),
             const SizedBox(height: 8),
@@ -158,11 +172,25 @@ class SearchHistorySection extends StatelessWidget {
                       button: true,
                       label: '${l10n.searchHistory} $query',
                       hint: l10n.searchHint,
-                      child: ActionChip(
-                        label: Text(query),
-                        avatar: const Icon(Icons.history, size: 18),
-                        onPressed: () => onHistoryTap(query),
-                      ),
+                      child: PlatformInfo.isIOS
+                          ? AdaptiveButton.child(
+                              onPressed: () => onHistoryTap(query),
+                              style: AdaptiveButtonStyle.gray,
+                              size: AdaptiveButtonSize.small,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.history, size: 16),
+                                  const SizedBox(width: 6),
+                                  Text(query),
+                                ],
+                              ),
+                            )
+                          : ActionChip(
+                              label: Text(query),
+                              avatar: const Icon(Icons.history, size: 18),
+                              onPressed: () => onHistoryTap(query),
+                            ),
                     );
                   })
                   .toList(growable: false),

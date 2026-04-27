@@ -60,7 +60,10 @@ class DictionarySourceResourceTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(dictionaryLibrary.fileName, style: theme.textTheme.bodySmall),
+              Text(
+                dictionaryLibrary.fileName,
+                style: theme.textTheme.bodySmall,
+              ),
               const SizedBox(height: 2),
               Text(statusText, style: theme.textTheme.bodySmall),
               if (progress != null && snapshot.state != DownloadState.idle) ...[
@@ -87,14 +90,35 @@ class DictionarySourceResourceTile extends StatelessWidget {
               snapshot.downloadedBytes,
               snapshot.totalBytes,
             ),
-             child: AdaptiveListTile(
+            child: AdaptiveListTile(
               leading: const Icon(Icons.description_outlined),
               title: Text(l10n.dictionarySourceArchive),
               subtitle: subtitle,
-              trailing: IconButton(
-                tooltip: actionTooltip,
-                onPressed: onPressed,
-                icon: Icon(actionIcon),
+              trailing: Tooltip(
+                message: actionTooltip,
+                child: PlatformInfo.isIOS
+                    ? AdaptiveButton.sfSymbol(
+                        onPressed: onPressed,
+                        sfSymbol: SFSymbol(switch (snapshot.state) {
+                          DownloadState.downloading => 'pause.circle.fill',
+                          DownloadState.completed => 'checkmark.circle.fill',
+                          DownloadState.idle => 'arrow.down.circle.fill',
+                          DownloadState.paused => 'play.circle.fill',
+                          DownloadState.error => 'arrow.clockwise.circle.fill',
+                        }, size: 18),
+                        style: AdaptiveButtonStyle.plain,
+                        size: AdaptiveButtonSize.small,
+                        minSize: const Size(34, 34),
+                        useSmoothRectangleBorder: false,
+                      )
+                    : AdaptiveButton.icon(
+                        onPressed: onPressed,
+                        icon: actionIcon,
+                        style: AdaptiveButtonStyle.plain,
+                        size: AdaptiveButtonSize.small,
+                        minSize: const Size(34, 34),
+                        useSmoothRectangleBorder: false,
+                      ),
               ),
             ),
           ),

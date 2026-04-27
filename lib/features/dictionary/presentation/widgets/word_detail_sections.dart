@@ -1,9 +1,9 @@
 import 'dart:async';
+import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/core.dart';
 import 'package:taigi_dict/features/audio/audio.dart';
 import 'package:taigi_dict/features/dictionary/dictionary.dart';
-
 
 class WordDetailHeader extends StatelessWidget {
   const WordDetailHeader({
@@ -349,8 +349,8 @@ class ExampleListTile extends StatelessWidget {
     return Card.outlined(
       margin: const EdgeInsets.only(bottom: 8),
       color: colorScheme.surfaceContainerLow,
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      child: AdaptiveListTile(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         title: content,
         trailing: example.audioId.isEmpty
             ? null
@@ -537,7 +537,13 @@ class _RelationshipChipBody extends StatelessWidget {
       label: semanticLabel ?? word,
       onTapHint: isInteractive ? l10n.searchThisWordHint : null,
       child: ExcludeSemantics(
-        child: useMaterial3Chip
+        child: PlatformInfo.isIOS
+            ? _IOSRelationshipChip(
+                word: word,
+                isInteractive: isInteractive,
+                onTap: onTap,
+              )
+            : useMaterial3Chip
             ? Material(
                 color: Colors.transparent,
                 child: isInteractive
@@ -552,8 +558,7 @@ class _RelationshipChipBody extends StatelessWidget {
                         side: chipSide,
                         shape: const StadiumBorder(),
                         labelPadding: const EdgeInsets.symmetric(horizontal: 2),
-                        materialTapTargetSize:
-                            MaterialTapTargetSize.shrinkWrap,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         visualDensity: VisualDensity.compact,
                       )
                     : Chip(
@@ -563,8 +568,7 @@ class _RelationshipChipBody extends StatelessWidget {
                         side: chipSide,
                         shape: const StadiumBorder(),
                         labelPadding: const EdgeInsets.symmetric(horizontal: 2),
-                        materialTapTargetSize:
-                            MaterialTapTargetSize.shrinkWrap,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         visualDensity: VisualDensity.compact,
                       ),
               )
@@ -593,6 +597,53 @@ class _RelationshipChipBody extends StatelessWidget {
                   ),
                 ),
               ),
+      ),
+    );
+  }
+}
+
+class _IOSRelationshipChip extends StatelessWidget {
+  const _IOSRelationshipChip({
+    required this.word,
+    required this.isInteractive,
+    required this.onTap,
+  });
+
+  final String word;
+  final bool isInteractive;
+  final Future<void> Function()? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    if (isInteractive) {
+      return AdaptiveButton.child(
+        onPressed: () {
+          unawaited(onTap!());
+        },
+        style: AdaptiveButtonStyle.gray,
+        size: AdaptiveButtonSize.small,
+        child: Text(word),
+      );
+    }
+
+    final theme = Theme.of(context);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.75),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Text(
+          word,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }

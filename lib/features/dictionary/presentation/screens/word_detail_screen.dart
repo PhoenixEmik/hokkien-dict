@@ -135,6 +135,8 @@ class WordDetailBody extends StatelessWidget {
     required this.onPlayClip,
     required this.onWordTapped,
     required this.canOpenWord,
+    this.maxContentWidth,
+    this.padding = const EdgeInsets.fromLTRB(16, 12, 16, 24),
   });
 
   final DictionaryEntry entry;
@@ -142,19 +144,21 @@ class WordDetailBody extends StatelessWidget {
   final Future<void> Function(AudioArchiveType type, String clipId) onPlayClip;
   final Future<void> Function(String word) onWordTapped;
   final bool Function(String word) canOpenWord;
+  final double? maxContentWidth;
+  final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
+        final resolvedMaxWidth =
+            maxContentWidth ?? (constraints.maxWidth >= 900 ? 920.0 : 720.0);
         return Align(
           alignment: Alignment.topCenter,
           child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: constraints.maxWidth >= 900 ? 920 : 720,
-            ),
+            constraints: BoxConstraints(maxWidth: resolvedMaxWidth),
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              padding: padding,
               children: [
                 SelectionArea(
                   child: _WordDetailContent(

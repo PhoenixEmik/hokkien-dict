@@ -27,6 +27,9 @@ class BookmarksScreen extends StatefulWidget {
 
 class _BookmarksScreenState extends State<BookmarksScreen>
     with AutomaticKeepAliveClientMixin {
+  static const double _tabletBreakpoint = 960;
+  static const double _tabletMaxContentWidth = 1320;
+
   late final Future<DictionaryBundle> _bundleFuture;
   Future<List<DictionaryEntry>>? _entriesFuture;
   String _entriesFutureKey = '';
@@ -109,19 +112,14 @@ class _BookmarksScreenState extends State<BookmarksScreen>
             }
 
             if (bundle == null) {
-              return Center(
-                child: const CircularProgressIndicator(),
-              );
+              return Center(child: const CircularProgressIndicator());
             }
 
-            final bookmarkedIds = widget.bookmarkStore.bookmarkedIds
-                .toList(growable: false)
-              ..sort();
+            final bookmarkedIds = widget.bookmarkStore.bookmarkedIds.toList(
+              growable: false,
+            )..sort();
             if (bookmarkedIds.isEmpty) {
-              return bookmarkedContent(
-                const [],
-                bundle,
-              );
+              return bookmarkedContent(const [], bundle);
             }
 
             final entriesFutureKey =
@@ -162,19 +160,13 @@ class _BookmarksScreenState extends State<BookmarksScreen>
                   _entriesCacheByKey[entriesFutureKey] = entriesSnapshot.data!;
                 }
 
-                final resolvedEntries =
-                    entriesSnapshot.data ?? cachedEntries;
+                final resolvedEntries = entriesSnapshot.data ?? cachedEntries;
 
                 if (resolvedEntries == null) {
-                  return Center(
-                    child: const CircularProgressIndicator(),
-                  );
+                  return Center(child: const CircularProgressIndicator());
                 }
 
-                return bookmarkedContent(
-                  resolvedEntries,
-                  bundle,
-                );
+                return bookmarkedContent(resolvedEntries, bundle);
               },
             );
           },
@@ -208,26 +200,88 @@ class _BookmarksScreenState extends State<BookmarksScreen>
         ? MediaQuery.paddingOf(context).bottom + kBottomNavigationBarHeight + 16
         : 16.0;
 
-    if (bookmarkedEntries.isEmpty) {
-      return Padding(
-        padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset),
-        child: const BookmarkEmptyState(),
-      );
-    }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final useTabletLayout = constraints.maxWidth >= _tabletBreakpoint;
+        final horizontalPadding = useTabletLayout ? 20.0 : 16.0;
 
-    return ListView.builder(
-      padding: EdgeInsets.fromLTRB(16, 12, 16, bottomInset),
-      itemCount: bookmarkedEntries.length,
-      itemBuilder: (context, index) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: index == bookmarkedEntries.length - 1 ? 0 : 10,
-          ),
-          child: SelectionArea(
-            child: EntryListItem(
-              entry: bookmarkedEntries[index],
-              onTap: () => _showEntryDetails(bundle, bookmarkedEntries[index]),
+        if (bookmarkedEntries.isEmpty) {
+          return Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: useTabletLayout ? 560 : 420,
+              ),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPadding,
+                  16,
+                  horizontalPadding,
+                  bottomInset,
+                ),
+                child: const BookmarkEmptyState(),
+              ),
             ),
+          );
+        }
+
+        return Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: _tabletMaxContentWidth),
+            child: useTabletLayout
+                ? GridView.builder(
+                    key: const ValueKey('bookmarks-grid'),
+                    padding: EdgeInsets.fromLTRB(
+                      horizontalPadding,
+                      16,
+                      horizontalPadding,
+                      bottomInset,
+                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 440,
+                          mainAxisExtent: 136,
+                          mainAxisSpacing: 12,
+                          crossAxisSpacing: 12,
+                        ),
+                    itemCount: bookmarkedEntries.length,
+                    itemBuilder: (context, index) {
+                      final entry = bookmarkedEntries[index];
+                      return SelectionArea(
+                        child: EntryListItem(
+                          entry: entry,
+                          onTap: () => _showEntryDetails(bundle, entry),
+                        ),
+                      );
+                    },
+                  )
+                : ListView.builder(
+                    key: const ValueKey('bookmarks-list'),
+                    padding: EdgeInsets.fromLTRB(
+                      horizontalPadding,
+                      12,
+                      horizontalPadding,
+                      bottomInset,
+                    ),
+                    itemCount: bookmarkedEntries.length,
+                    itemBuilder: (context, index) {
+                      final entry = bookmarkedEntries[index];
+                      return Padding(
+                        padding: EdgeInsets.only(
+                          bottom: index == bookmarkedEntries.length - 1
+                              ? 0
+                              : 10,
+                        ),
+                        child: SelectionArea(
+                          child: EntryListItem(
+                            entry: entry,
+                            onTap: () => _showEntryDetails(bundle, entry),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
           ),
         );
       },
