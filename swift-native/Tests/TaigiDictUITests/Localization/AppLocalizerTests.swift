@@ -20,4 +20,16 @@ final class AppLocalizerTests: XCTestCase {
         XCTAssertEqual(AppLocalizer.appLocale(from: Locale(identifier: "zh-TW")), .traditionalChinese)
         XCTAssertEqual(AppLocalizer.appLocale(from: Locale(identifier: "en")), .english)
     }
+
+    func testAllLocalizedKeysResolveFromResourceCatalog() {
+        for key in AppLocalizedStringKey.allCases {
+            for locale in AppLocale.allCases {
+                XCTAssertNotEqual(
+                    AppLocalizer.text(key, locale: locale),
+                    key.rawValue,
+                    "\(key.rawValue) is missing for \(locale.rawValue)"
+                )
+            }
+        }
+    }
 }

@@ -1226,6 +1226,52 @@
         }
       }
     },
+    "dictionarySourceActionDownload" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download latest"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下载最新版"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下載最新版"
+          }
+        }
+      }
+    },
+    "dictionarySourceActionRestore" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore from app"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从 App 还原"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從 App 還原"
+          }
+        }
+      }
+    },
     "dictionaryTitle" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2654,6 +2700,52 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "資料與說明"
+          }
+        }
+      }
+    },
+    "settingsDictionaryResourcesSection" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offline dictionary resources"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "离线辞典资源"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "離線辭典資源"
+          }
+        }
+      }
+    },
+    "settingsDictionarySource" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dictionary source data"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "辞典来源资料"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "辭典來源資料"
           }
         }
       }
