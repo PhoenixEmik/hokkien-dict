@@ -57,29 +57,36 @@ struct DictionaryDetailView: View {
                 }
             } else if let entry = viewModel.entry {
                 Section {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(entry.hanji)
-                            .font(.largeTitle.bold())
-                        Text(entry.romanization)
-                            .font(.title3)
-                            .foregroundStyle(.secondary)
-                        if !entry.type.isEmpty || !entry.category.isEmpty {
-                            Text([entry.type, entry.category].filter { !$0.isEmpty }.joined(separator: " · "))
-                                .font(.subheadline)
+                    HStack(alignment: .center, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(entry.hanji)
+                                .font(.largeTitle.bold())
+                            Text(entry.romanization)
+                                .font(.title3)
                                 .foregroundStyle(.secondary)
+                            if !entry.type.isEmpty || !entry.category.isEmpty {
+                                Text([entry.type, entry.category].filter { !$0.isEmpty }.joined(separator: " · "))
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
+                        .accessibilityElement(children: .combine)
 
                         if !entry.audioID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            Spacer(minLength: 0)
+
                             Button {
                                 Task {
                                     await viewModel.playWordAudio()
                                 }
                             } label: {
-                                Label(AppLocalizer.text(.playWordAudio, locale: appLocale), systemImage: "speaker.wave.2.fill")
+                                Image(systemName: "speaker.wave.2.fill")
+                                    .font(.title2)
                             }
+                            .buttonStyle(.borderless)
+                            .accessibilityLabel(AppLocalizer.text(.playWordAudio, locale: appLocale))
                         }
                     }
-                    .accessibilityElement(children: .combine)
                 }
 
                 RelationshipSection(
@@ -388,23 +395,16 @@ private struct RelationshipChip: View {
     var openWord: (String) -> Void
 
     var body: some View {
-        if isOpenable {
-            Button {
+        Button {
+            if isOpenable {
                 openWord(word)
-            } label: {
-                Label(word, systemImage: "arrowshape.turn.up.right")
-                    .labelStyle(.titleAndIcon)
             }
-            .buttonStyle(.bordered)
-            .controlSize(.small)
-        } else {
+        } label: {
             Text(word)
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(.quaternary, in: Capsule())
         }
+        .buttonStyle(.bordered)
+        .controlSize(.small)
+        .disabled(!isOpenable)
     }
 }
 
