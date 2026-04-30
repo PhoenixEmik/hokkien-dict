@@ -1738,6 +1738,75 @@
         }
       }
     },
+    "audioPlaybackArchiveBroken" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Playback failed: Offline audio archive is corrupted. Please re-download offline audio in Settings."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "播放失败：离线音讯档案已损毁。请在设置重新下载离线音讯资源。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "播放失敗：離線音訊檔案已損毀。請在設定重新下載離線音訊資源。"
+          }
+        }
+      }
+    },
+    "audioPlaybackFailedPrefix" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Playback failed: "
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "播放失败："
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "播放失敗："
+          }
+        }
+      }
+    },
+    "audioPlaybackMissingClip" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Playback failed: Offline audio clip is missing. Please download or re-download offline audio in Settings."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "播放失败：找不到离线音档。请先在设置下载或重新下载离线音讯资源。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "播放失敗：找不到離線音檔。請先在設定下載或重新下載離線音訊資源。"
+          }
+        }
+      }
+    },
     "noAudioAvailable" : {
       "extractionState" : "stale",
       "localizations" : {

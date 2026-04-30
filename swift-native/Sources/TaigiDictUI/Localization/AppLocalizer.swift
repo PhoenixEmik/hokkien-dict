@@ -26,6 +26,9 @@ public enum AppLocalizedStringKey: String {
     case audioNotInitialized
     case audioPlaying
     case audioStopped
+    case audioPlaybackMissingClip
+    case audioPlaybackArchiveBroken
+    case audioPlaybackFailedPrefix
     case searchStartDetailTitle
     case searchStartDetailDescription
     case bookmarksAdd
@@ -217,6 +220,9 @@ enum AppLocalizer {
         case .audioNotInitialized: return "離線音訊尚未初始化。"
         case .audioPlaying: return "播放中"
         case .audioStopped: return "已停止播放"
+        case .audioPlaybackMissingClip: return "播放失敗：找不到離線音檔。請先在設定下載或重新下載離線音訊資源。"
+        case .audioPlaybackArchiveBroken: return "播放失敗：離線音訊檔案已損毀。請在設定重新下載離線音訊資源。"
+        case .audioPlaybackFailedPrefix: return "播放失敗："
         case .searchStartDetailTitle: return "開始搜尋"
         case .searchStartDetailDescription: return "選擇搜尋結果後，詞條內容會顯示在這裡。"
         case .bookmarksAdd: return "加入書籤"
@@ -366,6 +372,9 @@ enum AppLocalizer {
         case .audioNotInitialized: return "离线音讯尚未初始化。"
         case .audioPlaying: return "播放中"
         case .audioStopped: return "已停止播放"
+        case .audioPlaybackMissingClip: return "播放失败：找不到离线音档。请先在设置下载或重新下载离线音讯资源。"
+        case .audioPlaybackArchiveBroken: return "播放失败：离线音讯档案已损毁。请在设置重新下载离线音讯资源。"
+        case .audioPlaybackFailedPrefix: return "播放失败："
         case .searchStartDetailTitle: return "开始搜索"
         case .searchStartDetailDescription: return "选择搜索结果后，词条内容会显示在这里。"
         case .bookmarksAdd: return "加入书签"
@@ -515,6 +524,9 @@ enum AppLocalizer {
         case .audioNotInitialized: return "Offline audio is not initialized yet."
         case .audioPlaying: return "Playing"
         case .audioStopped: return "Stopped"
+        case .audioPlaybackMissingClip: return "Playback failed: Offline audio clip is missing. Please download or re-download offline audio in Settings."
+        case .audioPlaybackArchiveBroken: return "Playback failed: Offline audio archive is corrupted. Please re-download offline audio in Settings."
+        case .audioPlaybackFailedPrefix: return "Playback failed: "
         case .searchStartDetailTitle: return "Start searching"
         case .searchStartDetailDescription: return "Select a search result to view details here."
         case .bookmarksAdd: return "Add bookmark"

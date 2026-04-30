@@ -16,6 +16,7 @@ public final class WordDetailViewModel {
     private let offlineAudioStore: (any OfflineAudioManaging)?
     private let conversionService: (any ChineseConversionProviding)?
     private var localizedOpenableWordMap: [String: String] = [:]
+    private var appLocale: AppLocale = .traditionalChinese
 
     public init(
         library: DictionaryLibrary,
@@ -31,6 +32,7 @@ public final class WordDetailViewModel {
         entry sourceEntry: DictionaryEntry,
         locale: AppLocale = .traditionalChinese
     ) async {
+        appLocale = locale
         isPreparing = true
         errorMessage = nil
         entry = nil
@@ -109,12 +111,12 @@ public final class WordDetailViewModel {
     private func playAudioClip(_ clipID: String, archiveType: AudioArchiveType) async {
         let normalized = clipID.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !normalized.isEmpty else {
-            audioMessage = "此筆資料沒有可播放的音檔。"
+            audioMessage = AppLocalizer.text(.noAudioAvailable, locale: appLocale)
             return
         }
 
         guard let offlineAudioStore else {
-            audioMessage = "離線音訊尚未初始化。"
+            audioMessage = AppLocalizer.text(.audioNotInitialized, locale: appLocale)
             return
         }
 
@@ -122,13 +124,26 @@ public final class WordDetailViewModel {
             try await offlineAudioStore.playClip(normalized, from: archiveType)
             let expectedClipID = "\(archiveType.rawValue):\(normalized)"
             if await offlineAudioStore.currentlyPlayingClipID() == expectedClipID {
-                audioMessage = "播放中"
+                audioMessage = AppLocalizer.text(.audioPlaying, locale: appLocale)
             } else {
-                audioMessage = "已停止播放"
+                audioMessage = AppLocalizer.text(.audioStopped, locale: appLocale)
             }
         } catch {
-            audioMessage = "播放失敗：\(error.localizedDescription)"
+            audioMessage = userFriendlyAudioErrorMessage(error)
         }
+    }
+
+    private func userFriendlyAudioErrorMessage(_ error: Error) -> String {
+        if let zipError = error as? AudioZipIndexError {
+            switch zipError {
+            case .clipNotFound:
+                return AppLocalizer.text(.audioPlaybackMissingClip, locale: appLocale)
+            case .invalidArchive:
+                return AppLocalizer.text(.audioPlaybackArchiveBroken, locale: appLocale)
+            }
+        }
+
+        return "\(AppLocalizer.text(.audioPlaybackFailedPrefix, locale: appLocale))\(error.localizedDescription)"
     }
 
     private func resolveAliasChain(from sourceEntry: DictionaryEntry) async throws -> DictionaryEntry {

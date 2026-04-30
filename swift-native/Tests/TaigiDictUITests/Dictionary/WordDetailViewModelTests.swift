@@ -101,6 +101,26 @@ final class WordDetailViewModelTests: XCTestCase {
         let linkedEntry = await viewModel.linkedEntry(for: "字典", locale: .simplifiedChinese)
         XCTAssertEqual(linkedEntry?.id, 2)
     }
+
+    func testPlayWordAudioClipNotFoundShowsFriendlyMessage() async {
+        var withAudio = entry(id: 10, hanji: "辭典", romanization: "sû-tián", definition: "工具書")
+        withAudio.audioID = "missing-clip"
+
+        let repository = InMemoryRepository(entries: [withAudio])
+        let audioStore = MissingClipOfflineAudioManager()
+        let viewModel = WordDetailViewModel(
+            library: DictionaryLibrary(repository: repository),
+            offlineAudioStore: audioStore
+        )
+
+        _ = await viewModel.prepare(entry: withAudio)
+        await viewModel.playWordAudio()
+
+        XCTAssertEqual(
+            viewModel.audioMessage,
+            "播放失敗：找不到離線音檔。請先在設定下載或重新下載離線音訊資源。"
+        )
+    }
 }
 
 private actor TestChineseConversionProvider: ChineseConversionProviding {
@@ -144,6 +164,25 @@ private actor TestOfflineAudioManager: OfflineAudioManaging {
 
     func currentlyPlayingClipID() async -> String? {
         playingClipID
+    }
+}
+
+private actor MissingClipOfflineAudioManager: OfflineAudioManaging {
+    func snapshot(for type: AudioArchiveType) async -> DownloadSnapshot {
+        DownloadSnapshot(state: .completed, downloadedBytes: 100, totalBytes: 100)
+    }
+
+    func startDownload(_ type: AudioArchiveType) async {}
+    func pauseDownload(_ type: AudioArchiveType) async {}
+    func resumeDownload(_ type: AudioArchiveType) async {}
+    func restartDownload(_ type: AudioArchiveType) async {}
+
+    func playClip(_ clipID: String, from type: AudioArchiveType) async throws {
+        throw AudioZipIndexError.clipNotFound(clipID)
+    }
+
+    func currentlyPlayingClipID() async -> String? {
+        nil
     }
 }
 
