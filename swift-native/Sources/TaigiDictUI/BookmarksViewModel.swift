@@ -34,7 +34,7 @@ public final class BookmarksViewModel {
     }
 
     public func removeBookmarks(at offsets: IndexSet) async {
-        let ids = offsets.compactMap { index in
+        let ids: [Int64] = offsets.compactMap { index in
             guard entries.indices.contains(index) else {
                 return nil
             }

@@ -49,7 +49,7 @@ public struct DictionarySearchScreen: View {
     }
 }
 
-private extension View {
+extension View {
     @ViewBuilder
     func taigiInlineNavigationTitle() -> some View {
         #if os(iOS)
