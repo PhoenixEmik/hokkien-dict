@@ -78,6 +78,23 @@ final class InitializationViewModelTests: XCTestCase {
         XCTAssertEqual(initializationViewModel.phase, .ready)
         XCTAssertEqual(initializationViewModel.progress, 1)
     }
+
+    func testSplashContentUsesAppIdentityInsteadOfLoadingCopy() {
+        for locale in AppLocale.allCases {
+            let content = SplashScreenContent.resolve(locale: locale)
+
+            XCTAssertFalse(content.title.isEmpty)
+            XCTAssertFalse(content.description.isEmpty)
+            XCTAssertNotEqual(
+                content.title,
+                AppLocalizer.text(.initializationLoadingTitle, locale: locale)
+            )
+            XCTAssertNotEqual(
+                content.description,
+                AppLocalizer.text(.initializationLoadingDescription, locale: locale)
+            )
+        }
+    }
 }
 
 private actor InMemoryRepository: DictionaryRepositoryProtocol {
