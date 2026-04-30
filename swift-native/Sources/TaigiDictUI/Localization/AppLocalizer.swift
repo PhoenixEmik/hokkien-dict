@@ -184,7 +184,9 @@ enum AppLocalizer {
     }
 
     static func appLocale(from locale: Locale) -> AppLocale {
-        let identifier = locale.identifier.lowercased()
+        let identifier = locale.identifier
+            .replacingOccurrences(of: "_", with: "-")
+            .lowercased()
         if identifier.hasPrefix("zh-cn") || identifier.hasPrefix("zh-hans") {
             return .simplifiedChinese
         }
