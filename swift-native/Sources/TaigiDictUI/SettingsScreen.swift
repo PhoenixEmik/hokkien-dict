@@ -55,14 +55,14 @@ public struct SettingsScreen: View {
                     }
                 }
 
-                if let metadata = viewModel.libraryMetadata {
+                if viewModel.libraryMetadata != nil {
                     Section("資料來源時間") {
-                        if let builtAt = metadata.builtAt {
+                        if let builtAt = viewModel.metadataBuiltAtDisplay {
                             LabeledContent("建置時間") {
                                 Text(builtAt)
                             }
                         }
-                        if let sourceModifiedAt = metadata.sourceModifiedAt {
+                        if let sourceModifiedAt = viewModel.metadataSourceModifiedAtDisplay {
                             LabeledContent("來源更新") {
                                 Text(sourceModifiedAt)
                             }

@@ -6,7 +6,10 @@ import TaigiDictCore
 final class SettingsViewModelTests: XCTestCase {
     func testLoadCapabilitiesReadsRepositorySupport() async {
         let repository = SettingsRepository(supportsMaintenance: true)
-        let viewModel = SettingsViewModel(library: DictionaryLibrary(repository: repository))
+        let viewModel = SettingsViewModel(
+            library: DictionaryLibrary(repository: repository),
+            dateFormatter: FakeDateFormatter()
+        )
 
         await viewModel.loadCapabilities()
 
@@ -19,6 +22,8 @@ final class SettingsViewModelTests: XCTestCase {
                 sourceModifiedAt: "2026-04-29T00:00:00Z"
             )
         )
+        XCTAssertEqual(viewModel.metadataBuiltAtDisplay, "displayed(2026-04-30T00:00:00Z)")
+        XCTAssertEqual(viewModel.metadataSourceModifiedAtDisplay, "displayed(2026-04-29T00:00:00Z)")
     }
 
     func testRunRebuildReportsSuccessMessage() async {
@@ -36,7 +41,10 @@ final class SettingsViewModelTests: XCTestCase {
 
     func testRunClearReportsSuccessMessage() async {
         let repository = SettingsRepository(supportsMaintenance: true)
-        let viewModel = SettingsViewModel(library: DictionaryLibrary(repository: repository))
+        let viewModel = SettingsViewModel(
+            library: DictionaryLibrary(repository: repository),
+            dateFormatter: FakeDateFormatter()
+        )
 
         let result = await viewModel.run(.clear)
         let clearInstalledCount = await repository.clearInstalledCount
@@ -46,6 +54,8 @@ final class SettingsViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.errorMessage)
         XCTAssertNil(viewModel.librarySummary)
         XCTAssertNil(viewModel.libraryMetadata)
+        XCTAssertNil(viewModel.metadataBuiltAtDisplay)
+        XCTAssertNil(viewModel.metadataSourceModifiedAtDisplay)
         XCTAssertEqual(clearInstalledCount, 1)
     }
 
@@ -92,6 +102,15 @@ final class SettingsViewModelTests: XCTestCase {
         XCTAssertTrue(result)
         XCTAssertFalse(viewModel.isClearConfirmationPresented)
         XCTAssertEqual(clearInstalledCount, 1)
+    }
+}
+
+private struct FakeDateFormatter: SettingsDateFormatting {
+    func displayString(from iso8601: String?) -> String? {
+        guard let iso8601 else {
+            return nil
+        }
+        return "displayed(\(iso8601))"
     }
 }
 

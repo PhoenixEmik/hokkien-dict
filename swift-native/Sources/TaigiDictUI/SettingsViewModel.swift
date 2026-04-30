@@ -16,12 +16,19 @@ public final class SettingsViewModel {
     public private(set) var errorMessage: String?
     public private(set) var librarySummary: DictionaryLibrarySummary?
     public private(set) var libraryMetadata: DictionaryLibraryMetadata?
+    public private(set) var metadataBuiltAtDisplay: String?
+    public private(set) var metadataSourceModifiedAtDisplay: String?
     public private(set) var isClearConfirmationPresented = false
 
     private let library: DictionaryLibrary
+    private let dateFormatter: any SettingsDateFormatting
 
-    public init(library: DictionaryLibrary) {
+    public init(
+        library: DictionaryLibrary,
+        dateFormatter: any SettingsDateFormatting = SettingsDateFormatter()
+    ) {
         self.library = library
+        self.dateFormatter = dateFormatter
     }
 
     public func loadCapabilities() async {
@@ -29,6 +36,7 @@ public final class SettingsViewModel {
         supportsDataMaintenance = await library.supportsLocalMaintenance()
         librarySummary = await library.currentSummary()
         libraryMetadata = try? await library.metadata()
+        refreshMetadataDisplay()
 
         if librarySummary == nil {
             let phase = await library.prepare()
@@ -36,6 +44,7 @@ public final class SettingsViewModel {
             case .ready(let summary):
                 librarySummary = summary
                 libraryMetadata = try? await library.metadata()
+                refreshMetadataDisplay()
             case .failed(let message):
                 errorMessage = message
             case .idle, .loading:
@@ -81,11 +90,13 @@ public final class SettingsViewModel {
                     librarySummary = summary
                 }
                 libraryMetadata = try? await library.metadata()
+                refreshMetadataDisplay()
             case .clear:
                 try await library.clearInstalledDatabase()
                 statusMessage = "本機辭典資料已清除。"
                 librarySummary = nil
                 libraryMetadata = nil
+                refreshMetadataDisplay()
             }
             isRunningAction = false
             return true
@@ -95,5 +106,10 @@ public final class SettingsViewModel {
             isRunningAction = false
             return false
         }
+    }
+
+    private func refreshMetadataDisplay() {
+        metadataBuiltAtDisplay = dateFormatter.displayString(from: libraryMetadata?.builtAt)
+        metadataSourceModifiedAtDisplay = dateFormatter.displayString(from: libraryMetadata?.sourceModifiedAt)
     }
 }
