@@ -95,6 +95,14 @@ final class InitializationViewModelTests: XCTestCase {
             )
         }
     }
+
+    func testSplashIconResourceLoadsFromModuleBundle() {
+        let resourceURL = SplashImageResource.resourceURL()
+
+        XCTAssertNotNil(resourceURL)
+        XCTAssertEqual(resourceURL?.lastPathComponent, "SplashIcon.png")
+        XCTAssertNotNil(SplashImageResource.image())
+    }
 }
 
 private actor InMemoryRepository: DictionaryRepositoryProtocol {

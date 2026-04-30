@@ -1,5 +1,10 @@
 import SwiftUI
 import TaigiDictCore
+#if os(iOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
 
 struct InitializationScreen: View {
     var phase: InitializationPhase
@@ -31,12 +36,14 @@ struct InitializationScreen: View {
                     .ignoresSafeArea()
 
                 VStack(spacing: 24) {
-                    Image("SplashIcon", bundle: .module)
+                    if let splashImage = SplashImageResource.image() {
+                        splashImage
                         .resizable()
                         .scaledToFit()
                         .frame(width: 96, height: 96)
                         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
                         .accessibilityHidden(true)
+                    }
 
                     VStack(spacing: 8) {
                         Text(splashContent.title)
@@ -76,6 +83,35 @@ struct InitializationScreen: View {
         case .initializationIncomplete, .none:
             return AppLocalizer.text(.initializationIncomplete, locale: appLocale)
         }
+    }
+}
+
+enum SplashImageResource {
+    static let name = "SplashIcon"
+    static let fileExtension = "png"
+
+    static func resourceURL(bundle: Bundle = .module) -> URL? {
+        bundle.url(forResource: name, withExtension: fileExtension)
+    }
+
+    static func image(bundle: Bundle = .module) -> Image? {
+        guard let resourceURL = resourceURL(bundle: bundle) else {
+            return nil
+        }
+
+        #if os(iOS)
+        guard let image = UIImage(contentsOfFile: resourceURL.path) else {
+            return nil
+        }
+        return Image(uiImage: image)
+        #elseif os(macOS)
+        guard let image = NSImage(contentsOf: resourceURL) else {
+            return nil
+        }
+        return Image(nsImage: image)
+        #else
+        return nil
+        #endif
     }
 }
 
