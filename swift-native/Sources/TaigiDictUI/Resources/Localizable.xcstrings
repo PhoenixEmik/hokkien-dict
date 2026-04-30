@@ -2233,19 +2233,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prefer commonly used educational forms"
+            "value" : "Taiwanese Hokkien and Mandarin differ in sound, vocabulary, and syntax, so Hanji choice requires dedicated rules."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "优先采用主流教育体系常见用字"
+            "value" : "台湾台语与华语在语音、词汇、句法上差异明显，因此汉字书写需要独立的选字原则。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "優先採用主流教育體系常見用字"
+            "value" : "臺灣台語與華語在語音、詞彙、句法上差異明顯，因此漢字書寫需要獨立的選字原則。"
           }
         }
       }
@@ -2256,19 +2256,88 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Variant and colloquial forms are marked"
+            "value" : "Benzi: use an inherited Han character with a cognate meaning, such as 芳 for phang and 細 for sè."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "异体与俗字会在词条标示"
+            "value" : "本字：优先采用传统文献中已有、且与词义同源的汉字，如 phang 写作【芳】、sè 写作【细】。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "異體與俗字會在詞條標示"
+            "value" : "本字：優先採用傳統文獻中已有、且與詞義同源的漢字，如 phang 寫作【芳】、sè 寫作【細】。"
+          }
+        }
+      }
+    },
+    "referenceHanjiB3" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semantic loan characters: borrow the meaning of a familiar character, such as 人 read as lâng."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "训用字：借义不借音，采用熟悉字形表达词义，例如【人】可读 lâng。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "訓用字：借義不借音，採用熟悉字形表達詞義，例如【人】可讀 lâng。"
+          }
+        }
+      }
+    },
+    "referenceHanjiB4" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Common colloquial, phonetic, or newly created characters remain acceptable when no stable Benzi exists."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "俗字、借音字与新造字，在没有稳定本字时仍可采用，如【某】、【𬦰】、【躼】。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "俗字、借音字與新造字，在沒有穩定本字時仍可採用，如【某】、【𬦰】、【躼】。"
+          }
+        }
+      }
+    },
+    "referenceHanjiB5" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When choosing substitute characters, the dictionary balances readability, standard-language familiarity, and well-established community usage."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "替代字的选择会综合考虑字形是否艰深、是否与标准语常用字重叠，以及民间是否早已约定俗成。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "替代字的選擇會綜合考慮字形是否艱深、是否與標準語常用字重疊，以及民間是否早已約定俗成。"
           }
         }
       }
@@ -2279,19 +2348,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dictionary content follows Ministry of Education source data."
+            "value" : "Hanji usage in Taiwanese Hokkien is more contested than in Mandarin because the languages diverged early and many words do not map neatly to a single inherited character."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "辞典内容以教育部资料来源为准。"
+            "value" : "台湾台语的汉字书写问题较华语更复杂，因为两者分支较早，且有不少词汇并非直接源自汉语。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "辭典內容以教育部資料來源為準。"
+            "value" : "臺灣台語的漢字書寫問題較華語更複雜，因為兩者分支較早，且有不少詞彙並非直接源自漢語。"
           }
         }
       }
@@ -2302,19 +2371,203 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Homophones and variants are cross-referenced in entries."
+            "value" : "This dictionary writes Taiwanese Hokkien primarily with Hanji and classifies chosen forms into Benzi, semantic loans, colloquial/phonetic loans, and newly created characters."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "同音异字、异用字会在词条中提供对照。"
+            "value" : "本辞典以汉字为基础，并把用字区分为本字、训用字、俗字或借音字，以及新造字等类型。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "同音異字、異用字會在詞條中提供對照。"
+            "value" : "本辭典以漢字為基礎，並把用字區分為本字、訓用字、俗字或借音字，以及新造字等類型。"
+          }
+        }
+      }
+    },
+    "referenceHanjiSectionOverview" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hanji status"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "汉字状况"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "漢字狀況"
+          }
+        }
+      }
+    },
+    "referenceHanjiSectionRecommended" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recommended characters"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "推荐用字"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "推薦用字"
+          }
+        }
+      }
+    },
+    "referenceHanjiSectionSubstitute" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Substitute characters"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "替代字说明"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "替代字說明"
+          }
+        }
+      }
+    },
+    "referenceHanjiSectionTypes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Character types used in this dictionary"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本辞典用字类型"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本辭典用字類型"
+          }
+        }
+      }
+    },
+    "referenceHanjiRecommendedP1" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The dictionary generally follows the Ministry of Education recommended Taiwanese Hokkien characters while balancing readability, sound-meaning transparency, and everyday usability."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本辞典原则上遵照教育部公告的台湾台语推荐用字成果，并兼顾望字生音义、常用度与阅读便利性。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本辭典原則上遵照教育部公告的臺灣台語推薦用字成果，並兼顧望字生音義、常用度與閱讀便利性。"
+          }
+        }
+      }
+    },
+    "referenceHanjiSubstituteRow1Value" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When the original character is too rare or opaque, the dictionary may switch to a more familiar substitute."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当本字过于艰深冷僻时，辞典会改用较常见、较容易理解的替代字。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "當本字過於艱深冷僻時，辭典會改用較常見、較容易理解的替代字。"
+          }
+        }
+      }
+    },
+    "referenceHanjiSubstituteRow2Value" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Highly familiar basic characters may be preferred when they reduce reading friction for most users."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "若标准语的常用基本字更便于理解，辞典可能优先采用，以降低阅读负担。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "若標準語的常用基本字更便於理解，辭典可能優先採用，以降低閱讀負擔。"
+          }
+        }
+      }
+    },
+    "referenceHanjiSubstituteRow3Value" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Established colloquial forms can remain in use when they are already widespread and stable in community writing."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "若俗字已经广泛约定俗成，且实际使用稳定，辞典会保留这类写法。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "若俗字已經廣泛約定俗成，且實際使用穩定，辭典會保留這類寫法。"
           }
         }
       }
@@ -2394,19 +2647,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Use hyphens to split syllables"
+            "value" : "Standard Tai-Lo uses seven productive citation tones: 1, 2, 3, 4, 5, 7, and 8."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "可使用连字号分隔音节"
+            "value" : "台湾台语通行腔以第 1、2、3、4、5、7、8 声为主，共七个本调。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "可使用連字號分隔音節"
+            "value" : "臺灣台語通行腔以第 1、2、3、4、5、7、8 聲為主，共七個本調。"
           }
         }
       }
@@ -2417,19 +2670,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Search is case-insensitive"
+            "value" : "The dictionary writes citation tones, not the surface sandhi tones heard inside longer phrases."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "大小写不影响搜索"
+            "value" : "辞典标注的是本调，不是词句连读时实际听到的变调。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "大小寫不影響搜尋"
+            "value" : "辭典標注的是本調，不是詞句連讀時實際聽到的變調。"
           }
         }
       }
@@ -2440,19 +2693,295 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Numeric tone marks are normalized in search"
+            "value" : "Some accents fall outside the basic seven tones, including a sixth tone in certain dialects and a ninth tone in contracted syllables."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "数字调号会在搜索正规化中处理"
+            "value" : "部分地方腔仍可见第 6 声；合音或三连音的首音节也可能出现第 9 声。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "數字調號會在搜尋正規化中處理"
+            "value" : "部分地方腔仍可見第 6 聲；合音或三連音的首音節也可能出現第 9 聲。"
+          }
+        }
+      }
+    },
+    "referenceTaiLoB4" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neutral tone is marked with -- between the stressed and light syllables."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轻声以 -- 标在重读音节与轻声音节之间，表示后接音节为轻读。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輕聲以 -- 標在重讀音節與輕聲音節之間，表示後接音節為輕讀。"
+          }
+        }
+      }
+    },
+    "referenceTaiLoB5" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tone sandhi changes with phrasing, so the dictionary keeps the base citation tone unless a form has no citation reading."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "变调会随断句改变，因此本辞典原则上标本调；只有没有本调的读法才例外处理。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "變調會隨斷句改變，因此本辭典原則上標本調；只有沒有本調的讀法才例外處理。"
+          }
+        }
+      }
+    },
+    "referenceTaiLoB6" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Main sandhi rules include 1→7, 2→1, 3→2, 4→8 or 2, 5→7 or 3, 7→3, and 8→4 or 3 depending on the coda."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主流变调规则大致为 1→7、2→1、3→2、4→8 或 2、5→7 或 3、7→3、8→4 或 3，依韵尾与腔口而异。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主流變調規則大致為 1→7、2→1、3→2、4→8 或 2、5→7 或 3、7→3、8→4 或 3，依韻尾與腔口而異。"
+          }
+        }
+      }
+    },
+    "referenceTaiLoNeutralExample1" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "āu--ji̍t (後--日)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "āu--ji̍t（後--日）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "āu--ji̍t（後--日）"
+          }
+        }
+      }
+    },
+    "referenceTaiLoNeutralExample2" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "tsáu--tshut-khì (走--出去)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "tsáu--tshut-khì（走--出去）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "tsáu--tshut-khì（走--出去）"
+          }
+        }
+      }
+    },
+    "referenceTaiLoNeutralExample3" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Common neutral-tone particles include --lah, --aih, --ooh, and --ah."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "常见轻声语助词如 --lah、--aih、--ooh、--ah。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "常見輕聲語助詞如 --lah、--aih、--ooh、--ah。"
+          }
+        }
+      }
+    },
+    "referenceTaiLoSandhiRow1Value" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "sim-kuann becomes sīm-kuann in phrase reading."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如心肝 sim-kuann 在连读时会读成 sīm-kuann。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如心肝 sim-kuann 在連讀時會讀成 sīm-kuann。"
+          }
+        }
+      }
+    },
+    "referenceTaiLoSandhiRow2Value" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "sió-tī becomes sio-tī inside a phrase."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如小弟 sió-tī 在词组中会变成 sio-tī。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如小弟 sió-tī 在詞組中會變成 sio-tī。"
+          }
+        }
+      }
+    },
+    "referenceTaiLoSandhiRow3Value" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "sè-kan becomes sé-kan in connected speech."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如世间 sè-kan 在连读时会读成 sé-kan。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如世間 sè-kan 在連讀時會讀成 sé-kan。"
+          }
+        }
+      }
+    },
+    "referenceTaiLoSandhiRow4Value" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "guā-kháu becomes guà-kháu in connected speech."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如外口 guā-kháu 在连读时会读成 guà-kháu。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如外口 guā-kháu 在連讀時會讀成 guà-kháu。"
+          }
+        }
+      }
+    },
+    "referenceTaiLoToneRow1Value" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yin-ping, yin-shang, yin-qu, and yin-ru."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "对应阴平、阴上、阴去、阴入。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "對應陰平、陰上、陰去、陰入。"
+          }
+        }
+      }
+    },
+    "referenceTaiLoToneRow2Value" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yang-ping, yang-qu, and yang-ru."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "对应阳平、阳去、阳入。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "對應陽平、陽去、陽入。"
           }
         }
       }
@@ -2463,19 +2992,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tai-Lo is a common Taiwanese romanization system focused on tones and syllable boundaries."
+            "value" : "The dictionary adopts the Ministry of Education Taiwanese Romanization System (Tai-Lo) announced in 2006 and writes borrowed words by their reconstructed citation tones."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "台罗是台语常见拼写系统，重点在声调与音节分界。"
+            "value" : "本辞典采用教育部公告的台湾台语罗马字拼音方案（台罗），外来词则依台语词目回推本调后标注。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "臺羅是台語常見拼寫系統，重點在聲調與音節分界。"
+            "value" : "本辭典採用教育部公告的臺灣台語羅馬字拼音方案（臺羅），外來詞則依台語詞目回推本調後標注。"
           }
         }
       }
@@ -2486,19 +3015,111 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Search accepts both tone-marked and plain forms and applies normalization."
+            "value" : "Besides the basic citation tones, Tai-Lo also describes special tone marks, neutral tone with --, and predictable tone sandhi inside phrases."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "搜索时可输入有调或无调格式，系统会做正规化处理。"
+            "value" : "除了本调之外，台罗也说明特殊声调、以 -- 标示的轻声，以及词句中的连读变调。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "搜尋時可輸入有調或無調格式，系統會做正規化處理。"
+            "value" : "除了本調之外，臺羅也說明特殊聲調、以 -- 標示的輕聲，以及詞句中的連讀變調。"
+          }
+        }
+      }
+    },
+    "referenceTaiLoSectionGeneralTones" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "General tones"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一般声调"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一般聲調"
+          }
+        }
+      }
+    },
+    "referenceTaiLoSectionNeutralTone" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neutral tone and untuned forms"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轻声与无声调标注"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輕聲與無聲調標注"
+          }
+        }
+      }
+    },
+    "referenceTaiLoSectionSpecialTones" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Special tones"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "特殊声调"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "特殊聲調"
+          }
+        }
+      }
+    },
+    "referenceTaiLoSectionToneSandhi" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tone sandhi"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "变调"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "變調"
           }
         }
       }

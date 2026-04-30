@@ -146,16 +146,43 @@ public enum AppLocalizedStringKey: String, CaseIterable {
 
     case referenceTitle
     case referenceTaiLoTitle
+    case referenceTaiLoSectionGeneralTones
+    case referenceTaiLoSectionSpecialTones
+    case referenceTaiLoSectionToneSandhi
+    case referenceTaiLoSectionNeutralTone
     case referenceTaiLoP1
     case referenceTaiLoP2
     case referenceTaiLoB1
     case referenceTaiLoB2
     case referenceTaiLoB3
+    case referenceTaiLoB4
+    case referenceTaiLoB5
+    case referenceTaiLoB6
+    case referenceTaiLoToneRow1Value
+    case referenceTaiLoToneRow2Value
+    case referenceTaiLoSandhiRow1Value
+    case referenceTaiLoSandhiRow2Value
+    case referenceTaiLoSandhiRow3Value
+    case referenceTaiLoSandhiRow4Value
+    case referenceTaiLoNeutralExample1
+    case referenceTaiLoNeutralExample2
+    case referenceTaiLoNeutralExample3
     case referenceHanjiTitle
+    case referenceHanjiSectionOverview
+    case referenceHanjiSectionTypes
+    case referenceHanjiSectionSubstitute
+    case referenceHanjiSectionRecommended
     case referenceHanjiP1
     case referenceHanjiP2
     case referenceHanjiB1
     case referenceHanjiB2
+    case referenceHanjiB3
+    case referenceHanjiB4
+    case referenceHanjiB5
+    case referenceHanjiSubstituteRow1Value
+    case referenceHanjiSubstituteRow2Value
+    case referenceHanjiSubstituteRow3Value
+    case referenceHanjiRecommendedP1
     case referenceContentSection
     case referenceKeyPointsSection
     case referenceMappingSection
