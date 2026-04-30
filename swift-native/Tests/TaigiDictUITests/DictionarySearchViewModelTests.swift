@@ -140,6 +140,25 @@ final class DictionarySearchViewModelTests: XCTestCase {
         let persisted = await historyStore.load()
         XCTAssertEqual(persisted, [])
     }
+
+    func testCancelledSearchDoesNotShowFailureMessage() async {
+        let repository = CancellingSearchRepository(entries: [
+            entry(id: 1, hanji: "辭典", romanization: "sû-tián", definition: "工具書"),
+        ])
+        let viewModel = DictionarySearchViewModel(
+            repository: repository,
+            searchHistoryStore: TestSearchHistoryStore()
+        )
+        await viewModel.load()
+
+        viewModel.searchText = "辭典"
+        viewModel.submitSearch()
+        try? await Task.sleep(for: .milliseconds(50))
+
+        XCTAssertNil(viewModel.errorMessage)
+        XCTAssertFalse(viewModel.isSearching)
+        XCTAssertTrue(viewModel.results.isEmpty)
+    }
 }
 
 private actor TestChineseConversionProvider: ChineseConversionProviding {
@@ -258,6 +277,41 @@ private actor MaintenanceAwareRepository: DictionaryRepositoryProtocol {
     func clearBundleCache() async {
         clearCacheCount += 1
     }
+}
+
+private actor CancellingSearchRepository: DictionaryRepositoryProtocol {
+    private let bundle: DictionaryBundle
+
+    init(entries: [DictionaryEntry]) {
+        bundle = DictionaryBundle(
+            entryCount: entries.count,
+            senseCount: entries.reduce(0) { $0 + $1.senses.count },
+            exampleCount: 0,
+            entries: entries
+        )
+    }
+
+    func loadBundle() async throws -> DictionaryBundle {
+        bundle
+    }
+
+    func search(_ rawQuery: String, limit: Int, offset: Int) async throws -> [DictionaryEntry] {
+        throw CancellationError()
+    }
+
+    func findLinkedEntry(_ rawWord: String) async throws -> DictionaryEntry? {
+        nil
+    }
+
+    func entries(ids: [Int64]) async throws -> [DictionaryEntry] {
+        []
+    }
+
+    func entry(id: Int64) async throws -> DictionaryEntry? {
+        nil
+    }
+
+    func clearBundleCache() async {}
 }
 
 private func entry(

@@ -21,6 +21,7 @@ public final class DictionarySearchViewModel {
     private let conversionService: (any ChineseConversionProviding)?
     private let searchHistoryStore: any SearchHistoryStoring
     private var searchTask: Task<Void, Never>?
+    private var searchGeneration = 0
 
     public init(
         library: DictionaryLibrary,
@@ -56,8 +57,9 @@ public final class DictionarySearchViewModel {
         appLocale = locale
         if !normalizedQuery.isEmpty {
             searchTask?.cancel()
+            let generation = nextSearchGeneration()
             searchTask = Task { @MainActor in
-                await runSearch(searchText, saveHistory: false)
+                await runSearch(searchText, saveHistory: false, generation: generation)
             }
         }
     }
@@ -81,6 +83,7 @@ public final class DictionarySearchViewModel {
 
     public func scheduleSearch() {
         searchTask?.cancel()
+        let generation = nextSearchGeneration()
         let query = searchText
         let normalized = TextNormalization.normalizeQuery(query)
         normalizedQuery = normalized
@@ -90,6 +93,7 @@ public final class DictionarySearchViewModel {
             selectedEntry = nil
             detailEntry = nil
             isSearching = false
+            errorMessage = nil
             return
         }
 
@@ -97,10 +101,13 @@ public final class DictionarySearchViewModel {
             do {
                 try await Task.sleep(for: .milliseconds(300))
                 try Task.checkCancellation()
-                await runSearch(query, saveHistory: false)
+                await runSearch(query, saveHistory: false, generation: generation)
             } catch is CancellationError {
                 return
             } catch {
+                guard isCurrentSearch(generation) else {
+                    return
+                }
                 errorMessage = String(describing: error)
                 isSearching = false
             }
@@ -109,9 +116,10 @@ public final class DictionarySearchViewModel {
 
     public func submitSearch() {
         searchTask?.cancel()
+        let generation = nextSearchGeneration()
         let query = searchText
         searchTask = Task { @MainActor in
-            await runSearch(query, saveHistory: true)
+            await runSearch(query, saveHistory: true, generation: generation)
         }
     }
 
@@ -131,6 +139,7 @@ public final class DictionarySearchViewModel {
 
         searchText = ""
         normalizedQuery = ""
+        searchGeneration += 1
         isLoading = false
         isSearching = false
         results = []
@@ -145,14 +154,20 @@ public final class DictionarySearchViewModel {
         detailEntry = entry
     }
 
-    private func runSearch(_ query: String, saveHistory: Bool) async {
+    private func runSearch(_ query: String, saveHistory: Bool, generation: Int) async {
         let normalized = TextNormalization.normalizeQuery(query)
+        guard isCurrentSearch(generation) else {
+            return
+        }
+
         normalizedQuery = normalized
 
         guard !normalized.isEmpty else {
             results = []
             selectedEntry = nil
             detailEntry = nil
+            isSearching = false
+            errorMessage = nil
             return
         }
 
@@ -171,6 +186,7 @@ public final class DictionarySearchViewModel {
                 normalizedQuery,
                 limit: DictionarySearchService.defaultLimit
             )
+            try Task.checkCancellation()
             let displayResults = await found.asyncMap { entry in
                 await DictionaryDisplayLocalization.translateEntry(
                     entry,
@@ -178,18 +194,40 @@ public final class DictionarySearchViewModel {
                     converter: converter
                 )
             }
+            try Task.checkCancellation()
+            guard isCurrentSearch(generation) else {
+                return
+            }
             results = displayResults
             selectedEntry = displayResults.first
             if saveHistory, !displayResults.isEmpty {
                 await saveHistoryItem(query)
             }
+        } catch is CancellationError {
+            if isCurrentSearch(generation) {
+                isSearching = false
+            }
         } catch {
+            guard isCurrentSearch(generation) else {
+                return
+            }
             results = []
             selectedEntry = nil
             errorMessage = String(describing: error)
         }
 
-        isSearching = false
+        if isCurrentSearch(generation) {
+            isSearching = false
+        }
+    }
+
+    private func nextSearchGeneration() -> Int {
+        searchGeneration += 1
+        return searchGeneration
+    }
+
+    private func isCurrentSearch(_ generation: Int) -> Bool {
+        generation == searchGeneration
     }
 
     private func saveHistoryItem(_ query: String) async {
