@@ -1,11 +1,14 @@
 # Taigi Dict Native Swift
 
-This directory contains the incremental Swift / SwiftUI rewrite of Taigi Dict.
+This directory contains the native Swift / SwiftUI rewrite of Taigi Dict.
 
-The first phase intentionally starts as a Swift Package instead of a full Xcode
-app target. Core domain models, normalization, conversion, and repository
-interfaces can be tested independently, then mounted by an iOS 17+ SwiftUI app
-target later.
+The production iOS app target lives in `TaigiDictNative.xcodeproj`, with shared
+Core and UI code provided by the local Swift package.
+
+## Xcode
+
+Open `TaigiDictNative.xcworkspace`, select the `TaigiDictNative` scheme, choose
+an iOS simulator, then build and run.
 
 ## Boundaries
 
@@ -20,10 +23,15 @@ target later.
 
 ```text
 swift-native/
+  TaigiDictNative.xcworkspace
+  TaigiDictNative.xcodeproj
   Package.swift
   Sources/TaigiDictCore/
+  Sources/TaigiDictUI/
+  NativeApp/
   Tests/TaigiDictCoreTests/
+  Tests/TaigiDictUITests/
 ```
 
-The package currently exposes `TaigiDictCore`, which is the shared foundation
-for the future SwiftUI app target.
+The package exposes `TaigiDictCore` and `TaigiDictUI` for the native app target
+and tests.
