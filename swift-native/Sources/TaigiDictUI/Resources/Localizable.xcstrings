@@ -812,25 +812,48 @@
         }
       }
     },
+    "audioPlaybackAlertTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Audio unavailable"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法播放音讯"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法播放音訊"
+          }
+        }
+      }
+    },
     "audioPlaybackArchiveBroken" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Playback failed: Offline audio archive is corrupted. Please re-download offline audio in Settings."
+            "value" : "Offline audio is unavailable. Please download offline audio resources in Settings."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "播放失败：离线音讯档案已损毁。请在设置重新下载离线音讯资源。"
+            "value" : "离线音讯资源尚未准备好，请先在设置下载离线音讯资源。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "播放失敗：離線音訊檔案已損毀。請在設定重新下載離線音訊資源。"
+            "value" : "離線音訊資源尚未準備好，請先在設定下載離線音訊資源。"
           }
         }
       }
@@ -864,19 +887,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Playback failed: Offline audio clip is missing. Please download or re-download offline audio in Settings."
+            "value" : "Offline audio is unavailable. Please download offline audio resources in Settings."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "播放失败：找不到离线音档。请先在设置下载或重新下载离线音讯资源。"
+            "value" : "离线音讯资源尚未准备好，请先在设置下载离线音讯资源。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "播放失敗：找不到離線音檔。請先在設定下載或重新下載離線音訊資源。"
+            "value" : "離線音訊資源尚未準備好，請先在設定下載離線音訊資源。"
           }
         }
       }
@@ -1291,6 +1314,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "清除"
+          }
+        }
+      }
+    },
+    "commonOK" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确定"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確定"
           }
         }
       }

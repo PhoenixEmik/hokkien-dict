@@ -9,7 +9,7 @@ public final class WordDetailViewModel {
     public private(set) var resolvedEntryID: Int64?
     public private(set) var openableWords: Set<String> = []
     public private(set) var errorMessage: String?
-    public private(set) var audioMessage: String?
+    public private(set) var audioAlertMessage: String?
 
     private let library: DictionaryLibrary
     private let offlineAudioStore: (any OfflineAudioManaging)?
@@ -37,7 +37,7 @@ public final class WordDetailViewModel {
         resolvedEntryID = sourceEntry.id
         openableWords = []
         localizedOpenableWordMap = [:]
-        audioMessage = nil
+        audioAlertMessage = nil
 
         do {
             let resolvedEntry = try await resolveAliasChain(from: sourceEntry)
@@ -105,28 +105,27 @@ public final class WordDetailViewModel {
         await playAudioClip(example.audioID, archiveType: .sentence)
     }
 
+    public func dismissAudioAlert() {
+        audioAlertMessage = nil
+    }
+
     private func playAudioClip(_ clipID: String, archiveType: AudioArchiveType) async {
         let normalized = clipID.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !normalized.isEmpty else {
-            audioMessage = AppLocalizer.text(.noAudioAvailable, locale: appLocale)
+            audioAlertMessage = AppLocalizer.text(.noAudioAvailable, locale: appLocale)
             return
         }
 
         guard let offlineAudioStore else {
-            audioMessage = AppLocalizer.text(.audioNotInitialized, locale: appLocale)
+            audioAlertMessage = AppLocalizer.text(.audioNotInitialized, locale: appLocale)
             return
         }
 
         do {
             try await offlineAudioStore.playClip(normalized, from: archiveType)
-            let expectedClipID = "\(archiveType.rawValue):\(normalized)"
-            if await offlineAudioStore.currentlyPlayingClipID() == expectedClipID {
-                audioMessage = AppLocalizer.text(.audioPlaying, locale: appLocale)
-            } else {
-                audioMessage = AppLocalizer.text(.audioStopped, locale: appLocale)
-            }
+            audioAlertMessage = nil
         } catch {
-            audioMessage = userFriendlyAudioErrorMessage(error)
+            audioAlertMessage = userFriendlyAudioErrorMessage(error)
         }
     }
 
@@ -136,11 +135,11 @@ public final class WordDetailViewModel {
             case .clipNotFound:
                 return AppLocalizer.text(.audioPlaybackMissingClip, locale: appLocale)
             case .invalidArchive:
-                return AppLocalizer.text(.audioPlaybackArchiveBroken, locale: appLocale)
+                return AppLocalizer.text(.audioPlaybackMissingClip, locale: appLocale)
             }
         }
 
-        return "\(AppLocalizer.text(.audioPlaybackFailedPrefix, locale: appLocale))\(error.localizedDescription)"
+        return AppLocalizer.text(.audioPlaybackMissingClip, locale: appLocale)
     }
 
     private func resolveAliasChain(from sourceEntry: DictionaryEntry) async throws -> DictionaryEntry {

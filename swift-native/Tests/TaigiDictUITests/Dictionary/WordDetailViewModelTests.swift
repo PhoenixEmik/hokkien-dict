@@ -96,7 +96,7 @@ final class WordDetailViewModelTests: XCTestCase {
         XCTAssertNil(linkedEntry)
     }
 
-    func testPlayWordAudioUpdatesAudioMessage() async {
+    func testPlayWordAudioSuccessClearsAudioAlert() async {
         let primary = entry(id: 10, hanji: "辭典", romanization: "sû-tián", definition: "工具書")
         var withAudio = primary
         withAudio.audioID = "1(1)"
@@ -111,7 +111,7 @@ final class WordDetailViewModelTests: XCTestCase {
         _ = await viewModel.prepare(entry: withAudio)
         await viewModel.playWordAudio()
 
-        XCTAssertEqual(viewModel.audioMessage, "播放中")
+        XCTAssertNil(viewModel.audioAlertMessage)
     }
 
     func testPrepareSimplifiedLocaleTranslatesDisplayAndLinkedLookup() async {
@@ -143,7 +143,7 @@ final class WordDetailViewModelTests: XCTestCase {
         XCTAssertEqual(linkedEntry?.id, 2)
     }
 
-    func testPlayWordAudioClipNotFoundShowsFriendlyMessage() async {
+    func testPlayWordAudioClipNotFoundShowsFriendlyAlert() async {
         var withAudio = entry(id: 10, hanji: "辭典", romanization: "sû-tián", definition: "工具書")
         withAudio.audioID = "missing-clip"
 
@@ -158,8 +158,32 @@ final class WordDetailViewModelTests: XCTestCase {
         await viewModel.playWordAudio()
 
         XCTAssertEqual(
-            viewModel.audioMessage,
-            "播放失敗：找不到離線音檔。請先在設定下載或重新下載離線音訊資源。"
+            viewModel.audioAlertMessage,
+            "離線音訊資源尚未準備好，請先在設定下載離線音訊資源。"
+        )
+    }
+
+    func testPlayExampleAudioUsesSameFriendlyAlertBehavior() async {
+        let example = DictionaryExample(
+            hanji: "阿媽",
+            romanization: "a-má",
+            mandarin: "外婆或奶奶",
+            audioID: "missing-example"
+        )
+        let primary = entry(id: 10, hanji: "辭典", romanization: "sû-tián", definition: "工具書")
+        let repository = InMemoryRepository(entries: [primary])
+        let audioStore = MissingClipOfflineAudioManager()
+        let viewModel = WordDetailViewModel(
+            library: DictionaryLibrary(repository: repository),
+            offlineAudioStore: audioStore
+        )
+
+        _ = await viewModel.prepare(entry: primary)
+        await viewModel.playExampleAudio(example)
+
+        XCTAssertEqual(
+            viewModel.audioAlertMessage,
+            "離線音訊資源尚未準備好，請先在設定下載離線音訊資源。"
         )
     }
 }

@@ -144,22 +144,16 @@ struct DictionaryDetailView: View {
                                                 await viewModel.playExampleAudio(example)
                                             }
                                         } label: {
-                                            Image(systemName: "speaker.wave.2")
+                                            Image(systemName: "speaker.wave.2.fill")
+                                                .font(.title3)
                                         }
+                                        .buttonStyle(.borderless)
                                         .accessibilityLabel(AppLocalizer.text(.playExampleAudio, locale: appLocale))
                                     }
                                 }
                             }
                             .accessibilityElement(children: .combine)
                         }
-                    }
-                }
-
-                if let audioMessage = viewModel.audioMessage {
-                    Section(AppLocalizer.text(.audioSectionTitle, locale: appLocale)) {
-                        Text(audioMessage)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
                     }
                 }
 
@@ -216,6 +210,23 @@ struct DictionaryDetailView: View {
         }
         .task(id: viewModel.entry?.id) {
             await refreshBookmarkState()
+        }
+        .alert(
+            AppLocalizer.text(.audioPlaybackAlertTitle, locale: appLocale),
+            isPresented: Binding(
+                get: { viewModel.audioAlertMessage != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        viewModel.dismissAudioAlert()
+                    }
+                }
+            )
+        ) {
+            Button(AppLocalizer.text(.commonOK, locale: appLocale), role: .cancel) {
+                viewModel.dismissAudioAlert()
+            }
+        } message: {
+            Text(viewModel.audioAlertMessage ?? "")
         }
     }
 

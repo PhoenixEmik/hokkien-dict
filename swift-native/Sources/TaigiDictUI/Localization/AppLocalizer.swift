@@ -20,6 +20,7 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case detailLoadFailedTitle
     case playWordAudio
     case playExampleAudio
+    case audioPlaybackAlertTitle
     case audioSectionTitle
     case noAudioAvailable
     case audioNotInitialized
@@ -74,6 +75,7 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case settingsClearConfirmBody
     case commonDelete
     case commonCancel
+    case commonOK
 
     case audioStatusIdle
     case audioStatusDownloading
