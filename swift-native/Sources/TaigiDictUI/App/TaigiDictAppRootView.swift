@@ -2,6 +2,8 @@ import SwiftUI
 import TaigiDictCore
 
 public struct TaigiDictAppRootView: View {
+    private static let initializationRevealDelay = Duration.milliseconds(220)
+
     @State private var viewModel: DictionarySearchViewModel
     @State private var initializationViewModel = InitializationViewModel()
     @State private var shouldShowInitializationScreen = false
@@ -37,14 +39,22 @@ public struct TaigiDictAppRootView: View {
         .task(id: initializationViewModel.taskID) {
             shouldShowInitializationScreen = false
 
-            let revealTask = Task { @MainActor in
-                try? await Task.sleep(for: .milliseconds(220))
-                guard !Task.isCancelled, !initializationViewModel.isReady else {
+            let revealTask = Task {
+                try? await Task.sleep(for: Self.initializationRevealDelay)
+                guard !Task.isCancelled else {
                     return
                 }
-                shouldShowInitializationScreen = true
+
+                await MainActor.run {
+                    guard !initializationViewModel.isReady else {
+                        return
+                    }
+
+                    shouldShowInitializationScreen = true
+                }
             }
 
+            await Task.yield()
             await initializationViewModel.prepare(using: viewModel)
             revealTask.cancel()
 
