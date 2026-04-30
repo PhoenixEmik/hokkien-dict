@@ -100,12 +100,6 @@ public struct SettingsScreen: View {
                     }
 
                     NavigationLink {
-                        LicenseSummaryScreen()
-                    } label: {
-                        Label(AppLocalizer.text(.settingsLicenses, locale: appLocale), systemImage: "doc.text")
-                    }
-
-                    NavigationLink {
                         ReferenceArticleListScreen()
                     } label: {
                         Label(AppLocalizer.text(.settingsReferences, locale: appLocale), systemImage: "text.book.closed")

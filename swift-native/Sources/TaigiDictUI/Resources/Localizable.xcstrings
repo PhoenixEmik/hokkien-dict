@@ -30,29 +30,6 @@
         }
       }
     },
-    "aboutAuthor" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Author"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "作者"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "作者"
-          }
-        }
-      }
-    },
     "aboutAppSection" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -72,6 +49,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "台語辭典"
+          }
+        }
+      }
+    },
+    "aboutAuthor" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Author"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "作者"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "作者"
           }
         }
       }
@@ -122,6 +122,29 @@
         }
       }
     },
+    "aboutPrivacy" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy policy"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐私政策"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隱私政策"
+          }
+        }
+      }
+    },
     "aboutPrivacySubtitle" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -141,6 +164,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "查看 App 如何保存本機資料、使用網路，以及處理分享行為。"
+          }
+        }
+      }
+    },
+    "aboutProjectSection" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Project"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "项目"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "專案"
           }
         }
       }
@@ -187,52 +233,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "原始碼與發行版本"
-          }
-        }
-      }
-    },
-    "aboutPrivacy" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Privacy policy"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "隐私政策"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "隱私政策"
-          }
-        }
-      }
-    },
-    "aboutProjectSection" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Project"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "项目"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "專案"
           }
         }
       }
@@ -808,6 +808,75 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "離線音訊尚未初始化。"
+          }
+        }
+      }
+    },
+    "audioPlaybackArchiveBroken" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Playback failed: Offline audio archive is corrupted. Please re-download offline audio in Settings."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "播放失败：离线音讯档案已损毁。请在设置重新下载离线音讯资源。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "播放失敗：離線音訊檔案已損毀。請在設定重新下載離線音訊資源。"
+          }
+        }
+      }
+    },
+    "audioPlaybackFailedPrefix" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Playback failed: "
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "播放失败："
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "播放失敗："
+          }
+        }
+      }
+    },
+    "audioPlaybackMissingClip" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Playback failed: Offline audio clip is missing. Please download or re-download offline audio in Settings."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "播放失败：找不到离线音档。请先在设置下载或重新下载离线音讯资源。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "播放失敗：找不到離線音檔。請先在設定下載或重新下載離線音訊資源。"
           }
         }
       }
@@ -1514,19 +1583,42 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App code: MIT License"
+            "value" : "App code"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App 程序码：MIT License"
+            "value" : "App 程序码"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App 程式碼：MIT License"
+            "value" : "App 程式碼"
+          }
+        }
+      }
+    },
+    "licenseAppCodeDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MIT License"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MIT 授权"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MIT 授權"
           }
         }
       }
@@ -1537,19 +1629,42 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Audio resources: source terms"
+            "value" : "Dictionary audio"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "音讯资源：来源授权条款"
+            "value" : "词典音档"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "音訊資源：來源授權條款"
+            "value" : "詞典音檔"
+          }
+        }
+      }
+    },
+    "licenseAudioDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Derived from the Ministry of Education Taiwanese Hokkien Dictionary audio. Licensed under CC BY-ND 3.0 TW."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "衍生自教育部《台湾台语常用词辞典》音档，采 CC BY-ND 3.0 TW。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "衍生自教育部《臺灣台語常用詞辭典》音檔，採 CC BY-ND 3.0 TW。"
           }
         }
       }
@@ -1560,19 +1675,65 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dictionary data: MOE terms"
+            "value" : "Dictionary data"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "辞典资料：教育部授权条款"
+            "value" : "词典资料"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "辭典資料：教育部授權條款"
+            "value" : "詞典資料"
+          }
+        }
+      }
+    },
+    "licenseDataDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Derived from the Ministry of Education Taiwanese Hokkien Dictionary. Licensed under CC BY-ND 3.0 TW."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "衍生自教育部《台湾台语常用词辞典》，采 CC BY-ND 3.0 TW。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "衍生自教育部《臺灣台語常用詞辭典》，採 CC BY-ND 3.0 TW。"
+          }
+        }
+      }
+    },
+    "licenseMinistryCopyright" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ministry copyright note"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "教育部版权说明"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "教育部著作權說明"
           }
         }
       }
@@ -1698,19 +1859,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Third-party packages: respective licenses"
+            "value" : "Flutter and package licenses"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "第三方套件：各自授权"
+            "value" : "Flutter 与套件授权"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "第三方套件：各自授權"
+            "value" : "Flutter 與套件授權"
           }
         }
       }
@@ -1721,7 +1882,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "License info"
+            "value" : "License Information"
           }
         },
         "zh-Hans" : {
@@ -1744,19 +1905,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "View third-party license list"
+            "value" : "View detailed open-source licenses bundled by Flutter."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "查看第三方套件授权清单"
+            "value" : "查看 Flutter 汇整的开源套件详细授权。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "查看第三方套件授權清單"
+            "value" : "查看 Flutter 彙整的開源套件詳細授權。"
           }
         }
       }
@@ -1876,75 +2037,6 @@
         }
       }
     },
-    "audioPlaybackArchiveBroken" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Playback failed: Offline audio archive is corrupted. Please re-download offline audio in Settings."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "播放失败：离线音讯档案已损毁。请在设置重新下载离线音讯资源。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "播放失敗：離線音訊檔案已損毀。請在設定重新下載離線音訊資源。"
-          }
-        }
-      }
-    },
-    "audioPlaybackFailedPrefix" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Playback failed: "
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "播放失败："
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "播放失敗："
-          }
-        }
-      }
-    },
-    "audioPlaybackMissingClip" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Playback failed: Offline audio clip is missing. Please download or re-download offline audio in Settings."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "播放失败：找不到离线音档。请先在设置下载或重新下载离线音讯资源。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "播放失敗：找不到離線音檔。請先在設定下載或重新下載離線音訊資源。"
-          }
-        }
-      }
-    },
     "noAudioAvailable" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2013,6 +2105,9 @@
           }
         }
       }
+    },
+    "PhoenixEmik" : {
+
     },
     "playExampleAudio" : {
       "extractionState" : "stale",

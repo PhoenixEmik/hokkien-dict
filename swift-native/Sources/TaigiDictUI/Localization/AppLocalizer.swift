@@ -129,8 +129,12 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case licenseTitle
     case licenseSummarySection
     case licenseAppCode
+    case licenseAppCodeDescription
     case licenseData
+    case licenseDataDescription
     case licenseAudio
+    case licenseAudioDescription
+    case licenseMinistryCopyright
     case licenseThirdParty
     case licenseViewThirdParty
     case licenseOverviewTitle

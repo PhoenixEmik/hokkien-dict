@@ -15,41 +15,47 @@ struct AboutScreen: View {
     }
 
     var body: some View {
+        aboutList
+            .navigationTitle(AppLocalizer.text(.aboutTitle, locale: appLocale))
+    }
+
+    @ViewBuilder
+    private var aboutList: some View {
+        #if os(iOS)
         List {
-            Section {
-                AboutSummaryRow(
-                    title: AppLocalizer.text(.aboutAppSection, locale: appLocale),
-                    description: AppLocalizer.text(.aboutAppDescription, locale: appLocale)
+            Section(AppLocalizer.text(.aboutAppSection, locale: appLocale)) {
+                AboutValueRow(
+                    title: AppLocalizer.text(.aboutVersion, locale: appLocale),
+                    value: appVersion,
+                    systemImage: "number.circle"
                 )
 
-                LabeledContent(AppLocalizer.text(.aboutVersion, locale: appLocale)) {
-                    Text(appVersion)
-                }
-
-                LabeledContent(AppLocalizer.text(.aboutAuthor, locale: appLocale)) {
-                    Text("PhoenixEmik")
-                }
+                AboutValueRow(
+                    title: AppLocalizer.text(.aboutAuthor, locale: appLocale),
+                    value: "PhoenixEmik",
+                    systemImage: "person.crop.circle"
+                )
 
                 AboutExternalLinkRow(
                     title: AppLocalizer.text(.aboutGitHub, locale: appLocale),
-                    subtitle: repositoryURL.absoluteString,
+                    systemImage: "chevron.left.forwardslash.chevron.right",
                     destination: repositoryURL
                 )
             }
 
-            Section {
+            Section(AppLocalizer.text(.aboutProjectSection, locale: appLocale)) {
                 NavigationLink {
                     LicenseSummaryScreen()
                 } label: {
                     AboutNavigationRow(
                         title: AppLocalizer.text(.settingsLicenses, locale: appLocale),
-                        subtitle: AppLocalizer.text(.aboutLicensesSubtitle, locale: appLocale)
+                        systemImage: "doc.text"
                     )
                 }
 
                 AboutExternalLinkRow(
                     title: AppLocalizer.text(.aboutPrivacy, locale: appLocale),
-                    subtitle: AppLocalizer.text(.aboutPrivacySubtitle, locale: appLocale),
+                    systemImage: "hand.raised",
                     destination: privacyURL
                 )
             }
@@ -57,24 +63,84 @@ struct AboutScreen: View {
             Section(AppLocalizer.text(.referenceTitle, locale: appLocale)) {
                 AboutExternalLinkRow(
                     title: AppLocalizer.text(.aboutReferencePage, locale: appLocale),
-                    subtitle: referencePageURL.absoluteString,
+                    systemImage: "books.vertical",
                     destination: referencePageURL
                 )
 
                 AboutExternalLinkRow(
                     title: AppLocalizer.text(.referenceTaiLoTitle, locale: appLocale),
-                    subtitle: taiLoGuideURL.absoluteString,
+                    systemImage: "textformat.abc",
                     destination: taiLoGuideURL
                 )
 
                 AboutExternalLinkRow(
                     title: AppLocalizer.text(.referenceHanjiTitle, locale: appLocale),
-                    subtitle: hanjiGuideURL.absoluteString,
+                    systemImage: "character.book.closed",
                     destination: hanjiGuideURL
                 )
             }
         }
-        .navigationTitle(AppLocalizer.text(.aboutTitle, locale: appLocale))
+        .listStyle(.insetGrouped)
+        #else
+        List {
+            Section(AppLocalizer.text(.aboutAppSection, locale: appLocale)) {
+                AboutValueRow(
+                    title: AppLocalizer.text(.aboutVersion, locale: appLocale),
+                    value: appVersion,
+                    systemImage: "number.circle"
+                )
+
+                AboutValueRow(
+                    title: AppLocalizer.text(.aboutAuthor, locale: appLocale),
+                    value: "PhoenixEmik",
+                    systemImage: "person.crop.circle"
+                )
+
+                AboutExternalLinkRow(
+                    title: AppLocalizer.text(.aboutGitHub, locale: appLocale),
+                    systemImage: "chevron.left.forwardslash.chevron.right",
+                    destination: repositoryURL
+                )
+            }
+
+            Section(AppLocalizer.text(.aboutProjectSection, locale: appLocale)) {
+                NavigationLink {
+                    LicenseSummaryScreen()
+                } label: {
+                    AboutNavigationRow(
+                        title: AppLocalizer.text(.settingsLicenses, locale: appLocale),
+                        systemImage: "doc.text"
+                    )
+                }
+
+                AboutExternalLinkRow(
+                    title: AppLocalizer.text(.aboutPrivacy, locale: appLocale),
+                    systemImage: "hand.raised",
+                    destination: privacyURL
+                )
+            }
+
+            Section(AppLocalizer.text(.referenceTitle, locale: appLocale)) {
+                AboutExternalLinkRow(
+                    title: AppLocalizer.text(.aboutReferencePage, locale: appLocale),
+                    systemImage: "books.vertical",
+                    destination: referencePageURL
+                )
+
+                AboutExternalLinkRow(
+                    title: AppLocalizer.text(.referenceTaiLoTitle, locale: appLocale),
+                    systemImage: "textformat.abc",
+                    destination: taiLoGuideURL
+                )
+
+                AboutExternalLinkRow(
+                    title: AppLocalizer.text(.referenceHanjiTitle, locale: appLocale),
+                    systemImage: "character.book.closed",
+                    destination: hanjiGuideURL
+                )
+            }
+        }
+        #endif
     }
 
     private var appVersion: String {
@@ -87,49 +153,36 @@ struct AboutScreen: View {
     }
 }
 
-private struct AboutSummaryRow: View {
+private struct AboutValueRow: View {
     let title: String
-    let description: String
+    let value: String
+    let systemImage: String
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "info.circle")
+        LabeledContent {
+            Text(value)
                 .foregroundStyle(.secondary)
-                .font(.title3)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.headline)
-                Text(description)
-                    .foregroundStyle(.secondary)
-            }
+        } label: {
+            Label(title, systemImage: systemImage)
         }
-        .padding(.vertical, 4)
     }
 }
 
 private struct AboutExternalLinkRow: View {
     let title: String
-    let subtitle: String
+    let systemImage: String
     let destination: URL
 
     var body: some View {
         Link(destination: destination) {
-            HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .foregroundStyle(.primary)
-                    Text(subtitle)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.leading)
-                }
+            HStack {
+                Label(title, systemImage: systemImage)
+                    .foregroundStyle(.primary)
 
                 Spacer(minLength: 12)
 
                 Image(systemName: "arrow.up.right.square")
                     .foregroundStyle(.secondary)
-                    .padding(.top, 2)
             }
             .padding(.vertical, 4)
         }
@@ -139,15 +192,10 @@ private struct AboutExternalLinkRow: View {
 
 private struct AboutNavigationRow: View {
     let title: String
-    let subtitle: String
+    let systemImage: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-            Text(subtitle)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-        }
-        .padding(.vertical, 4)
+        Label(title, systemImage: systemImage)
+            .padding(.vertical, 4)
     }
 }
