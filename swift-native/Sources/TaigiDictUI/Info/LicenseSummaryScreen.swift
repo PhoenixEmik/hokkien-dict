@@ -35,14 +35,7 @@ struct LicenseSummaryScreen: View {
                 }
 
                 Link(destination: ministryCopyrightURL) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Label(AppLocalizer.text(.licenseMinistryCopyright, locale: appLocale), systemImage: "c.circle")
-                        Text(ministryCopyrightURL.absoluteString)
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.leading)
-                    }
-                    .padding(.vertical, 4)
+                    Label(AppLocalizer.text(.licenseMinistryCopyright, locale: appLocale), systemImage: "c.circle")
                 }
             }
 
@@ -50,13 +43,7 @@ struct LicenseSummaryScreen: View {
                 NavigationLink {
                     LicenseOverviewScreen()
                 } label: {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Label(AppLocalizer.text(.licenseThirdParty, locale: appLocale), systemImage: "swift")
-                        Text(AppLocalizer.text(.licenseViewThirdParty, locale: appLocale))
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.vertical, 4)
+                    Label(AppLocalizer.text(.licenseThirdParty, locale: appLocale), systemImage: "shippingbox")
                 }
             }
         }

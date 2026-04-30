@@ -15,8 +15,8 @@ final class AppLocalizerTests: XCTestCase {
         XCTAssertEqual(AppLocalizer.text(.licenseAppCodeDescription, locale: .english), "MIT License")
         XCTAssertEqual(AppLocalizer.text(.licenseMinistryCopyright, locale: .traditionalChinese), "教育部著作權說明")
         XCTAssertEqual(
-            AppLocalizer.text(.licenseViewThirdParty, locale: .simplifiedChinese),
-            "查看 Flutter 汇整的开源套件详细授权。"
+            AppLocalizer.text(.licenseThirdParty, locale: .traditionalChinese),
+            "套件授權"
         )
 
         XCTAssertEqual(AppLocalizer.text(.bookmarksTitle, locale: .english), "Bookmarks")

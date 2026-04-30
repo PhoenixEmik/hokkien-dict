@@ -1652,19 +1652,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Derived from the Ministry of Education Taiwanese Hokkien Dictionary audio. Licensed under CC BY-ND 3.0 TW."
+            "value" : "CC BY-ND 3.0 TW"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "衍生自教育部《台湾台语常用词辞典》音档，采 CC BY-ND 3.0 TW。"
+            "value" : "CC BY-ND 3.0 TW"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "衍生自教育部《臺灣台語常用詞辭典》音檔，採 CC BY-ND 3.0 TW。"
+            "value" : "CC BY-ND 3.0 TW"
           }
         }
       }
@@ -1698,19 +1698,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Derived from the Ministry of Education Taiwanese Hokkien Dictionary. Licensed under CC BY-ND 3.0 TW."
+            "value" : "CC BY-ND 3.0 TW"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "衍生自教育部《台湾台语常用词辞典》，采 CC BY-ND 3.0 TW。"
+            "value" : "CC BY-ND 3.0 TW"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "衍生自教育部《臺灣台語常用詞辭典》，採 CC BY-ND 3.0 TW。"
+            "value" : "CC BY-ND 3.0 TW"
           }
         }
       }
@@ -1859,19 +1859,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Flutter and package licenses"
+            "value" : "Package licenses"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Flutter 与套件授权"
+            "value" : "套件授权"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Flutter 與套件授權"
+            "value" : "套件授權"
           }
         }
       }
