@@ -7,4 +7,17 @@ public protocol DictionaryRepositoryProtocol: Sendable {
     func entries(ids: [Int64]) async throws -> [DictionaryEntry]
     func entry(id: Int64) async throws -> DictionaryEntry?
     func clearBundleCache() async
+    func supportsLocalMaintenance() async -> Bool
+    func rebuildInstalledDatabase() async throws
+    func clearInstalledDatabase() async throws
+}
+
+public extension DictionaryRepositoryProtocol {
+    func supportsLocalMaintenance() async -> Bool {
+        false
+    }
+
+    func rebuildInstalledDatabase() async throws {}
+
+    func clearInstalledDatabase() async throws {}
 }

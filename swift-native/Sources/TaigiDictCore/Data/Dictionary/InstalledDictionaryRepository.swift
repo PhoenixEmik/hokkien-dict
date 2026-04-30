@@ -61,6 +61,27 @@ public actor InstalledDictionaryRepository: DictionaryRepositoryProtocol {
         await repository.clearBundleCache()
     }
 
+    public func supportsLocalMaintenance() async -> Bool {
+        true
+    }
+
+    public func rebuildInstalledDatabase() async throws {
+        let sourceManifestURL = sourceDirectory.appendingPathComponent("dictionary_manifest.json")
+        let sourceManifest = try loadManifest(at: sourceManifestURL)
+        try installFromSource(manifest: sourceManifest)
+        await repository.clearBundleCache()
+    }
+
+    public func clearInstalledDatabase() async throws {
+        if fileManager.fileExists(atPath: installedManifestURL.path) {
+            try fileManager.removeItem(at: installedManifestURL)
+        }
+        if fileManager.fileExists(atPath: databaseURL.path) {
+            try fileManager.removeItem(at: databaseURL)
+        }
+        await repository.clearBundleCache()
+    }
+
     private func prepareInstalledPackage() async throws {
         let sourceManifestURL = sourceDirectory.appendingPathComponent("dictionary_manifest.json")
 
@@ -75,14 +96,7 @@ public actor InstalledDictionaryRepository: DictionaryRepositoryProtocol {
                 return
             }
 
-            try fileManager.createDirectory(at: installedDirectory, withIntermediateDirectories: true)
-            let entriesData = try Data(contentsOf: sourceEntriesURL)
-            _ = try importService.importDatabase(
-                manifest: sourceManifest,
-                entriesData: entriesData,
-                databaseURL: databaseURL
-            )
-            try encoder.encode(sourceManifest).write(to: installedManifestURL, options: .atomic)
+            try installFromSource(manifest: sourceManifest)
             await repository.clearBundleCache()
             return
         }
@@ -114,6 +128,22 @@ public actor InstalledDictionaryRepository: DictionaryRepositoryProtocol {
 
     private func loadManifest(at url: URL) throws -> DictionaryManifest {
         try decoder.decode(DictionaryManifest.self, from: Data(contentsOf: url))
+    }
+
+    private func installFromSource(manifest: DictionaryManifest) throws {
+        let sourceEntriesURL = sourceDirectory.appendingPathComponent(manifest.entriesFileName)
+        guard fileManager.fileExists(atPath: sourceEntriesURL.path) else {
+            throw DictionaryPackageLoaderError.missingEntries(sourceEntriesURL)
+        }
+
+        try fileManager.createDirectory(at: installedDirectory, withIntermediateDirectories: true)
+        let entriesData = try Data(contentsOf: sourceEntriesURL)
+        _ = try importService.importDatabase(
+            manifest: manifest,
+            entriesData: entriesData,
+            databaseURL: databaseURL
+        )
+        try encoder.encode(manifest).write(to: installedManifestURL, options: .atomic)
     }
 
     private var installedManifestURL: URL {

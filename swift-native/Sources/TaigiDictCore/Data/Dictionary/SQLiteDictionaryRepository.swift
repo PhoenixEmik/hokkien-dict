@@ -130,6 +130,7 @@ public actor SQLiteDictionaryRepository: DictionaryRepositoryProtocol {
 
     public func clearBundleCache() async {
         cachedBundle = nil
+        dbQueue = nil
     }
 
     private static func loadMetadata(from db: Database) throws -> (entryCount: Int, senseCount: Int, exampleCount: Int) {
