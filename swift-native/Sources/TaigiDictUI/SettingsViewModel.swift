@@ -15,6 +15,7 @@ public final class SettingsViewModel {
     public private(set) var statusMessage: String?
     public private(set) var errorMessage: String?
     public private(set) var librarySummary: DictionaryLibrarySummary?
+    public private(set) var libraryMetadata: DictionaryLibraryMetadata?
     public private(set) var isClearConfirmationPresented = false
 
     private let library: DictionaryLibrary
@@ -27,12 +28,14 @@ public final class SettingsViewModel {
         errorMessage = nil
         supportsDataMaintenance = await library.supportsLocalMaintenance()
         librarySummary = await library.currentSummary()
+        libraryMetadata = try? await library.metadata()
 
         if librarySummary == nil {
             let phase = await library.prepare()
             switch phase {
             case .ready(let summary):
                 librarySummary = summary
+                libraryMetadata = try? await library.metadata()
             case .failed(let message):
                 errorMessage = message
             case .idle, .loading:
@@ -77,10 +80,12 @@ public final class SettingsViewModel {
                 if case let .ready(summary) = phase {
                     librarySummary = summary
                 }
+                libraryMetadata = try? await library.metadata()
             case .clear:
                 try await library.clearInstalledDatabase()
                 statusMessage = "本機辭典資料已清除。"
                 librarySummary = nil
+                libraryMetadata = nil
             }
             isRunningAction = false
             return true

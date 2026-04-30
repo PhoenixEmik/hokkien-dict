@@ -12,6 +12,13 @@ final class SettingsViewModelTests: XCTestCase {
 
         XCTAssertTrue(viewModel.supportsDataMaintenance)
         XCTAssertEqual(viewModel.librarySummary, DictionaryLibrarySummary(entryCount: 2, senseCount: 3, exampleCount: 4))
+        XCTAssertEqual(
+            viewModel.libraryMetadata,
+            DictionaryLibraryMetadata(
+                builtAt: "2026-04-30T00:00:00Z",
+                sourceModifiedAt: "2026-04-29T00:00:00Z"
+            )
+        )
     }
 
     func testRunRebuildReportsSuccessMessage() async {
@@ -38,6 +45,7 @@ final class SettingsViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.statusMessage, "本機辭典資料已清除。")
         XCTAssertNil(viewModel.errorMessage)
         XCTAssertNil(viewModel.librarySummary)
+        XCTAssertNil(viewModel.libraryMetadata)
         XCTAssertEqual(clearInstalledCount, 1)
     }
 
@@ -90,6 +98,10 @@ final class SettingsViewModelTests: XCTestCase {
 private actor SettingsRepository: DictionaryRepositoryProtocol {
     private let supportsMaintenanceValue: Bool
     private let rebuildError: Error?
+    private var metadataValue: [String: String]? = [
+        "built_at": "2026-04-30T00:00:00Z",
+        "source_modified_at": "2026-04-29T00:00:00Z",
+    ]
 
     var rebuildCount = 0
     var clearInstalledCount = 0
@@ -119,6 +131,10 @@ private actor SettingsRepository: DictionaryRepositoryProtocol {
         nil
     }
 
+    func metadata() async throws -> [String: String]? {
+        metadataValue
+    }
+
     func clearBundleCache() async {}
 
     func supportsLocalMaintenance() async -> Bool {
@@ -134,5 +150,6 @@ private actor SettingsRepository: DictionaryRepositoryProtocol {
 
     func clearInstalledDatabase() async throws {
         clearInstalledCount += 1
+        metadataValue = nil
     }
 }

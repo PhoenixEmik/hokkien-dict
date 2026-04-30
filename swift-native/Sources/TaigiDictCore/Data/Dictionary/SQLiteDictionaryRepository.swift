@@ -128,6 +128,21 @@ public actor SQLiteDictionaryRepository: DictionaryRepositoryProtocol {
         try await entries(ids: [id]).first
     }
 
+    public func metadata() async throws -> [String: String]? {
+        let dbQueue = try tryDatabaseQueue()
+        return try await dbQueue.read { db in
+            let rows = try Row.fetchAll(db, sql: "SELECT key, value FROM dictionary_metadata")
+            guard !rows.isEmpty else {
+                return nil
+            }
+            return Dictionary(uniqueKeysWithValues: rows.map { row in
+                let key: String = row["key"]
+                let value: String = row["value"]
+                return (key, value)
+            })
+        }
+    }
+
     public func clearBundleCache() async {
         cachedBundle = nil
         dbQueue = nil

@@ -55,6 +55,21 @@ public struct SettingsScreen: View {
                     }
                 }
 
+                if let metadata = viewModel.libraryMetadata {
+                    Section("資料來源時間") {
+                        if let builtAt = metadata.builtAt {
+                            LabeledContent("建置時間") {
+                                Text(builtAt)
+                            }
+                        }
+                        if let sourceModifiedAt = metadata.sourceModifiedAt {
+                            LabeledContent("來源更新") {
+                                Text(sourceModifiedAt)
+                            }
+                        }
+                    }
+                }
+
                 if viewModel.isRunningAction {
                     Section {
                         HStack {

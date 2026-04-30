@@ -19,6 +19,16 @@ public struct DictionaryLibrarySummary: Equatable, Sendable {
     }
 }
 
+public struct DictionaryLibraryMetadata: Equatable, Sendable {
+    public var builtAt: String?
+    public var sourceModifiedAt: String?
+
+    public init(builtAt: String?, sourceModifiedAt: String?) {
+        self.builtAt = builtAt
+        self.sourceModifiedAt = sourceModifiedAt
+    }
+}
+
 public actor DictionaryLibrary {
     private let repository: any DictionaryRepositoryProtocol
     private var phaseStorage: DictionaryLibraryPhase = .idle
@@ -36,6 +46,16 @@ public actor DictionaryLibrary {
             return nil
         }
         return summary
+    }
+
+    public func metadata() async throws -> DictionaryLibraryMetadata? {
+        guard let values = try await repository.metadata() else {
+            return nil
+        }
+        return DictionaryLibraryMetadata(
+            builtAt: nonEmpty(values["built_at"]),
+            sourceModifiedAt: nonEmpty(values["source_modified_at"])
+        )
     }
 
     @discardableResult
@@ -95,5 +115,12 @@ public actor DictionaryLibrary {
     public func reset() async {
         await repository.clearBundleCache()
         phaseStorage = .idle
+    }
+
+    private func nonEmpty(_ value: String?) -> String? {
+        guard let value, !value.isEmpty else {
+            return nil
+        }
+        return value
     }
 }

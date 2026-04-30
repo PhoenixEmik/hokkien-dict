@@ -57,6 +57,11 @@ public actor InstalledDictionaryRepository: DictionaryRepositoryProtocol {
         return try await repository.entry(id: id)
     }
 
+    public func metadata() async throws -> [String: String]? {
+        try await prepareInstalledPackage()
+        return try await repository.metadata()
+    }
+
     public func clearBundleCache() async {
         await repository.clearBundleCache()
     }

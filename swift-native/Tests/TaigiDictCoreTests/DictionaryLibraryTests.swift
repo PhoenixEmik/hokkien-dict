@@ -66,6 +66,50 @@ final class DictionaryLibraryTests: XCTestCase {
         XCTAssertEqual(summary, DictionaryLibrarySummary(entryCount: 1, senseCount: 1, exampleCount: 0))
     }
 
+    func testMetadataMapsBuiltAtAndSourceModifiedAt() async throws {
+        let repository = LibraryMaintenanceRepository(
+            bundle: sampleBundle(),
+            supportsMaintenance: true,
+            metadata: [
+                "built_at": "2026-04-30T00:00:00Z",
+                "source_modified_at": "2026-04-29T00:00:00Z",
+            ]
+        )
+        let library = DictionaryLibrary(repository: repository)
+
+        let metadata = try await library.metadata()
+
+        XCTAssertEqual(
+            metadata,
+            DictionaryLibraryMetadata(
+                builtAt: "2026-04-30T00:00:00Z",
+                sourceModifiedAt: "2026-04-29T00:00:00Z"
+            )
+        )
+    }
+
+    func testMetadataTreatsEmptySourceModifiedAtAsNil() async throws {
+        let repository = LibraryMaintenanceRepository(
+            bundle: sampleBundle(),
+            supportsMaintenance: true,
+            metadata: [
+                "built_at": "2026-04-30T00:00:00Z",
+                "source_modified_at": "",
+            ]
+        )
+        let library = DictionaryLibrary(repository: repository)
+
+        let metadata = try await library.metadata()
+
+        XCTAssertEqual(
+            metadata,
+            DictionaryLibraryMetadata(
+                builtAt: "2026-04-30T00:00:00Z",
+                sourceModifiedAt: nil
+            )
+        )
+    }
+
     private func sampleBundle() -> DictionaryBundle {
         DictionaryBundle(
             entryCount: 1,
@@ -93,14 +137,16 @@ final class DictionaryLibraryTests: XCTestCase {
 private actor LibraryMaintenanceRepository: DictionaryRepositoryProtocol {
     private let bundleValue: DictionaryBundle
     private let supportsMaintenanceValue: Bool
+    private let metadataValue: [String: String]?
 
     var clearCacheCount = 0
     var rebuildCount = 0
     var clearInstalledCount = 0
 
-    init(bundle: DictionaryBundle, supportsMaintenance: Bool) {
+    init(bundle: DictionaryBundle, supportsMaintenance: Bool, metadata: [String: String]? = nil) {
         self.bundleValue = bundle
         self.supportsMaintenanceValue = supportsMaintenance
+        self.metadataValue = metadata
     }
 
     func loadBundle() async throws -> DictionaryBundle {
@@ -121,6 +167,10 @@ private actor LibraryMaintenanceRepository: DictionaryRepositoryProtocol {
 
     func entry(id: Int64) async throws -> DictionaryEntry? {
         nil
+    }
+
+    func metadata() async throws -> [String: String]? {
+        metadataValue
     }
 
     func clearBundleCache() async {
