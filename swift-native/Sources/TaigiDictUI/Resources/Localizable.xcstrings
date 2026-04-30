@@ -289,19 +289,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Swift Native Preview"
+            "value" : "1.2.0"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Swift Native Preview"
+            "value" : "1.2.0"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Swift Native Preview"
+            "value" : "1.2.0"
           }
         }
       }
