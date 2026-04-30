@@ -16,6 +16,7 @@ assets/data/
 data/source/*.ods
 android/key.properties
 *.jks
+.vscode
 
 # IntelliJ related
 *.iml
