@@ -69,6 +69,22 @@ public actor DictionaryLibrary {
         try await repository.entry(id: id)
     }
 
+    public func supportsLocalMaintenance() async -> Bool {
+        await repository.supportsLocalMaintenance()
+    }
+
+    public func rebuildInstalledDatabase() async throws {
+        try await repository.rebuildInstalledDatabase()
+        await repository.clearBundleCache()
+        phaseStorage = .idle
+    }
+
+    public func clearInstalledDatabase() async throws {
+        try await repository.clearInstalledDatabase()
+        await repository.clearBundleCache()
+        phaseStorage = .idle
+    }
+
     public func reset() async {
         await repository.clearBundleCache()
         phaseStorage = .idle

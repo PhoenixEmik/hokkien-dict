@@ -41,11 +41,7 @@ public struct TaigiDictAppRootView: View {
                 Label("書籤", systemImage: "bookmark")
             }
 
-            PlaceholderScreen(
-                title: "設定",
-                systemImage: "gearshape",
-                message: "語言、主題與資料維護設定會在後續重構接入。"
-            )
+            SettingsScreen(library: viewModel.library)
             .tabItem {
                 Label("設定", systemImage: "gearshape")
             }
