@@ -2,11 +2,8 @@ import SwiftUI
 import TaigiDictCore
 
 public struct TaigiDictAppRootView: View {
-    private static let initializationRevealDelay = Duration.milliseconds(220)
-
     @State private var viewModel: DictionarySearchViewModel
     @State private var initializationViewModel = InitializationViewModel()
-    @State private var shouldShowInitializationScreen = false
     @State private var bookmarkStore = BookmarkStore()
     @State private var offlineAudioStore: OfflineAudioStore
     @State private var appSettings = AppSettingsSnapshot()
@@ -35,33 +32,10 @@ public struct TaigiDictAppRootView: View {
 
     public var body: some View {
         rootContent
-        .animation(.easeInOut(duration: 0.2), value: shouldShowInitializationScreen)
         .animation(.easeInOut(duration: 0.2), value: initializationViewModel.isReady)
         .task(id: initializationViewModel.taskID) {
-            shouldShowInitializationScreen = false
-
-            let revealTask = Task {
-                try? await Task.sleep(for: Self.initializationRevealDelay)
-                guard !Task.isCancelled else {
-                    return
-                }
-
-                await MainActor.run {
-                    guard !initializationViewModel.isReady else {
-                        return
-                    }
-
-                    shouldShowInitializationScreen = true
-                }
-            }
-
             await Task.yield()
             await initializationViewModel.prepare(using: viewModel)
-            revealTask.cancel()
-
-            if !initializationViewModel.isReady {
-                shouldShowInitializationScreen = true
-            }
         }
         .task {
             await loadAppSettingsIfNeeded()
@@ -73,9 +47,10 @@ public struct TaigiDictAppRootView: View {
 
     @ViewBuilder
     private var rootContent: some View {
-        if initializationViewModel.isReady {
+        switch AppRootContentPresentation.resolve(isInitializationReady: initializationViewModel.isReady) {
+        case .mainTabs:
             mainTabView
-        } else if shouldShowInitializationScreen {
+        case .initialization:
             InitializationScreen(
                 phase: initializationViewModel.phase,
                 progress: initializationViewModel.progress,
@@ -85,9 +60,6 @@ public struct TaigiDictAppRootView: View {
                 initializationViewModel.retry()
             }
             .transition(.opacity)
-        } else {
-            Color.clear
-                .ignoresSafeArea()
         }
     }
 
@@ -150,7 +122,7 @@ public struct TaigiDictAppRootView: View {
     }
 
     private static func makeChineseConversionService() -> (any ChineseConversionProviding)? {
-        try? ChineseConversionService()
+        LazyChineseConversionService()
     }
 
     private static func makeOfflineAudioStore() -> OfflineAudioStore {
@@ -172,6 +144,15 @@ private enum AppTab: Hashable {
     case dictionary
     case bookmarks
     case settings
+}
+
+enum AppRootContentPresentation: Equatable {
+    case initialization
+    case mainTabs
+
+    static func resolve(isInitializationReady: Bool) -> AppRootContentPresentation {
+        isInitializationReady ? .mainTabs : .initialization
+    }
 }
 
 private extension AppThemePreference {
