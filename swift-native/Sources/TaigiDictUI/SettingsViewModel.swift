@@ -14,6 +14,9 @@ public final class SettingsViewModel {
     public private(set) var isRunningAction = false
     public private(set) var statusMessage: String?
     public private(set) var errorMessage: String?
+    public private(set) var selectedLocale: AppLocale = .traditionalChinese
+    public private(set) var selectedThemePreference: AppThemePreference = .system
+    public private(set) var readingTextScale = 1.0
     public private(set) var librarySummary: DictionaryLibrarySummary?
     public private(set) var libraryMetadata: DictionaryLibraryMetadata?
     public private(set) var metadataBuiltAtDisplay: String?
@@ -22,17 +25,45 @@ public final class SettingsViewModel {
 
     private let library: DictionaryLibrary
     private let dateFormatter: any SettingsDateFormatting
+    private let settingsStore: any AppSettingsStoring
 
     public init(
         library: DictionaryLibrary,
+        settingsStore: any AppSettingsStoring = UserDefaultsAppSettingsStore(),
         dateFormatter: any SettingsDateFormatting = SettingsDateFormatter()
     ) {
         self.library = library
+        self.settingsStore = settingsStore
         self.dateFormatter = dateFormatter
+    }
+
+    public var minReadingTextScale: Double {
+        AppSettingsSnapshot.minReadingTextScale
+    }
+
+    public var maxReadingTextScale: Double {
+        AppSettingsSnapshot.maxReadingTextScale
+    }
+
+    public var readingTextScaleDivisions: Int {
+        AppSettingsSnapshot.readingTextScaleDivisions
+    }
+
+    public var currentSettingsSnapshot: AppSettingsSnapshot {
+        AppSettingsSnapshot(
+            interfaceLocale: selectedLocale,
+            themePreference: selectedThemePreference,
+            readingTextScale: readingTextScale
+        )
     }
 
     public func loadCapabilities() async {
         errorMessage = nil
+        let settings = await settingsStore.load()
+        selectedLocale = settings.interfaceLocale
+        selectedThemePreference = settings.themePreference
+        readingTextScale = settings.readingTextScale
+
         supportsDataMaintenance = await library.supportsLocalMaintenance()
         librarySummary = await library.currentSummary()
         libraryMetadata = try? await library.metadata()
@@ -51,6 +82,34 @@ public final class SettingsViewModel {
                 break
             }
         }
+    }
+
+    public func setLocale(_ locale: AppLocale) async {
+        guard selectedLocale != locale else {
+            return
+        }
+
+        selectedLocale = locale
+        await settingsStore.setInterfaceLocale(locale)
+    }
+
+    public func setThemePreference(_ preference: AppThemePreference) async {
+        guard selectedThemePreference != preference else {
+            return
+        }
+
+        selectedThemePreference = preference
+        await settingsStore.setThemePreference(preference)
+    }
+
+    public func setReadingTextScale(_ value: Double) async {
+        let snapped = AppSettingsSnapshot.snapReadingTextScale(value)
+        guard readingTextScale != snapped else {
+            return
+        }
+
+        readingTextScale = snapped
+        await settingsStore.setReadingTextScale(snapped)
     }
 
     public func requestClearConfirmation() {

@@ -6,8 +6,16 @@ import TaigiDictCore
 final class SettingsViewModelTests: XCTestCase {
     func testLoadCapabilitiesReadsRepositorySupport() async {
         let repository = SettingsRepository(supportsMaintenance: true)
+        let settingsStore = TestAppSettingsStore(
+            snapshot: AppSettingsSnapshot(
+                interfaceLocale: .english,
+                themePreference: .dark,
+                readingTextScale: 1.2
+            )
+        )
         let viewModel = SettingsViewModel(
             library: DictionaryLibrary(repository: repository),
+            settingsStore: settingsStore,
             dateFormatter: FakeDateFormatter()
         )
 
@@ -24,6 +32,30 @@ final class SettingsViewModelTests: XCTestCase {
         )
         XCTAssertEqual(viewModel.metadataBuiltAtDisplay, "displayed(2026-04-30T00:00:00Z)")
         XCTAssertEqual(viewModel.metadataSourceModifiedAtDisplay, "displayed(2026-04-29T00:00:00Z)")
+        XCTAssertEqual(viewModel.selectedLocale, .english)
+        XCTAssertEqual(viewModel.selectedThemePreference, .dark)
+        XCTAssertEqual(viewModel.readingTextScale, 1.2)
+    }
+
+    func testSettersPersistUpdatedPreferences() async {
+        let repository = SettingsRepository(supportsMaintenance: true)
+        let settingsStore = TestAppSettingsStore()
+        let viewModel = SettingsViewModel(
+            library: DictionaryLibrary(repository: repository),
+            settingsStore: settingsStore
+        )
+
+        await viewModel.setLocale(.simplifiedChinese)
+        await viewModel.setThemePreference(.amoled)
+        await viewModel.setReadingTextScale(1.36)
+        let persisted = await settingsStore.load()
+
+        XCTAssertEqual(viewModel.selectedLocale, .simplifiedChinese)
+        XCTAssertEqual(viewModel.selectedThemePreference, .amoled)
+        XCTAssertEqual(viewModel.readingTextScale, 1.4)
+        XCTAssertEqual(persisted.interfaceLocale, .simplifiedChinese)
+        XCTAssertEqual(persisted.themePreference, .amoled)
+        XCTAssertEqual(persisted.readingTextScale, 1.4)
     }
 
     func testRunRebuildReportsSuccessMessage() async {
@@ -170,5 +202,29 @@ private actor SettingsRepository: DictionaryRepositoryProtocol {
     func clearInstalledDatabase() async throws {
         clearInstalledCount += 1
         metadataValue = nil
+    }
+}
+
+private actor TestAppSettingsStore: AppSettingsStoring {
+    private var snapshot: AppSettingsSnapshot
+
+    init(snapshot: AppSettingsSnapshot = AppSettingsSnapshot()) {
+        self.snapshot = snapshot
+    }
+
+    func load() async -> AppSettingsSnapshot {
+        snapshot
+    }
+
+    func setInterfaceLocale(_ locale: AppLocale) async {
+        snapshot.interfaceLocale = locale
+    }
+
+    func setThemePreference(_ preference: AppThemePreference) async {
+        snapshot.themePreference = preference
+    }
+
+    func setReadingTextScale(_ value: Double) async {
+        snapshot.readingTextScale = AppSettingsSnapshot.snapReadingTextScale(value)
     }
 }
