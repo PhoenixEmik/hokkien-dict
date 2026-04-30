@@ -62,10 +62,8 @@ private struct LicenseStaticRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Image(systemName: systemImage)
-                .font(.title3)
-                .foregroundStyle(.secondary)
-                .frame(width: 24)
+            SettingsIconBadge(systemImage: systemImage)
+                .padding(.top, 1)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
@@ -88,10 +86,8 @@ private struct LicenseExternalLinkRow: View {
     var body: some View {
         Link(destination: destination) {
             HStack(alignment: .top, spacing: 12) {
-                Image(systemName: systemImage)
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
-                    .frame(width: 24)
+                SettingsIconBadge(systemImage: systemImage)
+                    .padding(.top, 1)
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
@@ -122,10 +118,8 @@ private struct LicenseNavigationRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Image(systemName: systemImage)
-                .font(.title3)
-                .foregroundStyle(.secondary)
-                .frame(width: 24)
+            SettingsIconBadge(systemImage: systemImage)
+                .padding(.top, 1)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)

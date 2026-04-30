@@ -163,7 +163,10 @@ private struct AboutValueRow: View {
             Text(value)
                 .foregroundStyle(.secondary)
         } label: {
-            Label(title, systemImage: systemImage)
+            HStack(spacing: 12) {
+                SettingsIconBadge(systemImage: systemImage)
+                Text(title)
+            }
         }
     }
 }
@@ -176,8 +179,11 @@ private struct AboutExternalLinkRow: View {
     var body: some View {
         Link(destination: destination) {
             HStack {
-                Label(title, systemImage: systemImage)
-                    .foregroundStyle(.primary)
+                HStack(spacing: 12) {
+                    SettingsIconBadge(systemImage: systemImage)
+                    Text(title)
+                }
+                .foregroundStyle(.primary)
 
                 Spacer(minLength: 12)
 
@@ -195,7 +201,10 @@ private struct AboutNavigationRow: View {
     let systemImage: String
 
     var body: some View {
-        Label(title, systemImage: systemImage)
+        HStack(spacing: 12) {
+            SettingsIconBadge(systemImage: systemImage)
+            Text(title)
+        }
             .padding(.vertical, 4)
     }
 }
