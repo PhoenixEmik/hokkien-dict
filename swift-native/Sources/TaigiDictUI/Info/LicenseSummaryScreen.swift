@@ -13,122 +13,53 @@ struct LicenseSummaryScreen: View {
     var body: some View {
         List {
             Section {
-                LicenseStaticRow(
-                    systemImage: "chevron.left.forwardslash.chevron.right",
-                    title: AppLocalizer.text(.licenseAppCode, locale: appLocale),
-                    subtitle: AppLocalizer.text(.licenseAppCodeDescription, locale: appLocale)
-                )
+                LabeledContent {
+                    Text(AppLocalizer.text(.licenseAppCodeDescription, locale: appLocale))
+                        .foregroundStyle(.secondary)
+                } label: {
+                    Label(AppLocalizer.text(.licenseAppCode, locale: appLocale), systemImage: "chevron.left.forwardslash.chevron.right")
+                }
 
-                LicenseStaticRow(
-                    systemImage: "book.closed",
-                    title: AppLocalizer.text(.licenseData, locale: appLocale),
-                    subtitle: AppLocalizer.text(.licenseDataDescription, locale: appLocale)
-                )
+                LabeledContent {
+                    Text(AppLocalizer.text(.licenseDataDescription, locale: appLocale))
+                        .foregroundStyle(.secondary)
+                } label: {
+                    Label(AppLocalizer.text(.licenseData, locale: appLocale), systemImage: "book.closed")
+                }
 
-                LicenseStaticRow(
-                    systemImage: "speaker.wave.2",
-                    title: AppLocalizer.text(.licenseAudio, locale: appLocale),
-                    subtitle: AppLocalizer.text(.licenseAudioDescription, locale: appLocale)
-                )
+                LabeledContent {
+                    Text(AppLocalizer.text(.licenseAudioDescription, locale: appLocale))
+                        .foregroundStyle(.secondary)
+                } label: {
+                    Label(AppLocalizer.text(.licenseAudio, locale: appLocale), systemImage: "speaker.wave.2")
+                }
 
-                LicenseExternalLinkRow(
-                    systemImage: "c.circle",
-                    title: AppLocalizer.text(.licenseMinistryCopyright, locale: appLocale),
-                    subtitle: ministryCopyrightURL.absoluteString,
-                    destination: ministryCopyrightURL
-                )
+                Link(destination: ministryCopyrightURL) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Label(AppLocalizer.text(.licenseMinistryCopyright, locale: appLocale), systemImage: "c.circle")
+                        Text(ministryCopyrightURL.absoluteString)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.leading)
+                    }
+                    .padding(.vertical, 4)
+                }
             }
 
             Section {
                 NavigationLink {
                     LicenseOverviewScreen()
                 } label: {
-                    LicenseNavigationRow(
-                        systemImage: "swift",
-                        title: AppLocalizer.text(.licenseThirdParty, locale: appLocale),
-                        subtitle: AppLocalizer.text(.licenseViewThirdParty, locale: appLocale)
-                    )
+                    VStack(alignment: .leading, spacing: 4) {
+                        Label(AppLocalizer.text(.licenseThirdParty, locale: appLocale), systemImage: "swift")
+                        Text(AppLocalizer.text(.licenseViewThirdParty, locale: appLocale))
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 4)
                 }
             }
         }
         .navigationTitle(AppLocalizer.text(.licenseTitle, locale: appLocale))
-    }
-}
-
-private struct LicenseStaticRow: View {
-    let systemImage: String
-    let title: String
-    let subtitle: String
-
-    var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            SettingsIconBadge(systemImage: systemImage)
-                .padding(.top, 1)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.headline)
-                Text(subtitle)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.leading)
-            }
-        }
-        .padding(.vertical, 4)
-    }
-}
-
-private struct LicenseExternalLinkRow: View {
-    let systemImage: String
-    let title: String
-    let subtitle: String
-    let destination: URL
-
-    var body: some View {
-        Link(destination: destination) {
-            HStack(alignment: .top, spacing: 12) {
-                SettingsIconBadge(systemImage: systemImage)
-                    .padding(.top, 1)
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-                    Text(subtitle)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.leading)
-                        .textSelection(.enabled)
-                }
-
-                Spacer(minLength: 12)
-
-                Image(systemName: "arrow.up.right.square")
-                    .foregroundStyle(.secondary)
-                    .padding(.top, 2)
-            }
-            .padding(.vertical, 4)
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-private struct LicenseNavigationRow: View {
-    let systemImage: String
-    let title: String
-    let subtitle: String
-
-    var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            SettingsIconBadge(systemImage: systemImage)
-                .padding(.top, 1)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.headline)
-                Text(subtitle)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.leading)
-            }
-        }
-        .padding(.vertical, 4)
     }
 }

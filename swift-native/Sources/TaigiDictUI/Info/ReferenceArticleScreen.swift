@@ -28,7 +28,7 @@ struct ReferenceArticleListScreen: View {
                     ]
                 )
             } label: {
-                Label(AppLocalizer.text(.referenceTaiLoTitle, locale: appLocale), systemImage: "character.book.closed")
+                Label(AppLocalizer.text(.referenceTaiLoTitle, locale: appLocale), systemImage: "text.book.closed")
             }
 
             NavigationLink {
@@ -45,7 +45,7 @@ struct ReferenceArticleListScreen: View {
                     tableRows: []
                 )
             } label: {
-                Label(AppLocalizer.text(.referenceHanjiTitle, locale: appLocale), systemImage: "textformat.abc")
+                Label(AppLocalizer.text(.referenceHanjiTitle, locale: appLocale), systemImage: "character.textbox")
             }
         }
         .navigationTitle(AppLocalizer.text(.referenceTitle, locale: appLocale))
