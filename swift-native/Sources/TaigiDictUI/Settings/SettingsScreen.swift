@@ -12,6 +12,7 @@ public struct SettingsScreen: View {
         settingsStore: any AppSettingsStoring = UserDefaultsAppSettingsStore(),
         dictionarySourceStore: (any DictionarySourceResourceManaging)? = nil,
         offlineAudioStore: (any OfflineAudioManaging)? = nil,
+        initialSettings: AppSettingsSnapshot = AppSettingsSnapshot(),
         onMaintenanceCompleted: @escaping () -> Void = {},
         onSettingsChanged: @escaping (AppSettingsSnapshot) -> Void = { _ in }
     ) {
@@ -20,7 +21,8 @@ public struct SettingsScreen: View {
                 library: library,
                 settingsStore: settingsStore,
                 dictionarySourceStore: dictionarySourceStore,
-                offlineAudioStore: offlineAudioStore
+                offlineAudioStore: offlineAudioStore,
+                initialSettings: initialSettings
             )
         )
         self.onMaintenanceCompleted = onMaintenanceCompleted

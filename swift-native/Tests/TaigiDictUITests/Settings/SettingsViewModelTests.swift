@@ -58,6 +58,22 @@ final class SettingsViewModelTests: XCTestCase {
         XCTAssertEqual(persisted.readingTextScale, 1.4)
     }
 
+    func testInitialSettingsAreAvailableBeforeAsyncLoad() {
+        let repository = SettingsRepository(supportsMaintenance: true)
+        let viewModel = SettingsViewModel(
+            library: DictionaryLibrary(repository: repository),
+            initialSettings: AppSettingsSnapshot(
+                interfaceLocale: .english,
+                themePreference: .dark,
+                readingTextScale: 1.2
+            )
+        )
+
+        XCTAssertEqual(viewModel.selectedLocale, .english)
+        XCTAssertEqual(viewModel.selectedThemePreference, .dark)
+        XCTAssertEqual(viewModel.readingTextScale, 1.2)
+    }
+
     func testRunRebuildReportsSuccessMessage() async {
         let repository = SettingsRepository(supportsMaintenance: true)
         let viewModel = SettingsViewModel(library: DictionaryLibrary(repository: repository))

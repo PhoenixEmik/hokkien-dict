@@ -40,13 +40,17 @@ public final class SettingsViewModel {
         settingsStore: any AppSettingsStoring = UserDefaultsAppSettingsStore(),
         dictionarySourceStore: (any DictionarySourceResourceManaging)? = nil,
         offlineAudioStore: (any OfflineAudioManaging)? = nil,
-        dateFormatter: any SettingsDateFormatting = SettingsDateFormatter()
+        dateFormatter: any SettingsDateFormatting = SettingsDateFormatter(),
+        initialSettings: AppSettingsSnapshot = AppSettingsSnapshot()
     ) {
         self.library = library
         self.settingsStore = settingsStore
         self.dictionarySourceStore = dictionarySourceStore
         self.offlineAudioStore = offlineAudioStore
         self.dateFormatter = dateFormatter
+        selectedLocale = initialSettings.interfaceLocale
+        selectedThemePreference = initialSettings.themePreference
+        readingTextScale = initialSettings.readingTextScale
     }
 
     public var minReadingTextScale: Double {

@@ -11,6 +11,7 @@ public struct TaigiDictAppRootView: View {
     @State private var offlineAudioStore: OfflineAudioStore
     @State private var appSettings = AppSettingsSnapshot()
     @State private var hasLoadedAppSettings = false
+    @State private var selectedTab: AppTab = .dictionary
 
     private let settingsStore: any AppSettingsStoring
     private let conversionService: (any ChineseConversionProviding)?
@@ -92,7 +93,7 @@ public struct TaigiDictAppRootView: View {
 
     private var mainTabView: some View {
         let appLocale = appSettings.interfaceLocale
-        return TabView {
+        return TabView(selection: $selectedTab) {
             DictionarySearchScreen(
                 viewModel: viewModel,
                 bookmarkStore: bookmarkStore,
@@ -102,6 +103,7 @@ public struct TaigiDictAppRootView: View {
                 .tabItem {
                     Label(AppLocalizer.text(.tabDictionary, locale: appLocale), systemImage: "book")
                 }
+                .tag(AppTab.dictionary)
 
             BookmarksScreen(
                 library: viewModel.library,
@@ -112,12 +114,14 @@ public struct TaigiDictAppRootView: View {
             .tabItem {
                 Label(AppLocalizer.text(.tabBookmarks, locale: appLocale), systemImage: "bookmark")
             }
+            .tag(AppTab.bookmarks)
 
             SettingsScreen(
                 library: viewModel.library,
                 settingsStore: settingsStore,
                 dictionarySourceStore: dictionarySourceStore,
-                offlineAudioStore: offlineAudioStore
+                offlineAudioStore: offlineAudioStore,
+                initialSettings: appSettings
             ) {
                 Task { @MainActor in
                     await viewModel.resetAfterMaintenance()
@@ -130,7 +134,9 @@ public struct TaigiDictAppRootView: View {
             .tabItem {
                 Label(AppLocalizer.text(.tabSettings, locale: appLocale), systemImage: "gearshape")
             }
+            .tag(AppTab.settings)
         }
+        .id(appSettings.interfaceLocale)
     }
 
     private func loadAppSettingsIfNeeded() async {
@@ -160,6 +166,12 @@ public struct TaigiDictAppRootView: View {
 
         return OfflineAudioStore(storage: storage)
     }
+}
+
+private enum AppTab: Hashable {
+    case dictionary
+    case bookmarks
+    case settings
 }
 
 private extension AppThemePreference {

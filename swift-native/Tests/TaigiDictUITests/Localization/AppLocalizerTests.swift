@@ -33,6 +33,15 @@ final class AppLocalizerTests: XCTestCase {
         XCTAssertEqual(AppLocalizer.appLocale(from: Locale(identifier: "en")), .english)
     }
 
+    func testAppLocaleResolvesStoredSettingsLocaleIdentifiers() {
+        for locale in AppLocale.allCases {
+            XCTAssertEqual(
+                AppLocalizer.appLocale(from: Locale(identifier: locale.rawValue)),
+                locale
+            )
+        }
+    }
+
     func testAllLocalizedKeysResolveFromResourceCatalog() {
         for key in AppLocalizedStringKey.allCases {
             for locale in AppLocale.allCases {
