@@ -56,6 +56,23 @@ final class WordDetailViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.openableWords, ["字典"])
     }
 
+    func testLinkedEntryReturnsOpenableRelationshipEntry() async {
+        let primary = entry(
+            id: 1,
+            hanji: "完全",
+            romanization: "uân-tsuân",
+            wordAntonyms: ["無全"]
+        )
+        let linked = entry(id: 2, hanji: "無全", romanization: "bô-tsuân")
+        let repository = InMemoryRepository(entries: [primary, linked])
+        let viewModel = WordDetailViewModel(library: DictionaryLibrary(repository: repository))
+
+        await viewModel.prepare(entry: primary)
+        let linkedEntry = await viewModel.linkedEntry(for: "無全")
+
+        XCTAssertEqual(linkedEntry?.id, 2)
+    }
+
     func testPrepareDoesNotOpenLinkedRelationshipWordWithoutSenses() async {
         let primary = entry(
             id: 1,
@@ -260,6 +277,7 @@ private func entry(
     definition: String = "",
     variantChars: [String] = [],
     wordSynonyms: [String] = [],
+    wordAntonyms: [String] = [],
     aliasTargetEntryID: Int64? = nil,
     hasSenses: Bool = true
 ) -> DictionaryEntry {
@@ -274,6 +292,7 @@ private func entry(
         mandarinSearch: definition,
         variantChars: variantChars,
         wordSynonyms: wordSynonyms,
+        wordAntonyms: wordAntonyms,
         aliasTargetEntryID: aliasTargetEntryID,
         senses: hasSenses ? [
             DictionarySense(partOfSpeech: "名詞", definition: definition),

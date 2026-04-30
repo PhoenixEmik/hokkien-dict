@@ -75,7 +75,7 @@ public struct BookmarksScreen: View {
                     bookmarkStore: bookmarkStore,
                     offlineAudioStore: offlineAudioStore,
                     conversionService: conversionService
-                ) { _ in }
+                )
                 .navigationTitle(entry.hanji)
                 .taigiInlineNavigationTitle()
             }

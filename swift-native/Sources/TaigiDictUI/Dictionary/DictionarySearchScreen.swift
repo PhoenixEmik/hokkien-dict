@@ -37,9 +37,7 @@ public struct DictionarySearchScreen: View {
                     bookmarkStore: bookmarkStore,
                     offlineAudioStore: offlineAudioStore,
                     conversionService: conversionService
-                ) { entry in
-                    viewModel.select(entry)
-                }
+                )
                 .navigationTitle(viewModel.selectedEntry?.hanji ?? AppLocalizer.text(.dictionaryTitle, locale: appLocale))
             }
         } else {
@@ -53,9 +51,7 @@ public struct DictionarySearchScreen: View {
                             bookmarkStore: bookmarkStore,
                             offlineAudioStore: offlineAudioStore,
                             conversionService: conversionService
-                        ) { linkedEntry in
-                            viewModel.select(linkedEntry)
-                        }
+                        )
                         .navigationTitle(entry.hanji)
                         #if os(iOS)
                         .navigationBarTitleDisplayMode(.inline)

@@ -3,25 +3,25 @@ import TaigiDictCore
 
 struct DictionaryDetailView: View {
     var sourceEntry: DictionaryEntry?
-    var openEntry: (DictionaryEntry) -> Void
     @Environment(\.locale) private var locale
+    private let library: DictionaryLibrary
     private let bookmarkStore: (any BookmarksStoreProtocol)?
     private let offlineAudioStore: (any OfflineAudioManaging)?
     private let conversionService: (any ChineseConversionProviding)?
 
     @State private var viewModel: WordDetailViewModel
     @State private var isBookmarked = false
+    @State private var linkedEntry: DictionaryEntry?
 
     init(
         entry: DictionaryEntry?,
         library: DictionaryLibrary,
         bookmarkStore: (any BookmarksStoreProtocol)? = nil,
         offlineAudioStore: (any OfflineAudioManaging)? = nil,
-        conversionService: (any ChineseConversionProviding)? = nil,
-        openEntry: @escaping (DictionaryEntry) -> Void
+        conversionService: (any ChineseConversionProviding)? = nil
     ) {
         self.sourceEntry = entry
-        self.openEntry = openEntry
+        self.library = library
         self.bookmarkStore = bookmarkStore
         self.offlineAudioStore = offlineAudioStore
         self.conversionService = conversionService
@@ -196,6 +196,17 @@ struct DictionaryDetailView: View {
                 }
             }
         }
+        .navigationDestination(item: $linkedEntry) { entry in
+            DictionaryDetailView(
+                entry: entry,
+                library: library,
+                bookmarkStore: bookmarkStore,
+                offlineAudioStore: offlineAudioStore,
+                conversionService: conversionService
+            )
+            .navigationTitle(entry.hanji)
+            .taigiInlineNavigationTitle()
+        }
         .task(id: sourceEntry?.id) {
             guard let sourceEntry else {
                 return
@@ -213,7 +224,7 @@ struct DictionaryDetailView: View {
             guard let linkedEntry = await viewModel.linkedEntry(for: word, locale: appLocale) else {
                 return
             }
-            openEntry(linkedEntry)
+            self.linkedEntry = linkedEntry
         }
     }
 
