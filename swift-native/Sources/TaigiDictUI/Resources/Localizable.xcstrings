@@ -82,19 +82,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "GitHub"
+            "value" : "Open Source"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "GitHub"
+            "value" : "开源"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "GitHub"
+            "value" : "開放源碼"
           }
         }
       }

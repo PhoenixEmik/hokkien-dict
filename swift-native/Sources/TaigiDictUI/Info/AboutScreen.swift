@@ -41,7 +41,9 @@ struct AboutScreen: View {
                 Label(AppLocalizer.text(.aboutAuthor, locale: appLocale), systemImage: "person.crop.circle")
             }
 
-            Link(destination: repositoryURL) {
+            LabeledContent {
+                Link("GitHub", destination: repositoryURL)
+            } label: {
                 Label(AppLocalizer.text(.aboutGitHub, locale: appLocale), systemImage: "chevron.left.forwardslash.chevron.right")
             }
         }
