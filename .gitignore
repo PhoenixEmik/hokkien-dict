@@ -17,6 +17,7 @@ data/source/*.ods
 android/key.properties
 *.jks
 .vscode
+*.xcuserstate
 
 # IntelliJ related
 *.iml
