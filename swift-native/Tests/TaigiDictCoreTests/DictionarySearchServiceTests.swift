@@ -57,6 +57,38 @@ final class DictionarySearchServiceTests: XCTestCase {
 
         XCTAssertEqual(results.map(\.id), [3, 1, 2])
     }
+
+    func testSearchMatchesMandarinAndExampleText() {
+        let index = DictionarySearchService.buildSearchIndex(entries: [
+            DictionaryEntry(
+                id: 1,
+                type: "",
+                hanji: "船",
+                romanization: "tsûn",
+                category: "",
+                audioID: "",
+                hokkienSearch: "船 tsun",
+                mandarinSearch: "海上的交通工具",
+                senses: [
+                    DictionarySense(
+                        partOfSpeech: "",
+                        definition: "航行的工具。",
+                        examples: [
+                            DictionaryExample(
+                                hanji: "這本工具冊有寫著船的用法。",
+                                romanization: "Tsit pún kang-kū-tshik ū siá tio̍h tsûn ê iōng-huat.",
+                                mandarin: "這本工具冊有寫到船的用法。",
+                                audioID: ""
+                            )
+                        ]
+                    )
+                ]
+            )
+        ])
+
+        XCTAssertEqual(DictionarySearchService.searchEntryIDs(index: index, query: "交通工具"), [1])
+        XCTAssertEqual(DictionarySearchService.searchEntryIDs(index: index, query: "工具冊"), [1])
+    }
 }
 
 private func entry(

@@ -24,11 +24,13 @@ let package = Package(
         ),
     ],
     dependencies: [
-        // TODO: pin to a release tag or commit after the first successful
-        // dependency resolution in Xcode Cloud.
         .package(
             url: "https://github.com/PhoenixEmik/SwiftyOpenCC.git",
-            branch: "master"
+            revision: "53f200cebe40eade3ebda025b0e8980e08cf23fa"
+        ),
+        .package(
+            url: "https://github.com/groue/GRDB.swift.git",
+            exact: "7.10.0"
         ),
     ],
     targets: [
@@ -36,6 +38,7 @@ let package = Package(
             name: "TaigiDictCore",
             dependencies: [
                 .product(name: "OpenCC", package: "SwiftyOpenCC"),
+                .product(name: "GRDB", package: "GRDB.swift"),
             ]
         ),
         .target(

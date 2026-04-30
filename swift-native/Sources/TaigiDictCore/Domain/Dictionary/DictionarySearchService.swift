@@ -63,7 +63,15 @@ public enum DictionarySearchService {
     }
 
     private static func definitionFields(for entry: DictionaryEntry) -> [String] {
-        uniqueNonEmpty(entry.senses.map { TextNormalization.normalizeQuery($0.definition) })
+        let senseFields = entry.senses.flatMap { sense in
+            [sense.definition] + sense.definitionSynonyms + sense.definitionAntonyms +
+                sense.examples.flatMap { [$0.hanji, $0.romanization, $0.mandarin] }
+        }
+
+        return uniqueNonEmpty(
+            [entry.mandarinSearch] + senseFields
+                .map(TextNormalization.normalizeQuery)
+        )
     }
 
     private static func bestMatchLength(fields: [String], query: String) -> Int? {
