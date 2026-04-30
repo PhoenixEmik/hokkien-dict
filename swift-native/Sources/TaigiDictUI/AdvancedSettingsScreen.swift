@@ -1,12 +1,18 @@
 import SwiftUI
+import TaigiDictCore
 
 struct AdvancedSettingsScreen: View {
     @Bindable var viewModel: SettingsViewModel
+    @Environment(\.locale) private var locale
     var onMaintenanceCompleted: () -> Void
+
+    private var appLocale: AppLocale {
+        AppLocalizer.appLocale(from: locale)
+    }
 
     var body: some View {
         List {
-            Section("資料維護") {
+            Section(AppLocalizer.text(.advancedMaintenanceSection, locale: appLocale)) {
                 if viewModel.supportsDataMaintenance {
                     Button {
                         Task {
@@ -15,46 +21,46 @@ struct AdvancedSettingsScreen: View {
                             }
                         }
                     } label: {
-                        Label("重建本機辭典資料", systemImage: "arrow.clockwise")
+                        Label(AppLocalizer.text(.advancedRebuild, locale: appLocale), systemImage: "arrow.clockwise")
                     }
                     .disabled(viewModel.isRunningAction)
 
                     Button(role: .destructive) {
                         viewModel.requestClearConfirmation()
                     } label: {
-                        Label("清除本機辭典資料", systemImage: "trash")
+                        Label(AppLocalizer.text(.advancedClear, locale: appLocale), systemImage: "trash")
                     }
                     .disabled(viewModel.isRunningAction)
                 } else {
-                    Text("目前資料來源不支援本機維護操作。")
+                    Text(AppLocalizer.text(.advancedMaintenanceUnsupported, locale: appLocale))
                         .foregroundStyle(.secondary)
                 }
             }
 
             if let summary = viewModel.librarySummary {
-                Section("目前資料庫摘要") {
-                    LabeledContent("詞目數") {
+                Section(AppLocalizer.text(.advancedSummarySection, locale: appLocale)) {
+                    LabeledContent(AppLocalizer.text(.advancedEntryCount, locale: appLocale)) {
                         Text("\(summary.entryCount)")
                     }
-                    LabeledContent("義項數") {
+                    LabeledContent(AppLocalizer.text(.advancedSenseCount, locale: appLocale)) {
                         Text("\(summary.senseCount)")
                     }
-                    LabeledContent("例句數") {
+                    LabeledContent(AppLocalizer.text(.advancedExampleCount, locale: appLocale)) {
                         Text("\(summary.exampleCount)")
                     }
                 }
             }
 
             if viewModel.libraryMetadata != nil {
-                Section("資料來源時間") {
+                Section(AppLocalizer.text(.advancedSourceTimeSection, locale: appLocale)) {
                     if let builtAt = viewModel.metadataBuiltAtDisplay {
-                        LabeledContent("建置時間") {
+                        LabeledContent(AppLocalizer.text(.advancedBuiltAt, locale: appLocale)) {
                             Text(builtAt)
                         }
                     }
 
                     if let sourceModifiedAt = viewModel.metadataSourceModifiedAtDisplay {
-                        LabeledContent("來源更新") {
+                        LabeledContent(AppLocalizer.text(.advancedSourceUpdated, locale: appLocale)) {
                             Text(sourceModifiedAt)
                         }
                     }
@@ -65,14 +71,14 @@ struct AdvancedSettingsScreen: View {
                 Section {
                     HStack {
                         ProgressView()
-                        Text("資料維護作業進行中")
+                        Text(AppLocalizer.text(.advancedRunning, locale: appLocale))
                     }
                 }
             }
 
-            if let statusMessage = viewModel.statusMessage {
-                Section("狀態") {
-                    Label(statusMessage, systemImage: "checkmark.circle.fill")
+            if let statusMessageKey = viewModel.statusMessageKey {
+                Section(AppLocalizer.text(.advancedStatusSection, locale: appLocale)) {
+                    Label(AppLocalizer.text(statusMessageKey, locale: appLocale), systemImage: "checkmark.circle.fill")
                         .symbolRenderingMode(.hierarchical)
                         .foregroundStyle(.tint)
                 }
@@ -81,13 +87,13 @@ struct AdvancedSettingsScreen: View {
             if let errorMessage = viewModel.errorMessage {
                 Section {
                     ContentUnavailableView(
-                        "作業失敗",
+                        AppLocalizer.text(.advancedFailedTitle, locale: appLocale),
                         systemImage: "exclamationmark.triangle",
                         description: Text(errorMessage)
                     )
                 }
             }
         }
-        .navigationTitle("進階設定")
+        .navigationTitle(AppLocalizer.text(.advancedTitle, locale: appLocale))
     }
 }

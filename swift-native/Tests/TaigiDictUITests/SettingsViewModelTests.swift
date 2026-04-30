@@ -66,7 +66,7 @@ final class SettingsViewModelTests: XCTestCase {
         let rebuildCount = await repository.rebuildCount
 
         XCTAssertTrue(result)
-        XCTAssertEqual(viewModel.statusMessage, "本機辭典資料已重建。")
+        XCTAssertEqual(viewModel.statusMessageKey, .advancedRebuildCompleted)
         XCTAssertNil(viewModel.errorMessage)
         XCTAssertEqual(rebuildCount, 1)
     }
@@ -82,7 +82,7 @@ final class SettingsViewModelTests: XCTestCase {
         let clearInstalledCount = await repository.clearInstalledCount
 
         XCTAssertTrue(result)
-        XCTAssertEqual(viewModel.statusMessage, "本機辭典資料已清除。")
+        XCTAssertEqual(viewModel.statusMessageKey, .advancedClearCompleted)
         XCTAssertNil(viewModel.errorMessage)
         XCTAssertNil(viewModel.librarySummary)
         XCTAssertNil(viewModel.libraryMetadata)
@@ -104,7 +104,7 @@ final class SettingsViewModelTests: XCTestCase {
 
         XCTAssertFalse(result)
         XCTAssertNotNil(viewModel.errorMessage)
-        XCTAssertNil(viewModel.statusMessage)
+        XCTAssertNil(viewModel.statusMessageKey)
     }
 
     func testClearConfirmationFlowRequiresExplicitConfirm() async {

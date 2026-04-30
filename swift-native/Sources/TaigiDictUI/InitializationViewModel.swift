@@ -5,11 +5,16 @@ import TaigiDictCore
 @MainActor
 @Observable
 public final class InitializationViewModel {
+    public enum FailureReason: Equatable {
+        case library(String)
+        case initializationIncomplete
+    }
+
     public enum State: Equatable {
         case idle
         case loading
         case ready
-        case failed(String)
+        case failed(FailureReason)
     }
 
     public private(set) var state: State = .idle
@@ -25,9 +30,9 @@ public final class InitializationViewModel {
         case .ready:
             state = .ready
         case .failed(let message):
-            state = .failed(message)
+            state = .failed(.library(message))
         case .idle, .loading:
-            state = .failed("辭典初始化流程未完成。")
+            state = .failed(.initializationIncomplete)
         }
     }
 

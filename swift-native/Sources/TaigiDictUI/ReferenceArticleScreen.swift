@@ -1,19 +1,26 @@
 import SwiftUI
+import TaigiDictCore
 
 struct ReferenceArticleListScreen: View {
+    @Environment(\.locale) private var locale
+
+    private var appLocale: AppLocale {
+        AppLocalizer.appLocale(from: locale)
+    }
+
     var body: some View {
         List {
             NavigationLink {
                 ReferenceArticleScreen(
-                    title: "臺羅標注說明",
+                    title: AppLocalizer.text(.referenceTaiLoTitle, locale: appLocale),
                     paragraphs: [
-                        "臺羅是台語常見拼寫系統，重點在聲調與音節分界。",
-                        "搜尋時可輸入有調或無調格式，系統會做正規化處理。",
+                        AppLocalizer.text(.referenceTaiLoP1, locale: appLocale),
+                        AppLocalizer.text(.referenceTaiLoP2, locale: appLocale),
                     ],
                     bullets: [
-                        "可使用連字號分隔音節",
-                        "大小寫不影響搜尋",
-                        "數字調號會在搜尋正規化中處理",
+                        AppLocalizer.text(.referenceTaiLoB1, locale: appLocale),
+                        AppLocalizer.text(.referenceTaiLoB2, locale: appLocale),
+                        AppLocalizer.text(.referenceTaiLoB3, locale: appLocale),
                     ],
                     tableRows: [
                         ("oo", "o-dot-right"),
@@ -21,40 +28,42 @@ struct ReferenceArticleListScreen: View {
                     ]
                 )
             } label: {
-                Label("臺羅標注說明", systemImage: "character.book.closed")
+                Label(AppLocalizer.text(.referenceTaiLoTitle, locale: appLocale), systemImage: "character.book.closed")
             }
 
             NavigationLink {
                 ReferenceArticleScreen(
-                    title: "漢字用字原則",
+                    title: AppLocalizer.text(.referenceHanjiTitle, locale: appLocale),
                     paragraphs: [
-                        "辭典內容以教育部資料來源為準。",
-                        "同音異字、異用字會在詞條中提供對照。",
+                        AppLocalizer.text(.referenceHanjiP1, locale: appLocale),
+                        AppLocalizer.text(.referenceHanjiP2, locale: appLocale),
                     ],
                     bullets: [
-                        "優先採用主流教育體系常見用字",
-                        "異體與俗字會在詞條標示",
+                        AppLocalizer.text(.referenceHanjiB1, locale: appLocale),
+                        AppLocalizer.text(.referenceHanjiB2, locale: appLocale),
                     ],
                     tableRows: []
                 )
             } label: {
-                Label("漢字用字原則", systemImage: "textformat.abc")
+                Label(AppLocalizer.text(.referenceHanjiTitle, locale: appLocale), systemImage: "textformat.abc")
             }
         }
-        .navigationTitle("參考資料")
+        .navigationTitle(AppLocalizer.text(.referenceTitle, locale: appLocale))
     }
 }
 
 struct ReferenceArticleScreen: View {
+    @Environment(\.locale) private var locale
     var title: String
     var paragraphs: [String]
     var bullets: [String]
     var tableRows: [(String, String)]
 
     var body: some View {
+        let appLocale = AppLocalizer.appLocale(from: locale)
         List {
             if !paragraphs.isEmpty {
-                Section("內文") {
+                Section(AppLocalizer.text(.referenceContentSection, locale: appLocale)) {
                     ForEach(paragraphs, id: \.self) { paragraph in
                         Text(paragraph)
                     }
@@ -62,7 +71,7 @@ struct ReferenceArticleScreen: View {
             }
 
             if !bullets.isEmpty {
-                Section("重點") {
+                Section(AppLocalizer.text(.referenceKeyPointsSection, locale: appLocale)) {
                     ForEach(bullets, id: \.self) { bullet in
                         Label(bullet, systemImage: "circle.fill")
                             .symbolRenderingMode(.monochrome)
@@ -72,7 +81,7 @@ struct ReferenceArticleScreen: View {
             }
 
             if !tableRows.isEmpty {
-                Section("對照") {
+                Section(AppLocalizer.text(.referenceMappingSection, locale: appLocale)) {
                     ForEach(Array(tableRows.enumerated()), id: \.offset) { _, row in
                         LabeledContent(row.0) {
                             Text(row.1)

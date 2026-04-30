@@ -3,6 +3,7 @@ import TaigiDictCore
 
 public struct SettingsScreen: View {
     @State private var viewModel: SettingsViewModel
+    @Environment(\.locale) private var locale
     private let onMaintenanceCompleted: () -> Void
     private let onSettingsChanged: (AppSettingsSnapshot) -> Void
 
@@ -25,10 +26,11 @@ public struct SettingsScreen: View {
     }
 
     public var body: some View {
+        let appLocale = AppLocalizer.appLocale(from: locale)
         NavigationStack {
             Form {
-                Section("顯示與語言") {
-                    Picker("介面語言", selection: Binding(
+                Section(AppLocalizer.text(.settingsDisplayLanguageSection, locale: appLocale)) {
+                    Picker(AppLocalizer.text(.settingsInterfaceLanguageLabel, locale: appLocale), selection: Binding(
                         get: { viewModel.selectedLocale },
                         set: { locale in
                             Task {
@@ -38,12 +40,12 @@ public struct SettingsScreen: View {
                         }
                     )) {
                         ForEach(AppLocale.allCases, id: \.self) { locale in
-                            Text(locale.displayName)
+                            Text(locale.displayName(in: appLocale))
                                 .tag(locale)
                         }
                     }
 
-                    Picker("主題", selection: Binding(
+                    Picker(AppLocalizer.text(.settingsThemeLabel, locale: appLocale), selection: Binding(
                         get: { viewModel.selectedThemePreference },
                         set: { preference in
                             Task {
@@ -53,13 +55,13 @@ public struct SettingsScreen: View {
                         }
                     )) {
                         ForEach(AppThemePreference.allCases, id: \.self) { preference in
-                            Text(preference.displayName)
+                            Text(preference.displayName(in: appLocale))
                                 .tag(preference)
                         }
                     }
 
                     VStack(alignment: .leading, spacing: 8) {
-                        LabeledContent("閱讀字級") {
+                        LabeledContent(AppLocalizer.text(.settingsReadingTextScaleLabel, locale: appLocale)) {
                             Text(viewModel.readingTextScale.displayScaleLabel)
                                 .monospacedDigit()
                         }
@@ -80,37 +82,38 @@ public struct SettingsScreen: View {
                     }
                 }
 
-                Section("資料與說明") {
+                Section(AppLocalizer.text(.settingsDataAndInfoSection, locale: appLocale)) {
                     NavigationLink {
                         AdvancedSettingsScreen(viewModel: viewModel) {
                             onMaintenanceCompleted()
                         }
                     } label: {
-                        Label("進階設定", systemImage: "wrench.and.screwdriver")
+                        Label(AppLocalizer.text(.settingsAdvanced, locale: appLocale), systemImage: "wrench.and.screwdriver")
                     }
 
                     NavigationLink {
                         AboutScreen()
                     } label: {
-                        Label("關於", systemImage: "info.circle")
+                        Label(AppLocalizer.text(.settingsAbout, locale: appLocale), systemImage: "info.circle")
                     }
 
                     NavigationLink {
                         LicenseSummaryScreen()
                     } label: {
-                        Label("授權資訊", systemImage: "doc.text")
+                        Label(AppLocalizer.text(.settingsLicenses, locale: appLocale), systemImage: "doc.text")
                     }
 
                     NavigationLink {
                         ReferenceArticleListScreen()
                     } label: {
-                        Label("參考資料", systemImage: "text.book.closed")
+                        Label(AppLocalizer.text(.settingsReferences, locale: appLocale), systemImage: "text.book.closed")
                     }
                 }
 
-                Section("離線音訊資源") {
+                Section(AppLocalizer.text(.settingsOfflineAudioSection, locale: appLocale)) {
                     AudioArchiveResourceRow(
-                        title: "詞目音檔",
+                        title: AppLocalizer.text(.settingsWordAudio, locale: appLocale),
+                        locale: appLocale,
                         snapshot: viewModel.snapshot(for: .word),
                         isRunningAction: viewModel.isAudioActionRunning(for: .word)
                     ) { action in
@@ -120,7 +123,8 @@ public struct SettingsScreen: View {
                     }
 
                     AudioArchiveResourceRow(
-                        title: "例句音檔",
+                        title: AppLocalizer.text(.settingsSentenceAudio, locale: appLocale),
+                        locale: appLocale,
                         snapshot: viewModel.snapshot(for: .sentence),
                         isRunningAction: viewModel.isAudioActionRunning(for: .sentence)
                     ) { action in
@@ -130,7 +134,7 @@ public struct SettingsScreen: View {
                     }
                 }
             }
-            .navigationTitle("設定")
+            .navigationTitle(AppLocalizer.text(.settingsTitle, locale: appLocale))
         }
         .task {
             await viewModel.loadCapabilities()
@@ -143,7 +147,7 @@ public struct SettingsScreen: View {
             viewModel.stopAudioSnapshotPolling()
         }
         .confirmationDialog(
-            "確定要清除本機辭典資料？",
+            AppLocalizer.text(.settingsClearConfirmTitle, locale: appLocale),
             isPresented: Binding(
                 get: { viewModel.isClearConfirmationPresented },
                 set: { isPresented in
@@ -154,24 +158,25 @@ public struct SettingsScreen: View {
             ),
             titleVisibility: .visible
         ) {
-            Button("清除", role: .destructive) {
+            Button(AppLocalizer.text(.commonDelete, locale: appLocale), role: .destructive) {
                 Task {
                     if await viewModel.confirmClear() {
                         onMaintenanceCompleted()
                     }
                 }
             }
-            Button("取消", role: .cancel) {
+            Button(AppLocalizer.text(.commonCancel, locale: appLocale), role: .cancel) {
                 viewModel.cancelClearConfirmation()
             }
         } message: {
-            Text("清除後會移除本機資料，下次使用前會重新初始化。")
+            Text(AppLocalizer.text(.settingsClearConfirmBody, locale: appLocale))
         }
     }
 }
 
 private struct AudioArchiveResourceRow: View {
     let title: String
+    let locale: AppLocale
     let snapshot: DownloadSnapshot
     let isRunningAction: Bool
     let runAction: (SettingsViewModel.AudioResourceAction) -> Void
@@ -195,12 +200,12 @@ private struct AudioArchiveResourceRow: View {
 
                 Menu {
                     ForEach(availableActions, id: \.self) { action in
-                        Button(action.buttonTitle, systemImage: action.systemImage) {
+                        Button(action.buttonTitle(locale: locale), systemImage: action.systemImage) {
                             runAction(action)
                         }
                     }
                 } label: {
-                    Label("操作", systemImage: "ellipsis.circle")
+                    Label(AppLocalizer.text(.settingsActionsMenu, locale: locale), systemImage: "ellipsis.circle")
                 }
                 .disabled(isRunningAction || availableActions.isEmpty)
             }
@@ -217,7 +222,7 @@ private struct AudioArchiveResourceRow: View {
     }
 
     private var snapshotDescription: String {
-        AudioResourcePresentation.description(for: snapshot)
+        AudioResourcePresentation.description(for: snapshot, locale: locale)
     }
 }
 
@@ -237,36 +242,36 @@ enum AudioResourcePresentation {
         }
     }
 
-    static func description(for snapshot: DownloadSnapshot) -> String {
+    static func description(for snapshot: DownloadSnapshot, locale: AppLocale) -> String {
         let downloaded = ByteCountFormatter.string(fromByteCount: snapshot.downloadedBytes, countStyle: .file)
         let total = snapshot.totalBytes.map { ByteCountFormatter.string(fromByteCount: $0, countStyle: .file) } ?? "--"
 
         switch snapshot.state {
         case .idle:
-            return "尚未下載"
+            return AppLocalizer.text(.audioStatusIdle, locale: locale)
         case .downloading:
-            return "下載中 · \(downloaded) / \(total)"
+            return "\(AppLocalizer.text(.audioStatusDownloading, locale: locale)) · \(downloaded) / \(total)"
         case .paused:
-            return "已暫停 · \(downloaded) / \(total)"
+            return "\(AppLocalizer.text(.audioStatusPaused, locale: locale)) · \(downloaded) / \(total)"
         case .completed:
-            return "已完成 · \(downloaded)"
+            return "\(AppLocalizer.text(.audioStatusCompleted, locale: locale)) · \(downloaded)"
         case .failed(let message):
-            return "失敗 · \(message)"
+            return "\(AppLocalizer.text(.audioStatusFailed, locale: locale)) · \(message)"
         }
     }
 }
 
 private extension SettingsViewModel.AudioResourceAction {
-    var buttonTitle: String {
+    func buttonTitle(locale: AppLocale) -> String {
         switch self {
         case .start:
-            return "下載"
+            return AppLocalizer.text(.audioActionStart, locale: locale)
         case .pause:
-            return "暫停"
+            return AppLocalizer.text(.audioActionPause, locale: locale)
         case .resume:
-            return "續傳"
+            return AppLocalizer.text(.audioActionResume, locale: locale)
         case .restart:
-            return "重下載"
+            return AppLocalizer.text(.audioActionRestart, locale: locale)
         }
     }
 
@@ -285,29 +290,29 @@ private extension SettingsViewModel.AudioResourceAction {
 }
 
 private extension AppLocale {
-    var displayName: String {
+    func displayName(in locale: AppLocale) -> String {
         switch self {
         case .traditionalChinese:
-            return "正體中文"
+            return AppLocalizer.text(.localeTraditionalChinese, locale: locale)
         case .simplifiedChinese:
-            return "简体中文"
+            return AppLocalizer.text(.localeSimplifiedChinese, locale: locale)
         case .english:
-            return "English"
+            return AppLocalizer.text(.localeEnglish, locale: locale)
         }
     }
 }
 
 private extension AppThemePreference {
-    var displayName: String {
+    func displayName(in locale: AppLocale) -> String {
         switch self {
         case .system:
-            return "跟隨系統"
+            return AppLocalizer.text(.themeSystem, locale: locale)
         case .light:
-            return "淺色"
+            return AppLocalizer.text(.themeLight, locale: locale)
         case .dark:
-            return "深色"
+            return AppLocalizer.text(.themeDark, locale: locale)
         case .amoled:
-            return "AMOLED"
+            return AppLocalizer.text(.themeAmoled, locale: locale)
         }
     }
 }

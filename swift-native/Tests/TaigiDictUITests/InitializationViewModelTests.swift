@@ -22,8 +22,13 @@ final class InitializationViewModelTests: XCTestCase {
 
         await initializationViewModel.prepare(using: searchViewModel)
 
-        guard case let .failed(message) = initializationViewModel.state else {
+        guard case let .failed(reason) = initializationViewModel.state else {
             XCTFail("Expected failed state")
+            return
+        }
+
+        guard case let .library(message) = reason else {
+            XCTFail("Expected library failure reason")
             return
         }
         XCTAssertTrue(message.contains("injected failure"))

@@ -12,7 +12,7 @@ public final class SettingsViewModel {
 
     public private(set) var supportsDataMaintenance = false
     public private(set) var isRunningAction = false
-    public private(set) var statusMessage: String?
+    public private(set) var statusMessageKey: AppLocalizedStringKey?
     public private(set) var errorMessage: String?
     public private(set) var selectedLocale: AppLocale = .traditionalChinese
     public private(set) var selectedThemePreference: AppThemePreference = .system
@@ -212,7 +212,7 @@ public final class SettingsViewModel {
             switch action {
             case .rebuild:
                 try await library.rebuildInstalledDatabase()
-                statusMessage = "本機辭典資料已重建。"
+                statusMessageKey = .advancedRebuildCompleted
                 let phase = await library.prepare()
                 if case let .ready(summary) = phase {
                     librarySummary = summary
@@ -221,7 +221,7 @@ public final class SettingsViewModel {
                 refreshMetadataDisplay()
             case .clear:
                 try await library.clearInstalledDatabase()
-                statusMessage = "本機辭典資料已清除。"
+                statusMessageKey = .advancedClearCompleted
                 librarySummary = nil
                 libraryMetadata = nil
                 refreshMetadataDisplay()
@@ -230,7 +230,7 @@ public final class SettingsViewModel {
             return true
         } catch {
             errorMessage = String(describing: error)
-            statusMessage = nil
+            statusMessageKey = nil
             isRunningAction = false
             return false
         }

@@ -1,19 +1,26 @@
 import SwiftUI
+import TaigiDictCore
 
 struct LicenseOverviewScreen: View {
+    @Environment(\.locale) private var locale
+
+    private var appLocale: AppLocale {
+        AppLocalizer.appLocale(from: locale)
+    }
+
     var body: some View {
         List {
-            Section("核心套件") {
+            Section(AppLocalizer.text(.licenseOverviewCoreSection, locale: appLocale)) {
                 Label("GRDB.swift", systemImage: "shippingbox")
                 Label("SwiftyOpenCC", systemImage: "shippingbox")
             }
 
-            Section("iOS 原生框架") {
+            Section(AppLocalizer.text(.licenseOverviewIOSSection, locale: appLocale)) {
                 Label("SwiftUI", systemImage: "applelogo")
                 Label("Foundation", systemImage: "applelogo")
-                Label("AVFoundation (音訊功能預留)", systemImage: "applelogo")
+                Label(AppLocalizer.text(.licenseOverviewAVFoundation, locale: appLocale), systemImage: "applelogo")
             }
         }
-        .navigationTitle("套件授權清單")
+        .navigationTitle(AppLocalizer.text(.licenseOverviewTitle, locale: appLocale))
     }
 }

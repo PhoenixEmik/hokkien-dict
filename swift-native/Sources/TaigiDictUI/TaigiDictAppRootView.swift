@@ -49,7 +49,8 @@ public struct TaigiDictAppRootView: View {
     }
 
     private var mainTabView: some View {
-        TabView {
+        let appLocale = appSettings.interfaceLocale
+        return TabView {
             DictionarySearchScreen(
                 viewModel: viewModel,
                 bookmarkStore: bookmarkStore,
@@ -57,7 +58,7 @@ public struct TaigiDictAppRootView: View {
                 conversionService: conversionService
             )
                 .tabItem {
-                    Label("辭典", systemImage: "book")
+                    Label(AppLocalizer.text(.tabDictionary, locale: appLocale), systemImage: "book")
                 }
 
             BookmarksScreen(
@@ -67,7 +68,7 @@ public struct TaigiDictAppRootView: View {
                 conversionService: conversionService
             )
             .tabItem {
-                Label("書籤", systemImage: "bookmark")
+                Label(AppLocalizer.text(.tabBookmarks, locale: appLocale), systemImage: "bookmark")
             }
 
             SettingsScreen(
@@ -84,7 +85,7 @@ public struct TaigiDictAppRootView: View {
                 viewModel.setAppLocale(settings.interfaceLocale)
             }
             .tabItem {
-                Label("設定", systemImage: "gearshape")
+                Label(AppLocalizer.text(.tabSettings, locale: appLocale), systemImage: "gearshape")
             }
         }
     }

@@ -3,6 +3,7 @@ import TaigiDictCore
 
 public struct BookmarksScreen: View {
     @State private var viewModel: BookmarksViewModel
+    @Environment(\.locale) private var locale
     private let library: DictionaryLibrary
     private let bookmarkStore: any BookmarksStoreProtocol
     private let offlineAudioStore: (any OfflineAudioManaging)?
@@ -22,19 +23,20 @@ public struct BookmarksScreen: View {
     }
 
     public var body: some View {
+        let appLocale = AppLocalizer.appLocale(from: locale)
         NavigationStack {
             List {
                 if viewModel.isLoading {
                     Section {
                         HStack {
                             ProgressView()
-                            Text("載入書籤中")
+                            Text(AppLocalizer.text(.bookmarksLoading, locale: appLocale))
                         }
                     }
                 } else if let errorMessage = viewModel.errorMessage {
                     Section {
                         ContentUnavailableView(
-                            "載入失敗",
+                            AppLocalizer.text(.loadingFailedTitle, locale: appLocale),
                             systemImage: "exclamationmark.triangle",
                             description: Text(errorMessage)
                         )
@@ -42,13 +44,13 @@ public struct BookmarksScreen: View {
                 } else if viewModel.entries.isEmpty {
                     Section {
                         ContentUnavailableView(
-                            "尚無書籤",
+                            AppLocalizer.text(.bookmarksEmptyTitle, locale: appLocale),
                             systemImage: "bookmark",
-                            description: Text("在詞條頁按下書籤按鈕後，會顯示在這裡。")
+                            description: Text(AppLocalizer.text(.bookmarksEmptyDescription, locale: appLocale))
                         )
                     }
                 } else {
-                    Section("已收藏詞條") {
+                    Section(AppLocalizer.text(.bookmarksSectionSaved, locale: appLocale)) {
                         ForEach(viewModel.entries) { entry in
                             Button {
                                 viewModel.detailEntry = entry
@@ -65,7 +67,7 @@ public struct BookmarksScreen: View {
                     }
                 }
             }
-            .navigationTitle("書籤")
+            .navigationTitle(AppLocalizer.text(.bookmarksTitle, locale: appLocale))
             .navigationDestination(item: $viewModel.detailEntry) { entry in
                 DictionaryDetailView(
                     entry: entry,
