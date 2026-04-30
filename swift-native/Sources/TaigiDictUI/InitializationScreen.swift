@@ -2,7 +2,10 @@ import SwiftUI
 import TaigiDictCore
 
 struct InitializationScreen: View {
-    var state: InitializationViewModel.State
+    var phase: InitializationPhase
+    var progress: Double?
+    var errorMessage: String?
+    var failureReason: InitializationViewModel.FailureReason?
     var retry: () -> Void
     @Environment(\.locale) private var locale
 
@@ -11,12 +14,12 @@ struct InitializationScreen: View {
     }
 
     var body: some View {
-        switch state {
-        case .failed(let reason):
+        switch phase {
+        case .failed:
             ContentUnavailableView {
                 Label(AppLocalizer.text(.initializationFailedTitle, locale: appLocale), systemImage: "exclamationmark.triangle")
             } description: {
-                Text(failureMessage(reason: reason))
+                Text(failureMessage)
             } actions: {
                 Button(AppLocalizer.text(.initializationRetry, locale: appLocale), action: retry)
             }
@@ -25,18 +28,26 @@ struct InitializationScreen: View {
                 Label(AppLocalizer.text(.initializationLoadingTitle, locale: appLocale), systemImage: "book")
             } description: {
                 VStack(spacing: 12) {
-                    ProgressView()
+                    if let progress {
+                        ProgressView(value: progress)
+                    } else {
+                        ProgressView()
+                    }
                     Text(AppLocalizer.text(.initializationLoadingDescription, locale: appLocale))
                 }
             }
         }
     }
 
-    private func failureMessage(reason: InitializationViewModel.FailureReason) -> String {
-        switch reason {
+    private var failureMessage: String {
+        if let errorMessage, !errorMessage.isEmpty {
+            return errorMessage
+        }
+
+        switch failureReason {
         case .library(let message):
             return message
-        case .initializationIncomplete:
+        case .initializationIncomplete, .none:
             return AppLocalizer.text(.initializationIncomplete, locale: appLocale)
         }
     }

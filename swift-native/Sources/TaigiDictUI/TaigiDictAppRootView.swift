@@ -28,11 +28,15 @@ public struct TaigiDictAppRootView: View {
 
     public var body: some View {
         Group {
-            switch initializationViewModel.state {
-            case .ready:
+            if initializationViewModel.isReady {
                 mainTabView
-            case .idle, .loading, .failed:
-                InitializationScreen(state: initializationViewModel.state) {
+            } else {
+                InitializationScreen(
+                    phase: initializationViewModel.phase,
+                    progress: initializationViewModel.progress,
+                    errorMessage: initializationViewModel.errorMessage,
+                    failureReason: initializationViewModel.failureReason
+                ) {
                     initializationViewModel.retry()
                 }
             }

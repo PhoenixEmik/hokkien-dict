@@ -13,7 +13,13 @@ final class InitializationViewModelTests: XCTestCase {
 
         await initializationViewModel.prepare(using: searchViewModel)
 
-        XCTAssertEqual(initializationViewModel.state, .ready)
+        XCTAssertEqual(initializationViewModel.phase, .ready)
+        XCTAssertTrue(initializationViewModel.isReady)
+        XCTAssertEqual(initializationViewModel.progress, 1)
+        XCTAssertEqual(initializationViewModel.processedUnits, 1)
+        XCTAssertEqual(initializationViewModel.totalUnits, 1)
+        XCTAssertNil(initializationViewModel.errorMessage)
+        XCTAssertEqual(initializationViewModel.databaseGeneration, 1)
     }
 
     func testPrepareSetsFailedWhenDictionaryLibraryFails() async {
@@ -22,16 +28,14 @@ final class InitializationViewModelTests: XCTestCase {
 
         await initializationViewModel.prepare(using: searchViewModel)
 
-        guard case let .failed(reason) = initializationViewModel.state else {
-            XCTFail("Expected failed state")
-            return
-        }
-
-        guard case let .library(message) = reason else {
-            XCTFail("Expected library failure reason")
-            return
+        XCTAssertEqual(initializationViewModel.phase, .failed)
+        XCTAssertFalse(initializationViewModel.isReady)
+        guard case let .library(message)? = initializationViewModel.failureReason else {
+            return XCTFail("Expected library failure reason")
         }
         XCTAssertTrue(message.contains("injected failure"))
+        XCTAssertTrue(initializationViewModel.errorMessage?.contains("injected failure") == true)
+        XCTAssertEqual(initializationViewModel.databaseGeneration, 0)
     }
 
     func testRetryResetsStateAndChangesTaskID() async {
@@ -43,8 +47,26 @@ final class InitializationViewModelTests: XCTestCase {
 
         initializationViewModel.retry()
 
-        XCTAssertEqual(initializationViewModel.state, .idle)
+        XCTAssertEqual(initializationViewModel.phase, .idle)
+        XCTAssertNil(initializationViewModel.progress)
+        XCTAssertEqual(initializationViewModel.processedUnits, 0)
+        XCTAssertEqual(initializationViewModel.totalUnits, 0)
+        XCTAssertNil(initializationViewModel.errorMessage)
+        XCTAssertNil(initializationViewModel.failureReason)
         XCTAssertNotEqual(initializationViewModel.taskID, firstTaskID)
+    }
+
+    func testDatabaseGenerationDoesNotIncrementWhenAlreadyReady() async {
+        let repository = InMemoryRepository(entries: [
+            entry(id: 1, hanji: "辭典", romanization: "sû-tián", definition: "工具書"),
+        ])
+        let searchViewModel = DictionarySearchViewModel(repository: repository)
+        let initializationViewModel = InitializationViewModel()
+
+        await initializationViewModel.prepare(using: searchViewModel)
+        await initializationViewModel.prepare(using: searchViewModel)
+
+        XCTAssertEqual(initializationViewModel.databaseGeneration, 1)
     }
 }
 
