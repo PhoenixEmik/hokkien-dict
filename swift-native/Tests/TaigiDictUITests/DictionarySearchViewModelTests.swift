@@ -8,7 +8,10 @@ final class DictionarySearchViewModelTests: XCTestCase {
         let repository = InMemoryRepository(entries: [
             entry(id: 1, hanji: "辭典", romanization: "sû-tián", definition: "工具書"),
         ])
-        let viewModel = DictionarySearchViewModel(repository: repository)
+        let viewModel = DictionarySearchViewModel(
+            repository: repository,
+            searchHistoryStore: TestSearchHistoryStore()
+        )
         await viewModel.load()
 
         viewModel.searchText = "辭典"
@@ -23,7 +26,10 @@ final class DictionarySearchViewModelTests: XCTestCase {
         let repository = InMemoryRepository(entries: [
             entry(id: 1, hanji: "辭典", romanization: "sû-tián", definition: "工具書"),
         ])
-        let viewModel = DictionarySearchViewModel(repository: repository)
+        let viewModel = DictionarySearchViewModel(
+            repository: repository,
+            searchHistoryStore: TestSearchHistoryStore()
+        )
         await viewModel.load()
 
         viewModel.searchText = "辭典"
@@ -40,7 +46,10 @@ final class DictionarySearchViewModelTests: XCTestCase {
         let repository = MaintenanceAwareRepository(entries: [
             entry(id: 1, hanji: "辭典", romanization: "sû-tián", definition: "工具書"),
         ])
-        let viewModel = DictionarySearchViewModel(repository: repository)
+        let viewModel = DictionarySearchViewModel(
+            repository: repository,
+            searchHistoryStore: TestSearchHistoryStore()
+        )
         await viewModel.load()
 
         viewModel.searchText = "辭典"
@@ -71,7 +80,8 @@ final class DictionarySearchViewModelTests: XCTestCase {
         let viewModel = DictionarySearchViewModel(
             repository: repository,
             appLocale: .simplifiedChinese,
-            conversionService: conversion
+            conversionService: conversion,
+            searchHistoryStore: TestSearchHistoryStore()
         )
         await viewModel.load()
 
@@ -81,6 +91,54 @@ final class DictionarySearchViewModelTests: XCTestCase {
 
         XCTAssertEqual(viewModel.results.map(\.hanji), ["辞典"])
         XCTAssertEqual(viewModel.results.first?.briefSummary, "工具书")
+    }
+
+    func testLoadHydratesSearchHistoryFromStore() async {
+        let repository = InMemoryRepository(entries: [])
+        let historyStore = TestSearchHistoryStore(initialValues: [" 辭典 ", "辭典", "", "字典"])
+        let viewModel = DictionarySearchViewModel(
+            repository: repository,
+            searchHistoryStore: historyStore
+        )
+
+        await viewModel.load()
+
+        XCTAssertEqual(viewModel.searchHistory, ["辭典", "字典"])
+    }
+
+    func testSubmitSearchPersistsHistoryToStore() async {
+        let repository = InMemoryRepository(entries: [
+            entry(id: 1, hanji: "辭典", romanization: "sû-tián", definition: "工具書"),
+        ])
+        let historyStore = TestSearchHistoryStore(initialValues: ["字典"])
+        let viewModel = DictionarySearchViewModel(
+            repository: repository,
+            searchHistoryStore: historyStore
+        )
+        await viewModel.load()
+
+        viewModel.searchText = "辭典"
+        viewModel.submitSearch()
+        try? await Task.sleep(for: .milliseconds(50))
+
+        let persisted = await historyStore.load()
+        XCTAssertEqual(persisted, ["辭典", "字典"])
+    }
+
+    func testClearSearchHistoryAlsoClearsStore() async {
+        let repository = InMemoryRepository(entries: [])
+        let historyStore = TestSearchHistoryStore(initialValues: ["辭典", "字典"])
+        let viewModel = DictionarySearchViewModel(
+            repository: repository,
+            searchHistoryStore: historyStore
+        )
+        await viewModel.load()
+
+        await viewModel.clearSearchHistory()
+
+        XCTAssertTrue(viewModel.searchHistory.isEmpty)
+        let persisted = await historyStore.load()
+        XCTAssertEqual(persisted, [])
     }
 }
 
@@ -99,6 +157,26 @@ private actor TestChineseConversionProvider: ChineseConversionProviding {
 
     func translateForDisplay(_ text: String, locale: AppLocale) async -> String {
         displayMap[text] ?? text
+    }
+}
+
+private actor TestSearchHistoryStore: SearchHistoryStoring {
+    private var values: [String]
+
+    init(initialValues: [String] = []) {
+        values = initialValues
+    }
+
+    func load() async -> [String] {
+        values
+    }
+
+    func save(_ history: [String]) async {
+        values = history
+    }
+
+    func clear() async {
+        values = []
     }
 }
 

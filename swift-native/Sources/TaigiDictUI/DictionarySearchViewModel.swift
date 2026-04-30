@@ -19,27 +19,32 @@ public final class DictionarySearchViewModel {
 
     public let library: DictionaryLibrary
     private let conversionService: (any ChineseConversionProviding)?
+    private let searchHistoryStore: any SearchHistoryStoring
     private var searchTask: Task<Void, Never>?
 
     public init(
         library: DictionaryLibrary,
         appLocale: AppLocale = .traditionalChinese,
-        conversionService: (any ChineseConversionProviding)? = nil
+        conversionService: (any ChineseConversionProviding)? = nil,
+        searchHistoryStore: any SearchHistoryStoring = UserDefaultsSearchHistoryStore()
     ) {
         self.library = library
         self.appLocale = appLocale
         self.conversionService = conversionService
+        self.searchHistoryStore = searchHistoryStore
     }
 
     public convenience init(
         repository: any DictionaryRepositoryProtocol,
         appLocale: AppLocale = .traditionalChinese,
-        conversionService: (any ChineseConversionProviding)? = nil
+        conversionService: (any ChineseConversionProviding)? = nil,
+        searchHistoryStore: any SearchHistoryStoring = UserDefaultsSearchHistoryStore()
     ) {
         self.init(
             library: DictionaryLibrary(repository: repository),
             appLocale: appLocale,
-            conversionService: conversionService
+            conversionService: conversionService,
+            searchHistoryStore: searchHistoryStore
         )
     }
 
@@ -61,6 +66,7 @@ public final class DictionarySearchViewModel {
         isLoading = true
         libraryPhase = await library.prepare()
         isLoading = false
+        searchHistory = normalizeHistory(await searchHistoryStore.load())
 
         if case let .failed(message) = libraryPhase {
             errorMessage = message
@@ -108,8 +114,9 @@ public final class DictionarySearchViewModel {
         submitSearch()
     }
 
-    public func clearSearchHistory() {
+    public func clearSearchHistory() async {
         searchHistory = []
+        await searchHistoryStore.clear()
     }
 
     public func resetAfterMaintenance() async {
@@ -168,7 +175,7 @@ public final class DictionarySearchViewModel {
             results = displayResults
             selectedEntry = displayResults.first
             if saveHistory, !displayResults.isEmpty {
-                saveHistoryItem(query)
+                await saveHistoryItem(query)
             }
         } catch {
             results = []
@@ -179,7 +186,7 @@ public final class DictionarySearchViewModel {
         isSearching = false
     }
 
-    private func saveHistoryItem(_ query: String) {
+    private func saveHistoryItem(_ query: String) async {
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
             return
@@ -189,6 +196,26 @@ public final class DictionarySearchViewModel {
         if searchHistory.count > 10 {
             searchHistory = Array(searchHistory.prefix(10))
         }
+
+        await searchHistoryStore.save(searchHistory)
+    }
+
+    private func normalizeHistory(_ values: [String]) -> [String] {
+        var deduplicated: [String] = []
+        deduplicated.reserveCapacity(min(values.count, 10))
+
+        for value in values {
+            let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty, !deduplicated.contains(trimmed) else {
+                continue
+            }
+            deduplicated.append(trimmed)
+            if deduplicated.count == 10 {
+                break
+            }
+        }
+
+        return deduplicated
     }
 }
 

@@ -47,7 +47,9 @@ struct DictionarySearchListView: View {
                 SearchStartContentView(history: viewModel.searchHistory, locale: appLocale) { query in
                     viewModel.applyHistoryQuery(query)
                 } clearHistory: {
-                    viewModel.clearSearchHistory()
+                    Task {
+                        await viewModel.clearSearchHistory()
+                    }
                 }
             } else if viewModel.isSearching {
                 Section {
