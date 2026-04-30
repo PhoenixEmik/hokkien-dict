@@ -13,6 +13,16 @@
 - [lib/features/dictionary/presentation/coordinators/word_detail_coordinator.dart](/Users/emik/Documents/Hokkien/lib/features/dictionary/presentation/coordinators/word_detail_coordinator.dart:1)
 - [lib/features/settings/presentation/screens/settings_screen.dart](/Users/emik/Documents/Hokkien/lib/features/settings/presentation/screens/settings_screen.dart:1)
 
+## 實作狀態註記（2026-05-01）
+
+本文件最初用於規劃 Swift 原生重寫；截至 2026-05-01，多數核心行為已在 `swift-native/` 中落地。為避免後續重複盤點，先記錄本次複審結論：
+
+- 已完成：初始化阻塞流程、JSONL/manifest 匯入、SQLite schema、搜尋 normalization 與排序、搜尋歷史、書籤、alias resolve、OpenCC 簡繁轉換、離線音訊下載與播放、設定頁、關於/授權/參考資料頁、iPad `NavigationSplitView`。
+- 已完成但先前文件較容易誤判：ODS 轉 JSONL 的 build-time 轉換工具已存在於 `tool/build_dictionary_asset.py`；原生 app 也已在 `swift-native/NativeApp/TaigiDictNativeApp.swift` 注入 bundled dictionary source。
+- 主要尚未補齊的是測試矩陣中的 integration tests 與 UI snapshot targets；這屬於驗證層缺口，不是核心功能缺口。
+
+閱讀本文件時，應將第 1～4 章視為「行為與架構依據」，不是代表目前仍然全部待實作。
+
 ## 1. 核心業務邏輯 (Core Business Logic)
 
 ### 1.1 App 定位
