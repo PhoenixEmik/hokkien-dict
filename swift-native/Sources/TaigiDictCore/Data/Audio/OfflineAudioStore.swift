@@ -94,6 +94,11 @@ public actor OfflineAudioStore: OfflineAudioManaging {
     private func refreshSnapshotAndIndex(_ type: AudioArchiveType) async {
         await refreshSnapshot(type)
 
+        if snapshots[type]?.state == .idle,
+           let localCompletedSnapshot = localArchiveSnapshot(for: type) {
+            snapshots[type] = localCompletedSnapshot
+        }
+
         guard case .completed = snapshots[type]?.state else {
             return
         }
@@ -128,6 +133,19 @@ public actor OfflineAudioStore: OfflineAudioManaging {
             completedValidationFailures[type] = failure
             snapshots[type] = failure
         }
+    }
+
+    private func localArchiveSnapshot(for type: AudioArchiveType) -> DownloadSnapshot? {
+        let archiveURL = storage.archiveURL(for: type)
+        guard
+            let fileSize = try? archiveURL.resourceValues(forKeys: [.fileSizeKey]).fileSize,
+            let bytes = Int64(exactly: fileSize),
+            bytes > 0
+        else {
+            return nil
+        }
+
+        return DownloadSnapshot(state: .completed, downloadedBytes: bytes, totalBytes: bytes)
     }
 
     private func ensureIndex(for type: AudioArchiveType) throws -> [String: String] {

@@ -83,6 +83,34 @@ final class OfflineAudioStoreTests: XCTestCase {
             XCTFail("Expected failed snapshot when validation clip is missing")
         }
     }
+
+    func testSnapshotTreatsExistingValidArchiveAsCompletedWhenDownloaderIsIdle() async throws {
+        let storage = TestAudioStorage()
+        let archiveURL = storage.archiveURL(for: .word)
+        try FileManager.default.createDirectory(
+            at: archiveURL.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        try Data("archive".utf8).write(to: archiveURL)
+
+        let downloader = TestDownloader(snapshots: [
+            "word": DownloadSnapshot(state: .idle),
+        ])
+        let indexer = TestIndexer(indexByType: [
+            .word: ["1(1)": "word/1(1).mp3"],
+        ])
+        let store = OfflineAudioStore(
+            downloadService: downloader,
+            storage: storage,
+            zipIndexer: indexer
+        )
+
+        let snapshot = await store.snapshot(for: .word)
+
+        XCTAssertEqual(snapshot.state, .completed)
+        XCTAssertGreaterThan(snapshot.downloadedBytes, 0)
+        XCTAssertEqual(snapshot.downloadedBytes, snapshot.totalBytes)
+    }
 }
 
 private actor SequencedDownloader: ResumableDownloading {
