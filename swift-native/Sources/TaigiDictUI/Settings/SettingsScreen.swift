@@ -34,21 +34,6 @@ public struct SettingsScreen: View {
         NavigationStack {
             Form {
                 Section(AppLocalizer.text(.settingsDisplayLanguageSection, locale: appLocale)) {
-                    Picker(AppLocalizer.text(.settingsInterfaceLanguageLabel, locale: appLocale), selection: Binding(
-                        get: { viewModel.selectedLocale },
-                        set: { locale in
-                            Task {
-                                await viewModel.setLocale(locale)
-                                onSettingsChanged(viewModel.currentSettingsSnapshot)
-                            }
-                        }
-                    )) {
-                        ForEach(AppLocale.allCases, id: \.self) { locale in
-                            Text(locale.displayName(in: appLocale))
-                                .tag(locale)
-                        }
-                    }
-
                     Picker(AppLocalizer.text(.settingsThemeLabel, locale: appLocale), selection: Binding(
                         get: { viewModel.selectedThemePreference },
                         set: { preference in
@@ -283,19 +268,6 @@ private extension SettingsViewModel.AudioResourceAction {
             return "play.circle"
         case .restart:
             return "arrow.clockwise.circle"
-        }
-    }
-}
-
-private extension AppLocale {
-    func displayName(in locale: AppLocale) -> String {
-        switch self {
-        case .traditionalChinese:
-            return AppLocalizer.text(.localeTraditionalChinese, locale: locale)
-        case .simplifiedChinese:
-            return AppLocalizer.text(.localeSimplifiedChinese, locale: locale)
-        case .english:
-            return AppLocalizer.text(.localeEnglish, locale: locale)
         }
     }
 }

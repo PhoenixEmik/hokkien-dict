@@ -3613,19 +3613,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Display and language"
+            "value" : "Display"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "显示与语言"
+            "value" : "显示"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "顯示與語言"
+            "value" : "顯示"
           }
         }
       }

@@ -2,6 +2,7 @@ import SwiftUI
 import TaigiDictCore
 
 public struct TaigiDictAppRootView: View {
+    @Environment(\.locale) private var locale
     @State private var viewModel: DictionarySearchViewModel
     @State private var initializationViewModel = InitializationViewModel()
     @State private var bookmarkStore = BookmarkStore()
@@ -38,9 +39,15 @@ public struct TaigiDictAppRootView: View {
             await initializationViewModel.prepare(using: viewModel)
         }
         .task {
-            await loadAppSettingsIfNeeded()
+            await AppRootOfflineAudioBootstrap.preload(using: offlineAudioStore)
         }
-        .environment(\.locale, Locale(identifier: appSettings.interfaceLocale.rawValue))
+        .task {
+            await loadAppSettingsIfNeeded()
+            syncAppLocaleWithSystem()
+        }
+        .onChange(of: appLocale) { _, _ in
+            syncAppLocaleWithSystem()
+        }
         .preferredColorScheme(appSettings.themePreference.preferredColorScheme)
         .dynamicTypeSize(appSettings.readingTextScale.dynamicTypeSize)
     }
@@ -64,7 +71,7 @@ public struct TaigiDictAppRootView: View {
     }
 
     private var mainTabView: some View {
-        let appLocale = appSettings.interfaceLocale
+        let currentLocale = appLocale
         return TabView(selection: $selectedTab) {
             DictionarySearchScreen(
                 viewModel: viewModel,
@@ -73,7 +80,7 @@ public struct TaigiDictAppRootView: View {
                 conversionService: conversionService
             )
                 .tabItem {
-                    Label(AppLocalizer.text(.tabDictionary, locale: appLocale), systemImage: "book")
+                    Label(AppLocalizer.text(.tabDictionary, locale: currentLocale), systemImage: "book")
                 }
                 .tag(AppTab.dictionary)
 
@@ -84,7 +91,7 @@ public struct TaigiDictAppRootView: View {
                 conversionService: conversionService
             )
             .tabItem {
-                Label(AppLocalizer.text(.tabBookmarks, locale: appLocale), systemImage: "bookmark")
+                Label(AppLocalizer.text(.tabBookmarks, locale: currentLocale), systemImage: "bookmark")
             }
             .tag(AppTab.bookmarks)
 
@@ -101,14 +108,17 @@ public struct TaigiDictAppRootView: View {
                 }
             } onSettingsChanged: { settings in
                 appSettings = settings
-                viewModel.setAppLocale(settings.interfaceLocale)
             }
             .tabItem {
-                Label(AppLocalizer.text(.tabSettings, locale: appLocale), systemImage: "gearshape")
+                Label(AppLocalizer.text(.tabSettings, locale: currentLocale), systemImage: "gearshape")
             }
             .tag(AppTab.settings)
         }
-        .id(appSettings.interfaceLocale)
+        .id(currentLocale)
+    }
+
+    private var appLocale: AppLocale {
+        AppRootLocalePolicy.appLocale(from: locale)
     }
 
     private func loadAppSettingsIfNeeded() async {
@@ -118,7 +128,10 @@ public struct TaigiDictAppRootView: View {
 
         hasLoadedAppSettings = true
         appSettings = await settingsStore.load()
-        viewModel.setAppLocale(appSettings.interfaceLocale)
+    }
+
+    private func syncAppLocaleWithSystem() {
+        viewModel.setAppLocale(appLocale)
     }
 
     private static func makeChineseConversionService() -> (any ChineseConversionProviding)? {
@@ -152,6 +165,20 @@ enum AppRootContentPresentation: Equatable {
 
     static func resolve(isInitializationReady: Bool) -> AppRootContentPresentation {
         isInitializationReady ? .mainTabs : .initialization
+    }
+}
+
+enum AppRootLocalePolicy {
+    static func appLocale(from locale: Locale) -> AppLocale {
+        AppLocalizer.appLocale(from: locale)
+    }
+}
+
+enum AppRootOfflineAudioBootstrap {
+    static func preload(using offlineAudioStore: any OfflineAudioManaging) async {
+        for archiveType in AudioArchiveType.allCases {
+            _ = await offlineAudioStore.snapshot(for: archiveType)
+        }
     }
 }
 
