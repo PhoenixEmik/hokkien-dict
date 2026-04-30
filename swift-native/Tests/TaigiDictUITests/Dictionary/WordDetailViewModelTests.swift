@@ -16,6 +16,30 @@ final class WordDetailViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.shareText(), "辭典\nsû-tián\n工具書")
     }
 
+    func testPrepareKeepsSourceEntryVisibleWhileResolvingDetail() async {
+        let first = entry(id: 1, hanji: "先前", romanization: "sing-tsîng", definition: "原本的詞條")
+        let alias = entry(id: 2, hanji: "字典", romanization: "jī-tián", aliasTargetEntryID: 3)
+        let primary = entry(id: 3, hanji: "辭典", romanization: "sû-tián", definition: "工具書")
+        let repository = InMemoryRepository(
+            entries: [first, alias, primary],
+            entryLookupDelayNanoseconds: 100_000_000
+        )
+        let viewModel = WordDetailViewModel(library: DictionaryLibrary(repository: repository))
+
+        await viewModel.prepare(entry: first)
+        let prepareTask = Task {
+            await viewModel.prepare(entry: alias)
+        }
+        await Task.yield()
+
+        XCTAssertEqual(viewModel.entry?.id, 2)
+        XCTAssertEqual(viewModel.resolvedEntryID, 2)
+
+        await prepareTask.value
+        XCTAssertEqual(viewModel.entry?.id, 3)
+        XCTAssertEqual(viewModel.resolvedEntryID, 3)
+    }
+
     func testPrepareMarksOnlyExternalLinkedRelationshipWordsOpenable() async {
         let primary = entry(
             id: 1,
@@ -189,8 +213,9 @@ private actor MissingClipOfflineAudioManager: OfflineAudioManaging {
 private actor InMemoryRepository: DictionaryRepositoryProtocol {
     private let bundle: DictionaryBundle
     private let repository: InMemoryDictionaryRepository
+    private let entryLookupDelayNanoseconds: UInt64
 
-    init(entries: [DictionaryEntry]) {
+    init(entries: [DictionaryEntry], entryLookupDelayNanoseconds: UInt64 = 0) {
         bundle = DictionaryBundle(
             entryCount: entries.count,
             senseCount: entries.reduce(0) { $0 + $1.senses.count },
@@ -198,6 +223,7 @@ private actor InMemoryRepository: DictionaryRepositoryProtocol {
             entries: entries
         )
         repository = InMemoryDictionaryRepository(bundle: bundle)
+        self.entryLookupDelayNanoseconds = entryLookupDelayNanoseconds
     }
 
     func loadBundle() async throws -> DictionaryBundle {
@@ -218,7 +244,10 @@ private actor InMemoryRepository: DictionaryRepositoryProtocol {
     }
 
     func entry(id: Int64) async throws -> DictionaryEntry? {
-        await repository.entry(id: id)
+        if entryLookupDelayNanoseconds > 0 {
+            try? await Task.sleep(nanoseconds: entryLookupDelayNanoseconds)
+        }
+        return await repository.entry(id: id)
     }
 
     func clearBundleCache() async {}

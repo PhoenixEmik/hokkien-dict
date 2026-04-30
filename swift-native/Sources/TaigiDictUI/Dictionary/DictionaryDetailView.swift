@@ -40,14 +40,7 @@ struct DictionaryDetailView: View {
 
     var body: some View {
         List {
-            if viewModel.isPreparing {
-                Section {
-                    HStack {
-                        ProgressView()
-                        Text(AppLocalizer.text(.detailLoading, locale: appLocale))
-                    }
-                }
-            } else if let errorMessage = viewModel.errorMessage {
+            if let errorMessage = viewModel.errorMessage {
                 Section {
                     ContentUnavailableView(
                         AppLocalizer.text(.detailLoadFailedTitle, locale: appLocale),

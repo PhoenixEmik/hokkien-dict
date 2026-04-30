@@ -1203,29 +1203,6 @@
         }
       }
     },
-    "detailLoading" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preparing entry"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "准备词条内容"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "準備詞條內容"
-          }
-        }
-      }
-    },
     "dictionarySourceActionDownload" : {
       "extractionState" : "stale",
       "localizations" : {

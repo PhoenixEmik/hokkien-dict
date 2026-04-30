@@ -8,7 +8,6 @@ public final class WordDetailViewModel {
     public private(set) var entry: DictionaryEntry?
     public private(set) var resolvedEntryID: Int64?
     public private(set) var openableWords: Set<String> = []
-    public private(set) var isPreparing = false
     public private(set) var errorMessage: String?
     public private(set) var audioMessage: String?
 
@@ -33,12 +32,12 @@ public final class WordDetailViewModel {
         locale: AppLocale = .traditionalChinese
     ) async {
         appLocale = locale
-        isPreparing = true
         errorMessage = nil
-        entry = nil
-        resolvedEntryID = nil
+        entry = sourceEntry
+        resolvedEntryID = sourceEntry.id
         openableWords = []
         localizedOpenableWordMap = [:]
+        audioMessage = nil
 
         do {
             let resolvedEntry = try await resolveAliasChain(from: sourceEntry)
@@ -56,8 +55,6 @@ public final class WordDetailViewModel {
             resolvedEntryID = sourceEntry.id
             errorMessage = String(describing: error)
         }
-
-        isPreparing = false
     }
 
     public func linkedEntry(

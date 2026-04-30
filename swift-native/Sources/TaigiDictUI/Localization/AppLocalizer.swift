@@ -17,7 +17,6 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case searchStartDescription
     case searchHistoryTitle
     case clearSearchHistory
-    case detailLoading
     case detailLoadFailedTitle
     case playWordAudio
     case playExampleAudio
@@ -160,9 +159,15 @@ enum AppLocalizer {
             locale: Locale(identifier: locale.rawValue)
         )
 
+        if resolved == key.rawValue, let catalogValue = resourceCatalog.text(key.rawValue, locale: locale) {
+            return catalogValue
+        }
+
         assertionFailureIfMissing(resolved, key: key)
         return resolved
     }
+
+    private static let resourceCatalog = LocalizedStringCatalog(bundle: .module)
 
     static func appLocale(from locale: Locale) -> AppLocale {
         let identifier = locale.identifier
@@ -183,5 +188,51 @@ enum AppLocalizer {
         }
 
         assertionFailure("Missing localized resource for key \(key.rawValue)")
+    }
+}
+
+private struct LocalizedStringCatalog {
+    private let strings: [String: CatalogEntry]
+
+    init(bundle: Bundle) {
+        guard
+            let url = bundle.url(forResource: "Localizable", withExtension: "xcstrings"),
+            let data = try? Data(contentsOf: url),
+            let catalog = try? JSONDecoder().decode(Catalog.self, from: data)
+        else {
+            strings = [:]
+            return
+        }
+
+        strings = catalog.strings
+    }
+
+    func text(_ key: String, locale: AppLocale) -> String? {
+        let preferredLanguage = switch locale {
+        case .english:
+            "en"
+        case .simplifiedChinese:
+            "zh-Hans"
+        case .traditionalChinese:
+            "zh-Hant"
+        }
+
+        return strings[key]?.localizations?[preferredLanguage]?.stringUnit?.value
+    }
+
+    private struct Catalog: Decodable {
+        var strings: [String: CatalogEntry]
+    }
+
+    private struct CatalogEntry: Decodable {
+        var localizations: [String: Localization]?
+    }
+
+    private struct Localization: Decodable {
+        var stringUnit: StringUnit?
+    }
+
+    private struct StringUnit: Decodable {
+        var value: String
     }
 }
