@@ -41,7 +41,12 @@ public struct TaigiDictAppRootView: View {
                 Label("書籤", systemImage: "bookmark")
             }
 
-            SettingsScreen(library: viewModel.library)
+            SettingsScreen(library: viewModel.library) {
+                Task { @MainActor in
+                    await viewModel.resetAfterMaintenance()
+                    initializationViewModel.retry()
+                }
+            }
             .tabItem {
                 Label("設定", systemImage: "gearshape")
             }

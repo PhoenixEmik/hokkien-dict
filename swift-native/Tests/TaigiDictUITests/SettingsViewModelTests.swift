@@ -17,9 +17,10 @@ final class SettingsViewModelTests: XCTestCase {
         let repository = SettingsRepository(supportsMaintenance: true)
         let viewModel = SettingsViewModel(library: DictionaryLibrary(repository: repository))
 
-        await viewModel.run(.rebuild)
+        let result = await viewModel.run(.rebuild)
         let rebuildCount = await repository.rebuildCount
 
+        XCTAssertTrue(result)
         XCTAssertEqual(viewModel.statusMessage, "本機辭典資料已重建。")
         XCTAssertNil(viewModel.errorMessage)
         XCTAssertEqual(rebuildCount, 1)
@@ -29,9 +30,10 @@ final class SettingsViewModelTests: XCTestCase {
         let repository = SettingsRepository(supportsMaintenance: true)
         let viewModel = SettingsViewModel(library: DictionaryLibrary(repository: repository))
 
-        await viewModel.run(.clear)
+        let result = await viewModel.run(.clear)
         let clearInstalledCount = await repository.clearInstalledCount
 
+        XCTAssertTrue(result)
         XCTAssertEqual(viewModel.statusMessage, "本機辭典資料已清除。")
         XCTAssertNil(viewModel.errorMessage)
         XCTAssertEqual(clearInstalledCount, 1)
@@ -46,8 +48,9 @@ final class SettingsViewModelTests: XCTestCase {
         )
         let viewModel = SettingsViewModel(library: DictionaryLibrary(repository: repository))
 
-        await viewModel.run(.rebuild)
+        let result = await viewModel.run(.rebuild)
 
+        XCTAssertFalse(result)
         XCTAssertNotNil(viewModel.errorMessage)
         XCTAssertNil(viewModel.statusMessage)
     }

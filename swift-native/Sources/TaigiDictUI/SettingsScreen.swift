@@ -3,9 +3,14 @@ import TaigiDictCore
 
 public struct SettingsScreen: View {
     @State private var viewModel: SettingsViewModel
+    private let onMaintenanceCompleted: () -> Void
 
-    public init(library: DictionaryLibrary) {
+    public init(
+        library: DictionaryLibrary,
+        onMaintenanceCompleted: @escaping () -> Void = {}
+    ) {
         _viewModel = State(initialValue: SettingsViewModel(library: library))
+        self.onMaintenanceCompleted = onMaintenanceCompleted
     }
 
     public var body: some View {
@@ -15,7 +20,9 @@ public struct SettingsScreen: View {
                     if viewModel.supportsDataMaintenance {
                         Button {
                             Task {
-                                await viewModel.run(.rebuild)
+                                if await viewModel.run(.rebuild) {
+                                    onMaintenanceCompleted()
+                                }
                             }
                         } label: {
                             Label("重建本機辭典資料", systemImage: "arrow.clockwise")
@@ -24,7 +31,9 @@ public struct SettingsScreen: View {
 
                         Button(role: .destructive) {
                             Task {
-                                await viewModel.run(.clear)
+                                if await viewModel.run(.clear) {
+                                    onMaintenanceCompleted()
+                                }
                             }
                         } label: {
                             Label("清除本機辭典資料", systemImage: "trash")

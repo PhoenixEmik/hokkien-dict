@@ -22,12 +22,14 @@ public final class SettingsViewModel {
     }
 
     public func loadCapabilities() async {
+        errorMessage = nil
         supportsDataMaintenance = await library.supportsLocalMaintenance()
     }
 
-    public func run(_ action: MaintenanceAction) async {
+    @discardableResult
+    public func run(_ action: MaintenanceAction) async -> Bool {
         guard !isRunningAction else {
-            return
+            return false
         }
 
         isRunningAction = true
@@ -42,11 +44,13 @@ public final class SettingsViewModel {
                 try await library.clearInstalledDatabase()
                 statusMessage = "本機辭典資料已清除。"
             }
+            isRunningAction = false
+            return true
         } catch {
             errorMessage = String(describing: error)
             statusMessage = nil
+            isRunningAction = false
+            return false
         }
-
-        isRunningAction = false
     }
 }

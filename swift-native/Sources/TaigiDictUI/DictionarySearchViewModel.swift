@@ -82,6 +82,21 @@ public final class DictionarySearchViewModel {
         searchHistory = []
     }
 
+    public func resetAfterMaintenance() async {
+        searchTask?.cancel()
+        await library.reset()
+
+        searchText = ""
+        normalizedQuery = ""
+        isLoading = false
+        isSearching = false
+        results = []
+        selectedEntry = nil
+        detailEntry = nil
+        libraryPhase = .idle
+        errorMessage = nil
+    }
+
     public func select(_ entry: DictionaryEntry) {
         selectedEntry = entry
         detailEntry = entry
