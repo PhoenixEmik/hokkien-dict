@@ -11,6 +11,7 @@ public final class DictionarySearchViewModel {
     public var isSearching = false
     public var results: [DictionaryEntry] = []
     public var selectedEntry: DictionaryEntry?
+    public var detailEntry: DictionaryEntry?
     public var searchHistory: [String] = []
     public var libraryPhase: DictionaryLibraryPhase = .idle
     public var errorMessage: String?
@@ -45,6 +46,7 @@ public final class DictionarySearchViewModel {
         guard !normalized.isEmpty else {
             results = []
             selectedEntry = nil
+            detailEntry = nil
             isSearching = false
             return
         }
@@ -82,6 +84,7 @@ public final class DictionarySearchViewModel {
 
     public func select(_ entry: DictionaryEntry) {
         selectedEntry = entry
+        detailEntry = entry
     }
 
     private func runSearch(_ query: String, saveHistory: Bool) async {
@@ -91,6 +94,7 @@ public final class DictionarySearchViewModel {
         guard !normalized.isEmpty else {
             results = []
             selectedEntry = nil
+            detailEntry = nil
             return
         }
 

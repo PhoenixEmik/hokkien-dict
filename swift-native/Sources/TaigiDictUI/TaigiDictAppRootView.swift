@@ -3,44 +3,103 @@ import TaigiDictCore
 
 public struct TaigiDictAppRootView: View {
     @State private var viewModel: DictionarySearchViewModel
+    @State private var selectedTab: AppTab = .dictionary
 
     public init(repository: any DictionaryRepositoryProtocol) {
         _viewModel = State(initialValue: DictionarySearchViewModel(repository: repository))
     }
 
     public var body: some View {
-        DictionarySearchScreen(viewModel: viewModel)
-            .task {
-                await viewModel.load()
+        ZStack(alignment: .bottom) {
+            DictionaryBackdrop()
+
+            Group {
+                switch selectedTab {
+                case .dictionary:
+                    DictionarySearchScreen(viewModel: viewModel)
+                case .bookmarks:
+                    PlaceholderScreen(title: "書籤", message: "書籤功能會在後續重構接入。")
+                case .settings:
+                    PlaceholderScreen(title: "設定", message: "語言、主題與資料維護設定會在後續重構接入。")
+                }
             }
+            .safeAreaPadding(.bottom, 108)
+
+            FloatingTabBar(selectedTab: $selectedTab)
+                .padding(.horizontal, 22)
+                .padding(.bottom, 18)
+        }
+        .task {
+            await viewModel.load()
+        }
     }
 }
 
 public struct DictionarySearchScreen: View {
     @Bindable private var viewModel: DictionarySearchViewModel
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     public init(viewModel: DictionarySearchViewModel) {
         _viewModel = Bindable(viewModel)
     }
 
     public var body: some View {
-        NavigationSplitView {
-            SearchSidebar(viewModel: viewModel)
-                .navigationTitle("辭典")
-        } detail: {
-            DictionaryDetailPane(entry: viewModel.selectedEntry)
-                .navigationTitle(viewModel.selectedEntry?.hanji ?? "辭典")
+        if horizontalSizeClass == .regular {
+            NavigationSplitView {
+                SearchHome(viewModel: viewModel, compact: false)
+                    .navigationTitle("辭典")
+            } detail: {
+                DictionaryDetailPane(entry: viewModel.selectedEntry)
+                    .navigationTitle(viewModel.selectedEntry?.hanji ?? "辭典")
+            }
+        } else {
+            NavigationStack {
+                SearchHome(viewModel: viewModel, compact: true)
+                    .navigationDestination(item: $viewModel.detailEntry) { entry in
+                        DictionaryDetailPane(entry: entry)
+                            .navigationTitle(entry.hanji)
+                            .taigiInlineNavigationTitle()
+                    }
+            }
         }
-        .background(DictionaryBackdrop())
     }
 }
 
-private struct SearchSidebar: View {
+private enum AppTab: String, CaseIterable {
+    case dictionary
+    case bookmarks
+    case settings
+
+    var title: String {
+        switch self {
+        case .dictionary: "辭典"
+        case .bookmarks: "書籤"
+        case .settings: "設定"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .dictionary: "book.fill"
+        case .bookmarks: "bookmark.fill"
+        case .settings: "gearshape.fill"
+        }
+    }
+}
+
+private struct SearchHome: View {
     @Bindable var viewModel: DictionarySearchViewModel
+    var compact: Bool
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 22) {
+                Text("辭典")
+                    .font(.system(.title2, design: .rounded).weight(.heavy))
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.top, compact ? 28 : 8)
+                    .padding(.bottom, compact ? 44 : 10)
+
                 SearchField(viewModel: viewModel)
 
                 if viewModel.isLoading {
@@ -59,11 +118,13 @@ private struct SearchSidebar: View {
                     ResultList(
                         results: viewModel.results,
                         selectedEntry: viewModel.selectedEntry,
+                        compact: compact,
                         select: viewModel.select
                     )
                 }
             }
-            .padding(22)
+            .padding(.horizontal, compact ? 22 : 24)
+            .padding(.bottom, 24)
         }
         .scrollContentBackground(.hidden)
     }
@@ -73,14 +134,15 @@ private struct SearchField: View {
     @Bindable var viewModel: DictionarySearchViewModel
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 14) {
             Image(systemName: "magnifyingglass")
-                .font(.title3.weight(.semibold))
+                .font(.system(size: 28, weight: .semibold))
                 .foregroundStyle(.blue)
 
             TextField("輸入台語漢字、白話字或華語詞義", text: $viewModel.searchText)
                 .textFieldStyle(.plain)
-                .font(.title3)
+                .font(.system(size: 22, weight: .regular, design: .rounded))
+                .submitLabel(.search)
                 .onChange(of: viewModel.searchText) { _, _ in
                     viewModel.scheduleSearch()
                 }
@@ -94,7 +156,7 @@ private struct SearchField: View {
                     viewModel.scheduleSearch()
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.title3)
+                        .font(.title2)
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.secondary)
@@ -102,13 +164,20 @@ private struct SearchField: View {
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 15)
-        .taigiGlassProminent(cornerRadius: 22)
+        .frame(minHeight: 58)
+        .background(.background, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Color.primary.opacity(0.18), lineWidth: 1.2)
+        }
+        .shadow(color: .black.opacity(0.04), radius: 10, y: 3)
     }
 }
 
 private struct ResultList: View {
     var results: [DictionaryEntry]
     var selectedEntry: DictionaryEntry?
+    var compact: Bool
     var select: (DictionaryEntry) -> Void
 
     var body: some View {
@@ -166,7 +235,7 @@ private struct DictionaryDetailPane: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 22) {
+            VStack(alignment: .leading, spacing: 24) {
                 if let entry {
                     DetailHeader(entry: entry)
                     ForEach(Array(entry.senses.enumerated()), id: \.offset) { _, sense in
@@ -180,6 +249,7 @@ private struct DictionaryDetailPane: View {
             .frame(maxWidth: 860, alignment: .leading)
         }
         .scrollContentBackground(.hidden)
+        .background(DictionaryBackdrop())
     }
 }
 
@@ -270,10 +340,11 @@ private struct SearchStartCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             Text("開始搜尋")
-                .font(.system(.largeTitle, design: .rounded).weight(.heavy))
-            Text("輸入台語漢字、白話字或華語詞義後才顯示詞條。")
-                .font(.title3)
+                .font(.system(size: 34, weight: .heavy, design: .rounded))
+            Text("輸入台語漢字、白話字，或華語釋義後才顯示詞條。")
+                .font(.system(size: 23, weight: .regular, design: .rounded))
                 .foregroundStyle(.secondary)
+                .lineSpacing(6)
 
             if !history.isEmpty {
                 HStack {
@@ -286,8 +357,10 @@ private struct SearchStartCard: View {
                 FlowLayout(items: history, action: applyHistory)
             }
         }
-        .padding(24)
-        .taigiGlassCard(cornerRadius: 28)
+        .padding(.horizontal, 28)
+        .padding(.vertical, 30)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .taigiGlassCard(cornerRadius: 22)
     }
 }
 
@@ -353,17 +426,83 @@ private struct EmptyStateCard: View {
     }
 }
 
+private struct FloatingTabBar: View {
+    @Binding var selectedTab: AppTab
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(AppTab.allCases, id: \.self) { tab in
+                Button {
+                    selectedTab = tab
+                } label: {
+                    VStack(spacing: 4) {
+                        Image(systemName: tab.icon)
+                            .font(.system(size: 28, weight: .bold))
+                        Text(tab.title)
+                            .font(.system(size: 14, weight: .heavy, design: .rounded))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 72)
+                    .foregroundStyle(selectedTab == tab ? .blue : .primary)
+                    .background {
+                        if selectedTab == tab {
+                            Capsule(style: .continuous)
+                                .fill(Color.blue.opacity(0.10))
+                                .padding(5)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .frame(maxWidth: 330)
+        .padding(5)
+        .taigiGlassProminent(cornerRadius: 42)
+        .shadow(color: .black.opacity(0.10), radius: 28, y: 14)
+    }
+}
+
+private struct PlaceholderScreen: View {
+    var title: String
+    var message: String
+
+    var body: some View {
+        VStack {
+            Text(title)
+                .font(.system(.title2, design: .rounded).weight(.heavy))
+                .padding(.top, 28)
+                .padding(.bottom, 44)
+
+            EmptyStateCard(title: title, message: message)
+                .padding(.horizontal, 22)
+
+            Spacer()
+        }
+    }
+}
+
 private struct DictionaryBackdrop: View {
     var body: some View {
         LinearGradient(
             colors: [
-                Color(red: 0.94, green: 0.91, blue: 0.84),
-                Color(red: 0.88, green: 0.95, blue: 0.95),
-                Color(red: 0.95, green: 0.96, blue: 1.0),
+                Color(red: 0.965, green: 0.966, blue: 0.985),
+                Color(red: 0.934, green: 0.938, blue: 0.965),
+                Color(red: 0.976, green: 0.976, blue: 0.988),
             ],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
         .ignoresSafeArea()
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func taigiInlineNavigationTitle() -> some View {
+        #if os(iOS)
+        navigationBarTitleDisplayMode(.inline)
+        #else
+        self
+        #endif
     }
 }
