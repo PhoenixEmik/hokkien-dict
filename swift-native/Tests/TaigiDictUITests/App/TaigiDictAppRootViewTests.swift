@@ -18,21 +18,6 @@ final class TaigiDictAppRootViewTests: XCTestCase {
         )
     }
 
-    func testLocalePolicyUsesSystemLocale() {
-        XCTAssertEqual(
-            AppRootLocalePolicy.appLocale(from: Locale(identifier: "zh-Hant")),
-            .traditionalChinese
-        )
-        XCTAssertEqual(
-            AppRootLocalePolicy.appLocale(from: Locale(identifier: "zh-Hans")),
-            .simplifiedChinese
-        )
-        XCTAssertEqual(
-            AppRootLocalePolicy.appLocale(from: Locale(identifier: "en")),
-            .english
-        )
-    }
-
     func testOfflineAudioBootstrapPreloadsAllArchiveTypes() async {
         let store = SpyOfflineAudioStore()
 

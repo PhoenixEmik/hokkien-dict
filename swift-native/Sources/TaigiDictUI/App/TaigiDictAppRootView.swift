@@ -118,7 +118,7 @@ public struct TaigiDictAppRootView: View {
     }
 
     private var appLocale: AppLocale {
-        AppRootLocalePolicy.appLocale(from: locale)
+        AppLocalizer.appLocale(from: locale)
     }
 
     private func loadAppSettingsIfNeeded() async {
@@ -165,12 +165,6 @@ enum AppRootContentPresentation: Equatable {
 
     static func resolve(isInitializationReady: Bool) -> AppRootContentPresentation {
         isInitializationReady ? .mainTabs : .initialization
-    }
-}
-
-enum AppRootLocalePolicy {
-    static func appLocale(from locale: Locale) -> AppLocale {
-        AppLocalizer.appLocale(from: locale)
     }
 }
 
