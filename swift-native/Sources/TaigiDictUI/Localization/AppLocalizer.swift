@@ -18,6 +18,12 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case searchHistoryTitle
     case clearSearchHistory
     case detailLoadFailedTitle
+    case detailAlternativePronunciationsTitle
+    case detailContractedPronunciationsTitle
+    case detailColloquialPronunciationsTitle
+    case detailPhoneticDifferencesTitle
+    case detailVocabularyComparisonsTitle
+    case detailLinkedReferenceFormat
     case playWordAudio
     case playExampleAudio
     case audioPlaybackAlertTitle
@@ -58,6 +64,7 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case settingsInterfaceLanguageLabel
     case settingsThemeLabel
     case settingsReadingTextScaleLabel
+    case settingsReadingTextScaleValueFormat
     case settingsDataAndInfoSection
     case settingsAdvanced
     case settingsAbout
@@ -203,6 +210,14 @@ enum AppLocalizer {
 
         assertionFailureIfMissing(resolved, key: key)
         return resolved
+    }
+
+    static func formattedText(_ key: AppLocalizedStringKey, locale: AppLocale, _ arguments: CVarArg...) -> String {
+        String(
+            format: text(key, locale: locale),
+            locale: Locale(identifier: locale.rawValue),
+            arguments: arguments
+        )
     }
 
     private static let resourceCatalog = LocalizedStringCatalog(bundle: .module)

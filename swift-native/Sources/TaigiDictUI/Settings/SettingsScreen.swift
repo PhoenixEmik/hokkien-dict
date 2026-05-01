@@ -51,7 +51,7 @@ public struct SettingsScreen: View {
 
                     VStack(alignment: .leading, spacing: 8) {
                         LabeledContent(AppLocalizer.text(.settingsReadingTextScaleLabel, locale: appLocale)) {
-                            Text(viewModel.readingTextScale.displayScaleLabel)
+                            Text(viewModel.readingTextScale.displayScaleLabel(locale: appLocale))
                                 .monospacedDigit()
                         }
 
@@ -288,7 +288,7 @@ private extension AppThemePreference {
 }
 
 private extension Double {
-    var displayScaleLabel: String {
-        String(format: "%.2fx", self)
+    func displayScaleLabel(locale: AppLocale) -> String {
+        AppLocalizer.formattedText(.settingsReadingTextScaleValueFormat, locale: locale, self)
     }
 }

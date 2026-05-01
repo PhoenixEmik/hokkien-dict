@@ -157,11 +157,26 @@ struct DictionaryDetailView: View {
                     }
                 }
 
-                DetailStringListSection(title: "又唸作", values: entry.alternativePronunciations)
-                DetailStringListSection(title: "合音唸作", values: entry.contractedPronunciations)
-                DetailStringListSection(title: "俗唸作", values: entry.colloquialPronunciations)
-                DetailStringListSection(title: "語音差異", values: entry.phoneticDifferences)
-                DetailStringListSection(title: "詞彙比較", values: entry.vocabularyComparisons)
+                DetailStringListSection(
+                    title: AppLocalizer.text(.detailAlternativePronunciationsTitle, locale: appLocale),
+                    values: entry.alternativePronunciations
+                )
+                DetailStringListSection(
+                    title: AppLocalizer.text(.detailContractedPronunciationsTitle, locale: appLocale),
+                    values: entry.contractedPronunciations
+                )
+                DetailStringListSection(
+                    title: AppLocalizer.text(.detailColloquialPronunciationsTitle, locale: appLocale),
+                    values: entry.colloquialPronunciations
+                )
+                DetailStringListSection(
+                    title: AppLocalizer.text(.detailPhoneticDifferencesTitle, locale: appLocale),
+                    values: entry.phoneticDifferences
+                )
+                DetailStringListSection(
+                    title: AppLocalizer.text(.detailVocabularyComparisonsTitle, locale: appLocale),
+                    values: entry.vocabularyComparisons
+                )
             } else {
                 ContentUnavailableView(
                     AppLocalizer.text(.searchStartDetailTitle, locale: appLocale),
@@ -289,6 +304,7 @@ private struct RelationshipSection: View {
 }
 
 private struct LinkedReferenceText: View {
+    @Environment(\.locale) private var locale
     var text: String
     var openWord: (String) -> Void
 
@@ -299,6 +315,7 @@ private struct LinkedReferenceText: View {
 
     var body: some View {
         let segments = DictionaryReferenceParser.segments(from: text)
+        let appLocale = AppLocalizer.appLocale(from: locale)
         RelationshipChipLayout(spacing: 2) {
             ForEach(Array(segments.enumerated()), id: \.offset) { _, segment in
                 switch segment {
@@ -308,7 +325,7 @@ private struct LinkedReferenceText: View {
                     Button {
                         openWord(word)
                     } label: {
-                        Text("【\(word)】")
+                        Text(AppLocalizer.formattedText(.detailLinkedReferenceFormat, locale: appLocale, word))
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(.tint)

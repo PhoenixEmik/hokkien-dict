@@ -42,6 +42,21 @@ final class AppLocalizerTests: XCTestCase {
         }
     }
 
+    func testFormatsLocalizedStringsFromResourceCatalog() {
+        XCTAssertEqual(
+            AppLocalizer.formattedText(.detailLinkedReferenceFormat, locale: .traditionalChinese, "詞目"),
+            "【詞目】"
+        )
+        XCTAssertEqual(
+            AppLocalizer.formattedText(.detailLinkedReferenceFormat, locale: .english, "entry"),
+            "[entry]"
+        )
+        XCTAssertEqual(
+            AppLocalizer.formattedText(.settingsReadingTextScaleValueFormat, locale: .english, 1.25),
+            "1.25x"
+        )
+    }
+
     func testAllLocalizedKeysResolveFromResourceCatalog() {
         for key in AppLocalizedStringKey.allCases {
             for locale in AppLocale.allCases {

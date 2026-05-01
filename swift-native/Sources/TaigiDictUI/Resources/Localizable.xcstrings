@@ -1,9 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "【%@】" : {
-
-    },
     "%lld" : {
 
     },
@@ -1410,6 +1407,98 @@
         }
       }
     },
+    "detailAlternativePronunciationsTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Also pronounced"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "又念作"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "又唸作"
+          }
+        }
+      }
+    },
+    "detailColloquialPronunciationsTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colloquial pronunciations"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "俗念作"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "俗唸作"
+          }
+        }
+      }
+    },
+    "detailContractedPronunciationsTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contracted pronunciations"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "合音念作"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "合音唸作"
+          }
+        }
+      }
+    },
+    "detailLinkedReferenceFormat" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[%@]"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "【%@】"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "【%@】"
+          }
+        }
+      }
+    },
     "detailLoadFailedTitle" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1429,6 +1518,52 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "詞條載入失敗"
+          }
+        }
+      }
+    },
+    "detailPhoneticDifferencesTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phonetic differences"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "语音差异"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "語音差異"
+          }
+        }
+      }
+    },
+    "detailVocabularyComparisonsTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vocabulary comparisons"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "词汇比较"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "詞彙比較"
           }
         }
       }
@@ -2388,6 +2523,29 @@
         }
       }
     },
+    "referenceHanjiRecommendedP1" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The dictionary generally follows the Ministry of Education recommended Taiwanese Hokkien characters while balancing readability, sound-meaning transparency, and everyday usability."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本辞典原则上遵照教育部公告的台湾台语推荐用字成果，并兼顾望字生音义、常用度与阅读便利性。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本辭典原則上遵照教育部公告的臺灣台語推薦用字成果，並兼顧望字生音義、常用度與閱讀便利性。"
+          }
+        }
+      }
+    },
     "referenceHanjiSectionOverview" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2476,29 +2634,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "本辭典用字類型"
-          }
-        }
-      }
-    },
-    "referenceHanjiRecommendedP1" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The dictionary generally follows the Ministry of Education recommended Taiwanese Hokkien characters while balancing readability, sound-meaning transparency, and everyday usability."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "本辞典原则上遵照教育部公告的台湾台语推荐用字成果，并兼顾望字生音义、常用度与阅读便利性。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "本辭典原則上遵照教育部公告的臺灣台語推薦用字成果，並兼顧望字生音義、常用度與閱讀便利性。"
           }
         }
       }
@@ -2848,6 +2983,52 @@
         }
       }
     },
+    "referenceTaiLoP1" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The dictionary adopts the Ministry of Education Taiwanese Romanization System (Tai-Lo) announced in 2006 and writes borrowed words by their reconstructed citation tones."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本辞典采用教育部公告的台湾台语罗马字拼音方案（台罗），外来词则依台语词目回推本调后标注。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本辭典採用教育部公告的臺灣台語羅馬字拼音方案（臺羅），外來詞則依台語詞目回推本調後標注。"
+          }
+        }
+      }
+    },
+    "referenceTaiLoP2" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Besides the basic citation tones, Tai-Lo also describes special tone marks, neutral tone with --, and predictable tone sandhi inside phrases."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "除了本调之外，台罗也说明特殊声调、以 -- 标示的轻声，以及词句中的连读变调。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "除了本調之外，臺羅也說明特殊聲調、以 -- 標示的輕聲，以及詞句中的連讀變調。"
+          }
+        }
+      }
+    },
     "referenceTaiLoSandhiRow1Value" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2936,98 +3117,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "如外口 guā-kháu 在連讀時會讀成 guà-kháu。"
-          }
-        }
-      }
-    },
-    "referenceTaiLoToneRow1Value" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Yin-ping, yin-shang, yin-qu, and yin-ru."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "对应阴平、阴上、阴去、阴入。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "對應陰平、陰上、陰去、陰入。"
-          }
-        }
-      }
-    },
-    "referenceTaiLoToneRow2Value" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Yang-ping, yang-qu, and yang-ru."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "对应阳平、阳去、阳入。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "對應陽平、陽去、陽入。"
-          }
-        }
-      }
-    },
-    "referenceTaiLoP1" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The dictionary adopts the Ministry of Education Taiwanese Romanization System (Tai-Lo) announced in 2006 and writes borrowed words by their reconstructed citation tones."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "本辞典采用教育部公告的台湾台语罗马字拼音方案（台罗），外来词则依台语词目回推本调后标注。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "本辭典採用教育部公告的臺灣台語羅馬字拼音方案（臺羅），外來詞則依台語詞目回推本調後標注。"
-          }
-        }
-      }
-    },
-    "referenceTaiLoP2" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Besides the basic citation tones, Tai-Lo also describes special tone marks, neutral tone with --, and predictable tone sandhi inside phrases."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "除了本调之外，台罗也说明特殊声调、以 -- 标示的轻声，以及词句中的连读变调。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "除了本調之外，臺羅也說明特殊聲調、以 -- 標示的輕聲，以及詞句中的連讀變調。"
           }
         }
       }
@@ -3143,6 +3232,52 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "臺羅標注說明"
+          }
+        }
+      }
+    },
+    "referenceTaiLoToneRow1Value" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yin-ping, yin-shang, yin-qu, and yin-ru."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "对应阴平、阴上、阴去、阴入。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "對應陰平、陰上、陰去、陰入。"
+          }
+        }
+      }
+    },
+    "referenceTaiLoToneRow2Value" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yang-ping, yang-qu, and yang-ru."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "对应阳平、阳去、阳入。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "對應陽平、陽去、陽入。"
           }
         }
       }
@@ -3718,6 +3853,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "閱讀字級"
+          }
+        }
+      }
+    },
+    "settingsReadingTextScaleValueFormat" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%.2fx"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%.2fx"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%.2fx"
           }
         }
       }
