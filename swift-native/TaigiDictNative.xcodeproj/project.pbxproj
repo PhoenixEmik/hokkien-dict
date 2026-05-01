@@ -19,6 +19,7 @@
 		8A0000010000000000000004 /* Generated/Dictionary */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Generated/Dictionary; sourceTree = SOURCE_ROOT; };
 		8A0000010000000000000009 /* TaigiDictNative.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TaigiDictNative.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A000001000000000000001B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A06B49822FA4257A0068353D /* TaigiDictNative-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "TaigiDictNative-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,6 +38,7 @@
 		8A000001000000000000000B = {
 			isa = PBXGroup;
 			children = (
+				A06B49822FA4257A0068353D /* TaigiDictNative-Info.plist */,
 				8A000001000000000000000C /* NativeApp */,
 				8A000001000000000000000D /* Generated */,
 				8A000001000000000000000E /* Products */,
@@ -279,6 +281,7 @@
 				DEVELOPMENT_TEAM = 755TNLRN92;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "TaigiDictNative-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "台語辭典";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.reference";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -312,6 +315,7 @@
 				DEVELOPMENT_TEAM = 755TNLRN92;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "TaigiDictNative-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "台語辭典";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.reference";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
