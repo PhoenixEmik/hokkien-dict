@@ -12,6 +12,7 @@
 		8A0000010000000000000005 /* TaigiDictCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8A0000010000000000000006 /* TaigiDictCore */; };
 		8A0000010000000000000007 /* TaigiDictUI in Frameworks */ = {isa = PBXBuildFile; productRef = 8A0000010000000000000008 /* TaigiDictUI */; };
 		8A000001000000000000001A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8A000001000000000000001B /* Assets.xcassets */; };
+		8A000001000000000000001C /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C20000010000000000000004 /* InfoPlist.strings */; };
 		B10000010000000000000001 /* LanguageSwitchingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000010000000000000002 /* LanguageSwitchingUITests.swift */; };
 /* End PBXBuildFile section */
 
@@ -33,6 +34,9 @@
 		A06B49822FA4257A0068353D /* TaigiDictNative-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "TaigiDictNative-Info.plist"; sourceTree = "<group>"; };
 		B10000010000000000000002 /* LanguageSwitchingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageSwitchingUITests.swift; sourceTree = "<group>"; };
 		B10000010000000000000007 /* TaigiDictNativeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TaigiDictNativeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C20000010000000000000001 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C20000010000000000000002 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		C20000010000000000000003 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,6 +74,7 @@
 			isa = PBXGroup;
 			children = (
 				8A0000010000000000000002 /* TaigiDictNativeApp.swift */,
+				C20000010000000000000004 /* InfoPlist.strings */,
 				8A000001000000000000001B /* Assets.xcassets */,
 			);
 			path = NativeApp;
@@ -194,6 +199,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8A0000010000000000000003 /* Generated/Dictionary in Resources */,
+				8A000001000000000000001C /* InfoPlist.strings in Resources */,
 				8A000001000000000000001A /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -233,6 +239,19 @@
 			targetProxy = B10000010000000000000003 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		C20000010000000000000004 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C20000010000000000000001 /* en */,
+				C20000010000000000000002 /* zh-Hans */,
+				C20000010000000000000003 /* zh-Hant */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		8A0000010000000000000016 /* Debug */ = {
