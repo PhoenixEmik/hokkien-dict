@@ -40,6 +40,28 @@ final class WordDetailViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.resolvedEntryID, 3)
     }
 
+    func testClearResetsPreparedEntryState() async {
+        let primary = entry(
+            id: 1,
+            hanji: "辭典",
+            romanization: "sû-tián",
+            definition: "工具書",
+            wordSynonyms: ["字典"]
+        )
+        let linked = entry(id: 2, hanji: "字典", romanization: "jī-tián")
+        let repository = InMemoryRepository(entries: [primary, linked])
+        let viewModel = WordDetailViewModel(library: DictionaryLibrary(repository: repository))
+
+        await viewModel.prepare(entry: primary)
+        viewModel.clear()
+
+        XCTAssertNil(viewModel.entry)
+        XCTAssertNil(viewModel.resolvedEntryID)
+        XCTAssertTrue(viewModel.openableWords.isEmpty)
+        XCTAssertNil(viewModel.errorMessage)
+        XCTAssertEqual(viewModel.shareText(), "")
+    }
+
     func testPrepareMarksOnlyExternalLinkedRelationshipWordsOpenable() async {
         let primary = entry(
             id: 1,

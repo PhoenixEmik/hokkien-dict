@@ -40,6 +40,7 @@ final class DictionarySearchViewModelTests: XCTestCase {
 
         XCTAssertTrue(viewModel.results.isEmpty)
         XCTAssertNil(viewModel.selectedEntry)
+        XCTAssertNil(viewModel.detailEntry)
     }
 
     func testResetAfterMaintenanceClearsSearchStateAndResetsLibrary() async {

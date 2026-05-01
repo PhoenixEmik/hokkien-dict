@@ -4,6 +4,7 @@ import TaigiDictCore
 struct DictionarySearchListView: View {
     @Bindable var viewModel: DictionarySearchViewModel
     var showsSelection: Bool
+    var startPresentation: DictionarySearchStartPresentation = .full
     @Environment(\.locale) private var locale
 
     private var appLocale: AppLocale {
@@ -44,11 +45,21 @@ struct DictionarySearchListView: View {
                     )
                 }
             } else if viewModel.normalizedQuery.isEmpty {
-                SearchStartContentView(history: viewModel.searchHistory, locale: appLocale) { query in
-                    viewModel.applyHistoryQuery(query)
-                } clearHistory: {
-                    Task {
-                        await viewModel.clearSearchHistory()
+                if startPresentation.showsStartContent {
+                    SearchStartContentView(history: viewModel.searchHistory, locale: appLocale) { query in
+                        viewModel.applyHistoryQuery(query)
+                    } clearHistory: {
+                        Task {
+                            await viewModel.clearSearchHistory()
+                        }
+                    }
+                } else {
+                    SearchHistoryContentView(history: viewModel.searchHistory, locale: appLocale) { query in
+                        viewModel.applyHistoryQuery(query)
+                    } clearHistory: {
+                        Task {
+                            await viewModel.clearSearchHistory()
+                        }
                     }
                 }
             } else if viewModel.isSearching {
@@ -95,6 +106,15 @@ struct DictionarySearchListView: View {
         .onSubmit(of: .search) {
             viewModel.submitSearch()
         }
+    }
+}
+
+enum DictionarySearchStartPresentation: Equatable {
+    case full
+    case historyOnly
+
+    var showsStartContent: Bool {
+        self == .full
     }
 }
 

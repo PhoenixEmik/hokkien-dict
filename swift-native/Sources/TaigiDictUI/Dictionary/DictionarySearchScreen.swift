@@ -26,10 +26,18 @@ public struct DictionarySearchScreen: View {
     }
 
     public var body: some View {
-        if horizontalSizeClass == .regular {
+        let dictionaryTitle = AppLocalizer.text(.dictionaryTitle, locale: appLocale)
+        let searchTitle = AppLocalizer.text(.searchTitle, locale: appLocale)
+
+        switch DictionarySearchPresentation.resolve(horizontalSizeClass: horizontalSizeClass) {
+        case .regularSplit:
             NavigationSplitView {
-                DictionarySearchListView(viewModel: viewModel, showsSelection: true)
-                    .navigationTitle(AppLocalizer.text(.dictionaryTitle, locale: appLocale))
+                DictionarySearchListView(
+                    viewModel: viewModel,
+                    showsSelection: true,
+                    startPresentation: .historyOnly
+                )
+                .navigationTitle(searchTitle)
             } detail: {
                 DictionaryDetailView(
                     entry: viewModel.selectedEntry,
@@ -38,12 +46,16 @@ public struct DictionarySearchScreen: View {
                     offlineAudioStore: offlineAudioStore,
                     conversionService: conversionService
                 )
-                .navigationTitle(viewModel.selectedEntry?.hanji ?? AppLocalizer.text(.dictionaryTitle, locale: appLocale))
+                .navigationTitle(DictionarySearchNavigationTitle.detailTitle(
+                    selectedEntryHanji: viewModel.selectedEntry?.hanji,
+                    dictionaryTitle: dictionaryTitle
+                ))
             }
-        } else {
+            .navigationSplitViewStyle(.balanced)
+        case .compactStack:
             NavigationStack {
                 DictionarySearchListView(viewModel: viewModel, showsSelection: false)
-                    .navigationTitle(AppLocalizer.text(.dictionaryTitle, locale: appLocale))
+                    .navigationTitle(dictionaryTitle)
                     .navigationDestination(item: $viewModel.detailEntry) { entry in
                         DictionaryDetailView(
                             entry: entry,
@@ -59,6 +71,21 @@ public struct DictionarySearchScreen: View {
                     }
             }
         }
+    }
+}
+
+enum DictionarySearchNavigationTitle {
+    static func detailTitle(selectedEntryHanji: String?, dictionaryTitle: String) -> String {
+        dictionaryTitle
+    }
+}
+
+enum DictionarySearchPresentation: Equatable {
+    case compactStack
+    case regularSplit
+
+    static func resolve(horizontalSizeClass: UserInterfaceSizeClass?) -> DictionarySearchPresentation {
+        horizontalSizeClass == .regular ? .regularSplit : .compactStack
     }
 }
 

@@ -16,6 +16,22 @@ struct SearchStartContentView: View {
             )
         }
 
+        SearchHistoryContentView(
+            history: history,
+            locale: locale,
+            applyHistory: applyHistory,
+            clearHistory: clearHistory
+        )
+    }
+}
+
+struct SearchHistoryContentView: View {
+    var history: [String]
+    var locale: AppLocale
+    var applyHistory: (String) -> Void
+    var clearHistory: () -> Void
+
+    var body: some View {
         if !history.isEmpty {
             Section {
                 ForEach(history, id: \.self) { query in

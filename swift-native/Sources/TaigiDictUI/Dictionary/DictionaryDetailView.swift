@@ -218,6 +218,9 @@ struct DictionaryDetailView: View {
         }
         .task(id: sourceEntry?.id) {
             guard let sourceEntry else {
+                viewModel.clear()
+                isBookmarked = false
+                linkedEntry = nil
                 return
             }
             await viewModel.prepare(entry: sourceEntry, locale: appLocale)

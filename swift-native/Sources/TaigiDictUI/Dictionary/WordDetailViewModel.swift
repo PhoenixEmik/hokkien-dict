@@ -109,6 +109,15 @@ public final class WordDetailViewModel {
         audioAlertMessage = nil
     }
 
+    public func clear() {
+        entry = nil
+        resolvedEntryID = nil
+        openableWords = []
+        localizedOpenableWordMap = [:]
+        errorMessage = nil
+        audioAlertMessage = nil
+    }
+
     private func playAudioClip(_ clipID: String, archiveType: AudioArchiveType) async {
         let normalized = clipID.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !normalized.isEmpty else {

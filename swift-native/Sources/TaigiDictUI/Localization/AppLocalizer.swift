@@ -6,6 +6,7 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case tabBookmarks
     case tabSettings
     case dictionaryTitle
+    case searchTitle
     case searchPrompt
     case loadingDictionary
     case loadingFailedTitle
