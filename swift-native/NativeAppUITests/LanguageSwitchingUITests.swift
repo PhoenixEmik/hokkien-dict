@@ -1,3 +1,4 @@
+#if canImport(XCTest)
 import XCTest
 
 final class LanguageSwitchingUITests: XCTestCase {
@@ -27,3 +28,4 @@ final class LanguageSwitchingUITests: XCTestCase {
         XCTAssertTrue(simplifiedSettingsTab.waitForExistence(timeout: 10))
     }
 }
+#endif
