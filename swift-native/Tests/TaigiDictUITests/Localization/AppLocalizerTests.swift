@@ -3,6 +3,25 @@ import TaigiDictCore
 @testable import TaigiDictUI
 
 final class AppLocalizerTests: XCTestCase {
+    func testExplicitAppLanguageOverridesSystemLocale() {
+        XCTAssertEqual(
+            AppLocalizer.text(
+                .settingsTitle,
+                language: .en,
+                systemLocale: Locale(identifier: "zh-Hant")
+            ),
+            "Settings"
+        )
+        XCTAssertEqual(
+            AppLocalizer.text(
+                .settingsTitle,
+                language: .zhHans,
+                systemLocale: Locale(identifier: "en")
+            ),
+            "设置"
+        )
+    }
+
     func testReadsLocalizedStringsFromResourceCatalog() {
         XCTAssertEqual(AppLocalizer.text(.settingsTitle, locale: .english), "Settings")
         XCTAssertEqual(AppLocalizer.text(.settingsTitle, locale: .traditionalChinese), "設定")

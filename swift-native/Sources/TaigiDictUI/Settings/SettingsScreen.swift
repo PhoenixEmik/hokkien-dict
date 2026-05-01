@@ -2,6 +2,7 @@ import SwiftUI
 import TaigiDictCore
 
 public struct SettingsScreen: View {
+    @EnvironmentObject private var appLanguageManager: AppLanguageManager
     @State private var viewModel: SettingsViewModel
     @Environment(\.locale) private var locale
     private let onMaintenanceCompleted: () -> Void
@@ -34,6 +35,18 @@ public struct SettingsScreen: View {
         NavigationStack {
             Form {
                 Section(AppLocalizer.text(.settingsDisplayLanguageSection, locale: appLocale)) {
+                    Picker(appLanguageManager.localized(.settingsInterfaceLanguageLabel), selection: Binding(
+                        get: { appLanguageManager.selectedLanguage },
+                        set: { language in
+                            appLanguageManager.setLanguage(language)
+                        }
+                    )) {
+                        ForEach(AppLanguage.allCases, id: \.self) { language in
+                            Text(appLanguageManager.displayName(for: language))
+                                .tag(language)
+                        }
+                    }
+
                     Picker(AppLocalizer.text(.settingsThemeLabel, locale: appLocale), selection: Binding(
                         get: { viewModel.selectedThemePreference },
                         set: { preference in

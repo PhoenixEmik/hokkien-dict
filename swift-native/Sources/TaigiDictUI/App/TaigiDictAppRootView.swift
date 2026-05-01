@@ -3,6 +3,7 @@ import TaigiDictCore
 
 public struct TaigiDictAppRootView: View {
     @Environment(\.locale) private var locale
+    @StateObject private var appLanguageManager: AppLanguageManager
     @State private var viewModel: DictionarySearchViewModel
     @State private var initializationViewModel = InitializationViewModel()
     @State private var bookmarkStore = BookmarkStore()
@@ -15,14 +16,17 @@ public struct TaigiDictAppRootView: View {
     private let conversionService: (any ChineseConversionProviding)?
     private let dictionarySourceStore: (any DictionarySourceResourceManaging)?
 
+    @MainActor
     public init(
         repository: any DictionaryRepositoryProtocol,
         settingsStore: any AppSettingsStoring = UserDefaultsAppSettingsStore(),
-        dictionarySourceStore: (any DictionarySourceResourceManaging)? = nil
+        dictionarySourceStore: (any DictionarySourceResourceManaging)? = nil,
+        appLanguageManager: AppLanguageManager? = nil
     ) {
         let conversionService = Self.makeChineseConversionService()
         self.conversionService = conversionService
         self.dictionarySourceStore = dictionarySourceStore
+        _appLanguageManager = StateObject(wrappedValue: appLanguageManager ?? AppLanguageManager())
         _viewModel = State(initialValue: DictionarySearchViewModel(
             repository: repository,
             conversionService: conversionService
@@ -33,6 +37,8 @@ public struct TaigiDictAppRootView: View {
 
     public var body: some View {
         rootContent
+        .environmentObject(appLanguageManager)
+        .environment(\.locale, appLanguageManager.locale)
         .animation(.easeInOut(duration: 0.2), value: initializationViewModel.isReady)
         .task(id: initializationViewModel.taskID) {
             await Task.yield()
@@ -42,8 +48,12 @@ public struct TaigiDictAppRootView: View {
             await AppRootOfflineAudioBootstrap.preload(using: offlineAudioStore)
         }
         .task {
+            appLanguageManager.updateSystemLocale(locale)
             await loadAppSettingsIfNeeded()
             syncAppLocaleWithSystem()
+        }
+        .onChange(of: locale.identifier) { _, _ in
+            appLanguageManager.updateSystemLocale(locale)
         }
         .onChange(of: appLocale) { _, _ in
             syncAppLocaleWithSystem()
@@ -80,7 +90,7 @@ public struct TaigiDictAppRootView: View {
                 conversionService: conversionService
             )
                 .tabItem {
-                    Label(AppLocalizer.text(.tabDictionary, locale: currentLocale), systemImage: "book")
+                    Label(appLanguageManager.localized(.tabDictionary), systemImage: "book")
                 }
                 .tag(AppTab.dictionary)
 
@@ -91,7 +101,7 @@ public struct TaigiDictAppRootView: View {
                 conversionService: conversionService
             )
             .tabItem {
-                Label(AppLocalizer.text(.tabBookmarks, locale: currentLocale), systemImage: "bookmark")
+                Label(appLanguageManager.localized(.tabBookmarks), systemImage: "bookmark")
             }
             .tag(AppTab.bookmarks)
 
@@ -110,7 +120,7 @@ public struct TaigiDictAppRootView: View {
                 appSettings = settings
             }
             .tabItem {
-                Label(AppLocalizer.text(.tabSettings, locale: currentLocale), systemImage: "gearshape")
+                Label(appLanguageManager.localized(.tabSettings), systemImage: "gearshape")
             }
             .tag(AppTab.settings)
         }
@@ -118,7 +128,7 @@ public struct TaigiDictAppRootView: View {
     }
 
     private var appLocale: AppLocale {
-        AppLocalizer.appLocale(from: locale)
+        appLanguageManager.appLocale
     }
 
     private func loadAppSettingsIfNeeded() async {

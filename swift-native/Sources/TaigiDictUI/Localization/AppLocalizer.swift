@@ -97,6 +97,7 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case localeTraditionalChinese
     case localeSimplifiedChinese
     case localeEnglish
+    case localeSystem
 
     case themeSystem
     case themeLight
@@ -196,15 +197,39 @@ public enum AppLocalizedStringKey: String, CaseIterable {
 }
 
 enum AppLocalizer {
-    static func text(_ key: AppLocalizedStringKey, locale: AppLocale) -> String {
-        let resolved = String(
-            localized: String.LocalizationValue(key.rawValue),
-            table: "Localizable",
-            bundle: .module,
-            locale: Locale(identifier: locale.rawValue)
-        )
+    private static let configurationLock = NSLock()
+    private static var configuration = LocalizationConfiguration(
+        language: .system,
+        systemLocale: .autoupdatingCurrent
+    )
 
-        if resolved == key.rawValue, let catalogValue = resourceCatalog.text(key.rawValue, locale: locale) {
+    static func configure(language: AppLanguage, systemLocale: Locale) {
+        configurationLock.lock()
+        configuration = LocalizationConfiguration(language: language, systemLocale: systemLocale)
+        configurationLock.unlock()
+    }
+
+    static func text(_ key: AppLocalizedStringKey, locale: AppLocale) -> String {
+        let configuration = currentConfiguration()
+        return text(
+            key,
+            language: configuration.language,
+            systemLocale: configuration.systemLocale,
+            localeOverride: locale
+        )
+    }
+
+    static func text(
+        _ key: AppLocalizedStringKey,
+        language: AppLanguage,
+        systemLocale: Locale,
+        localeOverride: AppLocale? = nil
+    ) -> String {
+        let resolvedLocale = localeOverride ?? language.resolvedAppLocale(systemLocale: systemLocale)
+        let bundle = localizedBundle(for: language, systemLocale: systemLocale)
+        let resolved = bundle.localizedString(forKey: key.rawValue, value: nil, table: "Localizable")
+
+        if resolved == key.rawValue, let catalogValue = resourceCatalog.text(key.rawValue, locale: resolvedLocale) {
             return catalogValue
         }
 
@@ -213,9 +238,27 @@ enum AppLocalizer {
     }
 
     static func formattedText(_ key: AppLocalizedStringKey, locale: AppLocale, _ arguments: CVarArg...) -> String {
-        String(
-            format: text(key, locale: locale),
-            locale: Locale(identifier: locale.rawValue),
+        let configuration = currentConfiguration()
+        return formattedText(
+            key,
+            language: configuration.language,
+            systemLocale: configuration.systemLocale,
+            localeOverride: locale,
+            arguments: arguments
+        )
+    }
+
+    static func formattedText(
+        _ key: AppLocalizedStringKey,
+        language: AppLanguage,
+        systemLocale: Locale,
+        localeOverride: AppLocale? = nil,
+        arguments: [CVarArg]
+    ) -> String {
+        let resolvedLocale = localeOverride ?? language.resolvedAppLocale(systemLocale: systemLocale)
+        return String(
+            format: text(key, language: language, systemLocale: systemLocale, localeOverride: localeOverride),
+            locale: Locale(identifier: resolvedLocale.rawValue),
             arguments: arguments
         )
     }
@@ -235,6 +278,32 @@ enum AppLocalizer {
         return .english
     }
 
+    private static func currentConfiguration() -> LocalizationConfiguration {
+        configurationLock.lock()
+        let configuration = configuration
+        configurationLock.unlock()
+        return configuration
+    }
+
+    private static func localizedBundle(for language: AppLanguage, systemLocale: Locale) -> Bundle {
+        let localizationIdentifier = switch language {
+        case .system:
+            language.resolvedAppLocale(systemLocale: systemLocale).localizationIdentifier
+        case .zhHant, .zhHans, .en:
+            language.localizationIdentifier
+        }
+
+        guard
+            let localizationIdentifier,
+            let url = Bundle.module.url(forResource: localizationIdentifier, withExtension: "lproj"),
+            let bundle = Bundle(url: url)
+        else {
+            return .module
+        }
+
+        return bundle
+    }
+
     private static func assertionFailureIfMissing(_ resolved: String, key: AppLocalizedStringKey) {
         guard resolved == key.rawValue else {
             return
@@ -242,6 +311,11 @@ enum AppLocalizer {
 
         assertionFailure("Missing localized resource for key \(key.rawValue)")
     }
+}
+
+private struct LocalizationConfiguration {
+    var language: AppLanguage
+    var systemLocale: Locale
 }
 
 private struct LocalizedStringCatalog {
@@ -287,5 +361,18 @@ private struct LocalizedStringCatalog {
 
     private struct StringUnit: Decodable {
         var value: String
+    }
+}
+
+private extension AppLocale {
+    var localizationIdentifier: String {
+        switch self {
+        case .english:
+            return "en"
+        case .simplifiedChinese:
+            return "zh-Hans"
+        case .traditionalChinese:
+            return "zh-Hant"
+        }
     }
 }
