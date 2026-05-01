@@ -5,16 +5,13 @@ public struct AppSettingsSnapshot: Equatable, Sendable {
     public static let maxReadingTextScale = 1.4
     public static let readingTextScaleDivisions = 5
 
-    public var interfaceLocale: AppLocale
     public var themePreference: AppThemePreference
     public var readingTextScale: Double
 
     public init(
-        interfaceLocale: AppLocale = .traditionalChinese,
         themePreference: AppThemePreference = .system,
         readingTextScale: Double = 1.0
     ) {
-        self.interfaceLocale = interfaceLocale
         self.themePreference = themePreference
         self.readingTextScale = Self.snapReadingTextScale(readingTextScale)
     }
@@ -29,13 +26,11 @@ public struct AppSettingsSnapshot: Equatable, Sendable {
 
 public protocol AppSettingsStoring: Sendable {
     func load() async -> AppSettingsSnapshot
-    func setInterfaceLocale(_ locale: AppLocale) async
     func setThemePreference(_ preference: AppThemePreference) async
     func setReadingTextScale(_ value: Double) async
 }
 
 public actor UserDefaultsAppSettingsStore: AppSettingsStoring {
-    public static let interfaceLocaleKey = "interface_locale"
     public static let themePreferenceKey = "theme_preference"
     public static let readingTextScaleKey = "reading_text_scale"
 
@@ -46,19 +41,13 @@ public actor UserDefaultsAppSettingsStore: AppSettingsStoring {
     }
 
     public func load() async -> AppSettingsSnapshot {
-        let locale = AppLocale(rawValue: defaults.string(forKey: Self.interfaceLocaleKey) ?? "") ?? .traditionalChinese
         let theme = AppThemePreference(rawValue: defaults.string(forKey: Self.themePreferenceKey) ?? "") ?? .system
         let scale = defaults.object(forKey: Self.readingTextScaleKey) as? Double ?? 1.0
 
         return AppSettingsSnapshot(
-            interfaceLocale: locale,
             themePreference: theme,
             readingTextScale: scale
         )
-    }
-
-    public func setInterfaceLocale(_ locale: AppLocale) async {
-        defaults.set(locale.rawValue, forKey: Self.interfaceLocaleKey)
     }
 
     public func setThemePreference(_ preference: AppThemePreference) async {

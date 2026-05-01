@@ -12,7 +12,18 @@
 		8A0000010000000000000005 /* TaigiDictCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8A0000010000000000000006 /* TaigiDictCore */; };
 		8A0000010000000000000007 /* TaigiDictUI in Frameworks */ = {isa = PBXBuildFile; productRef = 8A0000010000000000000008 /* TaigiDictUI */; };
 		8A000001000000000000001A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8A000001000000000000001B /* Assets.xcassets */; };
+		B10000010000000000000001 /* LanguageSwitchingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000010000000000000002 /* LanguageSwitchingUITests.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B10000010000000000000003 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8A0000010000000000000013 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8A000001000000000000000F;
+			remoteInfo = TaigiDictNative;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		8A0000010000000000000002 /* TaigiDictNativeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaigiDictNativeApp.swift; sourceTree = "<group>"; };
@@ -20,6 +31,8 @@
 		8A0000010000000000000009 /* TaigiDictNative.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TaigiDictNative.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A000001000000000000001B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A06B49822FA4257A0068353D /* TaigiDictNative-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "TaigiDictNative-Info.plist"; sourceTree = "<group>"; };
+		B10000010000000000000002 /* LanguageSwitchingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageSwitchingUITests.swift; sourceTree = "<group>"; };
+		B10000010000000000000007 /* TaigiDictNativeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TaigiDictNativeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,6 +45,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B10000010000000000000008 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -40,6 +60,7 @@
 			children = (
 				A06B49822FA4257A0068353D /* TaigiDictNative-Info.plist */,
 				8A000001000000000000000C /* NativeApp */,
+				B10000010000000000000009 /* NativeAppUITests */,
 				8A000001000000000000000D /* Generated */,
 				8A000001000000000000000E /* Products */,
 			);
@@ -66,8 +87,17 @@
 			isa = PBXGroup;
 			children = (
 				8A0000010000000000000009 /* TaigiDictNative.app */,
+				B10000010000000000000007 /* TaigiDictNativeUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		B10000010000000000000009 /* NativeAppUITests */ = {
+			isa = PBXGroup;
+			children = (
+				B10000010000000000000002 /* LanguageSwitchingUITests.swift */,
+			);
+			path = NativeAppUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -94,6 +124,26 @@
 			productReference = 8A0000010000000000000009 /* TaigiDictNative.app */;
 			productType = "com.apple.product-type.application";
 		};
+		B10000010000000000000004 /* TaigiDictNativeUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B1000001000000000000000A /* Build configuration list for PBXNativeTarget "TaigiDictNativeUITests" */;
+			buildPhases = (
+				B10000010000000000000005 /* Sources */,
+				B10000010000000000000008 /* Frameworks */,
+				B10000010000000000000006 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B1000001000000000000000B /* PBXTargetDependency */,
+			);
+			name = TaigiDictNativeUITests;
+			packageProductDependencies = (
+			);
+			productName = TaigiDictNativeUITests;
+			productReference = B10000010000000000000007 /* TaigiDictNativeUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -107,6 +157,10 @@
 				TargetAttributes = {
 					8A000001000000000000000F = {
 						CreatedOnToolsVersion = 26.4.1;
+					};
+					B10000010000000000000004 = {
+						CreatedOnToolsVersion = 26.4.1;
+						TestTargetID = 8A000001000000000000000F;
 					};
 				};
 			};
@@ -129,6 +183,7 @@
 			projectRoot = "";
 			targets = (
 				8A000001000000000000000F /* TaigiDictNative */,
+				B10000010000000000000004 /* TaigiDictNativeUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -143,6 +198,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B10000010000000000000006 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -154,7 +216,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B10000010000000000000005 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B10000010000000000000001 /* LanguageSwitchingUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B1000001000000000000000B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8A000001000000000000000F /* TaigiDictNative */;
+			targetProxy = B10000010000000000000003 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		8A0000010000000000000016 /* Debug */ = {
@@ -340,6 +418,42 @@
 			};
 			name = Release;
 		};
+		B1000001000000000000000C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 755TNLRN92;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = org.taigidict.appUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = TaigiDictNative;
+			};
+			name = Debug;
+		};
+		B1000001000000000000000D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 755TNLRN92;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = org.taigidict.appUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = TaigiDictNative;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -348,6 +462,15 @@
 			buildConfigurations = (
 				8A0000010000000000000018 /* Debug */,
 				8A0000010000000000000019 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B1000001000000000000000A /* Build configuration list for PBXNativeTarget "TaigiDictNativeUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B1000001000000000000000C /* Debug */,
+				B1000001000000000000000D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

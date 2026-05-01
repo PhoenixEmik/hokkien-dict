@@ -19,12 +19,10 @@ final class AppSettingsStoreTests: XCTestCase {
 
         let store = UserDefaultsAppSettingsStore(defaults: defaults)
 
-        await store.setInterfaceLocale(.english)
         await store.setThemePreference(.dark)
         await store.setReadingTextScale(1.37)
 
         let snapshot = await store.load()
-        XCTAssertEqual(snapshot.interfaceLocale, .english)
         XCTAssertEqual(snapshot.themePreference, .dark)
         XCTAssertEqual(snapshot.readingTextScale, 1.4)
 

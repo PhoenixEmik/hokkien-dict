@@ -8,7 +8,6 @@ final class SettingsViewModelTests: XCTestCase {
         let repository = SettingsRepository(supportsMaintenance: true)
         let settingsStore = TestAppSettingsStore(
             snapshot: AppSettingsSnapshot(
-                interfaceLocale: .english,
                 themePreference: .dark,
                 readingTextScale: 1.2
             )
@@ -32,7 +31,6 @@ final class SettingsViewModelTests: XCTestCase {
         )
         XCTAssertEqual(viewModel.metadataBuiltAtDisplay, "displayed(2026-04-30T00:00:00Z)")
         XCTAssertEqual(viewModel.metadataSourceModifiedAtDisplay, "displayed(2026-04-29T00:00:00Z)")
-        XCTAssertEqual(viewModel.selectedLocale, .english)
         XCTAssertEqual(viewModel.selectedThemePreference, .dark)
         XCTAssertEqual(viewModel.readingTextScale, 1.2)
     }
@@ -45,15 +43,12 @@ final class SettingsViewModelTests: XCTestCase {
             settingsStore: settingsStore
         )
 
-        await viewModel.setLocale(.simplifiedChinese)
         await viewModel.setThemePreference(.amoled)
         await viewModel.setReadingTextScale(1.36)
         let persisted = await settingsStore.load()
 
-        XCTAssertEqual(viewModel.selectedLocale, .simplifiedChinese)
         XCTAssertEqual(viewModel.selectedThemePreference, .amoled)
         XCTAssertEqual(viewModel.readingTextScale, 1.4)
-        XCTAssertEqual(persisted.interfaceLocale, .simplifiedChinese)
         XCTAssertEqual(persisted.themePreference, .amoled)
         XCTAssertEqual(persisted.readingTextScale, 1.4)
     }
@@ -63,13 +58,11 @@ final class SettingsViewModelTests: XCTestCase {
         let viewModel = SettingsViewModel(
             library: DictionaryLibrary(repository: repository),
             initialSettings: AppSettingsSnapshot(
-                interfaceLocale: .english,
                 themePreference: .dark,
                 readingTextScale: 1.2
             )
         )
 
-        XCTAssertEqual(viewModel.selectedLocale, .english)
         XCTAssertEqual(viewModel.selectedThemePreference, .dark)
         XCTAssertEqual(viewModel.readingTextScale, 1.2)
     }
@@ -278,10 +271,6 @@ private actor TestAppSettingsStore: AppSettingsStoring {
 
     func load() async -> AppSettingsSnapshot {
         snapshot
-    }
-
-    func setInterfaceLocale(_ locale: AppLocale) async {
-        snapshot.interfaceLocale = locale
     }
 
     func setThemePreference(_ preference: AppThemePreference) async {

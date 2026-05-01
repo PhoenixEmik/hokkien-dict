@@ -4,6 +4,7 @@ import TaigiDictCore
 
 public final class AppLanguageManager: ObservableObject {
     public static let userDefaultsKey = "app_language"
+    static let uiTestLanguageKey = "UITEST_APP_LANGUAGE"
 
     @Published public private(set) var selectedLanguage: AppLanguage
     @Published private var systemLocaleIdentifier: String
@@ -12,10 +13,14 @@ public final class AppLanguageManager: ObservableObject {
 
     public init(
         defaults: UserDefaults = .standard,
-        systemLocale: Locale = .autoupdatingCurrent
+        systemLocale: Locale = .autoupdatingCurrent,
+        processInfo: ProcessInfo = .processInfo
     ) {
         self.defaults = defaults
-        selectedLanguage = AppLanguage(rawValue: defaults.string(forKey: Self.userDefaultsKey) ?? "") ?? .system
+        let overriddenLanguage = processInfo.environment[Self.uiTestLanguageKey].flatMap(AppLanguage.init(rawValue:))
+        selectedLanguage = overriddenLanguage
+            ?? AppLanguage(rawValue: defaults.string(forKey: Self.userDefaultsKey) ?? "")
+            ?? .system
         systemLocaleIdentifier = systemLocale.identifier
         AppLocalizer.configure(language: selectedLanguage, systemLocale: systemLocale)
     }

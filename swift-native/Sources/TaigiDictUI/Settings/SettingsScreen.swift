@@ -43,9 +43,11 @@ public struct SettingsScreen: View {
                     )) {
                         ForEach(AppLanguage.allCases, id: \.self) { language in
                             Text(appLanguageManager.displayName(for: language))
+                                .accessibilityIdentifier(language.settingsAccessibilityIdentifier)
                                 .tag(language)
                         }
                     }
+                    .accessibilityIdentifier("settings.interfaceLanguagePicker")
 
                     Picker(AppLocalizer.text(.settingsThemeLabel, locale: appLocale), selection: Binding(
                         get: { viewModel.selectedThemePreference },
@@ -166,6 +168,21 @@ public struct SettingsScreen: View {
             }
         } message: {
             Text(AppLocalizer.text(.settingsClearConfirmBody, locale: appLocale))
+        }
+    }
+}
+
+private extension AppLanguage {
+    var settingsAccessibilityIdentifier: String {
+        switch self {
+        case .system:
+            return "settings.interfaceLanguage.system"
+        case .zhHant:
+            return "settings.interfaceLanguage.zh-Hant"
+        case .zhHans:
+            return "settings.interfaceLanguage.zh-Hans"
+        case .en:
+            return "settings.interfaceLanguage.en"
         }
     }
 }

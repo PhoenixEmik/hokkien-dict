@@ -14,7 +14,6 @@ public final class SettingsViewModel {
     public private(set) var isRunningAction = false
     public private(set) var statusMessageKey: AppLocalizedStringKey?
     public private(set) var errorMessage: String?
-    public private(set) var selectedLocale: AppLocale = .traditionalChinese
     public private(set) var selectedThemePreference: AppThemePreference = .system
     public private(set) var readingTextScale = 1.0
     public private(set) var librarySummary: DictionaryLibrarySummary?
@@ -48,7 +47,6 @@ public final class SettingsViewModel {
         self.dictionarySourceStore = dictionarySourceStore
         self.offlineAudioStore = offlineAudioStore
         self.dateFormatter = dateFormatter
-        selectedLocale = initialSettings.interfaceLocale
         selectedThemePreference = initialSettings.themePreference
         readingTextScale = initialSettings.readingTextScale
     }
@@ -71,7 +69,6 @@ public final class SettingsViewModel {
 
     public var currentSettingsSnapshot: AppSettingsSnapshot {
         AppSettingsSnapshot(
-            interfaceLocale: selectedLocale,
             themePreference: selectedThemePreference,
             readingTextScale: readingTextScale
         )
@@ -80,7 +77,6 @@ public final class SettingsViewModel {
     public func loadCapabilities() async {
         errorMessage = nil
         let settings = await settingsStore.load()
-        selectedLocale = settings.interfaceLocale
         selectedThemePreference = settings.themePreference
         readingTextScale = settings.readingTextScale
 
@@ -200,15 +196,6 @@ public final class SettingsViewModel {
 
     public func isAudioActionRunning(for type: AudioArchiveType) -> Bool {
         activeAudioActions.contains(type)
-    }
-
-    public func setLocale(_ locale: AppLocale) async {
-        guard selectedLocale != locale else {
-            return
-        }
-
-        selectedLocale = locale
-        await settingsStore.setInterfaceLocale(locale)
     }
 
     public func setThemePreference(_ preference: AppThemePreference) async {

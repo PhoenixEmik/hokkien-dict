@@ -21,6 +21,20 @@
                ReferencedContainer = "container:TaigiDictNative.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "B10000010000000000000004"
+               BuildableName = "TaigiDictNativeUITests.xctest"
+               BlueprintName = "TaigiDictNativeUITests"
+               ReferencedContainer = "container:TaigiDictNative.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -29,7 +43,26 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "B10000010000000000000004"
+               BuildableName = "TaigiDictNativeUITests.xctest"
+               BlueprintName = "TaigiDictNativeUITests"
+               ReferencedContainer = "container:TaigiDictNative.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "8A000001000000000000000F"
+            BuildableName = "TaigiDictNative.app"
+            BlueprintName = "TaigiDictNative"
+            ReferencedContainer = "container:TaigiDictNative.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
