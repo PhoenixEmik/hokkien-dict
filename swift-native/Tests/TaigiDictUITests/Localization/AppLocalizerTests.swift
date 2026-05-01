@@ -30,9 +30,9 @@ final class AppLocalizerTests: XCTestCase {
         XCTAssertEqual(AppLocalizer.text(.localeSystem, locale: .english), "System")
         XCTAssertEqual(AppLocalizer.text(.themeSystem, locale: .english), "System")
 
-        XCTAssertEqual(AppLocalizer.text(.aboutVersionValue, locale: .english), "1.2.0")
-        XCTAssertEqual(AppLocalizer.text(.aboutVersionValue, locale: .traditionalChinese), "1.2.0")
-        XCTAssertEqual(AppLocalizer.text(.aboutVersionValue, locale: .simplifiedChinese), "1.2.0")
+        XCTAssertEqual(AppLocalizer.text(.aboutVersionValue, locale: .english), "1.3.0")
+        XCTAssertEqual(AppLocalizer.text(.aboutVersionValue, locale: .traditionalChinese), "1.3.0")
+        XCTAssertEqual(AppLocalizer.text(.aboutVersionValue, locale: .simplifiedChinese), "1.3.0")
         XCTAssertEqual(AppLocalizer.text(.aboutGitHub, locale: .traditionalChinese), "開放源碼")
 
         XCTAssertEqual(AppLocalizer.text(.licenseAppCodeDescription, locale: .english), "MIT License")

@@ -286,19 +286,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "1.2.0"
+            "value" : "1.3.0"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "1.2.0"
+            "value" : "1.3.0"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "1.2.0"
+            "value" : "1.3.0"
           }
         }
       }
