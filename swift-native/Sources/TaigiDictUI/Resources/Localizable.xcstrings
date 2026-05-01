@@ -4116,29 +4116,6 @@
         }
       }
     },
-    "themeAmoled" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AMOLED"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AMOLED"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AMOLED"
-          }
-        }
-      }
-    },
     "themeDark" : {
       "extractionState" : "stale",
       "localizations" : {

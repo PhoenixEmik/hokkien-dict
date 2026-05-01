@@ -43,13 +43,13 @@ final class SettingsViewModelTests: XCTestCase {
             settingsStore: settingsStore
         )
 
-        await viewModel.setThemePreference(.amoled)
+        await viewModel.setThemePreference(.dark)
         await viewModel.setReadingTextScale(1.36)
         let persisted = await settingsStore.load()
 
-        XCTAssertEqual(viewModel.selectedThemePreference, .amoled)
+        XCTAssertEqual(viewModel.selectedThemePreference, .dark)
         XCTAssertEqual(viewModel.readingTextScale, 1.4)
-        XCTAssertEqual(persisted.themePreference, .amoled)
+        XCTAssertEqual(persisted.themePreference, .dark)
         XCTAssertEqual(persisted.readingTextScale, 1.4)
     }
 

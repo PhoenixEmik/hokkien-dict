@@ -102,7 +102,6 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case themeSystem
     case themeLight
     case themeDark
-    case themeAmoled
 
     case advancedTitle
     case advancedMaintenanceSection

@@ -193,7 +193,7 @@ private extension AppThemePreference {
             return nil
         case .light:
             return .light
-        case .dark, .amoled:
+        case .dark:
             return .dark
         }
     }

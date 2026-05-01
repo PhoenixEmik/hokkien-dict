@@ -311,8 +311,6 @@ private extension AppThemePreference {
             return AppLocalizer.text(.themeLight, locale: locale)
         case .dark:
             return AppLocalizer.text(.themeDark, locale: locale)
-        case .amoled:
-            return AppLocalizer.text(.themeAmoled, locale: locale)
         }
     }
 }

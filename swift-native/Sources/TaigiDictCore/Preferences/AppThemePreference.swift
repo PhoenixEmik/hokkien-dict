@@ -4,5 +4,4 @@ public enum AppThemePreference: String, Codable, CaseIterable, Hashable, Sendabl
     case system
     case light
     case dark
-    case amoled
 }
