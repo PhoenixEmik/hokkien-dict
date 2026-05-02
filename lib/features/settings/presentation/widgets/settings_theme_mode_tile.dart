@@ -15,7 +15,7 @@ class SettingsThemeModeTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final valueStyle = theme.textTheme.bodyLarge?.copyWith(
+    final valueStyle = theme.textTheme.bodyMedium?.copyWith(
       fontWeight: FontWeight.w600,
       color: theme.colorScheme.onSurfaceVariant,
     );
@@ -29,31 +29,28 @@ class SettingsThemeModeTile extends StatelessWidget {
     return ListTile(
       leading: const Icon(Icons.dark_mode_outlined),
       title: Text(l10n.theme),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            _themeLabel(value, l10n),
-            style: valueStyle,
-          ),
-          PopupMenuButton<AppThemePreference>(
-            initialValue: value,
-            icon: const Icon(Icons.arrow_drop_down),
-            onSelected: onSelected,
-            itemBuilder: (context) {
-              return availablePreferences
-                  .map(
-                    (preference) => PopupMenuItem<AppThemePreference>(
-                      value: preference,
-                      child: Text(
-                        _themeLabel(preference, l10n),
-                      ),
-                    ),
-                  )
-                  .toList(growable: false);
-            },
-          ),
-        ],
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: DropdownMenu<AppThemePreference>(
+          initialSelection: value,
+          requestFocusOnTap: false,
+          width: 220,
+          textStyle: valueStyle,
+          menuHeight: 280,
+          onSelected: (preference) {
+            if (preference != null) {
+              onSelected(preference);
+            }
+          },
+          dropdownMenuEntries: availablePreferences
+              .map(
+                (preference) => DropdownMenuEntry<AppThemePreference>(
+                  value: preference,
+                  label: _themeLabel(preference, l10n),
+                ),
+              )
+              .toList(growable: false),
+        ),
       ),
     );
   }

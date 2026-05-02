@@ -129,14 +129,14 @@ ThemeData buildLightAppTheme() {
       foregroundColor: colorScheme.onPrimaryContainer,
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: colorScheme.surfaceContainerLowest,
+      backgroundColor: colorScheme.surface,
       surfaceTintColor: Colors.transparent,
-      indicatorColor: colorScheme.secondaryContainer,
+      indicatorColor: colorScheme.primaryContainer,
       iconTheme: WidgetStateProperty.resolveWith((states) {
         final selected = states.contains(WidgetState.selected);
         return IconThemeData(
           color: selected
-              ? colorScheme.onSecondaryContainer
+              ? colorScheme.onPrimaryContainer
               : colorScheme.onSurfaceVariant,
         );
       }),
@@ -144,7 +144,7 @@ ThemeData buildLightAppTheme() {
         final selected = states.contains(WidgetState.selected);
         return baseTheme.textTheme.labelMedium?.copyWith(
           color: selected
-              ? colorScheme.onSecondaryContainer
+              ? colorScheme.onPrimaryContainer
               : colorScheme.onSurfaceVariant,
           fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
         );
@@ -224,13 +224,19 @@ SystemUiOverlayStyle buildSystemUiOverlayStyle(ColorScheme colorScheme) {
   final baseStyle = useDarkIcons
       ? SystemUiOverlayStyle.dark
       : SystemUiOverlayStyle.light;
+  final navigationBarColor = useDarkIcons
+      ? colorScheme.surfaceContainerHigh
+      : colorScheme.surface;
+  final navigationBarDividerColor = useDarkIcons
+      ? colorScheme.outlineVariant
+      : colorScheme.surfaceContainerHighest;
 
   return baseStyle.copyWith(
     statusBarColor: Colors.transparent,
-    systemNavigationBarColor: colorScheme.surface,
-    systemNavigationBarDividerColor: colorScheme.outlineVariant,
-    systemNavigationBarContrastEnforced: false,
-    systemStatusBarContrastEnforced: false,
+    systemNavigationBarColor: navigationBarColor,
+    systemNavigationBarDividerColor: navigationBarDividerColor,
+    systemNavigationBarContrastEnforced: true,
+    systemStatusBarContrastEnforced: true,
   );
 }
 

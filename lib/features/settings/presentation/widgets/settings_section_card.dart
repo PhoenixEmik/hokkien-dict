@@ -16,6 +16,8 @@ class SettingsSectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Padding(
       padding: margin,
       child: Column(
@@ -24,11 +26,22 @@ class SettingsSectionCard extends StatelessWidget {
           if (title != null) SettingsSectionHeader(title: title!),
           Card(
             clipBehavior: Clip.antiAlias,
-            child: Column(
-              children: ListTile.divideTiles(
-                context: context,
-                tiles: children,
-              ).toList(growable: false),
+            child: ListTileTheme(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 6,
+              ),
+              minLeadingWidth: 24,
+              minVerticalPadding: 8,
+              iconColor: colorScheme.onSurfaceVariant,
+              textColor: colorScheme.onSurface,
+              child: Column(
+                children: ListTile.divideTiles(
+                  context: context,
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.55),
+                  tiles: children,
+                ).toList(growable: false),
+              ),
             ),
           ),
         ],

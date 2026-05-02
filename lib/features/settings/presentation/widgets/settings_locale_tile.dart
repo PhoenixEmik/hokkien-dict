@@ -15,7 +15,7 @@ class SettingsLocaleTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final valueStyle = theme.textTheme.bodyLarge?.copyWith(
+    final valueStyle = theme.textTheme.bodyMedium?.copyWith(
       fontWeight: FontWeight.w600,
       color: theme.colorScheme.onSurfaceVariant,
     );
@@ -23,26 +23,28 @@ class SettingsLocaleTile extends StatelessWidget {
     return ListTile(
       leading: const Icon(Icons.language),
       title: Text(l10n.languageSetting),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(l10n.localeLabel(value), style: valueStyle),
-          PopupMenuButton<Locale>(
-            initialValue: value,
-            icon: const Icon(Icons.arrow_drop_down),
-            onSelected: onSelected,
-            itemBuilder: (context) {
-              return AppLocalizations.supportedLocales
-                  .map(
-                    (locale) => PopupMenuItem<Locale>(
-                      value: locale,
-                      child: Text(l10n.localeLabel(locale)),
-                    ),
-                  )
-                  .toList(growable: false);
-            },
-          ),
-        ],
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: DropdownMenu<Locale>(
+          initialSelection: value,
+          requestFocusOnTap: false,
+          width: 220,
+          textStyle: valueStyle,
+          menuHeight: 240,
+          onSelected: (locale) {
+            if (locale != null) {
+              onSelected(locale);
+            }
+          },
+          dropdownMenuEntries: AppLocalizations.supportedLocales
+              .map(
+                (locale) => DropdownMenuEntry<Locale>(
+                  value: locale,
+                  label: l10n.localeLabel(locale),
+                ),
+              )
+              .toList(growable: false),
+        ),
       ),
     );
   }

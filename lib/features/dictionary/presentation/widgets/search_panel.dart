@@ -16,67 +16,50 @@ class SearchWorkspaceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final borderRadius = BorderRadius.circular(12);
-    final borderColor = theme.colorScheme.outline.withValues(
-      alpha: isDark ? 0.55 : 0.4,
-    );
+    final colorScheme = theme.colorScheme;
 
     return ValueListenableBuilder<TextEditingValue>(
       valueListenable: controller,
       builder: (context, value, child) {
         final showClearButton = value.text.isNotEmpty;
-        final materialDecoration = InputDecoration(
+        return SearchBar(
+          controller: controller,
           hintText: l10n.searchHint,
-          prefixIcon: const Icon(Icons.search),
-          suffixIcon: showClearButton
-              ? IconButton(
-                  tooltip: l10n.clearSearch,
-                  onPressed: () {
-                    controller.clear();
-                    onSubmitted('');
-                  },
-                  icon: const Icon(Icons.close),
-                )
+          leading: const Icon(Icons.search),
+          trailing: showClearButton
+              ? [
+                  IconButton(
+                    tooltip: l10n.clearSearch,
+                    onPressed: () {
+                      controller.clear();
+                      onSubmitted('');
+                    },
+                    icon: const Icon(Icons.close),
+                  ),
+                ]
               : null,
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          disabledBorder: InputBorder.none,
-          errorBorder: InputBorder.none,
-          focusedErrorBorder: InputBorder.none,
-          filled: true,
-          fillColor: Colors.transparent,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 16,
+          textInputAction: TextInputAction.search,
+          onSubmitted: onSubmitted,
+          elevation: const WidgetStatePropertyAll(0),
+          shadowColor: const WidgetStatePropertyAll(Colors.transparent),
+          surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
+          backgroundColor: WidgetStatePropertyAll(
+            colorScheme.surfaceContainerHighest,
           ),
-        );
-
-        return Container(
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            color: isDark
-                ? theme.colorScheme.surface
-                : theme.colorScheme.surfaceContainer,
-            borderRadius: borderRadius,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.06),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
+          side: WidgetStatePropertyAll(
+            BorderSide(color: colorScheme.outlineVariant, width: 1.1),
           ),
-          foregroundDecoration: BoxDecoration(
-            borderRadius: borderRadius,
-            border: Border.all(color: borderColor, width: 1.2),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           ),
-          child: TextField(
-            controller: controller,
-            textInputAction: TextInputAction.search,
-            onSubmitted: onSubmitted,
-            decoration: materialDecoration,
+          textStyle: WidgetStatePropertyAll(theme.textTheme.bodyLarge),
+          hintStyle: WidgetStatePropertyAll(
+            theme.textTheme.bodyLarge?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+          padding: const WidgetStatePropertyAll(
+            EdgeInsets.symmetric(horizontal: 14),
           ),
         );
       },
@@ -141,8 +124,9 @@ class SearchHistorySection extends StatelessWidget {
                       hint: l10n.searchHint,
                       child: ActionChip(
                         label: Text(query),
-                        avatar: const Icon(Icons.history, size: 18),
                         onPressed: () => onHistoryTap(query),
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        visualDensity: VisualDensity.compact,
                       ),
                     );
                   })

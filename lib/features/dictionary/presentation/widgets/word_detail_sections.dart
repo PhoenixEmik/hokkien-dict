@@ -356,7 +356,10 @@ class ExampleListTile extends StatelessWidget {
       color: cardColor,
       surfaceTintColor: Colors.transparent,
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 10,
+        ),
         title: content,
         trailing: example.audioId.isEmpty
             ? null
@@ -525,27 +528,14 @@ class _RelationshipChipBody extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
-    final useNeutralAndroidLightColors = _useNeutralAndroidLightColors(theme);
     final fillColor = isInteractive
-        ? colorScheme.primary.withValues(
-            alpha: theme.brightness == Brightness.dark ? 0.18 : 0.10,
-          )
-        : useNeutralAndroidLightColors
-        ? _androidLightDetailSurface(colorScheme)
-        : colorScheme.surfaceContainerHighest;
+        ? colorScheme.secondaryContainer
+        : colorScheme.surfaceContainerHigh;
     final strokeColor = isInteractive
-        ? colorScheme.primary.withValues(
-            alpha: theme.brightness == Brightness.dark
-                ? 0.45
-                : useNeutralAndroidLightColors
-                ? 0.22
-                : 0.28,
-          )
-        : colorScheme.outlineVariant.withValues(
-            alpha: useNeutralAndroidLightColors ? 0.58 : 0.75,
-          );
+        ? colorScheme.outlineVariant
+        : colorScheme.outlineVariant;
     final textColor = isInteractive
-        ? colorScheme.primary
+        ? colorScheme.onSecondaryContainer
         : colorScheme.onSurfaceVariant;
     final labelStyle = theme.textTheme.bodyMedium?.copyWith(
       color: textColor,
@@ -574,7 +564,7 @@ class _RelationshipChipBody extends StatelessWidget {
                         surfaceTintColor: Colors.transparent,
                         side: chipSide,
                         shape: const StadiumBorder(),
-                        labelPadding: const EdgeInsets.symmetric(horizontal: 2),
+                        labelPadding: const EdgeInsets.symmetric(horizontal: 4),
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         visualDensity: VisualDensity.compact,
                       )
@@ -584,7 +574,7 @@ class _RelationshipChipBody extends StatelessWidget {
                         backgroundColor: fillColor,
                         side: chipSide,
                         shape: const StadiumBorder(),
-                        labelPadding: const EdgeInsets.symmetric(horizontal: 2),
+                        labelPadding: const EdgeInsets.symmetric(horizontal: 4),
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         visualDensity: VisualDensity.compact,
                       ),
