@@ -377,7 +377,7 @@ class _DictionaryScreenState extends State<DictionaryScreen>
                                       );
                                     },
                                     separatorBuilder: (context, index) {
-                                      return const SizedBox(height: 10);
+                                      return const SizedBox(height: 14);
                                     },
                                   ),
                           ),
@@ -450,7 +450,7 @@ class _TabletSearchPane extends StatelessWidget {
             ),
           ),
         SliverPadding(
-          padding: const EdgeInsets.only(top: 12),
+          padding: const EdgeInsets.only(top: 16),
           sliver: !hasActiveQuery
               ? SliverToBoxAdapter(
                   child: SelectionArea(child: EmptyState(query: query)),
@@ -472,7 +472,7 @@ class _TabletSearchPane extends StatelessWidget {
                     );
                   },
                   separatorBuilder: (context, index) {
-                    return const SizedBox(height: 10);
+                    return const SizedBox(height: 14);
                   },
                 ),
         ),

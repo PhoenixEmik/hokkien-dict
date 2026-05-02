@@ -20,23 +20,36 @@ class EntryListItem extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final summary = entry.briefSummary;
+    final backgroundColor = selected
+        ? colorScheme.secondaryContainer.withValues(alpha: 0.9)
+        : colorScheme.surfaceContainerLow;
+    final borderColor = selected
+        ? colorScheme.primary.withValues(alpha: 0.52)
+        : colorScheme.outlineVariant.withValues(alpha: 0.5);
+    final trailingColor = selected
+        ? colorScheme.primary
+        : colorScheme.onSurfaceVariant;
 
-    final content = Card(
+    final content = Card.outlined(
       clipBehavior: Clip.antiAlias,
-      color: selected
-          ? colorScheme.primaryContainer.withValues(alpha: 0.35)
-          : null,
+      margin: EdgeInsets.zero,
+      color: backgroundColor,
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(24),
         side: BorderSide(
-          color: selected
-              ? colorScheme.primary.withValues(alpha: 0.62)
-              : colorScheme.outlineVariant.withValues(alpha: 0.72),
-          width: selected ? 1.2 : 1.05,
+          color: borderColor,
+          width: selected ? 1.2 : 1,
         ),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        tileColor: backgroundColor,
+        minVerticalPadding: 14,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 12,
+        ),
         title: Text(
           entry.hanji.isEmpty ? l10n.unlabeledHanji : entry.hanji,
           style: theme.textTheme.titleLarge?.copyWith(
@@ -53,16 +66,16 @@ class EntryListItem extends StatelessWidget {
                 entry.romanization,
                 style: theme.textTheme.bodyLarge?.copyWith(
                   color: colorScheme.tertiary,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             if (summary.isNotEmpty) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               Text(
                 summary,
-                maxLines: 2,
+                maxLines: 3,
                 overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodyMedium?.copyWith(
+                style: theme.textTheme.bodyLarge?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                   height: 1.45,
                 ),
@@ -71,8 +84,8 @@ class EntryListItem extends StatelessWidget {
           ],
         ),
         trailing: Icon(
-          Icons.chevron_right,
-          color: selected ? colorScheme.primary : null,
+          Icons.chevron_right_rounded,
+          color: trailingColor,
         ),
         onTap: onTap,
       ),
