@@ -15,6 +15,8 @@ const _lightChipColor = Color(0xFFE1EAF5);
 const _lightChipSelectedColor = Color(0xFFC8D7EB);
 const _lightPrimaryContainerColor = Color(0xFFD7E2F0);
 const _lightSecondaryContainerColor = Color(0xFFDEE8F4);
+const _lightCardBorderColor = Color(0xFFC4D2E5);
+const _lightChipBorderColor = Color(0xFFB7C8DE);
 
 ThemeData buildLightAppTheme() {
   final baseTheme = _buildMaterialTheme(
@@ -57,6 +59,10 @@ ThemeData buildLightAppTheme() {
       color: Colors.white,
       shadowColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: _lightCardBorderColor, width: 1.1),
+      ),
     ),
     dialogTheme: baseTheme.dialogTheme.copyWith(
       backgroundColor: Colors.white,
@@ -81,6 +87,7 @@ ThemeData buildLightAppTheme() {
         foregroundColor: Colors.white,
         disabledBackgroundColor: _lightNavigationIndicator,
         disabledForegroundColor: _lightSecondaryColor,
+        side: const BorderSide(color: _lightCardBorderColor, width: 1),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
@@ -141,7 +148,7 @@ ThemeData buildLightAppTheme() {
       backgroundColor: _lightChipColor,
       selectedColor: _lightChipSelectedColor,
       secondarySelectedColor: _lightChipSelectedColor,
-      side: const BorderSide(color: _lightOutlineColor),
+      side: const BorderSide(color: _lightChipBorderColor, width: 1.1),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
       labelStyle: baseTheme.textTheme.labelLarge?.copyWith(
         color: _brandSeedColor,

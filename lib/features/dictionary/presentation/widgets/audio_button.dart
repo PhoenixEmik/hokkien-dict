@@ -71,6 +71,7 @@ class _AudioActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final dimension = compact ? 40.0 : 48.0;
     final iconSize = compact ? 18.0 : 20.0;
+    final outlineColor = Theme.of(context).colorScheme.outlineVariant;
 
     return SizedBox.square(
       dimension: dimension,
@@ -81,6 +82,7 @@ class _AudioActionButton extends StatelessWidget {
           minimumSize: Size.square(dimension),
           maximumSize: Size.square(dimension),
           iconSize: iconSize,
+          side: BorderSide(color: outlineColor, width: 1),
         ),
         icon: isLoading
             ? const SizedBox(

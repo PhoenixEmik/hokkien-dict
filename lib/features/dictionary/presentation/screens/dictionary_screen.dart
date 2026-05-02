@@ -608,6 +608,7 @@ class _TabletDetailToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     final isBookmarked = bookmarkStore.isBookmarked(entry.id);
     final l10n = AppLocalizations.of(context);
+    final outlineColor = Theme.of(context).colorScheme.outlineVariant;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
@@ -635,6 +636,7 @@ class _TabletDetailToolbar extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   minimumSize: const Size.square(36),
                   maximumSize: const Size.square(36),
+                  side: BorderSide(color: outlineColor, width: 1),
                 ),
                 icon: const Icon(Icons.share),
               ),
@@ -653,6 +655,7 @@ class _TabletDetailToolbar extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   minimumSize: const Size.square(36),
                   maximumSize: const Size.square(36),
+                  side: BorderSide(color: outlineColor, width: 1),
                 ),
                 icon: Icon(
                   isBookmarked ? Icons.bookmark : Icons.bookmark_border,
