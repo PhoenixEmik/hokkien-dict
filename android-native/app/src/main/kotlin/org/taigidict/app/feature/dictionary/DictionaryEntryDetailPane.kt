@@ -406,6 +406,8 @@ private fun audioResultMessage(
         DictionaryAudioPlaybackResult.Played -> null
         is DictionaryAudioPlaybackResult.Failed -> when (result.reason) {
             DictionaryAudioPlaybackResult.FailureReason.MissingClipId -> missingClipMessage
+            DictionaryAudioPlaybackResult.FailureReason.ArchiveNotDownloaded -> unavailableMessage
+            DictionaryAudioPlaybackResult.FailureReason.AudioClipNotFound -> unavailableMessage
             DictionaryAudioPlaybackResult.FailureReason.AudioNotAvailable -> unavailableMessage
         }
     }

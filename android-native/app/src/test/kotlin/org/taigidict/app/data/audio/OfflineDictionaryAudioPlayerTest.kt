@@ -64,7 +64,7 @@ class OfflineDictionaryAudioPlayerTest {
         )
 
         assertEquals(
-            DictionaryAudioPlaybackResult.Failed(DictionaryAudioPlaybackResult.FailureReason.AudioNotAvailable),
+            DictionaryAudioPlaybackResult.Failed(DictionaryAudioPlaybackResult.FailureReason.ArchiveNotDownloaded),
             result,
         )
     }

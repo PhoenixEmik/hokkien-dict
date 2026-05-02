@@ -48,9 +48,13 @@ internal class OfflineDictionaryAudioPlayer(
         try {
             storage.ensureDirectories()
             val archiveFile = storage.findArchiveFile(archiveType)
-                ?: return@withContext unavailableResult()
+                ?: return@withContext DictionaryAudioPlaybackResult.Failed(
+                    DictionaryAudioPlaybackResult.FailureReason.ArchiveNotDownloaded,
+                )
             val index = cachedIndexes[archiveType] ?: buildAndCacheIndex(archiveType, archiveFile)
-            val entry = index[clipId] ?: return@withContext unavailableResult()
+            val entry = index[clipId] ?: return@withContext DictionaryAudioPlaybackResult.Failed(
+                DictionaryAudioPlaybackResult.FailureReason.AudioClipNotFound,
+            )
             val clipFile = storage.clipCacheFile(archiveType, clipId)
             zipIndexer.materializeEntry(
                 archiveFile = archiveFile,
@@ -113,18 +117,24 @@ internal enum class DictionaryAudioArchiveType(
     val archiveFileName: String,
     val legacyArchiveFileName: String,
     val validationClipId: String,
+    val archiveBytes: Long,
+    val sourceUrl: String,
 ) {
     Word(
         storageKey = "word",
         archiveFileName = "sutiau-mp3.zip",
         legacyArchiveFileName = "sutiau_mp3.zip",
         validationClipId = "1(1)",
+        archiveBytes = 298531008,
+        sourceUrl = "https://app.taigidict.org/assets/sutiau-mp3.zip",
     ),
     Sentence(
         storageKey = "sentence",
         archiveFileName = "leku-mp3.zip",
         legacyArchiveFileName = "leku_mp3.zip",
         validationClipId = "1-1-1",
+        archiveBytes = 514423301,
+        sourceUrl = "https://app.taigidict.org/assets/leku-mp3.zip",
     ),
 }
 
@@ -137,6 +147,14 @@ internal class DictionaryAudioArchiveStorage(
         clipsDirectory().mkdirs()
     }
 
+    fun archiveFile(type: DictionaryAudioArchiveType): File {
+        return File(archivesDirectory(), type.archiveFileName)
+    }
+
+    fun downloadTempFile(type: DictionaryAudioArchiveType): File {
+        return File(archivesDirectory(), "${type.archiveFileName}.download")
+    }
+
     fun findArchiveFile(type: DictionaryAudioArchiveType): File? {
         return archiveCandidates(type).firstOrNull(File::exists)
     }
@@ -144,6 +162,10 @@ internal class DictionaryAudioArchiveStorage(
     fun clipCacheFile(type: DictionaryAudioArchiveType, clipId: String): File {
         val safeClipId = clipId.replace(Regex("[^0-9A-Za-z()_-]"), "_")
         return File(File(clipsDirectory(), type.storageKey), "$safeClipId.mp3")
+    }
+
+    fun clearCachedClips(type: DictionaryAudioArchiveType) {
+        File(clipsDirectory(), type.storageKey).deleteRecursively()
     }
 
     private fun archiveCandidates(type: DictionaryAudioArchiveType): List<File> {

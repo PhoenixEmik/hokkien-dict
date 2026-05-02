@@ -12,6 +12,8 @@ sealed interface DictionaryAudioPlaybackResult {
 
     enum class FailureReason {
         MissingClipId,
+        ArchiveNotDownloaded,
+        AudioClipNotFound,
         AudioNotAvailable,
     }
 }
