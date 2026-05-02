@@ -37,6 +37,7 @@ class _MainScreenState extends State<MainScreen> {
   List<Widget>? _cachedScreens;
   bool _startupRequested = false;
   bool _showInitializationScreen = false;
+  bool _bundlePrewarmed = false;
   Timer? _initializationScreenTimer;
 
   @override
@@ -73,6 +74,9 @@ class _MainScreenState extends State<MainScreen> {
     } catch (_) {
       // The blocking startup screen reads the controller error state directly.
     } finally {
+      if (_initializationController.isReady) {
+        _prewarmDictionaryBundle();
+      }
       if (mounted &&
           _initializationController.isReady &&
           _showInitializationScreen) {
@@ -90,6 +94,9 @@ class _MainScreenState extends State<MainScreen> {
     } catch (_) {
       // The blocking startup screen reads the controller error state directly.
     } finally {
+      if (_initializationController.isReady) {
+        _prewarmDictionaryBundle();
+      }
       if (mounted &&
           _initializationController.isReady &&
           _showInitializationScreen) {
@@ -122,6 +129,21 @@ class _MainScreenState extends State<MainScreen> {
         _showInitializationScreen = true;
       });
     });
+  }
+
+  void _prewarmDictionaryBundle() {
+    if (_bundlePrewarmed) {
+      return;
+    }
+
+    _bundlePrewarmed = true;
+    unawaited(() async {
+      try {
+        await _repository.loadBundle();
+      } catch (_) {
+        _bundlePrewarmed = false;
+      }
+    }());
   }
 
   Future<void> _handleArchiveDownloadAction(AudioArchiveType type) async {
@@ -169,6 +191,8 @@ class _MainScreenState extends State<MainScreen> {
       true,
     );
     DictionaryRepository.clearBundleCache();
+    _bundlePrewarmed = false;
+    _prewarmDictionaryBundle();
     if (!mounted) {
       return;
     }
