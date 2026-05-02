@@ -1,99 +1,60 @@
-package org.taigidict.app.feature.dictionary
+package org.taigidict.app.feature.bookmarks
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.taigidict.app.app.TaigiDictApplication
+import org.taigidict.app.data.bookmarks.BookmarkStore
 import org.taigidict.app.data.repository.DictionaryRepositoryDataSource
-import org.taigidict.app.domain.model.DictionaryBundle
 import org.taigidict.app.domain.model.DictionaryEntry
+import org.taigidict.app.feature.dictionary.DictionaryEntryDetailController
 
-data class DictionarySearchUiState(
-    val query: String = "",
-    val isLoadingBundle: Boolean = true,
-    val isSearching: Boolean = false,
+data class BookmarksUiState(
+    val isLoadingEntries: Boolean = true,
+    val entries: List<DictionaryEntry> = emptyList(),
+    val entriesErrorMessage: String? = null,
     val isLoadingEntryDetail: Boolean = false,
-    val bundle: DictionaryBundle? = null,
     val selectedEntry: DictionaryEntry? = null,
     val openableLinkedWords: Set<String> = emptySet(),
-    val bundleErrorMessage: String? = null,
-    val searchErrorMessage: String? = null,
     val entryDetailErrorMessage: String? = null,
-    val results: List<DictionaryEntry> = emptyList(),
 )
 
-class DictionarySearchViewModel(
+class BookmarksViewModel(
     application: Application,
     private val repository: DictionaryRepositoryDataSource =
         (application as TaigiDictApplication).appContainer.dictionaryRepository,
+    private val bookmarkStore: BookmarkStore =
+        (application as TaigiDictApplication).appContainer.bookmarkStore,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : AndroidViewModel(application) {
     private val detailController = DictionaryEntryDetailController(repository)
-    private val _uiState = MutableStateFlow(DictionarySearchUiState())
-    val uiState: StateFlow<DictionarySearchUiState> = _uiState.asStateFlow()
-    private var searchJob: Job? = null
-    private var entryDetailJob: Job? = null
+    private val _uiState = MutableStateFlow(BookmarksUiState())
+
+    val uiState: StateFlow<BookmarksUiState> = _uiState.asStateFlow()
 
     init {
-        loadBundle()
+        observeBookmarks()
     }
 
-    fun onQueryChange(query: String) {
-        _uiState.update {
-            it.copy(
-                query = query,
-                searchErrorMessage = null,
-            )
-        }
-
-        searchJob?.cancel()
-        if (query.isBlank()) {
+    fun onEntrySelected(entryId: Long) {
+        val sourceEntry = _uiState.value.entries.firstOrNull { it.id == entryId }
+        if (sourceEntry == null) {
             _uiState.update {
-                it.copy(
-                    isSearching = false,
-                    searchErrorMessage = null,
-                    results = emptyList(),
-                )
+                it.copy(entryDetailErrorMessage = "Entry $entryId not found")
             }
             return
         }
 
-        searchJob = viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    isSearching = true,
-                    searchErrorMessage = null,
-                )
-            }
-
-            val result = withContext(ioDispatcher) {
-                runCatching {
-                    repository.search(query)
-                }
-            }
-
-            _uiState.update {
-                it.copy(
-                    isSearching = false,
-                    searchErrorMessage = result.exceptionOrNull()?.message,
-                    results = result.getOrDefault(emptyList()),
-                )
-            }
-        }
-    }
-
-    fun onEntrySelected(entryId: Long) {
-        entryDetailJob?.cancel()
-        entryDetailJob = viewModelScope.launch {
+        viewModelScope.launch {
             _uiState.update {
                 it.copy(
                     isLoadingEntryDetail = true,
@@ -105,9 +66,7 @@ class DictionarySearchViewModel(
 
             val result = withContext(ioDispatcher) {
                 runCatching {
-                    val entry = repository.entry(entryId)
-                        ?: throw IllegalStateException("Entry $entryId not found")
-                    detailController.prepareEntryDetail(entry)
+                    detailController.prepareEntryDetail(sourceEntry)
                 }
             }
 
@@ -124,12 +83,8 @@ class DictionarySearchViewModel(
 
     fun onLinkedWordSelected(word: String) {
         val currentEntry = _uiState.value.selectedEntry ?: return
-        if (!_uiState.value.openableLinkedWords.contains(word)) {
-            return
-        }
 
-        entryDetailJob?.cancel()
-        entryDetailJob = viewModelScope.launch {
+        viewModelScope.launch {
             _uiState.update {
                 it.copy(
                     isLoadingEntryDetail = true,
@@ -159,7 +114,6 @@ class DictionarySearchViewModel(
     }
 
     fun onEntryDetailDismissed() {
-        entryDetailJob?.cancel()
         _uiState.update {
             it.copy(
                 isLoadingEntryDetail = false,
@@ -170,20 +124,37 @@ class DictionarySearchViewModel(
         }
     }
 
-    private fun loadBundle() {
-        viewModelScope.launch {
-            val result = withContext(ioDispatcher) {
-                runCatching {
-                    repository.loadBundle()
-                }
-            }
+    fun removeBookmark(entryId: Long) {
+        bookmarkStore.removeBookmark(entryId)
+    }
 
-            _uiState.update {
-                it.copy(
-                    isLoadingBundle = false,
-                    bundle = result.getOrNull(),
-                    bundleErrorMessage = result.exceptionOrNull()?.message,
-                )
+    private fun observeBookmarks() {
+        viewModelScope.launch {
+            bookmarkStore.bookmarkedIds.collectLatest { bookmarkedIds ->
+                _uiState.update {
+                    it.copy(
+                        isLoadingEntries = true,
+                        entriesErrorMessage = null,
+                    )
+                }
+
+                val result = withContext(ioDispatcher) {
+                    runCatching {
+                        if (bookmarkedIds.isEmpty()) {
+                            emptyList()
+                        } else {
+                            repository.entries(bookmarkedIds)
+                        }
+                    }
+                }
+
+                _uiState.update {
+                    it.copy(
+                        isLoadingEntries = false,
+                        entries = result.getOrDefault(emptyList()),
+                        entriesErrorMessage = result.exceptionOrNull()?.message,
+                    )
+                }
             }
         }
     }

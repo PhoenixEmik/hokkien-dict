@@ -253,6 +253,10 @@ private class FakeDictionaryRepository(
         return searchResults
     }
 
+    override fun entries(ids: List<Long>): List<DictionaryEntry> {
+        return ids.mapNotNull(entryById::get)
+    }
+
     override fun entry(id: Long): DictionaryEntry? {
         entryRequests += id
         return entryById[id]

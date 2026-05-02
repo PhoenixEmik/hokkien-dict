@@ -15,6 +15,8 @@ interface DictionaryRepositoryDataSource {
 
     fun search(rawQuery: String, limit: Int = DictionarySearchService.DEFAULT_LIMIT): List<DictionaryEntry>
 
+    fun entries(ids: List<Long>): List<DictionaryEntry>
+
     fun entry(id: Long): DictionaryEntry?
 
     fun findLinkedEntry(rawWord: String): DictionaryEntry?
@@ -62,6 +64,10 @@ class SQLiteDictionaryRepository(
         )
         val entriesById = candidateEntries.associateBy { it.id }
         return rankedIds.mapNotNull(entriesById::get)
+    }
+
+    override fun entries(ids: List<Long>): List<DictionaryEntry> {
+        return fetchEntries(ids)
     }
 
     override fun entry(id: Long): DictionaryEntry? {

@@ -38,7 +38,7 @@ fun MainNavGraph(appState: MainAppState) {
                 }
             }
         },
-    ) { innerPadding ->
+    ) { _ ->
         when (currentDestination) {
             MainDestination.Dictionary -> DictionaryScreen(
                 manifestAssetPath = appState.appContainer.bundledDictionaryManifestAssetPath,

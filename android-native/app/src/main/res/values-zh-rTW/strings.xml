@@ -28,8 +28,14 @@
     <string name="dictionary_detail_synonyms">近義詞</string>
     <string name="dictionary_detail_antonyms">反義詞</string>
     <string name="dictionary_detail_examples">例句</string>
-    <string name="bookmarks_placeholder_title">書籤</string>
-    <string name="bookmarks_placeholder_body">等資料層建立後，再補上書籤持久化與列表。</string>
+    <string name="dictionary_detail_add_bookmark">加入書籤</string>
+    <string name="dictionary_detail_remove_bookmark">移除書籤</string>
+    <string name="bookmarks_title">書籤</string>
+    <string name="bookmarks_loading">正在載入書籤…</string>
+    <string name="bookmarks_empty_title">尚未加入任何書籤</string>
+    <string name="bookmarks_empty_body">從詞條詳情加入書籤後，就會顯示在這裡。</string>
+    <string name="bookmarks_load_error">載入書籤失敗：%1$s</string>
+    <string name="bookmarks_remove_action">移除書籤</string>
     <string name="settings_placeholder_title">設定</string>
     <string name="settings_placeholder_body">此頁之後會管理離線資源、外觀、語言與閱讀字級。</string>
     <string name="bundled_package_label">內建資料包目錄：%1$s</string>

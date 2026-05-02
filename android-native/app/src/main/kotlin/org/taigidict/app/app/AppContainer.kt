@@ -2,6 +2,7 @@ package org.taigidict.app.app
 
 import android.content.Context
 import org.taigidict.app.core.constants.AppConstants
+import org.taigidict.app.data.bookmarks.BookmarkStore
 import org.taigidict.app.data.importer.DictionaryImportService
 import org.taigidict.app.data.importer.DictionaryJsonlReader
 import org.taigidict.app.data.importer.DictionaryPackageLoader
@@ -30,5 +31,8 @@ class AppContainer(context: Context) {
     }
     val dictionaryRepository: SQLiteDictionaryRepository by lazy {
         SQLiteDictionaryRepository(databaseFile = dictionaryDatabaseFile)
+    }
+    val bookmarkStore: BookmarkStore by lazy {
+        BookmarkStore(context = appContext)
     }
 }

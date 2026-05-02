@@ -28,8 +28,14 @@
     <string name="dictionary_detail_synonyms">Synonyms</string>
     <string name="dictionary_detail_antonyms">Antonyms</string>
     <string name="dictionary_detail_examples">Examples</string>
-    <string name="bookmarks_placeholder_title">Bookmarks</string>
-    <string name="bookmarks_placeholder_body">Bookmark persistence will be added after the data layer is in place.</string>
+    <string name="dictionary_detail_add_bookmark">Add bookmark</string>
+    <string name="dictionary_detail_remove_bookmark">Remove bookmark</string>
+    <string name="bookmarks_title">Bookmarks</string>
+    <string name="bookmarks_loading">Loading bookmarks…</string>
+    <string name="bookmarks_empty_title">No bookmarks yet</string>
+    <string name="bookmarks_empty_body">Bookmark a dictionary entry from detail and it will appear here.</string>
+    <string name="bookmarks_load_error">Failed to load bookmarks: %1$s</string>
+    <string name="bookmarks_remove_action">Remove bookmark</string>
     <string name="settings_placeholder_title">Settings</string>
     <string name="settings_placeholder_body">This screen will manage offline resources, appearance, language, and reading size.</string>
     <string name="bundled_package_label">Bundled package directory: %1$s</string>
