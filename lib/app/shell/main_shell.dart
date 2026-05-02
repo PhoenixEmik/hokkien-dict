@@ -17,6 +17,8 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  static const _initializationScreenDelay = Duration(milliseconds: 180);
+
   final DictionaryRepository _repository = DictionaryRepository();
   final DictionaryDatabaseBuilderService _dictionaryDatabaseBuilderService =
       const DictionaryDatabaseBuilderService();
@@ -34,6 +36,8 @@ class _MainScreenState extends State<MainScreen> {
   int? _cachedScreenGeneration;
   List<Widget>? _cachedScreens;
   bool _startupRequested = false;
+  bool _showInitializationScreen = false;
+  Timer? _initializationScreenTimer;
 
   @override
   void initState() {
@@ -49,11 +53,13 @@ class _MainScreenState extends State<MainScreen> {
       return;
     }
     _startupRequested = true;
+    _scheduleInitializationScreen();
     unawaited(_startInitialization());
   }
 
   @override
   void dispose() {
+    _initializationScreenTimer?.cancel();
     _initializationController.dispose();
     _bookmarkStore.dispose();
     _dictionaryLibrary.dispose();
@@ -66,15 +72,56 @@ class _MainScreenState extends State<MainScreen> {
       await _initializationController.initialize(AppLocalizations.of(context));
     } catch (_) {
       // The blocking startup screen reads the controller error state directly.
+    } finally {
+      if (mounted &&
+          _initializationController.isReady &&
+          _showInitializationScreen) {
+        setState(() {
+          _showInitializationScreen = false;
+        });
+      }
     }
   }
 
   Future<void> _retryInitialization() async {
+    _scheduleInitializationScreen(forceVisible: true);
     try {
       await _initializationController.retry(AppLocalizations.of(context));
     } catch (_) {
       // The blocking startup screen reads the controller error state directly.
+    } finally {
+      if (mounted &&
+          _initializationController.isReady &&
+          _showInitializationScreen) {
+        setState(() {
+          _showInitializationScreen = false;
+        });
+      }
     }
+  }
+
+  void _scheduleInitializationScreen({bool forceVisible = false}) {
+    _initializationScreenTimer?.cancel();
+
+    if (forceVisible) {
+      if (_showInitializationScreen) {
+        return;
+      }
+      setState(() {
+        _showInitializationScreen = true;
+      });
+      return;
+    }
+
+    _showInitializationScreen = false;
+    _initializationScreenTimer = Timer(_initializationScreenDelay, () {
+      if (!mounted || _initializationController.isReady || _showInitializationScreen) {
+        return;
+      }
+      setState(() {
+        _showInitializationScreen = true;
+      });
+    });
   }
 
   Future<void> _handleArchiveDownloadAction(AudioArchiveType type) async {
@@ -204,6 +251,12 @@ class _MainScreenState extends State<MainScreen> {
       ]),
       builder: (context, child) {
         if (!_initializationController.isReady && !bypassInitialization) {
+          if (!_showInitializationScreen) {
+            return ColoredBox(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: const SizedBox.expand(),
+            );
+          }
           return AppInitializationScreen(
             controller: _initializationController,
             dictionaryLibrary: _dictionaryLibrary,

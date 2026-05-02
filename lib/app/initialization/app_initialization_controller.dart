@@ -127,18 +127,29 @@ class AppInitializationController extends ChangeNotifier {
 
     final preferencesFuture = SharedPreferences.getInstance();
     final dictionaryInitializationFuture = _dictionaryLibrary.initialize();
-
-    await dictionaryInitializationFuture;
     final preferences = await preferencesFuture;
+    final readyFlag = preferences.getBool(databaseReadyPreferenceKey) ?? false;
 
     if (!DictionaryRepository.preferLocalDatabase &&
         DictionaryRepository.hasDebugFallbackBundle) {
+      unawaited(dictionaryInitializationFuture);
       _setPhase(AppInitializationPhase.ready);
       return;
     }
 
+    if (!forceRebuild && readyFlag) {
+      final canUseExistingDatabase = await _builderService
+          .hasUsableBuiltDatabaseFast();
+      if (canUseExistingDatabase) {
+        unawaited(dictionaryInitializationFuture);
+        _setPhase(AppInitializationPhase.ready);
+        return;
+      }
+    }
+
+    await dictionaryInitializationFuture;
+
     final hasDatabase = await _builderService.hasBuiltDatabase();
-    final readyFlag = preferences.getBool(databaseReadyPreferenceKey) ?? false;
     final needsRebuild = forceRebuild
         ? true
         : hasDatabase
@@ -149,6 +160,7 @@ class AppInitializationController extends ChangeNotifier {
       if (!readyFlag) {
         await preferences.setBool(databaseReadyPreferenceKey, true);
       }
+      unawaited(dictionaryInitializationFuture);
       _setPhase(AppInitializationPhase.ready);
       return;
     }
@@ -156,6 +168,7 @@ class AppInitializationController extends ChangeNotifier {
     await preferences.setBool(databaseReadyPreferenceKey, false);
 
     try {
+      await dictionaryInitializationFuture;
       await _ensureSourceAvailable(l10n);
       await _buildDatabaseWithRecovery(l10n);
       await preferences.setBool(databaseReadyPreferenceKey, true);

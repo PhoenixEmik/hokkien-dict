@@ -112,6 +112,28 @@ class DictionaryDatabaseBuilderService {
     return sourceFile.exists();
   }
 
+  Future<bool> hasUsableBuiltDatabaseFast() async {
+    final databaseFile = await locateDatabaseFile();
+    if (!await databaseFile.exists()) {
+      return false;
+    }
+    if (await databaseFile.length() <= 0) {
+      return false;
+    }
+
+    final odsFile = await locateDownloadedOdsFile();
+    if (!await odsFile.exists()) {
+      return true;
+    }
+    if (await odsFile.length() <= 0) {
+      return false;
+    }
+
+    final databaseStat = await databaseFile.stat();
+    final odsStat = await odsFile.stat();
+    return !odsStat.modified.isAfter(databaseStat.modified);
+  }
+
   Future<bool> hasBuiltDatabase() async {
     final databaseFile = await locateDatabaseFile();
     if (!await databaseFile.exists()) {
