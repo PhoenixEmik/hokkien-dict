@@ -11,7 +11,9 @@ void showAppNotification(
   }
 
   final messenger = ScaffoldMessenger.of(context);
-  final colorScheme = Theme.of(context).colorScheme;
+  final theme = Theme.of(context);
+  final snackBarTheme = theme.snackBarTheme;
+  final colorScheme = theme.colorScheme;
 
   messenger
     ..hideCurrentSnackBar()
@@ -19,13 +21,17 @@ void showAppNotification(
       SnackBar(
         content: Text(message),
         duration: duration,
-        behavior: SnackBarBehavior.floating,
+        behavior: snackBarTheme.behavior ?? SnackBarBehavior.floating,
         backgroundColor: isError
-            ? colorScheme.errorContainer
-            : colorScheme.inverseSurface,
+            ? colorScheme.primary
+            : snackBarTheme.backgroundColor,
+        shape: snackBarTheme.shape,
+        elevation: snackBarTheme.elevation,
         action: SnackBarAction(
           label: 'OK',
-          textColor: isError ? colorScheme.onErrorContainer : colorScheme.onInverseSurface,
+          textColor: isError
+              ? snackBarTheme.actionTextColor ?? colorScheme.onPrimary
+              : snackBarTheme.actionTextColor,
           onPressed: messenger.hideCurrentSnackBar,
         ),
       ),
