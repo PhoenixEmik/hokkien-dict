@@ -3,7 +3,7 @@ package org.taigidict.app.app
 import android.content.Context
 import org.taigidict.app.core.constants.AppConstants
 import org.taigidict.app.data.audio.DictionaryAudioPlayer
-import org.taigidict.app.data.audio.UnavailableDictionaryAudioPlayer
+import org.taigidict.app.data.audio.OfflineDictionaryAudioPlayer
 import org.taigidict.app.data.bookmarks.BookmarkStore
 import org.taigidict.app.data.importer.DictionaryImportService
 import org.taigidict.app.data.importer.DictionaryJsonlReader
@@ -38,6 +38,6 @@ class AppContainer(context: Context) {
         BookmarkStore(context = appContext)
     }
     val dictionaryAudioPlayer: DictionaryAudioPlayer by lazy {
-        UnavailableDictionaryAudioPlayer()
+        OfflineDictionaryAudioPlayer(filesDirectory = appContext.filesDir)
     }
 }
