@@ -16,6 +16,8 @@ interface DictionaryRepositoryDataSource {
     fun search(rawQuery: String, limit: Int = DictionarySearchService.DEFAULT_LIMIT): List<DictionaryEntry>
 
     fun entry(id: Long): DictionaryEntry?
+
+    fun findLinkedEntry(rawWord: String): DictionaryEntry?
 }
 
 class SQLiteDictionaryRepository(
@@ -64,6 +66,24 @@ class SQLiteDictionaryRepository(
 
     override fun entry(id: Long): DictionaryEntry? {
         return fetchEntries(listOf(id)).firstOrNull()
+    }
+
+    override fun findLinkedEntry(rawWord: String): DictionaryEntry? {
+        val normalizedWord = org.taigidict.app.core.util.TextNormalization.normalizeQuery(rawWord)
+        if (normalizedWord.isEmpty()) {
+            return null
+        }
+
+        val candidates = search(rawQuery = rawWord, limit = 12)
+        if (candidates.isEmpty()) {
+            return null
+        }
+
+        return candidates.firstOrNull { candidate ->
+            matchesLinkedWord(candidate.hanji, normalizedWord)
+                || matchesLinkedWord(candidate.romanization, normalizedWord)
+                || candidate.variantChars.any { matchesLinkedWord(it, normalizedWord) }
+        } ?: candidates.first()
     }
 
     private fun searchCandidateIds(normalizedQuery: String, limit: Int): List<Long> {
@@ -255,6 +275,10 @@ class SQLiteDictionaryRepository(
             .replace("\\", "\\\\")
             .replace("%", "\\%")
             .replace("_", "\\_")
+    }
+
+    private fun matchesLinkedWord(value: String, normalizedWord: String): Boolean {
+        return org.taigidict.app.core.util.TextNormalization.normalizeQuery(value) == normalizedWord
     }
 }
 

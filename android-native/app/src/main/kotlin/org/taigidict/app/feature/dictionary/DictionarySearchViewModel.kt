@@ -24,6 +24,7 @@ data class DictionarySearchUiState(
     val isLoadingEntryDetail: Boolean = false,
     val bundle: DictionaryBundle? = null,
     val selectedEntry: DictionaryEntry? = null,
+    val openableLinkedWords: Set<String> = emptySet(),
     val bundleErrorMessage: String? = null,
     val searchErrorMessage: String? = null,
     val entryDetailErrorMessage: String? = null,
@@ -96,21 +97,62 @@ class DictionarySearchViewModel(
                 it.copy(
                     isLoadingEntryDetail = true,
                     selectedEntry = null,
+                    openableLinkedWords = emptySet(),
                     entryDetailErrorMessage = null,
                 )
             }
 
             val result = withContext(ioDispatcher) {
                 runCatching {
-                    repository.entry(entryId)
+                    val entry = repository.entry(entryId)
                         ?: throw IllegalStateException("Entry $entryId not found")
+                    prepareEntryDetail(entry)
                 }
             }
 
             _uiState.update {
                 it.copy(
                     isLoadingEntryDetail = false,
-                    selectedEntry = result.getOrNull(),
+                    selectedEntry = result.getOrNull()?.entry,
+                    openableLinkedWords = result.getOrNull()?.openableLinkedWords.orEmpty(),
+                    entryDetailErrorMessage = result.exceptionOrNull()?.message,
+                )
+            }
+        }
+    }
+
+    fun onLinkedWordSelected(word: String) {
+        val currentEntry = _uiState.value.selectedEntry ?: return
+        if (!_uiState.value.openableLinkedWords.contains(word)) {
+            return
+        }
+
+        entryDetailJob?.cancel()
+        entryDetailJob = viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    isLoadingEntryDetail = true,
+                    entryDetailErrorMessage = null,
+                )
+            }
+
+            val result = withContext(ioDispatcher) {
+                runCatching {
+                    val linkedEntry = repository.findLinkedEntry(word)
+                        ?: throw IllegalStateException("Linked entry $word not found")
+                    val prepared = prepareEntryDetail(linkedEntry)
+                    if (prepared.entry.id == currentEntry.id) {
+                        throw IllegalStateException("Linked entry $word resolves to the current entry")
+                    }
+                    prepared
+                }
+            }
+
+            _uiState.update {
+                it.copy(
+                    isLoadingEntryDetail = false,
+                    selectedEntry = result.getOrNull()?.entry ?: currentEntry,
+                    openableLinkedWords = result.getOrNull()?.openableLinkedWords ?: it.openableLinkedWords,
                     entryDetailErrorMessage = result.exceptionOrNull()?.message,
                 )
             }
@@ -123,10 +165,66 @@ class DictionarySearchViewModel(
             it.copy(
                 isLoadingEntryDetail = false,
                 selectedEntry = null,
+                openableLinkedWords = emptySet(),
                 entryDetailErrorMessage = null,
             )
         }
     }
+
+    private fun prepareEntryDetail(sourceEntry: DictionaryEntry): PreparedEntryDetail {
+        val resolvedEntry = resolveAliasChain(sourceEntry)
+        val openableLinkedWords = collectLinkedWords(resolvedEntry)
+            .filterTo(linkedSetOf()) { word ->
+                val linkedEntry = repository.findLinkedEntry(word) ?: return@filterTo false
+                resolveAliasChain(linkedEntry).id != resolvedEntry.id
+            }
+
+        return PreparedEntryDetail(
+            entry = resolvedEntry,
+            openableLinkedWords = openableLinkedWords,
+        )
+    }
+
+    private fun resolveAliasChain(sourceEntry: DictionaryEntry): DictionaryEntry {
+        var currentEntry = sourceEntry
+        val visitedIds = mutableSetOf<Long>()
+
+        while (currentEntry.aliasTargetEntryId != null && visitedIds.add(currentEntry.id)) {
+            val targetEntry = repository.entry(currentEntry.aliasTargetEntryId!!)
+                ?: break
+            currentEntry = targetEntry
+        }
+
+        return currentEntry
+    }
+
+    private fun collectLinkedWords(entry: DictionaryEntry): List<String> {
+        val orderedWords = linkedSetOf<String>()
+
+        fun addWords(words: List<String>) {
+            words.forEach { word ->
+                val trimmed = word.trim()
+                if (trimmed.isNotEmpty()) {
+                    orderedWords += trimmed
+                }
+            }
+        }
+
+        addWords(entry.variantChars)
+        addWords(entry.wordSynonyms)
+        addWords(entry.wordAntonyms)
+        entry.senses.forEach { sense ->
+            addWords(sense.definitionSynonyms)
+            addWords(sense.definitionAntonyms)
+        }
+
+        return orderedWords.toList()
+    }
+
+    private data class PreparedEntryDetail(
+        val entry: DictionaryEntry,
+        val openableLinkedWords: Set<String>,
+    )
 
     private fun loadBundle() {
         viewModelScope.launch {

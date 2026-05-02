@@ -1,14 +1,17 @@
 package org.taigidict.app.feature.dictionary
 
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -44,6 +47,7 @@ fun DictionaryScreen(
             DictionaryEntryDetailPane(
                 uiState = uiState,
                 onBack = viewModel::onEntryDetailDismissed,
+                onOpenLinkedWord = viewModel::onLinkedWordSelected,
             )
         } else {
             Text(
@@ -166,6 +170,7 @@ fun DictionaryScreen(
 private fun DictionaryEntryDetailPane(
     uiState: DictionarySearchUiState,
     onBack: () -> Unit,
+    onOpenLinkedWord: (String) -> Unit,
 ) {
     FilledTonalButton(onClick = onBack) {
         Text(text = stringResource(R.string.dictionary_detail_back))
@@ -185,12 +190,20 @@ private fun DictionaryEntryDetailPane(
             style = MaterialTheme.typography.bodyMedium,
         )
 
-        uiState.selectedEntry != null -> DictionaryEntryDetailContent(entry = requireNotNull(uiState.selectedEntry))
+        uiState.selectedEntry != null -> DictionaryEntryDetailContent(
+            entry = requireNotNull(uiState.selectedEntry),
+            openableLinkedWords = uiState.openableLinkedWords,
+            onOpenLinkedWord = onOpenLinkedWord,
+        )
     }
 }
 
 @Composable
-private fun DictionaryEntryDetailContent(entry: DictionaryEntry) {
+private fun DictionaryEntryDetailContent(
+    entry: DictionaryEntry,
+    openableLinkedWords: Set<String>,
+    onOpenLinkedWord: (String) -> Unit,
+) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -220,9 +233,33 @@ private fun DictionaryEntryDetailContent(entry: DictionaryEntry) {
 
         if (entry.variantChars.isNotEmpty()) {
             item {
-                DictionaryDetailListSection(
+                DictionaryDetailRelationshipSection(
                     title = stringResource(R.string.dictionary_detail_variants),
                     values = entry.variantChars,
+                    openableLinkedWords = openableLinkedWords,
+                    onOpenLinkedWord = onOpenLinkedWord,
+                )
+            }
+        }
+
+        if (entry.wordSynonyms.isNotEmpty()) {
+            item {
+                DictionaryDetailRelationshipSection(
+                    title = stringResource(R.string.dictionary_detail_synonyms),
+                    values = entry.wordSynonyms,
+                    openableLinkedWords = openableLinkedWords,
+                    onOpenLinkedWord = onOpenLinkedWord,
+                )
+            }
+        }
+
+        if (entry.wordAntonyms.isNotEmpty()) {
+            item {
+                DictionaryDetailRelationshipSection(
+                    title = stringResource(R.string.dictionary_detail_antonyms),
+                    values = entry.wordAntonyms,
+                    openableLinkedWords = openableLinkedWords,
+                    onOpenLinkedWord = onOpenLinkedWord,
                 )
             }
         }
@@ -231,6 +268,8 @@ private fun DictionaryEntryDetailContent(entry: DictionaryEntry) {
             DictionarySenseSection(
                 index = index,
                 sense = entry.senses[index],
+                openableLinkedWords = openableLinkedWords,
+                onOpenLinkedWord = onOpenLinkedWord,
             )
         }
 
@@ -244,6 +283,8 @@ private fun DictionaryEntryDetailContent(entry: DictionaryEntry) {
 private fun DictionarySenseSection(
     index: Int,
     sense: DictionarySense,
+    openableLinkedWords: Set<String>,
+    onOpenLinkedWord: (String) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
@@ -261,15 +302,19 @@ private fun DictionarySenseSection(
             style = MaterialTheme.typography.bodyLarge,
         )
         if (sense.definitionSynonyms.isNotEmpty()) {
-            DictionaryDetailListSection(
+            DictionaryDetailRelationshipSection(
                 title = stringResource(R.string.dictionary_detail_synonyms),
                 values = sense.definitionSynonyms,
+                openableLinkedWords = openableLinkedWords,
+                onOpenLinkedWord = onOpenLinkedWord,
             )
         }
         if (sense.definitionAntonyms.isNotEmpty()) {
-            DictionaryDetailListSection(
+            DictionaryDetailRelationshipSection(
                 title = stringResource(R.string.dictionary_detail_antonyms),
                 values = sense.definitionAntonyms,
+                openableLinkedWords = openableLinkedWords,
+                onOpenLinkedWord = onOpenLinkedWord,
             )
         }
         if (sense.examples.isNotEmpty()) {
@@ -310,19 +355,32 @@ private fun DictionaryExampleBlock(example: DictionaryExample) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun DictionaryDetailListSection(
+private fun DictionaryDetailRelationshipSection(
     title: String,
     values: List<String>,
+    openableLinkedWords: Set<String>,
+    onOpenLinkedWord: (String) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
             text = title,
             style = MaterialTheme.typography.labelLarge,
         )
-        Text(
-            text = values.joinToString(separator = "、"),
-            style = MaterialTheme.typography.bodyMedium,
-        )
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            values.forEach { value ->
+                AssistChip(
+                    onClick = { onOpenLinkedWord(value) },
+                    enabled = openableLinkedWords.contains(value),
+                    label = {
+                        Text(text = value)
+                    },
+                )
+            }
+        }
     }
 }
