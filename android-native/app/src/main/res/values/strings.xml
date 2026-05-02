@@ -30,6 +30,13 @@
     <string name="dictionary_detail_examples">Examples</string>
     <string name="dictionary_detail_add_bookmark">Add bookmark</string>
     <string name="dictionary_detail_remove_bookmark">Remove bookmark</string>
+    <string name="dictionary_share_action">Share</string>
+    <string name="dictionary_share_title_fallback">Hokkien Dictionary Entry</string>
+    <string name="dictionary_share_footer">-- Shared from Hokkien Dictionary</string>
+    <string name="dictionary_play_word_audio">Play word audio</string>
+    <string name="dictionary_play_example_audio">Play example audio</string>
+    <string name="dictionary_audio_missing_clip">No audio clip is available for this item.</string>
+    <string name="dictionary_audio_unavailable">Offline audio playback is not available yet.</string>
     <string name="bookmarks_title">Bookmarks</string>
     <string name="bookmarks_loading">Loading bookmarks…</string>
     <string name="bookmarks_empty_title">No bookmarks yet</string>

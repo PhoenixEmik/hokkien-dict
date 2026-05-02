@@ -30,6 +30,13 @@
     <string name="dictionary_detail_examples">例句</string>
     <string name="dictionary_detail_add_bookmark">加入書籤</string>
     <string name="dictionary_detail_remove_bookmark">移除書籤</string>
+    <string name="dictionary_share_action">分享詞條</string>
+    <string name="dictionary_share_title_fallback">台語辭典詞條</string>
+    <string name="dictionary_share_footer">-- 來自台語辭典 App</string>
+    <string name="dictionary_play_word_audio">播放詞條音檔</string>
+    <string name="dictionary_play_example_audio">播放例句音檔</string>
+    <string name="dictionary_audio_missing_clip">這個項目目前沒有可播放的音檔。</string>
+    <string name="dictionary_audio_unavailable">離線音檔播放功能尚未接上。</string>
     <string name="bookmarks_title">書籤</string>
     <string name="bookmarks_loading">正在載入書籤…</string>
     <string name="bookmarks_empty_title">尚未加入任何書籤</string>
