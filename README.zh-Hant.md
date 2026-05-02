@@ -1,22 +1,33 @@
 # 台語辭典
 
+<img src="assets/icon/taigi_dict.png" alt="台語辭典 App Icon" width="120" />
+
 [![Download APK](https://img.shields.io/github/v/release/PhoenixEmik/taigi-dict?label=Download%20APK&color=success&logo=android)](https://github.com/PhoenixEmik/taigi-dict/releases/latest)
 
 [English README](README.md)
 
-這是一個支援 Android 與 iOS 的 Flutter 台語 / 華語辭典 App。
-專案以教育部辭典資料為核心，支援離線查詢，並將大型離線資源直接下載到使用者裝置上。
+這個專案以教育部辭典資料為核心，提供台語 / 華語離線辭典體驗。
+
+目前這個 repository 同時包含兩條實作線：
+
+- 根目錄 Flutter app，主要負責 Android 與既有跨平台程式碼
+- `ios-native/` 內的原生 Swift / SwiftUI app，作為目前 iOS 的主要開發目標
+
+兩個 app 都圍繞同一組產品能力：離線查詢、可下載音檔、書籤、本地化介面，以及台羅 / 漢字參考資料。
+
+## 目前狀態
+
+- Android：由根目錄 Flutter 專案維護
+- iOS：由 `ios-native/` 與 `TaigiDictNative.xcworkspace` 維護
+- 舊版 Flutter iOS host：仍保留在 `ios/`，但已不是主要 iOS app 目標
 
 ## 核心體驗
 
-App 目前主要由三個分頁構成：
+產品目前主要由三個分頁構成：
 
 - `辭典`：查詢台語詞目、台羅拼音與華語釋義，保留搜尋紀錄，並可進入詞條詳細頁
-- `書籤`：集中查看已收藏詞條，並以相同的詳細頁體驗重新開啟
+- `書籤`：集中查看已收藏詞條，並重新開啟
 - `設定`：管理離線資源、外觀、語言、參考資料與 App 資訊
-
-首次使用流程也屬於 App 體驗的一部分。App 會先還原內建的
-`kautian.ods` 原始檔，在裝置上建立本機 SQLite 詞典資料庫，之後再以該資料庫提供離線查詢。
 
 ## 專案識別
 
@@ -24,6 +35,7 @@ App 目前主要由三個分頁構成：
 - App 顯示名稱：`台語辭典`
 - Android application ID：`org.taigidict.app`
 - iOS bundle identifier：`org.taigidict.app`
+- 目前 Flutter app 版本：`1.3.0+3`
 - 官方網站：`https://taigidict.org`
 - 正式環境資產來源：`https://app.taigidict.org/assets/`
 
@@ -33,10 +45,9 @@ App 目前主要由三個分頁構成：
 - 提供加權搜尋排序、詞條詳細頁、釋義內關聯詞跳轉與原生分享
 - 提供書籤分頁集中保存與重開詞條
 - 支援詞目音檔與例句音檔的離線下載與播放
-- 以內建 `kautian.ods` 原始檔在裝置上建立本機 SQLite 詞典資料庫，並可在之後手動重新下載原始檔
-- 提供正體中文、簡體中文、英文介面，以及字級與主題切換
+- 提供正體中文、簡體中文、英文介面
+- 提供主題與字級調整
 - 內建台羅與漢字說明文章，以及關於與授權頁面
-- 採用平台自適應 UI，並補強語意標籤、本地化 tooltip 與其他無障礙細節
 
 ## 資料與授權
 
@@ -56,82 +67,77 @@ App 實際使用的正式環境離線資源端點：
 
 重要發行說明：
 
-- 因為上游原始資料授權為 `CC BY-ND 3.0 TW`，App 不會直接內建轉換好的 SQLite 資料庫。
-- App 會先內建原始 `kautian.ods`，再於使用者裝置上建立本機 SQLite 資料庫。
-- 使用者之後仍可從正式環境資產來源重新下載 `kautian.ods`，用來更新或修復本機原始檔。
-- 執行期載入詞典時，會優先使用 app support 目錄中的本機 SQLite 資料庫。
+- 上游原始資料授權為 `CC BY-ND 3.0 TW`
+- Android Flutter app 會內建原始 `kautian.ods`，再於裝置上建立本機 SQLite 詞典資料庫
+- 原生 iOS app 使用 `ios-native/Generated/Dictionary/` 下的預先生成詞典資料，不會在執行期解析 `kautian.ods`
 
 ## 技術棧
 
-- Flutter
+Flutter / Android 實作：
+
+- Flutter 與 Material 3
 - `dio`：可續傳下載
 - `just_audio`：離線音訊播放
 - `flutter_open_chinese_convert`：執行期 OpenCC 繁簡轉換
-- `adaptive_platform_ui`：跨平台 Material/Cupertino 自適應元件
-- `path`、`path_provider`：本機檔案管理
 - `shared_preferences`：使用者設定、書籤與搜尋紀錄
-- `share_plus`：原生分享
 - `spreadsheet_decoder`：解析 `kautian.ods`
 - `sqflite`：本機 SQLite 詞典資料庫
 
+原生 iOS 實作：
+
+- SwiftUI
+- `GRDB.swift`：SQLite 存取
+- `SwiftyOpenCC`：繁簡轉換
+- `ZIPFoundation`：離線壓縮資源處理
+
 ## 專案結構
 
-- `lib/main.dart`：App 進入點
-- `lib/app/`：App shell、導覽與主題初始化
-- `lib/app/initialization/`：首次還原內建來源檔與詞典建庫的啟動流程
-- `lib/app/shell/`：三分頁主畫面結構
-- `lib/core/`：常數、本地化、翻譯與共享偏好設定
-- `lib/features/dictionary/`：詞典模型、搜尋、SQLite 建置 / 載入與 UI
-- `lib/features/audio/`：離線音檔下載、索引與播放
-- `lib/features/bookmarks/`：書籤持久化與畫面
-- `lib/features/settings/`：設定 UI、離線資源控制與本地化參考文章
-- `lib/features/settings/presentation/content/reference_articles.dart`：台羅與漢字說明文章內容
-- `tool/build_dictionary_asset.py`：保留作為參考的 Python 轉換腳本，對照 Dart 端 ODS 到 SQLite 的映射邏輯
-
-## 離線資源流程
-
-- App 不會直接內建預先建好的 SQLite 詞典資料庫
-- App 會先使用內建的 `kautian.ods` 原始檔，再於裝置端建立本機詞典資料庫
-- 設定頁仍可從正式環境資產來源重新下載 `kautian.ods`，用來更新或修復本機原始檔
-- 詞典音檔與例句音檔則分別以 ZIP 離線資源管理
-- 設定頁提供重新下載離線資源與重建本機詞典資料庫的維護操作
+- `lib/`：Flutter app 程式碼
+- `android/`：Flutter Android host 專案
+- `ios/`：遷移期間保留的 Flutter iOS host
+- `ios-native/`：原生 Swift / SwiftUI iOS app、本地 Swift package 與測試
+- `ios-native/Generated/Dictionary/`：原生 iOS app 使用的預先生成詞典資產
+- `assets/dictionary/kautian.ods`：Flutter app 使用的內建原始詞典來源
+- `tool/build_dictionary_asset.py`：作為 Flutter 端 ODS 映射參考的轉換腳本
 
 ## 執行
 
+Android Flutter app：
+
 ```bash
 flutter pub get
-flutter run
+flutter run -d android
 ```
 
+原生 iOS app：
+
+- 在 Xcode 開啟 `ios-native/TaigiDictNative.xcworkspace`
+- 選擇 `TaigiDictNative` scheme
+- 在 iOS 17 模擬器或實機上建置並執行
+
+更多原生 iOS 細節可參考 [`ios-native/README.md`](ios-native/README.md)。
+
 ## 驗證
+
+Flutter 專案：
 
 ```bash
 flutter analyze
 flutter test
 ```
 
-## iOS 設定
-
-iOS 專案目前設定為：
-
-- deployment target：`iOS 13.0`
-- App metadata 已本地化：`zh-Hant`、`zh-Hans`、`en`
-- 使用 Cupertino 導覽與 `adaptive_platform_ui` 建立 iOS 自適應界面
-
-當依賴或 Pods 更新後：
+原生 iOS package 與共享邏輯：
 
 ```bash
-flutter pub get
-cd ios
-pod install
-cd ..
+swift test --package-path ios-native
 ```
 
 ## 開發注意事項
 
+- 目前 iOS 正式開發工作在 `ios-native/`
+- `ios/` 下的 Flutter iOS host 主要為遷移相容性而保留
 - `pubspec.yaml` 目前以 `dependency_overrides` 固定 `path_provider_foundation: 2.6.0`
-- 除非你已經針對目前 iOS 專案與 plugin 組合驗證過新的依賴解析結果，否則不要直接移除這個 override
-- 本專案的 `spreadsheet_decoder` 來自 git dependency，因此依賴解析不完全只由 pub.dev 決定
+- `spreadsheet_decoder` 來自 git dependency，因此 Flutter 依賴解析不完全只由 pub.dev 決定
 
 ## 建置 Release APK
 
@@ -152,8 +158,10 @@ flutter build apk --release
 - 教育部臺灣台語常用詞辭典：`https://sutian.moe.edu.tw/`
 - 豆腐烏 Tauhu-oo 20.05 字型，用於顯示台語漢字與特定 CJK Extension 字元：`https://github.com/tauhu-tw/tauhu-oo`
 - jf open 粉圓字型，用於 App Icon 字樣：`https://github.com/justfont/open-huninn-font`
-- Adaptive Platform UI，提供 Material/Cupertino 自適應介面元件：`https://github.com/berkaycatak/adaptive_platform_ui`
 - Open Chinese Convert for Flutter，提供執行期 OpenCC 繁簡轉換：`https://github.com/zonble/flutter_open_chinese_convert`
+- GRDB.swift：`https://github.com/groue/GRDB.swift`
+- ZIPFoundation：`https://github.com/weichsel/ZIPFoundation`
+- SwiftyOpenCC：`https://github.com/PhoenixEmik/SwiftyOpenCC`
 
 ## 授權
 
