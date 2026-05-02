@@ -14,7 +14,7 @@ ThemeData buildLightAppTheme() {
   );
   final baseTheme = _buildMaterialTheme(colorScheme: colorScheme);
 
-  return baseTheme.copyWith(
+  return _applySharedComponentThemes(baseTheme, colorScheme).copyWith(
     scaffoldBackgroundColor: colorScheme.surface,
     canvasColor: colorScheme.surface,
     appBarTheme: baseTheme.appBarTheme.copyWith(
@@ -109,39 +109,9 @@ ThemeData buildLightAppTheme() {
         ),
       ),
     ),
-    chipTheme: baseTheme.chipTheme.copyWith(
-      backgroundColor: colorScheme.surfaceContainerHigh,
-      selectedColor: colorScheme.secondaryContainer,
-      secondarySelectedColor: colorScheme.secondaryContainer,
-      side: BorderSide(color: colorScheme.outlineVariant, width: 1.0),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-      labelStyle: baseTheme.textTheme.labelLarge?.copyWith(
-        color: colorScheme.onSurfaceVariant,
-        fontWeight: FontWeight.w600,
-      ),
-      secondaryLabelStyle: baseTheme.textTheme.labelLarge?.copyWith(
-        color: colorScheme.onSecondaryContainer,
-        fontWeight: FontWeight.w700,
-      ),
-    ),
     floatingActionButtonTheme: baseTheme.floatingActionButtonTheme.copyWith(
       backgroundColor: colorScheme.primaryContainer,
       foregroundColor: colorScheme.onPrimaryContainer,
-    ),
-    navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: colorScheme.surfaceContainer,
-      surfaceTintColor: Colors.transparent,
-      indicatorColor: colorScheme.secondaryContainer,
-    ),
-    searchBarTheme: SearchBarThemeData(
-      backgroundColor: WidgetStatePropertyAll(
-        colorScheme.surfaceContainerLowest,
-      ),
-      surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
-      shadowColor: const WidgetStatePropertyAll(Colors.transparent),
-      side: WidgetStatePropertyAll(
-        BorderSide(color: colorScheme.outlineVariant, width: 1.1),
-      ),
     ),
   );
 }
@@ -154,7 +124,9 @@ ThemeData buildDarkAppTheme() {
     contrastLevel: 0.5,
   );
 
-  return _buildMaterialTheme(colorScheme: colorScheme).copyWith(
+  final baseTheme = _buildMaterialTheme(colorScheme: colorScheme);
+
+  return _applySharedComponentThemes(baseTheme, colorScheme).copyWith(
     appBarTheme: ThemeData(brightness: Brightness.dark).appBarTheme.copyWith(
       backgroundColor: colorScheme.surface,
       foregroundColor: colorScheme.onSurface,
@@ -181,7 +153,9 @@ ThemeData buildAmoledAppTheme() {
         surfaceContainerHighest: black,
       );
 
-  return _buildMaterialTheme(colorScheme: colorScheme).copyWith(
+  final baseTheme = _buildMaterialTheme(colorScheme: colorScheme);
+
+  return _applySharedComponentThemes(baseTheme, colorScheme).copyWith(
     scaffoldBackgroundColor: black,
     canvasColor: black,
     appBarTheme: ThemeData(brightness: Brightness.dark).appBarTheme.copyWith(
@@ -198,6 +172,44 @@ ThemeData buildAmoledAppTheme() {
     dialogTheme: ThemeData(brightness: Brightness.dark).dialogTheme.copyWith(
       backgroundColor: black,
       surfaceTintColor: Colors.transparent,
+    ),
+  );
+}
+
+ThemeData _applySharedComponentThemes(
+  ThemeData baseTheme,
+  ColorScheme colorScheme,
+) {
+  return baseTheme.copyWith(
+    chipTheme: baseTheme.chipTheme.copyWith(
+      backgroundColor: colorScheme.surfaceContainerHigh,
+      selectedColor: colorScheme.secondaryContainer,
+      secondarySelectedColor: colorScheme.secondaryContainer,
+      side: BorderSide(color: colorScheme.outlineVariant, width: 1.0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+      labelStyle: baseTheme.textTheme.labelLarge?.copyWith(
+        color: colorScheme.onSurfaceVariant,
+        fontWeight: FontWeight.w600,
+      ),
+      secondaryLabelStyle: baseTheme.textTheme.labelLarge?.copyWith(
+        color: colorScheme.onSecondaryContainer,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: colorScheme.surfaceContainer,
+      surfaceTintColor: Colors.transparent,
+      indicatorColor: colorScheme.secondaryContainer,
+    ),
+    searchBarTheme: SearchBarThemeData(
+      backgroundColor: WidgetStatePropertyAll(
+        colorScheme.surfaceContainerLowest,
+      ),
+      surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
+      shadowColor: const WidgetStatePropertyAll(Colors.transparent),
+      side: WidgetStatePropertyAll(
+        BorderSide(color: colorScheme.outlineVariant, width: 1.1),
+      ),
     ),
   );
 }
