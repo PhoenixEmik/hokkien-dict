@@ -542,7 +542,6 @@ class _RelationshipChipBody extends StatelessWidget {
       fontWeight: FontWeight.w600,
     );
     final chipSide = BorderSide(color: strokeColor, width: 1);
-    final useMaterial3Chip = theme.useMaterial3;
 
     return Semantics(
       container: true,
@@ -550,59 +549,35 @@ class _RelationshipChipBody extends StatelessWidget {
       label: semanticLabel ?? word,
       onTapHint: isInteractive ? l10n.searchThisWordHint : null,
       child: ExcludeSemantics(
-        child: useMaterial3Chip
-            ? Material(
-                color: Colors.transparent,
-                child: isInteractive
-                    ? ActionChip(
-                        label: Text(word),
-                        onPressed: () {
-                          unawaited(onTap!());
-                        },
-                        labelStyle: labelStyle,
-                        backgroundColor: fillColor,
-                        surfaceTintColor: Colors.transparent,
-                        side: chipSide,
-                        shape: const StadiumBorder(),
-                        labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        visualDensity: VisualDensity.compact,
-                      )
-                    : Chip(
-                        label: Text(word),
-                        labelStyle: labelStyle,
-                        backgroundColor: fillColor,
-                        side: chipSide,
-                        shape: const StadiumBorder(),
-                        labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        visualDensity: VisualDensity.compact,
-                      ),
-              )
-            : Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(999),
-                  onTap: isInteractive
-                      ? () {
-                          unawaited(onTap!());
-                        }
-                      : null,
-                  child: Ink(
-                    decoration: BoxDecoration(
-                      color: fillColor,
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: strokeColor, width: 1),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      child: Text(word, style: labelStyle),
-                    ),
+        child: isInteractive
+            ? OutlinedButton(
+                onPressed: () {
+                  unawaited(onTap!());
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: colorScheme.onSecondaryContainer,
+                  backgroundColor: colorScheme.secondaryContainer,
+                  side: BorderSide(color: colorScheme.outlineVariant),
+                  shape: const StadiumBorder(),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
                   ),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
                 ),
+                child: Text(word, style: labelStyle),
+              )
+            : Chip(
+                label: Text(word),
+                labelStyle: labelStyle,
+                backgroundColor: fillColor,
+                side: chipSide,
+                shape: const StadiumBorder(),
+                labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
               ),
       ),
     );
