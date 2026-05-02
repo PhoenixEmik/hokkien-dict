@@ -9,6 +9,7 @@ export 'presentation/widgets/audio_resource_tile.dart';
 export 'presentation/widgets/dictionary_source_resource_tile.dart';
 export 'presentation/widgets/notification.dart';
 export 'presentation/widgets/settings_locale_tile.dart';
+export 'presentation/widgets/settings_section_card.dart';
 export 'presentation/widgets/settings_section_header.dart';
 export 'presentation/widgets/settings_text_scale_tile.dart';
 export 'presentation/widgets/settings_theme_mode_tile.dart';

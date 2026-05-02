@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:taigi_dict/core/core.dart';
 
 class SettingsLocaleTile extends StatelessWidget {
@@ -16,41 +15,31 @@ class SettingsLocaleTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final isIOS = PlatformInfo.isIOS;
-    final titleStyle = isIOS
-        ? null
-        : theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600);
-    final valueStyle = isIOS
-        ? null
-        : theme.textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: theme.colorScheme.onSurfaceVariant,
-          );
+    final valueStyle = theme.textTheme.bodyLarge?.copyWith(
+      fontWeight: FontWeight.w600,
+      color: theme.colorScheme.onSurfaceVariant,
+    );
 
-    return AdaptiveListTile(
+    return ListTile(
       leading: const Icon(Icons.language),
-      title: Text(l10n.languageSetting, style: titleStyle),
+      title: Text(l10n.languageSetting),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(l10n.localeLabel(value), style: valueStyle),
-          AdaptivePopupMenuButton.icon<Locale>(
-            icon: PlatformInfo.isIOS
-                ? 'chevron.up.chevron.down'
-                : Icons.arrow_drop_down,
-            items: AppLocalizations.supportedLocales
-                .map(
-                  (locale) => AdaptivePopupMenuItem<Locale>(
-                    label: l10n.localeLabel(locale),
-                    value: locale,
-                  ),
-                )
-                .toList(growable: false),
-            onSelected: (index, entry) {
-              final selectedLocale = entry.value;
-              if (selectedLocale != null) {
-                onSelected(selectedLocale);
-              }
+          PopupMenuButton<Locale>(
+            initialValue: value,
+            icon: const Icon(Icons.arrow_drop_down),
+            onSelected: onSelected,
+            itemBuilder: (context) {
+              return AppLocalizations.supportedLocales
+                  .map(
+                    (locale) => PopupMenuItem<Locale>(
+                      value: locale,
+                      child: Text(l10n.localeLabel(locale)),
+                    ),
+                  )
+                  .toList(growable: false);
             },
           ),
         ],

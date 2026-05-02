@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
-import 'package:flutter/widgets.dart';
 
 void showAppNotification(
   BuildContext context, {
@@ -12,10 +10,30 @@ void showAppNotification(
     return;
   }
 
-  AdaptiveSnackBar.show(
-    context,
-    message: message,
-    type: isError ? AdaptiveSnackBarType.error : AdaptiveSnackBarType.info,
-    duration: duration,
-  );
+  final messenger = ScaffoldMessenger.of(context);
+  final theme = Theme.of(context);
+  final snackBarTheme = theme.snackBarTheme;
+  final colorScheme = theme.colorScheme;
+
+  messenger
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: duration,
+        behavior: snackBarTheme.behavior ?? SnackBarBehavior.floating,
+        backgroundColor: isError
+            ? colorScheme.primary
+            : snackBarTheme.backgroundColor,
+        shape: snackBarTheme.shape,
+        elevation: snackBarTheme.elevation,
+        action: SnackBarAction(
+          label: 'OK',
+          textColor: isError
+              ? snackBarTheme.actionTextColor ?? colorScheme.onPrimary
+              : snackBarTheme.actionTextColor,
+          onPressed: messenger.hideCurrentSnackBar,
+        ),
+      ),
+    );
 }

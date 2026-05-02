@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:taigi_dict/core/core.dart';
 
 class SettingsThemeModeTile extends StatelessWidget {
@@ -16,61 +15,42 @@ class SettingsThemeModeTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final isApplePlatform =
-        PlatformInfo.isIOS || Theme.of(context).platform == TargetPlatform.macOS;
-    final titleStyle = isApplePlatform
-        ? null
-        : theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600);
-    final valueStyle = isApplePlatform
-        ? null
-        : theme.textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: theme.colorScheme.onSurfaceVariant,
-          );
-    final availablePreferences = isApplePlatform
-        ? const [
-            AppThemePreference.system,
-            AppThemePreference.light,
-            AppThemePreference.dark,
-          ]
-        : const [
-            AppThemePreference.system,
-            AppThemePreference.light,
-            AppThemePreference.dark,
-            AppThemePreference.amoled,
-          ];
+    final valueStyle = theme.textTheme.bodyLarge?.copyWith(
+      fontWeight: FontWeight.w600,
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+    const availablePreferences = [
+      AppThemePreference.system,
+      AppThemePreference.light,
+      AppThemePreference.dark,
+      AppThemePreference.amoled,
+    ];
 
-    return AdaptiveListTile(
+    return ListTile(
       leading: const Icon(Icons.dark_mode_outlined),
-      title: Text(l10n.theme, style: titleStyle),
+      title: Text(l10n.theme),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            _themeLabel(value, l10n, isApplePlatform: isApplePlatform),
+            _themeLabel(value, l10n),
             style: valueStyle,
           ),
-          AdaptivePopupMenuButton.icon<AppThemePreference>(
-            icon: PlatformInfo.isIOS
-                ? 'chevron.up.chevron.down'
-                : Icons.arrow_drop_down,
-            items: availablePreferences
-                .map(
-                  (preference) => AdaptivePopupMenuItem<AppThemePreference>(
-                    label: _themeLabel(
-                      preference,
-                      l10n,
-                      isApplePlatform: isApplePlatform,
+          PopupMenuButton<AppThemePreference>(
+            initialValue: value,
+            icon: const Icon(Icons.arrow_drop_down),
+            onSelected: onSelected,
+            itemBuilder: (context) {
+              return availablePreferences
+                  .map(
+                    (preference) => PopupMenuItem<AppThemePreference>(
+                      value: preference,
+                      child: Text(
+                        _themeLabel(preference, l10n),
+                      ),
                     ),
-                    value: preference,
-                  ),
-                )
-                .toList(growable: false),
-            onSelected: (index, entry) {
-              final selectedPreference = entry.value;
-              if (selectedPreference != null) {
-                onSelected(selectedPreference);
-              }
+                  )
+                  .toList(growable: false);
             },
           ),
         ],
@@ -79,17 +59,8 @@ class SettingsThemeModeTile extends StatelessWidget {
   }
 }
 
-String _themeLabel(
-  AppThemePreference value,
-  AppLocalizations l10n, {
-  required bool isApplePlatform,
-}) {
-  final effectiveValue =
-      isApplePlatform && value == AppThemePreference.amoled
-      ? AppThemePreference.dark
-      : value;
-
-  return l10n.themeLabel(switch (effectiveValue) {
+String _themeLabel(AppThemePreference value, AppLocalizations l10n) {
+  return l10n.themeLabel(switch (value) {
     AppThemePreference.system => AppThemePreferenceProxy.system,
     AppThemePreference.light => AppThemePreferenceProxy.light,
     AppThemePreference.dark => AppThemePreferenceProxy.dark,

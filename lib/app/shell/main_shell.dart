@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taigi_dict/app/app_module.dart';
@@ -18,6 +17,8 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  static const _initializationScreenDelay = Duration(milliseconds: 180);
+
   final DictionaryRepository _repository = DictionaryRepository();
   final DictionaryDatabaseBuilderService _dictionaryDatabaseBuilderService =
       const DictionaryDatabaseBuilderService();
@@ -35,6 +36,9 @@ class _MainScreenState extends State<MainScreen> {
   int? _cachedScreenGeneration;
   List<Widget>? _cachedScreens;
   bool _startupRequested = false;
+  bool _showInitializationScreen = false;
+  bool _bundlePrewarmed = false;
+  Timer? _initializationScreenTimer;
 
   @override
   void initState() {
@@ -50,11 +54,13 @@ class _MainScreenState extends State<MainScreen> {
       return;
     }
     _startupRequested = true;
+    _scheduleInitializationScreen();
     unawaited(_startInitialization());
   }
 
   @override
   void dispose() {
+    _initializationScreenTimer?.cancel();
     _initializationController.dispose();
     _bookmarkStore.dispose();
     _dictionaryLibrary.dispose();
@@ -67,15 +73,77 @@ class _MainScreenState extends State<MainScreen> {
       await _initializationController.initialize(AppLocalizations.of(context));
     } catch (_) {
       // The blocking startup screen reads the controller error state directly.
+    } finally {
+      if (_initializationController.isReady) {
+        _prewarmDictionaryBundle();
+      }
+      if (mounted &&
+          _initializationController.isReady &&
+          _showInitializationScreen) {
+        setState(() {
+          _showInitializationScreen = false;
+        });
+      }
     }
   }
 
   Future<void> _retryInitialization() async {
+    _scheduleInitializationScreen(forceVisible: true);
     try {
       await _initializationController.retry(AppLocalizations.of(context));
     } catch (_) {
       // The blocking startup screen reads the controller error state directly.
+    } finally {
+      if (_initializationController.isReady) {
+        _prewarmDictionaryBundle();
+      }
+      if (mounted &&
+          _initializationController.isReady &&
+          _showInitializationScreen) {
+        setState(() {
+          _showInitializationScreen = false;
+        });
+      }
     }
+  }
+
+  void _scheduleInitializationScreen({bool forceVisible = false}) {
+    _initializationScreenTimer?.cancel();
+
+    if (forceVisible) {
+      if (_showInitializationScreen) {
+        return;
+      }
+      setState(() {
+        _showInitializationScreen = true;
+      });
+      return;
+    }
+
+    _showInitializationScreen = false;
+    _initializationScreenTimer = Timer(_initializationScreenDelay, () {
+      if (!mounted || _initializationController.isReady || _showInitializationScreen) {
+        return;
+      }
+      setState(() {
+        _showInitializationScreen = true;
+      });
+    });
+  }
+
+  void _prewarmDictionaryBundle() {
+    if (_bundlePrewarmed) {
+      return;
+    }
+
+    _bundlePrewarmed = true;
+    unawaited(() async {
+      try {
+        await _repository.loadBundle();
+      } catch (_) {
+        _bundlePrewarmed = false;
+      }
+    }());
   }
 
   Future<void> _handleArchiveDownloadAction(AudioArchiveType type) async {
@@ -123,6 +191,8 @@ class _MainScreenState extends State<MainScreen> {
       true,
     );
     DictionaryRepository.clearBundleCache();
+    _bundlePrewarmed = false;
+    _prewarmDictionaryBundle();
     if (!mounted) {
       return;
     }
@@ -205,6 +275,12 @@ class _MainScreenState extends State<MainScreen> {
       ]),
       builder: (context, child) {
         if (!_initializationController.isReady && !bypassInitialization) {
+          if (!_showInitializationScreen) {
+            return ColoredBox(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: const SizedBox.expand(),
+            );
+          }
           return AppInitializationScreen(
             controller: _initializationController,
             dictionaryLibrary: _dictionaryLibrary,
@@ -214,34 +290,25 @@ class _MainScreenState extends State<MainScreen> {
 
         final screens = _buildTabScreens();
 
-        return AdaptiveScaffold(
-          extendBodyBehindAppBar: false,
-          minimizeBehavior: TabBarMinimizeBehavior.never,
-          useHeroBackButton: false,
+        return Scaffold(
           body: IndexedStack(index: _selectedIndex, children: screens),
-          bottomNavigationBar: AdaptiveBottomNavigationBar(
-            useNativeBottomBar: true,
+          bottomNavigationBar: NavigationBar(
             selectedIndex: _selectedIndex,
-            onTap: (index) => setState(() => _selectedIndex = index),
-            items: [
-              AdaptiveNavigationDestination(
-                icon: PlatformInfo.isIOS ? 'book.fill' : Icons.menu_book,
-                selectedIcon:
-                    PlatformInfo.isIOS ? 'book.fill' : Icons.menu_book,
+            onDestinationSelected: (index) => setState(() => _selectedIndex = index),
+            destinations: [
+              NavigationDestination(
+                icon: const Icon(Icons.menu_book_outlined),
+                selectedIcon: const Icon(Icons.menu_book),
                 label: l10n.dictionaryTab,
               ),
-              AdaptiveNavigationDestination(
-                icon: PlatformInfo.isIOS ? 'bookmark.fill' : Icons.bookmark,
-                selectedIcon:
-                    PlatformInfo.isIOS ? 'bookmark.fill' : Icons.bookmark,
+              NavigationDestination(
+                icon: const Icon(Icons.bookmark_border),
+                selectedIcon: const Icon(Icons.bookmark),
                 label: l10n.bookmarksTab,
               ),
-              AdaptiveNavigationDestination(
-                icon: PlatformInfo.isIOS
-                    ? 'gearshape.fill'
-                    : Icons.settings,
-                selectedIcon:
-                    PlatformInfo.isIOS ? 'gearshape.fill' : Icons.settings,
+              NavigationDestination(
+                icon: const Icon(Icons.settings_outlined),
+                selectedIcon: const Icon(Icons.settings),
                 label: l10n.settingsTab,
               ),
             ],

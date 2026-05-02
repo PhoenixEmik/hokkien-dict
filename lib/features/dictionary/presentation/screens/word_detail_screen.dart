@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:taigi_dict/core/core.dart';
@@ -58,38 +57,35 @@ class WordDetailScreen extends StatelessWidget {
           },
         );
 
-        final topBodyInset = PlatformInfo.isIOS
-            ? MediaQuery.paddingOf(context).top + kToolbarHeight
-            : 0.0;
-
-        return AdaptiveScaffold(
-          appBar: AdaptiveAppBar(
-            title: entry.hanji.isEmpty
-                ? l10n.wordDetailFallbackTitle
-                : entry.hanji,
-            useNativeToolbar: true,
-            tintColor: Theme.of(context).colorScheme.primary,
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              entry.hanji.isEmpty
+                  ? l10n.wordDetailFallbackTitle
+                  : entry.hanji,
+            ),
             actions: [
-              AdaptiveAppBarAction(
-                iosSymbol: 'square.and.arrow.up',
-                icon: Icons.share,
+              IconButton(
+                tooltip: l10n.shareEntry,
                 onPressed: () {
                   unawaited(_shareEntry(l10n));
                 },
+                icon: const Icon(Icons.share),
               ),
-              AdaptiveAppBarAction(
-                iosSymbol: isBookmarked ? 'bookmark.fill' : 'bookmark',
-                icon: isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+              IconButton(
+                tooltip: isBookmarked
+                    ? l10n.removeBookmark
+                    : l10n.addBookmark,
                 onPressed: () {
                   unawaited(bookmarkStore.toggleBookmark(entry.id));
                 },
+                icon: Icon(
+                  isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                ),
               ),
             ],
           ),
-          body: Padding(
-            padding: EdgeInsets.only(top: topBodyInset),
-            child: body,
-          ),
+          body: body,
         );
       },
     );

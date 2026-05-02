@@ -1,4 +1,3 @@
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
@@ -167,15 +166,7 @@ class _DictionaryScreenState extends State<DictionaryScreen>
     super.build(context);
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    final platform = Theme.of(context).platform;
-    final applePlatform =
-        platform == TargetPlatform.iOS || platform == TargetPlatform.macOS;
-    final topBodyInset = PlatformInfo.isIOS
-        ? MediaQuery.paddingOf(context).top + kToolbarHeight
-        : 0.0;
-    final bottomContentPadding = platform == TargetPlatform.iOS
-        ? MediaQuery.paddingOf(context).bottom + 88
-        : 28.0;
+    final bottomContentPadding = MediaQuery.paddingOf(context).bottom + 28;
 
     return AnimatedBuilder(
       animation: _searchController,
@@ -202,10 +193,8 @@ class _DictionaryScreenState extends State<DictionaryScreen>
             }
 
             if (bundle == null) {
-              return Center(
-                child: applePlatform
-                    ? const CircularProgressIndicator.adaptive()
-                    : const CircularProgressIndicator(),
+              return const Center(
+                child: CircularProgressIndicator(),
               );
             }
 
@@ -246,7 +235,7 @@ class _DictionaryScreenState extends State<DictionaryScreen>
                         child: Padding(
                           padding: EdgeInsets.fromLTRB(
                             20,
-                            applePlatform ? 12 : 16,
+                            16,
                             20,
                             bottomContentPadding,
                           ),
@@ -327,7 +316,7 @@ class _DictionaryScreenState extends State<DictionaryScreen>
                           SliverPadding(
                             padding: EdgeInsets.fromLTRB(
                               16,
-                              applePlatform ? 12 : 16,
+                              16,
                               16,
                               12,
                             ),
@@ -406,17 +395,9 @@ class _DictionaryScreenState extends State<DictionaryScreen>
           return content;
         }
 
-        return AdaptiveScaffold(
-          appBar: AdaptiveAppBar(
-            title: l10n.dictionaryTab,
-            useNativeToolbar: true,
-          ),
-          extendBodyBehindAppBar: false,
-          useHeroBackButton: false,
-          body: Padding(
-            padding: EdgeInsets.only(top: topBodyInset),
-            child: content,
-          ),
+        return Scaffold(
+          appBar: AppBar(title: Text(l10n.dictionaryTab)),
+          body: content,
         );
       },
     );
@@ -534,7 +515,7 @@ class _TabletDetailPane extends StatelessWidget {
               child: Center(
                 child: Padding(
                   padding: EdgeInsets.all(24),
-                  child: CircularProgressIndicator.adaptive(),
+                  child: CircularProgressIndicator(),
                 ),
               ),
             )
@@ -627,9 +608,7 @@ class _TabletDetailToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     final isBookmarked = bookmarkStore.isBookmarked(entry.id);
     final l10n = AppLocalizations.of(context);
-    final actionStyle = PlatformInfo.isIOS
-        ? AdaptiveButtonStyle.gray
-        : AdaptiveButtonStyle.plain;
+    final outlineColor = Theme.of(context).colorScheme.outlineVariant;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
@@ -647,55 +626,42 @@ class _TabletDetailToolbar extends StatelessWidget {
           ),
           Tooltip(
             message: l10n.shareEntry,
-            child: PlatformInfo.isIOS
-                ? AdaptiveButton.sfSymbol(
-                    onPressed: () {
-                      unawaited(onShare(entry));
-                    },
-                    sfSymbol: const SFSymbol('square.and.arrow.up', size: 18),
-                    style: actionStyle,
-                    size: AdaptiveButtonSize.small,
-                    minSize: const Size(36, 36),
-                    useSmoothRectangleBorder: false,
-                  )
-                : AdaptiveButton.icon(
-                    onPressed: () {
-                      unawaited(onShare(entry));
-                    },
-                    icon: Icons.share,
-                    style: actionStyle,
-                    size: AdaptiveButtonSize.small,
-                    minSize: const Size(36, 36),
-                    useSmoothRectangleBorder: false,
-                  ),
+            child: SizedBox.square(
+              dimension: 36,
+              child: IconButton.filledTonal(
+                onPressed: () {
+                  unawaited(onShare(entry));
+                },
+                style: IconButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size.square(36),
+                  maximumSize: const Size.square(36),
+                  side: BorderSide(color: outlineColor, width: 1),
+                ),
+                icon: const Icon(Icons.share),
+              ),
+            ),
           ),
           const SizedBox(width: 6),
           Tooltip(
             message: isBookmarked ? l10n.removeBookmark : l10n.addBookmark,
-            child: PlatformInfo.isIOS
-                ? AdaptiveButton.sfSymbol(
-                    onPressed: () {
-                      unawaited(bookmarkStore.toggleBookmark(entry.id));
-                    },
-                    sfSymbol: SFSymbol(
-                      isBookmarked ? 'bookmark.fill' : 'bookmark',
-                      size: 18,
-                    ),
-                    style: actionStyle,
-                    size: AdaptiveButtonSize.small,
-                    minSize: const Size(36, 36),
-                    useSmoothRectangleBorder: false,
-                  )
-                : AdaptiveButton.icon(
-                    onPressed: () {
-                      unawaited(bookmarkStore.toggleBookmark(entry.id));
-                    },
-                    icon: isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                    style: actionStyle,
-                    size: AdaptiveButtonSize.small,
-                    minSize: const Size(36, 36),
-                    useSmoothRectangleBorder: false,
-                  ),
+            child: SizedBox.square(
+              dimension: 36,
+              child: IconButton.filledTonal(
+                onPressed: () {
+                  unawaited(bookmarkStore.toggleBookmark(entry.id));
+                },
+                style: IconButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size.square(36),
+                  maximumSize: const Size.square(36),
+                  side: BorderSide(color: outlineColor, width: 1),
+                ),
+                icon: Icon(
+                  isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                ),
+              ),
+            ),
           ),
         ],
       ),

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/core.dart';
 import 'package:taigi_dict/features/audio/audio.dart';
@@ -356,8 +355,8 @@ class ExampleListTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       color: cardColor,
       surfaceTintColor: Colors.transparent,
-      child: AdaptiveListTile(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         title: content,
         trailing: example.audioId.isEmpty
             ? null
@@ -384,6 +383,9 @@ class _MaterialSensePill extends StatelessWidget {
     final useNeutralAndroidLightColors = _useNeutralAndroidLightColors(
       Theme.of(context),
     );
+    final strokeColor = useNeutralAndroidLightColors
+        ? colorScheme.outlineVariant.withValues(alpha: 0.82)
+        : colorScheme.secondary.withValues(alpha: 0.42);
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -391,6 +393,7 @@ class _MaterialSensePill extends StatelessWidget {
             ? _androidLightAccentSurface(colorScheme)
             : colorScheme.secondaryContainer,
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: strokeColor, width: 1.05),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -522,10 +525,6 @@ class _RelationshipChipBody extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
-    final isMaterialPlatform =
-        theme.platform == TargetPlatform.android ||
-        theme.platform == TargetPlatform.fuchsia;
-    final useMaterial3Chip = isMaterialPlatform && theme.useMaterial3;
     final useNeutralAndroidLightColors = _useNeutralAndroidLightColors(theme);
     final fillColor = isInteractive
         ? colorScheme.primary.withValues(
@@ -553,6 +552,7 @@ class _RelationshipChipBody extends StatelessWidget {
       fontWeight: FontWeight.w600,
     );
     final chipSide = BorderSide(color: strokeColor, width: 1);
+    final useMaterial3Chip = theme.useMaterial3;
 
     return Semantics(
       container: true,
@@ -560,16 +560,7 @@ class _RelationshipChipBody extends StatelessWidget {
       label: semanticLabel ?? word,
       onTapHint: isInteractive ? l10n.searchThisWordHint : null,
       child: ExcludeSemantics(
-        child: PlatformInfo.isIOS
-            ? _IOSRelationshipChip(
-                word: word,
-                isInteractive: isInteractive,
-                onTap: onTap,
-                fillColor: fillColor,
-                strokeColor: strokeColor,
-                textColor: textColor,
-              )
-            : useMaterial3Chip
+        child: useMaterial3Chip
             ? Material(
                 color: Colors.transparent,
                 child: isInteractive
@@ -623,61 +614,6 @@ class _RelationshipChipBody extends StatelessWidget {
                   ),
                 ),
               ),
-      ),
-    );
-  }
-}
-
-class _IOSRelationshipChip extends StatelessWidget {
-  const _IOSRelationshipChip({
-    required this.word,
-    required this.isInteractive,
-    required this.onTap,
-    required this.fillColor,
-    required this.strokeColor,
-    required this.textColor,
-  });
-
-  final String word;
-  final bool isInteractive;
-  final Future<void> Function()? onTap;
-  final Color fillColor;
-  final Color strokeColor;
-  final Color textColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final pill = DecoratedBox(
-      decoration: BoxDecoration(
-        color: fillColor,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: strokeColor),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Text(
-          word,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: textColor,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-
-    if (!isInteractive) {
-      return pill;
-    }
-
-    return IntrinsicWidth(
-      child: AdaptiveButton.child(
-        onPressed: () {
-          unawaited(onTap!());
-        },
-        style: AdaptiveButtonStyle.plain,
-        padding: EdgeInsets.zero,
-        child: pill,
       ),
     );
   }
@@ -781,14 +717,11 @@ TextStyle? scaledTextStyle(TextStyle? style, double scale) {
 }
 
 bool _useNeutralAndroidLightColors(ThemeData theme) {
-  return !PlatformInfo.isIOS && theme.brightness == Brightness.light;
+  return theme.brightness == Brightness.light;
 }
 
 Color _detailCardSurface(ThemeData theme) {
   final colorScheme = theme.colorScheme;
-  if (PlatformInfo.isIOS && theme.brightness == Brightness.light) {
-    return Colors.white;
-  }
   if (_useNeutralAndroidLightColors(theme)) {
     return _androidLightDetailSurface(colorScheme);
   }

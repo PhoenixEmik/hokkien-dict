@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:taigi_dict/core/core.dart';
 import 'package:taigi_dict/features/audio/audio.dart';
 
@@ -102,35 +101,18 @@ class AudioResourceTile extends StatelessWidget {
               snapshot.downloadedBytes,
               snapshot.totalBytes > 0 ? snapshot.totalBytes : type.archiveBytes,
             ),
-            child: AdaptiveListTile(
+            child: ListTile(
               leading: Icon(leadingIcon),
               title: Text(titleText),
               subtitle: subtitle,
               trailing: Tooltip(
                 message: actionTooltip,
-                child: PlatformInfo.isIOS
-                    ? AdaptiveButton.sfSymbol(
-                        onPressed: onPressed,
-                        sfSymbol: SFSymbol(switch (snapshot.state) {
-                          DownloadState.downloading => 'pause.circle.fill',
-                          DownloadState.completed => 'checkmark.circle.fill',
-                          DownloadState.idle => 'arrow.down.circle.fill',
-                          DownloadState.paused => 'play.circle.fill',
-                          DownloadState.error => 'arrow.clockwise.circle.fill',
-                        }, size: 18),
-                        style: AdaptiveButtonStyle.plain,
-                        size: AdaptiveButtonSize.small,
-                        minSize: const Size(34, 34),
-                        useSmoothRectangleBorder: false,
-                      )
-                    : AdaptiveButton.icon(
-                        onPressed: onPressed,
-                        icon: actionIcon,
-                        style: AdaptiveButtonStyle.plain,
-                        size: AdaptiveButtonSize.small,
-                        minSize: const Size(34, 34),
-                        useSmoothRectangleBorder: false,
-                      ),
+                child: IconButton(
+                  onPressed: onPressed,
+                  tooltip: actionTooltip,
+                  visualDensity: VisualDensity.compact,
+                  icon: Icon(actionIcon),
+                ),
               ),
             ),
           ),
