@@ -35,11 +35,11 @@ Use one localization key set for all Swift-native screens and make migration to 
 
 ## Auto-export workflow
 1. Update `AppLocalizedStringKey` and the three locale tables in `AppLocalizer.swift`.
-2. Run `./Scripts/export_xcstrings_skeleton.swift` from `swift-native`.
+2. Run `./Scripts/export_xcstrings_skeleton.swift` from `ios-native`.
 3. Commit both source and generated catalog changes together.
 
 ## Consistency check workflow
-1. Run `./Scripts/export_xcstrings_skeleton.swift --check` from `swift-native`.
+1. Run `./Scripts/export_xcstrings_skeleton.swift --check` from `ios-native`.
 2. Treat non-zero exit as a release/CI blocker.
 3. If check fails, re-run export and review any missing or extra keys.
 

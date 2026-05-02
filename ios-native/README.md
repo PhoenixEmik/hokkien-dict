@@ -13,7 +13,7 @@ an iOS simulator, then build and run.
 ## Boundaries
 
 - Flutter source remains at the repository root during migration.
-- Native Swift source lives under `swift-native/`.
+- Native Swift source lives under `ios-native/`.
 - Dictionary source data is not parsed from `kautian.ods` by the app.
 - ODS conversion must happen before runtime and produce JSONL/CSV or SQLite.
 - Simplified/traditional conversion must go through SwiftyOpenCC behind
@@ -22,7 +22,7 @@ an iOS simulator, then build and run.
 ## Package
 
 ```text
-swift-native/
+ios-native/
   TaigiDictNative.xcworkspace
   TaigiDictNative.xcodeproj
   Package.swift

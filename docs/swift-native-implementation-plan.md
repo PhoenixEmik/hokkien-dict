@@ -1,15 +1,15 @@
 # Taigi Dict Swift Native Implementation Plan
 
-本文是 `swift-native-migration-spec.md` 的執行版補充。  
+本文是 `ios-native-migration-spec.md` 的執行版補充。  
 前者描述 Flutter 既有行為與遷移策略；本文描述 Swift / SwiftUI 重寫時的檔案邊界、資料庫對照、型別骨架與 agent 任務拆分。
 
 ## 實作狀態註記（2026-05-01）
 
-本計畫中的大部分核心項目已在 `swift-native/` 完成，後續閱讀時請將其視為「設計與對照文件」，而非純待辦清單。
+本計畫中的大部分核心項目已在 `ios-native/` 完成，後續閱讀時請將其視為「設計與對照文件」，而非純待辦清單。
 
 - 已實作：GRDB/SQLite 資料層、JSONL 匯入、OpenCC 轉換、搜尋服務、Dictionary / Bookmarks / Settings / Initialization / Info UI、離線音訊下載與播放。
-- 已實作但不在 `swift-native/Sources/` 內：ODS 轉換工具位於 `tool/build_dictionary_asset.py`。
-- 已實作且已由 Native app 裝配：bundled dictionary directory 與 `DictionarySourceResourceStore` 注入位於 `swift-native/NativeApp/TaigiDictNativeApp.swift`。
+- 已實作但不在 `ios-native/Sources/` 內：ODS 轉換工具位於 `tool/build_dictionary_asset.py`。
+- 已實作且已由 Native app 裝配：bundled dictionary directory 與 `DictionarySourceResourceStore` 注入位於 `ios-native/NativeApp/TaigiDictNativeApp.swift`。
 - 目前最主要的未完成項：第 9 章 Testing Matrix 中的 integration tests 與 UI snapshot targets；現況以單元測試為主。
 
 因此，第 8 章 Agent Task Breakdown 與第 10 章 Initial Build Order 應視為歷史執行計畫，不再代表當前尚未完成的工作量。
@@ -43,7 +43,7 @@ kautian.ods
 Conversion tool requirements:
 
 - May be implemented in Dart, Python, or a CI-side command line tool.
-- Must reuse the same sheet mapping rules documented in `swift-native-migration-spec.md`.
+- Must reuse the same sheet mapping rules documented in `ios-native-migration-spec.md`.
 - Must produce normalized `hokkienSearch` and `mandarinSearch` values before packaging.
 - Must fail the build if required sheets are missing or if entry/sense/example counts are inconsistent.
 - Must emit a manifest checksum so the Swift app can reject partial or mismatched packages.
@@ -779,7 +779,7 @@ Acceptance criteria:
 - Download snapshot transitions.
 - Zip index parsing.
 
-目前狀態：此區多數已落地，`swift-native/Tests/` 已涵蓋 normalization、bookmark、settings、audio snapshot、dictionary import、initialization 等單元測試。
+目前狀態：此區多數已落地，`ios-native/Tests/` 已涵蓋 normalization、bookmark、settings、audio snapshot、dictionary import、initialization 等單元測試。
 
 ### Integration Tests
 

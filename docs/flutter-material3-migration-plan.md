@@ -4,7 +4,7 @@
 
 將 Flutter 端對 `adaptive_platform_ui` 的依賴完整移除，改用 Flutter 原生 Material 3 widget 與必要的少量平台判斷實作等效行為。
 
-本文件聚焦於 Flutter UI 遷移範圍，不包含已經獨立重構的 `swift-native/` iOS 原生程式碼。
+本文件聚焦於 Flutter UI 遷移範圍，不包含已經獨立重構的 `ios-native/` iOS 原生程式碼。
 
 ## Current Dependency State
 

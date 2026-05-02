@@ -63,7 +63,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--package-output",
         type=Path,
-        default=Path("swift-native/Generated/Dictionary"),
+        default=Path("ios-native/Generated/Dictionary"),
         help="Directory for dictionary_manifest.json and dictionary_entries.jsonl.",
     )
     parser.add_argument(
