@@ -45,8 +45,8 @@ class _HokkienDictionaryAppState extends State<HokkienDictionaryApp> {
           listenable: Listenable.merge([_appPreferences, _localeProvider]),
           builder: (context, child) {
             final darkTheme = _appPreferences.useAmoledTheme && !isApplePlatform
-                ? buildAmoledAppTheme(applePlatform: false)
-                : buildDarkAppTheme(applePlatform: isApplePlatform);
+              ? buildAmoledAppTheme()
+              : buildDarkAppTheme();
 
             return MaterialApp(
               title: '台語辭典',
@@ -56,7 +56,7 @@ class _HokkienDictionaryAppState extends State<HokkienDictionaryApp> {
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               localeListResolutionCallback: AppLocalizations.resolveLocaleList,
               themeMode: _appPreferences.materialThemeMode,
-              theme: buildLightAppTheme(applePlatform: isApplePlatform),
+              theme: buildLightAppTheme(),
               darkTheme: darkTheme,
               home: child,
             );
