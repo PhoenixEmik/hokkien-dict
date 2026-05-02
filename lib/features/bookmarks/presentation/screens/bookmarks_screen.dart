@@ -1,4 +1,3 @@
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/core.dart';
 import 'package:taigi_dict/features/audio/audio.dart';
@@ -83,9 +82,6 @@ class _BookmarksScreenState extends State<BookmarksScreen>
   Widget build(BuildContext context) {
     super.build(context);
     final l10n = AppLocalizations.of(context);
-    final topBodyInset = PlatformInfo.isIOS
-        ? MediaQuery.paddingOf(context).top + kToolbarHeight
-        : 0.0;
 
     return AnimatedBuilder(
       animation: widget.bookmarkStore,
@@ -176,17 +172,9 @@ class _BookmarksScreenState extends State<BookmarksScreen>
           return content;
         }
 
-        return AdaptiveScaffold(
-          appBar: AdaptiveAppBar(
-            title: l10n.bookmarksTitle,
-            useNativeToolbar: true,
-          ),
-          extendBodyBehindAppBar: false,
-          useHeroBackButton: false,
-          body: Padding(
-            padding: EdgeInsets.only(top: topBodyInset),
-            child: content,
-          ),
+        return Scaffold(
+          appBar: AppBar(title: Text(l10n.bookmarksTitle)),
+          body: content,
         );
       },
     );
@@ -196,9 +184,7 @@ class _BookmarksScreenState extends State<BookmarksScreen>
     List<DictionaryEntry> bookmarkedEntries,
     DictionaryBundle bundle,
   ) {
-    final bottomInset = PlatformInfo.isIOS
-        ? MediaQuery.paddingOf(context).bottom + kBottomNavigationBarHeight + 16
-        : 16.0;
+    final bottomInset = MediaQuery.paddingOf(context).bottom + 16;
 
     return LayoutBuilder(
       builder: (context, constraints) {

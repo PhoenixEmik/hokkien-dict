@@ -92,7 +92,7 @@ Future<bool?> showConfirmationDialog({
   return result ?? false;
 }
 
-Future<VoidCallback> showAdaptiveBlockingProgressDialog({
+Future<VoidCallback> showBlockingProgressDialog({
   required BuildContext context,
   required String title,
   String? message,
