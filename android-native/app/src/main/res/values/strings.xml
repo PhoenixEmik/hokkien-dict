@@ -9,12 +9,16 @@
     <string name="tab_settings">Settings</string>
     <string name="dictionary_placeholder_title">Dictionary</string>
     <string name="dictionary_placeholder_body">The Gradle/Compose skeleton is ready. Search and import wiring comes next.</string>
+    <string name="dictionary_search_label">Search</string>
+    <string name="dictionary_search_placeholder">Search headword, Tailo, or definition</string>
     <string name="dictionary_loading_bundle">Loading local dictionary database metadata…</string>
     <string name="dictionary_database_label">Local database: %1$s</string>
     <string name="dictionary_entry_count_label">Entries: %1$d</string>
     <string name="dictionary_sense_count_label">Senses: %1$d</string>
     <string name="dictionary_example_count_label">Examples: %1$d</string>
     <string name="dictionary_bundle_error">Failed to load local dictionary bundle: %1$s</string>
+    <string name="dictionary_no_results">No results found.</string>
+    <string name="dictionary_search_error">Failed to search dictionary: %1$s</string>
     <string name="bookmarks_placeholder_title">Bookmarks</string>
     <string name="bookmarks_placeholder_body">Bookmark persistence will be added after the data layer is in place.</string>
     <string name="settings_placeholder_title">Settings</string>
