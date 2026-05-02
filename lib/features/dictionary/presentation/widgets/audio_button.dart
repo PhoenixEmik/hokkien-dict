@@ -1,4 +1,3 @@
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/core.dart';
 import 'package:taigi_dict/features/audio/audio.dart';
@@ -41,7 +40,7 @@ class AudioButton extends StatelessWidget {
       label: actionLabel,
       child: Tooltip(
         message: actionLabel,
-        child: _AdaptiveAudioActionButton(
+        child: _AudioActionButton(
           isLoading: isLoading,
           isPlaying: isPlaying,
           archiveReady: archiveReady,
@@ -53,8 +52,8 @@ class AudioButton extends StatelessWidget {
   }
 }
 
-class _AdaptiveAudioActionButton extends StatelessWidget {
-  const _AdaptiveAudioActionButton({
+class _AudioActionButton extends StatelessWidget {
+  const _AudioActionButton({
     required this.isLoading,
     required this.isPlaying,
     required this.archiveReady,
@@ -70,57 +69,33 @@ class _AdaptiveAudioActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = compact ? AdaptiveButtonSize.small : AdaptiveButtonSize.medium;
-    final minSize = compact ? const Size(40, 40) : const Size(48, 48);
-    final style = PlatformInfo.isIOS
-        ? AdaptiveButtonStyle.gray
-        : AdaptiveButtonStyle.tinted;
+    final dimension = compact ? 40.0 : 48.0;
+    final iconSize = compact ? 18.0 : 20.0;
 
-    if (isLoading) {
-      return AdaptiveButton.child(
-        onPressed: null,
-        enabled: false,
-        style: style,
-        size: size,
-        minSize: minSize,
-        useSmoothRectangleBorder: false,
-        child: const SizedBox(
-          width: 18,
-          height: 18,
-          child: CircularProgressIndicator.adaptive(strokeWidth: 2),
+    return SizedBox.square(
+      dimension: dimension,
+      child: IconButton.filledTonal(
+        onPressed: isLoading ? null : onPressed,
+        style: IconButton.styleFrom(
+          padding: EdgeInsets.zero,
+          minimumSize: Size.square(dimension),
+          maximumSize: Size.square(dimension),
+          iconSize: iconSize,
         ),
-      );
-    }
-
-    if (PlatformInfo.isIOS) {
-      return AdaptiveButton.sfSymbol(
-        onPressed: onPressed,
-        sfSymbol: SFSymbol(
-          isPlaying
-              ? 'stop.circle'
-              : archiveReady
-              ? 'speaker.wave.2'
-              : 'arrow.down.circle',
-          size: compact ? 18 : 20,
-        ),
-        style: style,
-        size: size,
-        minSize: minSize,
-        useSmoothRectangleBorder: false,
-      );
-    }
-
-    return AdaptiveButton.icon(
-      onPressed: onPressed,
-      icon: isPlaying
-          ? Icons.stop_circle_outlined
-          : archiveReady
-          ? Icons.volume_up_outlined
-          : Icons.download_outlined,
-      style: style,
-      size: size,
-      minSize: minSize,
-      useSmoothRectangleBorder: false,
+        icon: isLoading
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator.adaptive(strokeWidth: 2),
+              )
+            : Icon(
+                isPlaying
+                    ? Icons.stop_circle_outlined
+                    : archiveReady
+                    ? Icons.volume_up_outlined
+                    : Icons.download_outlined,
+              ),
+      ),
     );
   }
 }

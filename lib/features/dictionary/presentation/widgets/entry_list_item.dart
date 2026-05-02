@@ -1,4 +1,3 @@
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/core.dart';
 import 'package:taigi_dict/features/dictionary/dictionary.dart';
@@ -35,8 +34,8 @@ class EntryListItem extends StatelessWidget {
               : colorScheme.outlineVariant.withValues(alpha: 0.28),
         ),
       ),
-      child: AdaptiveListTile(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         title: Text(
           entry.hanji.isEmpty ? l10n.unlabeledHanji : entry.hanji,
           style: theme.textTheme.titleLarge?.copyWith(
@@ -71,11 +70,8 @@ class EntryListItem extends StatelessWidget {
           ],
         ),
         trailing: Icon(
-          PlatformInfo.isIOS
-              ? Icons.arrow_forward_ios_rounded
-              : Icons.chevron_right,
+          Icons.chevron_right,
           color: selected ? colorScheme.primary : null,
-          size: PlatformInfo.isIOS ? 18 : 24,
         ),
         onTap: onTap,
       ),

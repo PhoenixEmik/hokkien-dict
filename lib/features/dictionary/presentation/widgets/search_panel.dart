@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/core.dart';
 
@@ -27,25 +26,6 @@ class SearchWorkspaceCard extends StatelessWidget {
       valueListenable: controller,
       builder: (context, value, child) {
         final showClearButton = value.text.isNotEmpty;
-        final iOSTrailing = SizedBox.square(
-          dimension: 30,
-          child: showClearButton
-              ? Tooltip(
-                  message: l10n.clearSearch,
-                  child: AdaptiveButton.sfSymbol(
-                    onPressed: () {
-                      controller.clear();
-                      onSubmitted('');
-                    },
-                    sfSymbol: const SFSymbol('xmark.circle.fill', size: 16),
-                    style: AdaptiveButtonStyle.plain,
-                    size: AdaptiveButtonSize.small,
-                    minSize: const Size(28, 28),
-                    useSmoothRectangleBorder: false,
-                  ),
-                )
-              : const SizedBox.shrink(),
-        );
         final materialDecoration = InputDecoration(
           hintText: l10n.searchHint,
           prefixIcon: const Icon(Icons.search),
@@ -92,15 +72,11 @@ class SearchWorkspaceCard extends StatelessWidget {
             borderRadius: borderRadius,
             border: Border.all(color: borderColor, width: 1.2),
           ),
-          child: AdaptiveTextField(
+          child: TextField(
             controller: controller,
             textInputAction: TextInputAction.search,
             onSubmitted: onSubmitted,
-            placeholder: l10n.searchHint,
-            decoration: PlatformInfo.isIOS ? null : materialDecoration,
-            prefixIcon: PlatformInfo.isIOS ? const Icon(Icons.search) : null,
-            suffix: PlatformInfo.isIOS ? iOSTrailing : null,
-            suffixIcon: PlatformInfo.isIOS ? null : null,
+            decoration: materialDecoration,
           ),
         );
       },
@@ -144,25 +120,13 @@ class SearchHistorySection extends StatelessWidget {
                     ),
                   ),
                 ),
-                PlatformInfo.isIOS
-                    ? Tooltip(
-                        message: l10n.clearSearchHistory,
-                        child: AdaptiveButton.sfSymbol(
-                          onPressed: () {
-                            unawaited(onClearHistory());
-                          },
-                          sfSymbol: const SFSymbol('trash', size: 16),
-                          style: AdaptiveButtonStyle.plain,
-                          size: AdaptiveButtonSize.small,
-                          minSize: const Size(30, 30),
-                          useSmoothRectangleBorder: false,
-                        ),
-                      )
-                    : IconButton(
-                        tooltip: l10n.clearSearchHistory,
-                        onPressed: onClearHistory,
-                        icon: const Icon(Icons.delete_outline),
-                      ),
+                IconButton(
+                  tooltip: l10n.clearSearchHistory,
+                  onPressed: () {
+                    unawaited(onClearHistory());
+                  },
+                  icon: const Icon(Icons.delete_outline),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -175,72 +139,16 @@ class SearchHistorySection extends StatelessWidget {
                       button: true,
                       label: '${l10n.searchHistory} $query',
                       hint: l10n.searchHint,
-                      child: PlatformInfo.isIOS
-                          ? _IOSSearchHistoryChip(
-                              query: query,
-                              onPressed: () => onHistoryTap(query),
-                            )
-                          : ActionChip(
-                              label: Text(query),
-                              avatar: const Icon(Icons.history, size: 18),
-                              onPressed: () => onHistoryTap(query),
-                            ),
+                      child: ActionChip(
+                        label: Text(query),
+                        avatar: const Icon(Icons.history, size: 18),
+                        onPressed: () => onHistoryTap(query),
+                      ),
                     );
                   })
                   .toList(growable: false),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _IOSSearchHistoryChip extends StatelessWidget {
-  const _IOSSearchHistoryChip({required this.query, required this.onPressed});
-
-  final String query;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final fillColor = _searchHistoryChipFill(theme);
-
-    return IntrinsicWidth(
-      child: AdaptiveButton.child(
-        onPressed: onPressed,
-        style: AdaptiveButtonStyle.plain,
-        padding: EdgeInsets.zero,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: fillColor,
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(
-              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.75),
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.history,
-                  size: 16,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  query,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );
@@ -327,15 +235,5 @@ class SearchLoadingState extends StatelessWidget {
 }
 
 Color _searchPanelCardSurface(ThemeData theme) {
-  if (PlatformInfo.isIOS && theme.brightness == Brightness.light) {
-    return Colors.white;
-  }
   return theme.colorScheme.surface;
-}
-
-Color _searchHistoryChipFill(ThemeData theme) {
-  if (PlatformInfo.isIOS && theme.brightness == Brightness.light) {
-    return theme.colorScheme.surfaceContainerLow;
-  }
-  return theme.colorScheme.surfaceContainerHighest;
 }
