@@ -6,4 +6,5 @@ object AppConstants {
         "$BUNDLED_DICTIONARY_ASSET_DIRECTORY/dictionary_manifest.json"
     const val BUNDLED_DICTIONARY_ENTRIES_ASSET_PATH =
         "$BUNDLED_DICTIONARY_ASSET_DIRECTORY/dictionary_entries.jsonl"
+    const val DICTIONARY_DATABASE_FILE_NAME = "dictionary.sqlite"
 }
