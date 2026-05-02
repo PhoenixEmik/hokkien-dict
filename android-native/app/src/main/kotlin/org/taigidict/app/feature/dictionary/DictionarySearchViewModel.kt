@@ -37,6 +37,12 @@ class DictionarySearchViewModel(
         (application as TaigiDictApplication).appContainer.dictionaryRepository,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : AndroidViewModel(application) {
+    constructor(application: Application) : this(
+        application = application,
+        repository = (application as TaigiDictApplication).appContainer.dictionaryRepository,
+        ioDispatcher = Dispatchers.IO,
+    )
+
     private val detailController = DictionaryEntryDetailController(repository)
     private val _uiState = MutableStateFlow(DictionarySearchUiState())
     val uiState: StateFlow<DictionarySearchUiState> = _uiState.asStateFlow()

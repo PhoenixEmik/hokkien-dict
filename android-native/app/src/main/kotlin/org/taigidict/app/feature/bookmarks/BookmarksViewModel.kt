@@ -36,6 +36,13 @@ class BookmarksViewModel(
         (application as TaigiDictApplication).appContainer.bookmarkStore,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : AndroidViewModel(application) {
+    constructor(application: Application) : this(
+        application = application,
+        repository = (application as TaigiDictApplication).appContainer.dictionaryRepository,
+        bookmarkStore = (application as TaigiDictApplication).appContainer.bookmarkStore,
+        ioDispatcher = Dispatchers.IO,
+    )
+
     private val detailController = DictionaryEntryDetailController(repository)
     private val _uiState = MutableStateFlow(BookmarksUiState())
 
