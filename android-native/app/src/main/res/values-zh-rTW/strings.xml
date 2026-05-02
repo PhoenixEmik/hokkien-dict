@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">台語辭典</string>
+    <string name="initialization_title">準備離線辭典</string>
+    <string name="initialization_body">正在建立 Android 原生骨架並掛載內建詞典資料包。</string>
+    <string name="retry">重試</string>
+    <string name="tab_dictionary">辭典</string>
+    <string name="tab_bookmarks">書籤</string>
+    <string name="tab_settings">設定</string>
+    <string name="dictionary_placeholder_title">辭典</string>
+    <string name="dictionary_placeholder_body">Gradle / Compose 骨架已建立，下一步會接上搜尋與資料匯入。</string>
+    <string name="bookmarks_placeholder_title">書籤</string>
+    <string name="bookmarks_placeholder_body">等資料層建立後，再補上書籤持久化與列表。</string>
+    <string name="settings_placeholder_title">設定</string>
+    <string name="settings_placeholder_body">此頁之後會管理離線資源、外觀、語言與閱讀字級。</string>
+    <string name="bundled_package_label">內建資料包目錄：%1$s</string>
+    <string name="bundled_manifest_label">內建 manifest 資產：%1$s</string>
+    <string name="bundled_entries_label">內建 entries 資產：%1$s</string>
+</resources>
