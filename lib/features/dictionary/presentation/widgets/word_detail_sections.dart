@@ -550,24 +550,19 @@ class _RelationshipChipBody extends StatelessWidget {
       onTapHint: isInteractive ? l10n.searchThisWordHint : null,
       child: ExcludeSemantics(
         child: isInteractive
-            ? OutlinedButton(
+            ? ActionChip(
+                label: Text(word),
                 onPressed: () {
                   unawaited(onTap!());
                 },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: colorScheme.onSecondaryContainer,
-                  backgroundColor: colorScheme.secondaryContainer,
-                  side: BorderSide(color: colorScheme.outlineVariant),
-                  shape: const StadiumBorder(),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  visualDensity: VisualDensity.compact,
-                ),
-                child: Text(word, style: labelStyle),
+                labelStyle: labelStyle,
+                backgroundColor: fillColor,
+                surfaceTintColor: Colors.transparent,
+                side: chipSide,
+                shape: const StadiumBorder(),
+                labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
               )
             : Chip(
                 label: Text(word),
