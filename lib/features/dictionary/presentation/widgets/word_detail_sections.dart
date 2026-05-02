@@ -383,6 +383,9 @@ class _MaterialSensePill extends StatelessWidget {
     final useNeutralAndroidLightColors = _useNeutralAndroidLightColors(
       Theme.of(context),
     );
+    final strokeColor = useNeutralAndroidLightColors
+        ? colorScheme.outlineVariant.withValues(alpha: 0.82)
+        : colorScheme.secondary.withValues(alpha: 0.42);
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -390,6 +393,7 @@ class _MaterialSensePill extends StatelessWidget {
             ? _androidLightAccentSurface(colorScheme)
             : colorScheme.secondaryContainer,
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: strokeColor, width: 1.05),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

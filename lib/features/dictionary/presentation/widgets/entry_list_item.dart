@@ -30,8 +30,9 @@ class EntryListItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
           color: selected
-              ? colorScheme.primary.withValues(alpha: 0.5)
-              : colorScheme.outlineVariant.withValues(alpha: 0.28),
+              ? colorScheme.primary.withValues(alpha: 0.62)
+              : colorScheme.outlineVariant.withValues(alpha: 0.72),
+          width: selected ? 1.2 : 1.05,
         ),
       ),
       child: ListTile(
