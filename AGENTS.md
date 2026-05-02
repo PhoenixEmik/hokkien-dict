@@ -378,7 +378,7 @@ Before moving a directory, check whether the destination already exists.
 
 If the destination exists, do not accidentally create nested paths such as:
 
-- `ios-native/swift-native/`
+- `ios-native/ios-native/`
 
 When uncertain, stop and explain the intended move before doing it.
 

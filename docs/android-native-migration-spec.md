@@ -14,8 +14,8 @@
 - `lib/features/dictionary/presentation/coordinators/word_detail_coordinator.dart`
 - `lib/features/settings/presentation/screens/settings_screen.dart`
 - `ios-native/README.md`
-- `docs/swift-native-migration-spec.md`
-- `docs/swift-native-implementation-plan.md`
+- `docs/ios-native-migration-spec.md`
+- `docs/ios-native-implementation-plan.md`
 
 ## 實作狀態註記（2026-05-02）
 
