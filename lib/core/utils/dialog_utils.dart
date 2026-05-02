@@ -1,14 +1,41 @@
 import 'dart:async';
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 
-dynamic _normalizeAdaptiveDialogIcon(dynamic icon) {
-  if (icon is IconData || icon is String || icon == null) {
-    return icon;
+IconData? _sfSymbolToMaterialIcon(String symbol) {
+  return switch (symbol) {
+    'book.fill' => Icons.menu_book,
+    'bookmark.fill' => Icons.bookmark,
+    'gearshape.fill' => Icons.settings,
+    'gearshape' => Icons.settings_outlined,
+    'chevron.up.chevron.down' => Icons.unfold_more,
+    _ => null,
+  };
+}
+
+Widget? _buildDialogIcon(dynamic icon, {double? iconSize, Color? iconColor}) {
+  if (icon == null) {
+    return null;
   }
+
   if (icon is Icon) {
-    return icon.icon;
+    return Icon(
+      icon.icon,
+      size: iconSize ?? icon.size,
+      color: iconColor ?? icon.color,
+    );
   }
+
+  if (icon is IconData) {
+    return Icon(icon, size: iconSize, color: iconColor);
+  }
+
+  if (icon is String) {
+    final mappedIcon = _sfSymbolToMaterialIcon(icon);
+    if (mappedIcon != null) {
+      return Icon(mappedIcon, size: iconSize, color: iconColor);
+    }
+  }
+
   return null;
 }
 
@@ -24,58 +51,45 @@ Future<bool?> showConfirmationDialog({
   double? iconSize,
   Color? iconColor,
 }) async {
-  final result = Completer<bool>();
-  final normalizedIcon = _normalizeAdaptiveDialogIcon(icon);
+  final dialogIcon = _buildDialogIcon(
+    icon,
+    iconSize: iconSize,
+    iconColor: iconColor,
+  );
 
-  final actions = [
-    AlertAction(
-      title: cancelLabel,
-      style: isDestructiveAction
-          ? AlertActionStyle.primary
-          : AlertActionStyle.cancel,
-      onPressed: () {
-        if (!result.isCompleted) {
-          result.complete(false);
-        }
-      },
-    ),
-    AlertAction(
-      title: confirmLabel,
-      style: isDestructiveAction
-          ? AlertActionStyle.destructive
-          : AlertActionStyle.primary,
-      onPressed: () {
-        if (!result.isCompleted) {
-          result.complete(true);
-        }
-      },
-    ),
-  ];
+  final result = await showDialog<bool>(
+    context: context,
+    barrierDismissible: barrierDismissible,
+    useRootNavigator: true,
+    builder: (dialogContext) {
+      final colorScheme = Theme.of(dialogContext).colorScheme;
 
-  if (normalizedIcon != null) {
-    await AdaptiveAlertDialog.show(
-      context: context,
-      title: title,
-      message: content,
-      icon: normalizedIcon,
-      iconSize: iconSize,
-      iconColor: iconColor,
-      actions: actions,
-    );
-  } else {
-    await AdaptiveAlertDialog.show(
-      context: context,
-      title: title,
-      message: content,
-      actions: actions,
-    );
-  }
+      return AlertDialog(
+        icon: dialogIcon,
+        title: Text(title),
+        content: content.isEmpty ? null : Text(content),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(cancelLabel),
+          ),
+          if (isDestructiveAction)
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              style: TextButton.styleFrom(foregroundColor: colorScheme.error),
+              child: Text(confirmLabel),
+            )
+          else
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(confirmLabel),
+            ),
+        ],
+      );
+    },
+  );
 
-  if (!result.isCompleted) {
-    return false;
-  }
-
-  return result.future;
+  return result ?? false;
 }
 
 Future<VoidCallback> showAdaptiveBlockingProgressDialog({
@@ -89,39 +103,46 @@ Future<VoidCallback> showAdaptiveBlockingProgressDialog({
 }) async {
   final navigator = Navigator.of(context, rootNavigator: true);
   var closed = false;
-  final normalizedIcon = _normalizeAdaptiveDialogIcon(icon);
+  final dialogIcon = _buildDialogIcon(
+    icon,
+    iconSize: iconSize,
+    iconColor: iconColor,
+  );
 
-  final actions = [
-    AlertAction(
-      title: actionLabel,
-      enabled: false,
-      style: AlertActionStyle.disabled,
-      onPressed: () {},
+  unawaited(
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      builder: (dialogContext) {
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            icon: dialogIcon,
+            title: Text(title),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator.adaptive(strokeWidth: 2.5),
+                ),
+                if (message != null && message.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Text(message),
+                ],
+              ],
+            ),
+            actions: [
+              TextButton(onPressed: null, child: Text(actionLabel)),
+            ],
+          ),
+        );
+      },
     ),
-  ];
-
-  if (normalizedIcon != null) {
-    unawaited(
-      AdaptiveAlertDialog.show(
-        context: context,
-        title: title,
-        message: message,
-        icon: normalizedIcon,
-        iconSize: iconSize,
-        iconColor: iconColor,
-        actions: actions,
-      ),
-    );
-  } else {
-    unawaited(
-      AdaptiveAlertDialog.show(
-        context: context,
-        title: title,
-        message: message,
-        actions: actions,
-      ),
-    );
-  }
+  );
 
   await Future<void>.delayed(Duration.zero);
 

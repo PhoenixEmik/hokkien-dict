@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/core.dart';
 import 'package:taigi_dict/features/audio/audio.dart';
@@ -175,87 +174,78 @@ class AdvancedSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final topBodyInset = PlatformInfo.isIOS
-        ? MediaQuery.paddingOf(context).top + kToolbarHeight
-        : 0.0;
 
-    return AdaptiveScaffold(
-      appBar: AdaptiveAppBar(
-        title: l10n.advancedSettings,
-        useNativeToolbar: true,
-      ),
-      body: Padding(
-        padding: EdgeInsets.only(top: topBodyInset),
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(0, 0, 0, 24),
-          children: [
-            AdaptiveFormSection.insetGrouped(
-              header: Text(l10n.offlineResourceMaintenance),
-              children: [
-                AdaptiveListTile(
-                  leading: const Icon(Icons.description_outlined),
-                  title: Text(
-                    '${l10n.redownload} ${l10n.dictionarySourceArchive}',
-                  ),
-                  subtitle: Text(l10n.dictionarySourceSubtitle),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    unawaited(_redownloadDictionarySource(context));
-                  },
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.advancedSettings)),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(0, 0, 0, 24),
+        children: [
+          SettingsSectionCard(
+            title: l10n.offlineResourceMaintenance,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.description_outlined),
+                title: Text(
+                  '${l10n.redownload} ${l10n.dictionarySourceArchive}',
                 ),
-                AdaptiveListTile(
-                  leading: const Icon(Icons.record_voice_over_outlined),
-                  title: Text('${l10n.redownload} ${l10n.audioWordArchive}'),
-                  subtitle: Text(
-                    l10n.downloadApproximateSize(
-                      formatBytes(AudioArchiveType.word.archiveBytes),
+                subtitle: Text(l10n.dictionarySourceSubtitle),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  unawaited(_redownloadDictionarySource(context));
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.record_voice_over_outlined),
+                title: Text('${l10n.redownload} ${l10n.audioWordArchive}'),
+                subtitle: Text(
+                  l10n.downloadApproximateSize(
+                    formatBytes(AudioArchiveType.word.archiveBytes),
+                  ),
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  unawaited(
+                    _redownloadAudioArchive(context, AudioArchiveType.word),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.chat_bubble_outline),
+                title: Text(
+                  '${l10n.redownload} ${l10n.audioSentenceArchive}',
+                ),
+                subtitle: Text(
+                  l10n.downloadApproximateSize(
+                    formatBytes(AudioArchiveType.sentence.archiveBytes),
+                  ),
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  unawaited(
+                    _redownloadAudioArchive(
+                      context,
+                      AudioArchiveType.sentence,
                     ),
-                  ),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    unawaited(
-                      _redownloadAudioArchive(context, AudioArchiveType.word),
-                    );
-                  },
-                ),
-                AdaptiveListTile(
-                  leading: const Icon(Icons.chat_bubble_outline),
-                  title: Text(
-                    '${l10n.redownload} ${l10n.audioSentenceArchive}',
-                  ),
-                  subtitle: Text(
-                    l10n.downloadApproximateSize(
-                      formatBytes(AudioArchiveType.sentence.archiveBytes),
-                    ),
-                  ),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    unawaited(
-                      _redownloadAudioArchive(
-                        context,
-                        AudioArchiveType.sentence,
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-            AdaptiveFormSection.insetGrouped(
-              header: Text(l10n.rebuildDictionaryDatabase),
-              children: [
-                AdaptiveListTile(
-                  leading: const Icon(Icons.storage_outlined),
-                  title: Text(l10n.rebuildDictionaryDatabase),
-                  subtitle: Text(l10n.rebuildDictionaryDatabaseSubtitle),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    unawaited(_confirmAndRebuild(context));
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
+                  );
+                },
+              ),
+            ],
+          ),
+          SettingsSectionCard(
+            title: l10n.rebuildDictionaryDatabase,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.storage_outlined),
+                title: Text(l10n.rebuildDictionaryDatabase),
+                subtitle: Text(l10n.rebuildDictionaryDatabaseSubtitle),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  unawaited(_confirmAndRebuild(context));
+                },
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

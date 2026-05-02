@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/core.dart';
 import 'package:taigi_dict/features/audio/audio.dart';
@@ -42,23 +40,14 @@ class _SettingsScreenState extends State<SettingsScreen>
     required LocalizedReferenceArticle article,
   }) {
     Navigator.of(context).push(
-      PlatformInfo.isIOS
-          ? CupertinoPageRoute<void>(
-              builder: (_) => ReferenceArticleScreen(
-                title: article.title,
-                introduction: article.introduction,
-                sections: article.sections,
-                sourceUrl: article.sourceUrl,
-              ),
-            )
-          : MaterialPageRoute<void>(
-              builder: (_) => ReferenceArticleScreen(
-                title: article.title,
-                introduction: article.introduction,
-                sections: article.sections,
-                sourceUrl: article.sourceUrl,
-              ),
-            ),
+      MaterialPageRoute<void>(
+        builder: (_) => ReferenceArticleScreen(
+          title: article.title,
+          introduction: article.introduction,
+          sections: article.sections,
+          sourceUrl: article.sourceUrl,
+        ),
+      ),
     );
   }
 
@@ -68,12 +57,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     final appPreferences = AppPreferencesScope.of(context);
     final localeProvider = LocaleProviderScope.of(context);
     final l10n = AppLocalizations.of(context);
-    final topBodyInset = PlatformInfo.isIOS
-        ? MediaQuery.paddingOf(context).top + kToolbarHeight
-        : 0.0;
-    final bottomBodyInset = PlatformInfo.isIOS
-        ? MediaQuery.paddingOf(context).bottom + kBottomNavigationBarHeight + 24
-        : 24.0;
+    const bottomBodyInset = 24.0;
 
     final content = AnimatedBuilder(
       animation: Listenable.merge([
@@ -86,8 +70,8 @@ class _SettingsScreenState extends State<SettingsScreen>
         final selectedLocale =
             localeProvider.locale ??
             AppLocalizations.resolveLocale(Localizations.localeOf(context));
-        final offlineResourcesSection = AdaptiveFormSection.insetGrouped(
-          header: Text(l10n.offlineResources),
+        final offlineResourcesSection = SettingsSectionCard(
+          title: l10n.offlineResources,
           children: [
             DictionarySourceResourceTile(
               dictionaryLibrary: widget.dictionaryLibrary,
@@ -105,8 +89,8 @@ class _SettingsScreenState extends State<SettingsScreen>
             ),
           ],
         );
-        final appearanceSection = AdaptiveFormSection.insetGrouped(
-          header: Text(l10n.appearance),
+        final appearanceSection = SettingsSectionCard(
+          title: l10n.appearance,
           children: [
             SettingsLocaleTile(
               value: selectedLocale,
@@ -128,43 +112,31 @@ class _SettingsScreenState extends State<SettingsScreen>
             ),
           ],
         );
-        final aboutSection = AdaptiveFormSection.insetGrouped(
-          header: Text(l10n.about),
+        final aboutSection = SettingsSectionCard(
+          title: l10n.about,
           children: [
-            AdaptiveListTile(
+            ListTile(
               leading: const Icon(Icons.tune_outlined),
               title: Text(l10n.advancedSettings),
               subtitle: Text(l10n.advancedSettingsSubtitle),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
                 Navigator.of(context).push(
-                  PlatformInfo.isIOS
-                      ? CupertinoPageRoute<void>(
-                          builder: (_) => AdvancedSettingsScreen(
-                            audioLibrary: widget.audioLibrary,
-                            dictionaryLibrary: widget.dictionaryLibrary,
-                            onDownloadArchive: widget.onDownloadArchive,
-                            onDownloadDictionarySource:
-                                widget.onDownloadDictionarySource,
-                            onRebuildDictionaryDatabase:
-                                widget.onRebuildDictionaryDatabase,
-                          ),
-                        )
-                      : MaterialPageRoute<void>(
-                          builder: (_) => AdvancedSettingsScreen(
-                            audioLibrary: widget.audioLibrary,
-                            dictionaryLibrary: widget.dictionaryLibrary,
-                            onDownloadArchive: widget.onDownloadArchive,
-                            onDownloadDictionarySource:
-                                widget.onDownloadDictionarySource,
-                            onRebuildDictionaryDatabase:
-                                widget.onRebuildDictionaryDatabase,
-                          ),
-                        ),
+                  MaterialPageRoute<void>(
+                    builder: (_) => AdvancedSettingsScreen(
+                      audioLibrary: widget.audioLibrary,
+                      dictionaryLibrary: widget.dictionaryLibrary,
+                      onDownloadArchive: widget.onDownloadArchive,
+                      onDownloadDictionarySource:
+                          widget.onDownloadDictionarySource,
+                      onRebuildDictionaryDatabase:
+                          widget.onRebuildDictionaryDatabase,
+                    ),
+                  ),
                 );
               },
             ),
-            AdaptiveListTile(
+            ListTile(
               leading: const Icon(Icons.translate_outlined),
               title: Text(l10n.tailoGuide),
               subtitle: Text(l10n.tailoGuideSubtitle),
@@ -176,7 +148,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                 );
               },
             ),
-            AdaptiveListTile(
+            ListTile(
               leading: const Icon(Icons.edit_note_outlined),
               title: Text(l10n.hanjiGuide),
               subtitle: Text(l10n.hanjiGuideSubtitle),
@@ -188,20 +160,16 @@ class _SettingsScreenState extends State<SettingsScreen>
                 );
               },
             ),
-            AdaptiveListTile(
+            ListTile(
               leading: const Icon(Icons.info_outline),
               title: Text(l10n.aboutApp),
               subtitle: Text(l10n.aboutAppSubtitle),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
                 Navigator.of(context).push(
-                  PlatformInfo.isIOS
-                      ? CupertinoPageRoute<void>(
-                          builder: (_) => const AboutAppScreen(),
-                        )
-                      : MaterialPageRoute<void>(
-                          builder: (_) => const AboutAppScreen(),
-                        ),
+                  MaterialPageRoute<void>(
+                    builder: (_) => const AboutAppScreen(),
+                  ),
                 );
               },
             ),
@@ -269,14 +237,9 @@ class _SettingsScreenState extends State<SettingsScreen>
       return content;
     }
 
-    return AdaptiveScaffold(
-      appBar: AdaptiveAppBar(title: l10n.settingsTitle, useNativeToolbar: true),
-      extendBodyBehindAppBar: false,
-      useHeroBackButton: false,
-      body: Padding(
-        padding: EdgeInsets.only(top: topBodyInset),
-        child: content,
-      ),
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.settingsTitle)),
+      body: content,
     );
   }
 }

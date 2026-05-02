@@ -1,4 +1,3 @@
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/core/core.dart';
 
@@ -20,125 +19,115 @@ class ReferenceArticleScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    final topBodyInset = PlatformInfo.isIOS
-        ? MediaQuery.paddingOf(context).top + kToolbarHeight
-        : 0.0;
     final bottomBodyInset = MediaQuery.paddingOf(context).bottom + 24;
 
-    return AdaptiveScaffold(
-      appBar: AdaptiveAppBar(
-        title: title,
-        useNativeToolbar: true,
-      ),
-      body: Padding(
-        padding: EdgeInsets.only(top: topBodyInset),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Align(
-              alignment: Alignment.topCenter,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: constraints.maxWidth >= 900 ? 920 : 720,
-                ),
-                child: ListView(
-                  padding: EdgeInsets.fromLTRB(24, 16, 24, bottomBodyInset),
-                  children: [
-                    Text(
-                      introduction,
-                      style: theme.textTheme.bodyLarge?.copyWith(height: 1.65),
-                    ),
-                    const SizedBox(height: 24),
-                    ...sections.map((section) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 24),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              section.title,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w800,
-                              ),
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: constraints.maxWidth >= 900 ? 920 : 720,
+              ),
+              child: ListView(
+                padding: EdgeInsets.fromLTRB(24, 16, 24, bottomBodyInset),
+                children: [
+                  Text(
+                    introduction,
+                    style: theme.textTheme.bodyLarge?.copyWith(height: 1.65),
+                  ),
+                  const SizedBox(height: 24),
+                  ...sections.map((section) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            section.title,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
                             ),
-                            const SizedBox(height: 10),
-                            ...section.paragraphs.map((paragraph) {
+                          ),
+                          const SizedBox(height: 10),
+                          ...section.paragraphs.map((paragraph) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: Text(
+                                paragraph,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  height: 1.65,
+                                ),
+                              ),
+                            );
+                          }),
+                          if (section.bullets.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            ...section.bullets.map((bullet) {
                               return Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
-                                child: Text(
-                                  paragraph,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    height: 1.65,
-                                  ),
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        top: 6,
+                                        right: 10,
+                                      ),
+                                      child: Icon(
+                                        Icons.circle,
+                                        size: 7,
+                                        color: theme.colorScheme.primary,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        bullet,
+                                        style: theme.textTheme.bodyMedium
+                                            ?.copyWith(height: 1.6),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               );
                             }),
-                            if (section.bullets.isNotEmpty) ...[
-                              const SizedBox(height: 4),
-                              ...section.bullets.map((bullet) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 8),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          top: 6,
-                                          right: 10,
-                                        ),
-                                        child: Icon(
-                                          Icons.circle,
-                                          size: 7,
-                                          color: theme.colorScheme.primary,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Text(
-                                          bullet,
-                                          style: theme.textTheme.bodyMedium
-                                              ?.copyWith(height: 1.6),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }),
-                            ],
-                            if (section.tables.isNotEmpty) ...[
-                              const SizedBox(height: 8),
-                              ...section.tables.map((table) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 16),
-                                  child: ReferenceArticleTable(table: table),
-                                );
-                              }),
-                            ],
                           ],
-                        ),
-                      );
-                    }),
-                    const Divider(height: 32),
-                    Text(
-                      l10n.referenceSource,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: theme.colorScheme.primary,
+                          if (section.tables.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            ...section.tables.map((table) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: ReferenceArticleTable(table: table),
+                              );
+                            }),
+                          ],
+                        ],
                       ),
+                    );
+                  }),
+                  const Divider(height: 32),
+                  Text(
+                    l10n.referenceSource,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: theme.colorScheme.primary,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      sourceUrl,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.primary,
-                        height: 1.6,
-                      ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    sourceUrl,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                      height: 1.6,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }

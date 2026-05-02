@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:taigi_dict/core/core.dart';
 
 class SettingsThemeModeTile extends StatelessWidget {
@@ -17,16 +16,12 @@ class SettingsThemeModeTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isApplePlatform =
-        PlatformInfo.isIOS || Theme.of(context).platform == TargetPlatform.macOS;
-    final titleStyle = isApplePlatform
-        ? null
-        : theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600);
-    final valueStyle = isApplePlatform
-        ? null
-        : theme.textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: theme.colorScheme.onSurfaceVariant,
-          );
+        Theme.of(context).platform == TargetPlatform.iOS ||
+        Theme.of(context).platform == TargetPlatform.macOS;
+    final valueStyle = theme.textTheme.bodyLarge?.copyWith(
+      fontWeight: FontWeight.w600,
+      color: theme.colorScheme.onSurfaceVariant,
+    );
     final availablePreferences = isApplePlatform
         ? const [
             AppThemePreference.system,
@@ -40,9 +35,9 @@ class SettingsThemeModeTile extends StatelessWidget {
             AppThemePreference.amoled,
           ];
 
-    return AdaptiveListTile(
+    return ListTile(
       leading: const Icon(Icons.dark_mode_outlined),
-      title: Text(l10n.theme, style: titleStyle),
+      title: Text(l10n.theme),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -50,27 +45,25 @@ class SettingsThemeModeTile extends StatelessWidget {
             _themeLabel(value, l10n, isApplePlatform: isApplePlatform),
             style: valueStyle,
           ),
-          AdaptivePopupMenuButton.icon<AppThemePreference>(
-            icon: PlatformInfo.isIOS
-                ? 'chevron.up.chevron.down'
-                : Icons.arrow_drop_down,
-            items: availablePreferences
-                .map(
-                  (preference) => AdaptivePopupMenuItem<AppThemePreference>(
-                    label: _themeLabel(
-                      preference,
-                      l10n,
-                      isApplePlatform: isApplePlatform,
+          PopupMenuButton<AppThemePreference>(
+            initialValue: value,
+            icon: const Icon(Icons.arrow_drop_down),
+            onSelected: onSelected,
+            itemBuilder: (context) {
+              return availablePreferences
+                  .map(
+                    (preference) => PopupMenuItem<AppThemePreference>(
+                      value: preference,
+                      child: Text(
+                        _themeLabel(
+                          preference,
+                          l10n,
+                          isApplePlatform: isApplePlatform,
+                        ),
+                      ),
                     ),
-                    value: preference,
-                  ),
-                )
-                .toList(growable: false),
-            onSelected: (index, entry) {
-              final selectedPreference = entry.value;
-              if (selectedPreference != null) {
-                onSelected(selectedPreference);
-              }
+                  )
+                  .toList(growable: false);
             },
           ),
         ],
