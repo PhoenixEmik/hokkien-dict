@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 const _fontFamilyFallback = <String>['TauhuOo'];
-const _brandSeedColor = Color(0xFF17454C);
+const _brandSeedColor = Color(0xFF26416B);
 const _amoledSeedColor = Color(0xFFA9D8FF);
 
 ThemeData buildLightAppTheme() {
