@@ -3,6 +3,17 @@
 本文是 `swift-native-migration-spec.md` 的執行版補充。  
 前者描述 Flutter 既有行為與遷移策略；本文描述 Swift / SwiftUI 重寫時的檔案邊界、資料庫對照、型別骨架與 agent 任務拆分。
 
+## 實作狀態註記（2026-05-01）
+
+本計畫中的大部分核心項目已在 `swift-native/` 完成，後續閱讀時請將其視為「設計與對照文件」，而非純待辦清單。
+
+- 已實作：GRDB/SQLite 資料層、JSONL 匯入、OpenCC 轉換、搜尋服務、Dictionary / Bookmarks / Settings / Initialization / Info UI、離線音訊下載與播放。
+- 已實作但不在 `swift-native/Sources/` 內：ODS 轉換工具位於 `tool/build_dictionary_asset.py`。
+- 已實作且已由 Native app 裝配：bundled dictionary directory 與 `DictionarySourceResourceStore` 注入位於 `swift-native/NativeApp/TaigiDictNativeApp.swift`。
+- 目前最主要的未完成項：第 9 章 Testing Matrix 中的 integration tests 與 UI snapshot targets；現況以單元測試為主。
+
+因此，第 8 章 Agent Task Breakdown 與第 10 章 Initial Build Order 應視為歷史執行計畫，不再代表當前尚未完成的工作量。
+
 ## 1. Implementation Principles
 
 - 第一版以行為等價為目標。
@@ -768,6 +779,8 @@ Acceptance criteria:
 - Download snapshot transitions.
 - Zip index parsing.
 
+目前狀態：此區多數已落地，`swift-native/Tests/` 已涵蓋 normalization、bookmark、settings、audio snapshot、dictionary import、initialization 等單元測試。
+
 ### Integration Tests
 
 - Open bundled SQLite and run search.
@@ -776,6 +789,8 @@ Acceptance criteria:
 - Change locale and verify display conversion.
 - Simulate failed initialization and retry.
 
+目前狀態：此區仍是主要缺口，尚未看到對應的整合測試 target 或等價測試套件。
+
 ### UI Snapshot Targets
 
 - iPhone light/dark dictionary search.
@@ -783,6 +798,8 @@ Acceptance criteria:
 - iPad split view.
 - Settings form.
 - Resource download tile states.
+
+目前狀態：尚未實作對應的 snapshot 測試基礎設施或測試目標。
 
 ## 10. Initial Build Order
 

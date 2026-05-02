@@ -1,0 +1,11 @@
+{
+  "builtAt": "2026-04-30T02:12:07.646858+00:00",
+  "checksumSHA256": "4763b5c422fc1f2f5d6d8b2e8dadb17c7d82a06e84f77dbe1f05f8636facc4bb",
+  "entriesFileName": "dictionary_entries.jsonl",
+  "entryCount": 28965,
+  "exampleCount": 17700,
+  "schemaVersion": 1,
+  "senseCount": 23106,
+  "source": "https://app.taigidict.org/assets/kautian.ods",
+  "sourceModifiedAt": "2026-04-30T02:08:48.575551+00:00"
+}

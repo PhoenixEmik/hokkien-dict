@@ -7,12 +7,17 @@
 .atom/
 .build/
 .buildlog/
+.xcode-derived/
 .history
 .svn/
 .swiftpm/
 migrate_working_dir/
+assets/data/
+data/source/*.ods
 android/key.properties
 *.jks
+.vscode
+*.xcuserstate
 
 # IntelliJ related
 *.iml
