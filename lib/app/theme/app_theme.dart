@@ -129,26 +129,9 @@ ThemeData buildLightAppTheme() {
       foregroundColor: colorScheme.onPrimaryContainer,
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: colorScheme.surfaceContainer,
       surfaceTintColor: Colors.transparent,
-      indicatorColor: colorScheme.primaryContainer,
-      iconTheme: WidgetStateProperty.resolveWith((states) {
-        final selected = states.contains(WidgetState.selected);
-        return IconThemeData(
-          color: selected
-              ? colorScheme.onPrimaryContainer
-              : colorScheme.onSurfaceVariant,
-        );
-      }),
-      labelTextStyle: WidgetStateProperty.resolveWith((states) {
-        final selected = states.contains(WidgetState.selected);
-        return baseTheme.textTheme.labelMedium?.copyWith(
-          color: selected
-              ? colorScheme.onPrimaryContainer
-              : colorScheme.onSurfaceVariant,
-          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-        );
-      }),
+      indicatorColor: colorScheme.secondaryContainer,
     ),
     searchBarTheme: SearchBarThemeData(
       backgroundColor: WidgetStatePropertyAll(
@@ -235,6 +218,11 @@ SystemUiOverlayStyle buildSystemUiOverlayStyle(ColorScheme colorScheme) {
     statusBarColor: Colors.transparent,
     systemNavigationBarColor: navigationBarColor,
     systemNavigationBarDividerColor: navigationBarDividerColor,
+    systemNavigationBarIconBrightness: useDarkIcons
+        ? Brightness.dark
+        : Brightness.light,
+    statusBarIconBrightness: useDarkIcons ? Brightness.dark : Brightness.light,
+    statusBarBrightness: useDarkIcons ? Brightness.light : Brightness.dark,
     systemNavigationBarContrastEnforced: true,
     systemStatusBarContrastEnforced: true,
   );
