@@ -166,12 +166,7 @@ class _DictionaryScreenState extends State<DictionaryScreen>
     super.build(context);
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    final platform = Theme.of(context).platform;
-    final applePlatform =
-        platform == TargetPlatform.iOS || platform == TargetPlatform.macOS;
-    final bottomContentPadding = platform == TargetPlatform.iOS
-        ? MediaQuery.paddingOf(context).bottom + 88
-        : 28.0;
+    final bottomContentPadding = MediaQuery.paddingOf(context).bottom + 28;
 
     return AnimatedBuilder(
       animation: _searchController,
@@ -199,7 +194,7 @@ class _DictionaryScreenState extends State<DictionaryScreen>
 
             if (bundle == null) {
               return const Center(
-                child: CircularProgressIndicator.adaptive(),
+                child: CircularProgressIndicator(),
               );
             }
 
@@ -240,7 +235,7 @@ class _DictionaryScreenState extends State<DictionaryScreen>
                         child: Padding(
                           padding: EdgeInsets.fromLTRB(
                             20,
-                            applePlatform ? 12 : 16,
+                            16,
                             20,
                             bottomContentPadding,
                           ),
@@ -321,7 +316,7 @@ class _DictionaryScreenState extends State<DictionaryScreen>
                           SliverPadding(
                             padding: EdgeInsets.fromLTRB(
                               16,
-                              applePlatform ? 12 : 16,
+                              16,
                               16,
                               12,
                             ),
@@ -520,7 +515,7 @@ class _TabletDetailPane extends StatelessWidget {
               child: Center(
                 child: Padding(
                   padding: EdgeInsets.all(24),
-                  child: CircularProgressIndicator.adaptive(),
+                  child: CircularProgressIndicator(),
                 ),
               ),
             )

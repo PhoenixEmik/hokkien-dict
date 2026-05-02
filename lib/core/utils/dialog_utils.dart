@@ -127,7 +127,7 @@ Future<VoidCallback> showBlockingProgressDialog({
                 const SizedBox(
                   width: 24,
                   height: 24,
-                  child: CircularProgressIndicator.adaptive(strokeWidth: 2.5),
+                  child: CircularProgressIndicator(strokeWidth: 2.5),
                 ),
                 if (message != null && message.isNotEmpty) ...[
                   const SizedBox(height: 16),

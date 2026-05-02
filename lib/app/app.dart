@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:taigi_dict/app/app_module.dart';
 import 'package:taigi_dict/core/core.dart';
@@ -33,10 +32,6 @@ class _HokkienDictionaryAppState extends State<HokkienDictionaryApp> {
 
   @override
   Widget build(BuildContext context) {
-    final isApplePlatform =
-        defaultTargetPlatform == TargetPlatform.iOS ||
-        defaultTargetPlatform == TargetPlatform.macOS;
-
     return LocaleProviderScope(
       notifier: _localeProvider,
       child: AppPreferencesScope(
@@ -44,7 +39,7 @@ class _HokkienDictionaryAppState extends State<HokkienDictionaryApp> {
         child: ListenableBuilder(
           listenable: Listenable.merge([_appPreferences, _localeProvider]),
           builder: (context, child) {
-            final darkTheme = _appPreferences.useAmoledTheme && !isApplePlatform
+            final darkTheme = _appPreferences.useAmoledTheme
               ? buildAmoledAppTheme()
               : buildDarkAppTheme();
 

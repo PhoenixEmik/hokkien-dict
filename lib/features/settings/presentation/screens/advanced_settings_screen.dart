@@ -118,7 +118,7 @@ class AdvancedSettingsScreen extends StatelessWidget {
                 const SizedBox(
                   width: 24,
                   height: 24,
-                  child: CircularProgressIndicator.adaptive(strokeWidth: 2.5),
+                  child: CircularProgressIndicator(strokeWidth: 2.5),
                 ),
                 const SizedBox(height: 14),
                 Text(

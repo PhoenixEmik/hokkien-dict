@@ -69,7 +69,7 @@ class _LicenseOverviewScreenState extends State<LicenseOverviewScreen> {
         future: _licensesFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator.adaptive());
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (snapshot.hasError) {
