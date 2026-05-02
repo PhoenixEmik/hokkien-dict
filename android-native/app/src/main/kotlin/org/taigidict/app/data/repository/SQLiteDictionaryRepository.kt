@@ -10,11 +10,19 @@ import org.taigidict.app.domain.model.DictionarySense
 import org.taigidict.app.domain.search.DictionarySearchService
 import kotlinx.serialization.json.Json
 
+interface DictionaryRepositoryDataSource {
+    fun loadBundle(): DictionaryBundle
+
+    fun search(rawQuery: String, limit: Int = DictionarySearchService.DEFAULT_LIMIT): List<DictionaryEntry>
+
+    fun entry(id: Long): DictionaryEntry?
+}
+
 class SQLiteDictionaryRepository(
     private val databaseFile: File,
     private val json: Json = Json,
-) {
-    fun loadBundle(): DictionaryBundle {
+) : DictionaryRepositoryDataSource {
+    override fun loadBundle(): DictionaryBundle {
         val metadata = DictionaryDatabase.readMetadata(databaseFile)
             ?: throw SQLiteDictionaryRepositoryException.MissingDatabase(databaseFile)
 
@@ -33,7 +41,7 @@ class SQLiteDictionaryRepository(
         )
     }
 
-    fun search(rawQuery: String, limit: Int = DictionarySearchService.DEFAULT_LIMIT): List<DictionaryEntry> {
+    override fun search(rawQuery: String, limit: Int): List<DictionaryEntry> {
         val normalizedQuery = org.taigidict.app.core.util.TextNormalization.normalizeQuery(rawQuery)
         if (normalizedQuery.isEmpty()) {
             return emptyList()
@@ -54,7 +62,7 @@ class SQLiteDictionaryRepository(
         return rankedIds.mapNotNull(entriesById::get)
     }
 
-    fun entry(id: Long): DictionaryEntry? {
+    override fun entry(id: Long): DictionaryEntry? {
         return fetchEntries(listOf(id)).firstOrNull()
     }
 

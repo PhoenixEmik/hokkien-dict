@@ -43,8 +43,6 @@ fun MainNavGraph(appState: MainAppState) {
             MainDestination.Dictionary -> DictionaryScreen(
                 manifestAssetPath = appState.appContainer.bundledDictionaryManifestAssetPath,
                 entriesAssetPath = appState.appContainer.bundledDictionaryEntriesAssetPath,
-                databasePath = appState.appContainer.dictionaryDatabaseFile.path,
-                repository = appState.appContainer.dictionaryRepository,
             )
 
             MainDestination.Bookmarks -> BookmarksScreen()

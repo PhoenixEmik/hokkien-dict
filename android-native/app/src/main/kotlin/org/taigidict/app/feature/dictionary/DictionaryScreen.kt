@@ -3,56 +3,36 @@ package org.taigidict.app.feature.dictionary
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.taigidict.app.R
-import org.taigidict.app.data.repository.SQLiteDictionaryRepository
-import org.taigidict.app.domain.model.DictionaryBundle
 import org.taigidict.app.domain.model.DictionaryEntry
+import org.taigidict.app.domain.model.DictionaryExample
+import org.taigidict.app.domain.model.DictionarySense
 
 @Composable
 fun DictionaryScreen(
     manifestAssetPath: String,
     entriesAssetPath: String,
-    databasePath: String,
-    repository: SQLiteDictionaryRepository,
+    viewModel: DictionarySearchViewModel = viewModel(),
 ) {
-    var query by remember { mutableStateOf("") }
-    val bundleState by produceState<Result<DictionaryBundle>?>(initialValue = null, repository) {
-        value = withContext(Dispatchers.IO) {
-            runCatching {
-                repository.loadBundle()
-            }
-        }
-    }
-    val resultsState by produceState<Result<List<DictionaryEntry>>?>(initialValue = null, query, repository) {
-        value = if (query.isBlank()) {
-            Result.success(emptyList())
-        } else {
-            withContext(Dispatchers.IO) {
-                runCatching {
-                    repository.search(query)
-                }
-            }
-        }
-    }
+    val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+    val showsEntryDetail = uiState.isLoadingEntryDetail || uiState.selectedEntry != null || uiState.entryDetailErrorMessage != null
 
     Column(
         modifier = Modifier
@@ -60,37 +40,42 @@ fun DictionaryScreen(
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(
-            text = stringResource(R.string.dictionary_placeholder_title),
-            style = MaterialTheme.typography.headlineMedium,
-        )
-        Text(
-            text = stringResource(R.string.dictionary_placeholder_body),
-            style = MaterialTheme.typography.bodyLarge,
-        )
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
-            value = query,
-            onValueChange = { query = it },
-            label = {
-                Text(text = stringResource(R.string.dictionary_search_label))
-            },
-            placeholder = {
-                Text(text = stringResource(R.string.dictionary_search_placeholder))
-            },
-            singleLine = true,
-        )
-        when (val currentBundleState = bundleState) {
-            null -> Text(
-                text = stringResource(R.string.dictionary_loading_bundle),
-                style = MaterialTheme.typography.bodyMedium,
+        if (showsEntryDetail) {
+            DictionaryEntryDetailPane(
+                uiState = uiState,
+                onBack = viewModel::onEntryDetailDismissed,
             )
+        } else {
+            Text(
+                text = stringResource(R.string.dictionary_placeholder_title),
+                style = MaterialTheme.typography.headlineMedium,
+            )
+            Text(
+                text = stringResource(R.string.dictionary_placeholder_body),
+                style = MaterialTheme.typography.bodyLarge,
+            )
+            OutlinedTextField(
+                modifier = Modifier.fillMaxWidth(),
+                value = uiState.query,
+                onValueChange = viewModel::onQueryChange,
+                label = {
+                    Text(text = stringResource(R.string.dictionary_search_label))
+                },
+                placeholder = {
+                    Text(text = stringResource(R.string.dictionary_search_placeholder))
+                },
+                singleLine = true,
+            )
+            when {
+                uiState.isLoadingBundle -> Text(
+                    text = stringResource(R.string.dictionary_loading_bundle),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
 
-            else -> {
-                val bundle = currentBundleState.getOrNull()
-                if (bundle != null) {
+                uiState.bundle != null -> {
+                    val bundle = requireNotNull(uiState.bundle)
                     Text(
-                        text = stringResource(R.string.dictionary_database_label, bundle.databasePath ?: databasePath),
+                        text = stringResource(R.string.dictionary_database_label, bundle.databasePath.orEmpty()),
                         style = MaterialTheme.typography.bodyMedium,
                     )
                     Text(
@@ -105,74 +90,238 @@ fun DictionaryScreen(
                         text = stringResource(R.string.dictionary_example_count_label, bundle.exampleCount),
                         style = MaterialTheme.typography.bodyMedium,
                     )
-                } else {
-                    Text(
-                        text = stringResource(
-                            R.string.dictionary_bundle_error,
-                            currentBundleState.exceptionOrNull()?.message ?: stringResource(R.string.unknown_error),
-                        ),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
                 }
+                uiState.bundleErrorMessage != null -> Text(
+                    text = stringResource(
+                        R.string.dictionary_bundle_error,
+                        uiState.bundleErrorMessage,
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
             }
-        }
-        when (val currentResultsState = resultsState) {
-            null -> Unit
-            else -> {
-                val results = currentResultsState.getOrNull()
-                if (results != null) {
-                    if (query.isNotBlank() && results.isEmpty()) {
-                        Text(
-                            text = stringResource(R.string.dictionary_no_results),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    } else if (results.isNotEmpty()) {
-                        LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            items(results, key = { it.id }) { entry ->
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable { }
-                                        .padding(vertical = 4.dp),
-                                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                                ) {
+            when {
+                uiState.searchErrorMessage != null -> Text(
+                    text = stringResource(
+                        R.string.dictionary_search_error,
+                        uiState.searchErrorMessage,
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+
+                uiState.query.isNotBlank() && uiState.results.isEmpty() && !uiState.isSearching -> Text(
+                    text = stringResource(R.string.dictionary_no_results),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+
+                uiState.results.isNotEmpty() -> {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        items(uiState.results, key = { it.id }) { entry ->
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { viewModel.onEntrySelected(entry.id) }
+                                    .padding(vertical = 4.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                Text(
+                                    text = entry.hanji,
+                                    style = MaterialTheme.typography.titleMedium,
+                                )
+                                Text(
+                                    text = entry.romanization,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                                if (entry.briefSummary.isNotBlank()) {
                                     Text(
-                                        text = entry.hanji,
-                                        style = MaterialTheme.typography.titleMedium,
+                                        text = entry.briefSummary,
+                                        style = MaterialTheme.typography.bodySmall,
                                     )
-                                    Text(
-                                        text = entry.romanization,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                    )
-                                    if (entry.briefSummary.isNotBlank()) {
-                                        Text(
-                                            text = entry.briefSummary,
-                                            style = MaterialTheme.typography.bodySmall,
-                                        )
-                                    }
                                 }
                             }
                         }
                     }
-                } else {
+                }
+
+                uiState.isSearching -> Text(
+                    text = stringResource(R.string.dictionary_searching),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+
+            Text(
+                text = stringResource(R.string.bundled_manifest_label, manifestAssetPath),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = stringResource(R.string.bundled_entries_label, entriesAssetPath),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+    }
+}
+
+@Composable
+private fun DictionaryEntryDetailPane(
+    uiState: DictionarySearchUiState,
+    onBack: () -> Unit,
+) {
+    FilledTonalButton(onClick = onBack) {
+        Text(text = stringResource(R.string.dictionary_detail_back))
+    }
+
+    when {
+        uiState.isLoadingEntryDetail -> Text(
+            text = stringResource(R.string.dictionary_detail_loading),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+
+        uiState.entryDetailErrorMessage != null -> Text(
+            text = stringResource(
+                R.string.dictionary_detail_error,
+                uiState.entryDetailErrorMessage,
+            ),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+
+        uiState.selectedEntry != null -> DictionaryEntryDetailContent(entry = requireNotNull(uiState.selectedEntry))
+    }
+}
+
+@Composable
+private fun DictionaryEntryDetailContent(entry: DictionaryEntry) {
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
+                    text = entry.hanji,
+                    style = MaterialTheme.typography.headlineMedium,
+                )
+                if (entry.romanization.isNotBlank()) {
                     Text(
-                        text = stringResource(
-                            R.string.dictionary_search_error,
-                            currentResultsState.exceptionOrNull()?.message ?: stringResource(R.string.unknown_error),
-                        ),
+                        text = entry.romanization,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                }
+                val metadataLine = listOf(entry.type, entry.category)
+                    .filter { it.isNotBlank() }
+                    .joinToString(separator = " · ")
+                if (metadataLine.isNotBlank()) {
+                    Text(
+                        text = metadataLine,
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
             }
         }
+
+        if (entry.variantChars.isNotEmpty()) {
+            item {
+                DictionaryDetailListSection(
+                    title = stringResource(R.string.dictionary_detail_variants),
+                    values = entry.variantChars,
+                )
+            }
+        }
+
+        items(entry.senses.size, key = { index -> "sense-${entry.id}-$index" }) { index ->
+            DictionarySenseSection(
+                index = index,
+                sense = entry.senses[index],
+            )
+        }
+
+        item {
+            Spacer(modifier = Modifier.padding(bottom = 8.dp))
+        }
+    }
+}
+
+@Composable
+private fun DictionarySenseSection(
+    index: Int,
+    sense: DictionarySense,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-            text = stringResource(R.string.bundled_manifest_label, manifestAssetPath),
-            style = MaterialTheme.typography.bodyMedium,
+            text = stringResource(R.string.dictionary_detail_sense_title, index + 1),
+            style = MaterialTheme.typography.titleMedium,
+        )
+        if (sense.partOfSpeech.isNotBlank()) {
+            Text(
+                text = sense.partOfSpeech,
+                style = MaterialTheme.typography.labelLarge,
+            )
+        }
+        Text(
+            text = sense.definition,
+            style = MaterialTheme.typography.bodyLarge,
+        )
+        if (sense.definitionSynonyms.isNotEmpty()) {
+            DictionaryDetailListSection(
+                title = stringResource(R.string.dictionary_detail_synonyms),
+                values = sense.definitionSynonyms,
+            )
+        }
+        if (sense.definitionAntonyms.isNotEmpty()) {
+            DictionaryDetailListSection(
+                title = stringResource(R.string.dictionary_detail_antonyms),
+                values = sense.definitionAntonyms,
+            )
+        }
+        if (sense.examples.isNotEmpty()) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = stringResource(R.string.dictionary_detail_examples),
+                    style = MaterialTheme.typography.labelLarge,
+                )
+                sense.examples.forEach { example ->
+                    DictionaryExampleBlock(example = example)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DictionaryExampleBlock(example: DictionaryExample) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        if (example.hanji.isNotBlank()) {
+            Text(
+                text = example.hanji,
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        }
+        if (example.romanization.isNotBlank()) {
+            Text(
+                text = example.romanization,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+        if (example.mandarin.isNotBlank()) {
+            Text(
+                text = example.mandarin,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+    }
+}
+
+@Composable
+private fun DictionaryDetailListSection(
+    title: String,
+    values: List<String>,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelLarge,
         )
         Text(
-            text = stringResource(R.string.bundled_entries_label, entriesAssetPath),
+            text = values.joinToString(separator = "、"),
             style = MaterialTheme.typography.bodyMedium,
         )
     }
