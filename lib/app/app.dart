@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:taigi_dict/app/app_module.dart';
 import 'package:taigi_dict/core/core.dart';
-
 
 class HokkienDictionaryApp extends StatefulWidget {
   const HokkienDictionaryApp({super.key});
@@ -40,12 +40,13 @@ class _HokkienDictionaryAppState extends State<HokkienDictionaryApp> {
           listenable: Listenable.merge([_appPreferences, _localeProvider]),
           builder: (context, child) {
             final darkTheme = _appPreferences.useAmoledTheme
-              ? buildAmoledAppTheme()
-              : buildDarkAppTheme();
+                ? buildAmoledAppTheme()
+                : buildDarkAppTheme();
 
             return MaterialApp(
               title: '台語辭典',
-              onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
+              onGenerateTitle: (context) =>
+                  AppLocalizations.of(context).appTitle,
               locale: _localeProvider.locale,
               supportedLocales: AppLocalizations.supportedLocales,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -53,6 +54,15 @@ class _HokkienDictionaryAppState extends State<HokkienDictionaryApp> {
               themeMode: _appPreferences.materialThemeMode,
               theme: buildLightAppTheme(),
               darkTheme: darkTheme,
+              builder: (context, child) {
+                final overlayStyle = buildSystemUiOverlayStyle(
+                  Theme.of(context).colorScheme,
+                );
+                return AnnotatedRegion<SystemUiOverlayStyle>(
+                  value: overlayStyle,
+                  child: child ?? const SizedBox.shrink(),
+                );
+              },
               home: child,
             );
           },

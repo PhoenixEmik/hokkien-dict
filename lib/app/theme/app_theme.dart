@@ -1,251 +1,244 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 const _fontFamilyFallback = <String>['TauhuOo'];
-const _brandSeedColor = Color(0xFF26416B);
+const _brandSeedColor = Color(0xFF1A365D);
 const _amoledSeedColor = Color(0xFFA9D8FF);
-const _lightCanvasColor = Color(0xFFF2F5FA);
-const _lightSurfaceTint = Color(0xFFE8EEF7);
-const _lightNavigationBackground = Color(0xFFEEF3F9);
-const _lightNavigationIndicator = Color(0xFFD6E1F0);
-const _lightOutlineColor = Color(0xFFD2DBE8);
-const _lightSecondaryColor = Color(0xFF3B5B88);
-const _lightTertiaryColor = Color(0xFF5877A3);
-const _lightInputFillColor = Color(0xFFFBFCFE);
-const _lightChipColor = Color(0xFFE1EAF5);
-const _lightChipSelectedColor = Color(0xFFC8D7EB);
-const _lightPrimaryContainerColor = Color(0xFFD7E2F0);
-const _lightSecondaryContainerColor = Color(0xFFDEE8F4);
-const _lightCardBorderColor = Color(0xFFC4D2E5);
-const _lightChipBorderColor = Color(0xFFB7C8DE);
 
 ThemeData buildLightAppTheme() {
-  final baseTheme = _buildMaterialTheme(
-    brightness: Brightness.light,
+  final colorScheme = ColorScheme.fromSeed(
     seedColor: _brandSeedColor,
+    brightness: Brightness.light,
+    dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+    contrastLevel: 0.5,
   );
-
-  final colorScheme = baseTheme.colorScheme.copyWith(
-    primary: _brandSeedColor,
-    onPrimary: Colors.white,
-    primaryContainer: _lightPrimaryContainerColor,
-    onPrimaryContainer: _brandSeedColor,
-    secondary: _lightSecondaryColor,
-    onSecondary: Colors.white,
-    secondaryContainer: _lightSecondaryContainerColor,
-    onSecondaryContainer: _brandSeedColor,
-    tertiary: _lightTertiaryColor,
-    onTertiary: Colors.white,
-    surface: Colors.white,
-    surfaceContainerLowest: Colors.white,
-    surfaceContainerLow: const Color(0xFFF8FAFD),
-    surfaceContainer: _lightSurfaceTint,
-    surfaceContainerHigh: const Color(0xFFE0E8F4),
-    surfaceContainerHighest: const Color(0xFFD6E1F0),
-    outlineVariant: _lightOutlineColor,
-  );
+  final baseTheme = _buildMaterialTheme(colorScheme: colorScheme);
 
   return baseTheme.copyWith(
-    colorScheme: colorScheme,
-    scaffoldBackgroundColor: _lightCanvasColor,
-    canvasColor: _lightCanvasColor,
+    scaffoldBackgroundColor: colorScheme.surface,
+    canvasColor: colorScheme.surface,
     appBarTheme: baseTheme.appBarTheme.copyWith(
-      backgroundColor: _lightCanvasColor,
-      foregroundColor: _brandSeedColor,
+      backgroundColor: colorScheme.surface,
+      foregroundColor: colorScheme.onSurface,
       surfaceTintColor: Colors.transparent,
-      iconTheme: const IconThemeData(color: _brandSeedColor),
-      actionsIconTheme: const IconThemeData(color: _brandSeedColor),
+      iconTheme: IconThemeData(color: colorScheme.onSurface),
+      actionsIconTheme: IconThemeData(color: colorScheme.onSurface),
+      systemOverlayStyle: buildSystemUiOverlayStyle(colorScheme),
     ),
     cardTheme: baseTheme.cardTheme.copyWith(
-      color: Colors.white,
+      color: colorScheme.surfaceContainerLow,
       shadowColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: _lightCardBorderColor, width: 1.1),
+        side: BorderSide(color: colorScheme.outlineVariant, width: 1.1),
       ),
     ),
     dialogTheme: baseTheme.dialogTheme.copyWith(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surfaceContainerLow,
       surfaceTintColor: Colors.transparent,
     ),
     snackBarTheme: baseTheme.snackBarTheme.copyWith(
       behavior: SnackBarBehavior.floating,
-      backgroundColor: _brandSeedColor,
+      backgroundColor: colorScheme.inverseSurface,
       contentTextStyle: baseTheme.textTheme.bodyMedium?.copyWith(
-        color: Colors.white,
+        color: colorScheme.onInverseSurface,
         fontWeight: FontWeight.w600,
       ),
-      actionTextColor: const Color(0xFFDCE7F6),
-      disabledActionTextColor: const Color(0xFFB9C8DE),
-      closeIconColor: const Color(0xFFDCE7F6),
+      actionTextColor: colorScheme.inversePrimary,
+      disabledActionTextColor: colorScheme.onSurfaceVariant,
+      closeIconColor: colorScheme.onInverseSurface,
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: _brandSeedColor,
-        foregroundColor: Colors.white,
-        disabledBackgroundColor: _lightNavigationIndicator,
-        disabledForegroundColor: _lightSecondaryColor,
-        side: const BorderSide(color: _lightCardBorderColor, width: 1),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        backgroundColor: Colors.white,
-        foregroundColor: _brandSeedColor,
-        side: const BorderSide(color: _lightOutlineColor),
+        backgroundColor: colorScheme.surfaceContainerLowest,
+        foregroundColor: colorScheme.primary,
+        side: BorderSide(color: colorScheme.outlineVariant, width: 1.1),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
     ),
     inputDecorationTheme: baseTheme.inputDecorationTheme.copyWith(
       filled: true,
-      fillColor: _lightInputFillColor,
+      fillColor: colorScheme.surfaceContainerHighest,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
-        borderSide: const BorderSide(color: _lightOutlineColor),
+        borderSide: BorderSide(color: colorScheme.outlineVariant),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
-        borderSide: const BorderSide(color: _lightOutlineColor),
+        borderSide: BorderSide(color: colorScheme.outlineVariant),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
-        borderSide: const BorderSide(color: _brandSeedColor, width: 1.4),
+        borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
       ),
     ),
     dropdownMenuTheme: baseTheme.dropdownMenuTheme.copyWith(
-      inputDecorationTheme: const InputDecorationTheme(
+      inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: _lightInputFillColor,
+        fillColor: colorScheme.surfaceContainerHighest,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(18)),
-          borderSide: BorderSide(color: _lightOutlineColor),
+          borderRadius: const BorderRadius.all(Radius.circular(18)),
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(18)),
-          borderSide: BorderSide(color: _lightOutlineColor),
+          borderRadius: const BorderRadius.all(Radius.circular(18)),
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(18)),
-          borderSide: BorderSide(color: _brandSeedColor, width: 1.4),
+          borderRadius: const BorderRadius.all(Radius.circular(18)),
+          borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
         ),
       ),
-      menuStyle: const MenuStyle(
-        backgroundColor: WidgetStatePropertyAll(Colors.white),
-        surfaceTintColor: WidgetStatePropertyAll(Colors.transparent),
-        side: WidgetStatePropertyAll(BorderSide(color: _lightOutlineColor)),
+      menuStyle: MenuStyle(
+        backgroundColor: WidgetStatePropertyAll(
+          colorScheme.surfaceContainerLowest,
+        ),
+        surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
+        side: WidgetStatePropertyAll(
+          BorderSide(color: colorScheme.outlineVariant, width: 1.1),
+        ),
       ),
     ),
     chipTheme: baseTheme.chipTheme.copyWith(
-      backgroundColor: _lightChipColor,
-      selectedColor: _lightChipSelectedColor,
-      secondarySelectedColor: _lightChipSelectedColor,
-      side: const BorderSide(color: _lightChipBorderColor, width: 1.1),
+      backgroundColor: colorScheme.surfaceContainerHigh,
+      selectedColor: colorScheme.secondaryContainer,
+      secondarySelectedColor: colorScheme.secondaryContainer,
+      side: BorderSide(color: colorScheme.outlineVariant, width: 1.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
       labelStyle: baseTheme.textTheme.labelLarge?.copyWith(
-        color: _brandSeedColor,
+        color: colorScheme.onSurfaceVariant,
         fontWeight: FontWeight.w600,
       ),
       secondaryLabelStyle: baseTheme.textTheme.labelLarge?.copyWith(
-        color: _brandSeedColor,
+        color: colorScheme.onSecondaryContainer,
         fontWeight: FontWeight.w700,
       ),
     ),
     floatingActionButtonTheme: baseTheme.floatingActionButtonTheme.copyWith(
-      backgroundColor: _brandSeedColor,
-      foregroundColor: Colors.white,
+      backgroundColor: colorScheme.primaryContainer,
+      foregroundColor: colorScheme.onPrimaryContainer,
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: _lightNavigationBackground,
+      backgroundColor: colorScheme.surfaceContainerLowest,
       surfaceTintColor: Colors.transparent,
-      indicatorColor: _lightNavigationIndicator,
+      indicatorColor: colorScheme.secondaryContainer,
       iconTheme: WidgetStateProperty.resolveWith((states) {
         final selected = states.contains(WidgetState.selected);
         return IconThemeData(
-          color: selected ? _brandSeedColor : colorScheme.onSurfaceVariant,
+          color: selected
+              ? colorScheme.onSecondaryContainer
+              : colorScheme.onSurfaceVariant,
         );
       }),
       labelTextStyle: WidgetStateProperty.resolveWith((states) {
         final selected = states.contains(WidgetState.selected);
         return baseTheme.textTheme.labelMedium?.copyWith(
-          color: selected ? _brandSeedColor : colorScheme.onSurfaceVariant,
+          color: selected
+              ? colorScheme.onSecondaryContainer
+              : colorScheme.onSurfaceVariant,
           fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
         );
       }),
     ),
     searchBarTheme: SearchBarThemeData(
-      backgroundColor: const WidgetStatePropertyAll(Colors.white),
+      backgroundColor: WidgetStatePropertyAll(
+        colorScheme.surfaceContainerLowest,
+      ),
       surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
       shadowColor: const WidgetStatePropertyAll(Colors.transparent),
-      side: const WidgetStatePropertyAll(
-        BorderSide(color: _lightOutlineColor),
+      side: WidgetStatePropertyAll(
+        BorderSide(color: colorScheme.outlineVariant, width: 1.1),
       ),
     ),
   );
 }
 
 ThemeData buildDarkAppTheme() {
-  return _buildMaterialTheme(
-    brightness: Brightness.dark,
+  final colorScheme = ColorScheme.fromSeed(
     seedColor: _brandSeedColor,
+    brightness: Brightness.dark,
+    dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+    contrastLevel: 0.5,
+  );
+
+  return _buildMaterialTheme(colorScheme: colorScheme).copyWith(
+    appBarTheme: ThemeData(brightness: Brightness.dark).appBarTheme.copyWith(
+      backgroundColor: colorScheme.surface,
+      foregroundColor: colorScheme.onSurface,
+      surfaceTintColor: Colors.transparent,
+      systemOverlayStyle: buildSystemUiOverlayStyle(colorScheme),
+    ),
   );
 }
 
 ThemeData buildAmoledAppTheme() {
   const black = Color(0xFF000000);
-  final baseTheme = _buildMaterialTheme(
-    brightness: Brightness.dark,
-    seedColor: _amoledSeedColor,
-  );
+  final colorScheme =
+      ColorScheme.fromSeed(
+        seedColor: _amoledSeedColor,
+        brightness: Brightness.dark,
+        dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+        contrastLevel: 0.5,
+      ).copyWith(
+        surface: black,
+        surfaceContainerLowest: black,
+        surfaceContainerLow: black,
+        surfaceContainer: black,
+        surfaceContainerHigh: black,
+        surfaceContainerHighest: black,
+      );
 
-  final colorScheme = baseTheme.colorScheme.copyWith(
-    surface: black,
-    surfaceContainerLowest: black,
-    surfaceContainerLow: black,
-    surfaceContainer: black,
-    surfaceContainerHigh: black,
-    surfaceContainerHighest: black,
-  );
-
-  return baseTheme.copyWith(
+  return _buildMaterialTheme(colorScheme: colorScheme).copyWith(
     scaffoldBackgroundColor: black,
     canvasColor: black,
-    colorScheme: colorScheme,
-    appBarTheme: baseTheme.appBarTheme.copyWith(
+    appBarTheme: ThemeData(brightness: Brightness.dark).appBarTheme.copyWith(
       backgroundColor: black,
+      foregroundColor: colorScheme.onSurface,
       surfaceTintColor: Colors.transparent,
+      systemOverlayStyle: buildSystemUiOverlayStyle(colorScheme),
     ),
-    cardTheme: baseTheme.cardTheme.copyWith(
+    cardTheme: ThemeData(brightness: Brightness.dark).cardTheme.copyWith(
       color: black,
       shadowColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
     ),
-    dialogTheme: baseTheme.dialogTheme.copyWith(
+    dialogTheme: ThemeData(brightness: Brightness.dark).dialogTheme.copyWith(
       backgroundColor: black,
       surfaceTintColor: Colors.transparent,
     ),
   );
 }
 
-ThemeData _buildMaterialTheme({
-  required Brightness brightness,
-  required Color seedColor,
-}) {
+SystemUiOverlayStyle buildSystemUiOverlayStyle(ColorScheme colorScheme) {
+  final useDarkIcons = colorScheme.brightness == Brightness.light;
+  final baseStyle = useDarkIcons
+      ? SystemUiOverlayStyle.dark
+      : SystemUiOverlayStyle.light;
+
+  return baseStyle.copyWith(
+    statusBarColor: Colors.transparent,
+    systemNavigationBarColor: colorScheme.surface,
+    systemNavigationBarDividerColor: colorScheme.outlineVariant,
+    systemNavigationBarContrastEnforced: false,
+    systemStatusBarContrastEnforced: false,
+  );
+}
+
+ThemeData _buildMaterialTheme({required ColorScheme colorScheme}) {
   return ThemeData(
     useMaterial3: true,
-    brightness: brightness,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: seedColor,
-      brightness: brightness,
-    ),
+    brightness: colorScheme.brightness,
+    colorScheme: colorScheme,
     fontFamilyFallback: _fontFamilyFallback,
   );
 }
