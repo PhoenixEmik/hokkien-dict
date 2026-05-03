@@ -53,6 +53,7 @@ fun SettingsScreen(
 ) {
     var selectedDocument by rememberSaveable { mutableStateOf<AppDocument?>(null) }
     var pendingAction by rememberSaveable { mutableStateOf<SettingsDangerousAction?>(null) }
+    var showAdvancedSettings by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     val appContainer = (context.applicationContext as TaigiDictApplication).appContainer
     val audioArchiveManager = appContainer.offlineAudioArchiveManager
@@ -104,6 +105,51 @@ fun SettingsScreen(
                 }
             },
         )
+    }
+
+    if (showAdvancedSettings) {
+        AdvancedSettingsScreen(
+            uiState = uiState,
+            sourceSnapshot = uiState.sourceSnapshot,
+            wordSnapshot = wordSnapshot,
+            sentenceSnapshot = sentenceSnapshot,
+            assetDirectory = assetDirectory,
+            onBack = { showAdvancedSettings = false },
+            onRebuild = {
+                pendingAction = SettingsDangerousAction.RebuildDatabase
+            },
+            onClear = {
+                pendingAction = SettingsDangerousAction.ClearDatabase
+            },
+            onSourceAction = { action ->
+                when (action) {
+                    DictionarySourceAction.Restore -> {
+                        pendingAction = SettingsDangerousAction.RestoreDictionarySource
+                    }
+
+                    DictionarySourceAction.Download -> {
+                        pendingAction = SettingsDangerousAction.DownloadDictionarySource
+                    }
+
+                    DictionarySourceAction.Pause -> viewModel.pauseDictionarySourceDownload()
+                    DictionarySourceAction.Resume -> viewModel.resumeDictionarySourceDownload()
+                }
+            },
+            onAudioAction = { type, action ->
+                when (action) {
+                    AudioArchiveAction.Download -> audioArchiveManager.startDownload(type)
+                    AudioArchiveAction.Pause -> audioArchiveManager.pauseDownload(type)
+                    AudioArchiveAction.Resume -> audioArchiveManager.resumeDownload(type)
+                    AudioArchiveAction.Redownload -> {
+                        pendingAction = when (type) {
+                            DictionaryAudioArchiveType.Word -> SettingsDangerousAction.RedownloadWordArchive
+                            DictionaryAudioArchiveType.Sentence -> SettingsDangerousAction.RedownloadSentenceArchive
+                        }
+                    }
+                }
+            },
+        )
+        return
     }
 
     LaunchedEffect(audioArchiveManager) {
@@ -165,26 +211,66 @@ fun SettingsScreen(
         }
 
         item {
+            AdvancedSettingsEntryCard(
+                onOpenAdvancedSettings = {
+                    showAdvancedSettings = true
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun AdvancedSettingsScreen(
+    uiState: SettingsUiState,
+    sourceSnapshot: org.taigidict.app.data.source.DownloadSnapshot,
+    wordSnapshot: AudioArchiveDownloadSnapshot,
+    sentenceSnapshot: AudioArchiveDownloadSnapshot,
+    assetDirectory: String,
+    onBack: () -> Unit,
+    onRebuild: () -> Unit,
+    onClear: () -> Unit,
+    onSourceAction: (DictionarySourceAction) -> Unit,
+    onAudioAction: (DictionaryAudioArchiveType, AudioArchiveAction) -> Unit,
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        item {
+            OutlinedButton(onClick = onBack) {
+                Text(text = stringResource(R.string.settings_advanced_back))
+            }
+        }
+
+        item {
+            Text(
+                text = stringResource(R.string.settings_advanced_title),
+                style = MaterialTheme.typography.headlineMedium,
+            )
+        }
+
+        item {
+            Text(
+                text = stringResource(R.string.settings_advanced_body),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+
+        item {
             DictionaryMaintenanceCard(
                 uiState = uiState,
-                onRebuild = {
-                    pendingAction = SettingsDangerousAction.RebuildDatabase
-                },
-                onClear = {
-                    pendingAction = SettingsDangerousAction.ClearDatabase
-                },
+                onRebuild = onRebuild,
+                onClear = onClear,
             )
         }
 
         item {
             DictionarySourceCard(
-                snapshot = uiState.sourceSnapshot,
-                onRestore = {
-                    pendingAction = SettingsDangerousAction.RestoreDictionarySource
-                },
-                onDownload = {
-                    pendingAction = SettingsDangerousAction.DownloadDictionarySource
-                },
+                snapshot = sourceSnapshot,
+                onAction = onSourceAction,
             )
         }
 
@@ -206,17 +292,7 @@ fun SettingsScreen(
                 type = type,
                 snapshot = snapshot,
                 onAction = { action ->
-                    when (action) {
-                        AudioArchiveAction.Download -> audioArchiveManager.startDownload(type)
-                        AudioArchiveAction.Pause -> audioArchiveManager.pauseDownload(type)
-                        AudioArchiveAction.Resume -> audioArchiveManager.resumeDownload(type)
-                        AudioArchiveAction.Redownload -> {
-                            pendingAction = when (type) {
-                                DictionaryAudioArchiveType.Word -> SettingsDangerousAction.RedownloadWordArchive
-                                DictionaryAudioArchiveType.Sentence -> SettingsDangerousAction.RedownloadSentenceArchive
-                            }
-                        }
-                    }
+                    onAudioAction(type, action)
                 },
             )
         }
@@ -226,6 +302,32 @@ fun SettingsScreen(
                 text = stringResource(R.string.bundled_package_label, assetDirectory),
                 style = MaterialTheme.typography.bodyMedium,
             )
+        }
+    }
+}
+
+@Composable
+private fun AdvancedSettingsEntryCard(
+    onOpenAdvancedSettings: () -> Unit,
+) {
+    Card {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.settings_advanced_title),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = stringResource(R.string.settings_advanced_body),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            OutlinedButton(onClick = onOpenAdvancedSettings) {
+                Text(text = stringResource(R.string.settings_advanced_open))
+            }
         }
     }
 }
@@ -435,6 +537,41 @@ private enum class AudioArchiveAction {
     Redownload,
 }
 
+private enum class DictionarySourceAction {
+    Restore,
+    Download,
+    Pause,
+    Resume,
+}
+
+@Composable
+private fun DictionarySourceAction.label(): String {
+    return when (this) {
+        DictionarySourceAction.Restore -> stringResource(R.string.settings_source_action_restore)
+        DictionarySourceAction.Download -> stringResource(R.string.settings_source_action_download)
+        DictionarySourceAction.Pause -> stringResource(R.string.settings_source_action_pause)
+        DictionarySourceAction.Resume -> stringResource(R.string.settings_source_action_resume)
+    }
+}
+
+private fun availableSourceActions(
+    snapshot: org.taigidict.app.data.source.DownloadSnapshot,
+): List<DictionarySourceAction> {
+    return when (snapshot.state) {
+        org.taigidict.app.data.source.DownloadSnapshot.State.Downloading -> {
+            listOf(DictionarySourceAction.Pause)
+        }
+
+        org.taigidict.app.data.source.DownloadSnapshot.State.Paused -> {
+            listOf(DictionarySourceAction.Resume)
+        }
+
+        else -> {
+            listOf(DictionarySourceAction.Restore, DictionarySourceAction.Download)
+        }
+    }
+}
+
 private enum class SettingsDangerousAction {
     RebuildDatabase,
     ClearDatabase,
@@ -613,8 +750,7 @@ private fun AppLanguagePreference.displayLabel(): String = when (this) {
 @Composable
 private fun DictionarySourceCard(
     snapshot: org.taigidict.app.data.source.DownloadSnapshot,
-    onRestore: () -> Unit,
-    onDownload: () -> Unit,
+    onAction: (DictionarySourceAction) -> Unit,
 ) {
     Card {
         Column(
@@ -649,19 +785,13 @@ private fun DictionarySourceCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                OutlinedButton(
-                    onClick = onRestore,
-                    modifier = Modifier.weight(1f),
-                    enabled = snapshot.state != org.taigidict.app.data.source.DownloadSnapshot.State.Downloading,
-                ) {
-                    Text(stringResource(R.string.settings_source_action_restore))
-                }
-                OutlinedButton(
-                    onClick = onDownload,
-                    modifier = Modifier.weight(1f),
-                    enabled = snapshot.state != org.taigidict.app.data.source.DownloadSnapshot.State.Downloading,
-                ) {
-                    Text(stringResource(R.string.settings_source_action_download))
+                availableSourceActions(snapshot).forEach { action ->
+                    OutlinedButton(
+                        onClick = { onAction(action) },
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text(action.label())
+                    }
                 }
             }
         }

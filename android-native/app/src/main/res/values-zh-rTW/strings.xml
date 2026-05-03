@@ -85,9 +85,15 @@
     <string name="settings_language_traditional_chinese">繁體中文</string>
     <string name="settings_language_simplified_chinese">簡體中文</string>
     <string name="settings_language_english">English</string>
+    <string name="settings_advanced_title">進階維護</string>
+    <string name="settings_advanced_body">重建或清除詞典資料，並修復離線資源。</string>
+    <string name="settings_advanced_open">開啟進階設定</string>
+    <string name="settings_advanced_back">返回設定</string>
     <string name="settings_dictionary_source_title">輔助較作賀料</string>
     <string name="settings_source_action_restore">恢複套件稿</string>
     <string name="settings_source_action_download">下載</string>
+    <string name="settings_source_action_pause">暫停</string>
+    <string name="settings_source_action_resume">續傳</string>
     <string name="source_status_idle">待下載</string>
     <string name="source_status_downloading">下載中</string>
     <string name="source_status_paused">已暇置</string>

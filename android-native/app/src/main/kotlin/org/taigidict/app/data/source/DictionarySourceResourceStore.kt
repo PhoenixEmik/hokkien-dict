@@ -2,6 +2,11 @@ package org.taigidict.app.data.source
 
 import android.content.res.AssetManager
 import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,6 +47,8 @@ interface DictionarySourceResourceManaging {
     suspend fun refresh(): Result<Unit>
     suspend fun restoreBundledSource(): Result<Unit>
     suspend fun downloadSource(): Result<Unit>
+    suspend fun pauseDownload(): Result<Unit>
+    suspend fun resumeDownload(): Result<Unit>
 }
 
 class DictionarySourceResourceStore(
@@ -118,7 +125,7 @@ class DictionarySourceResourceStore(
     override suspend fun downloadSource(): Result<Unit> = runCatching {
         _snapshot.value = DownloadSnapshot(
             state = DownloadSnapshot.State.Downloading,
-            downloadedBytes = 0,
+            downloadedBytes = _snapshot.value.downloadedBytes,
             totalBytes = null,
         )
 
@@ -132,23 +139,44 @@ class DictionarySourceResourceStore(
                 manifestBytes.toString(Charsets.UTF_8)
             )
 
-            // Download entries
+            val tempEntriesFile = File(localSourceDirectory, "${manifest.entriesFileName}.download")
+            val localEntriesFile = File(localSourceDirectory, manifest.entriesFileName)
+            val resumeBytes = if (tempEntriesFile.exists()) tempEntriesFile.length() else 0L
+
+            // Download entries with resume support
             val entriesUrl = "$remoteBaseUrl/${manifest.entriesFileName}"
-            val entriesBytes = downloadFile(entriesUrl)
+            val entriesSize = downloadEntriesFile(
+                urlString = entriesUrl,
+                targetTempFile = tempEntriesFile,
+                resumeBytes = resumeBytes,
+                baseDownloadedBytes = manifestBytes.size.toLong(),
+            )
 
             // Write to local directory
             val localManifestFile = File(localSourceDirectory, "dictionary_manifest.json")
             localManifestFile.writeBytes(manifestBytes)
 
-            val localEntriesFile = File(localSourceDirectory, manifest.entriesFileName)
-            localEntriesFile.writeBytes(entriesBytes)
+            if (localEntriesFile.exists()) {
+                localEntriesFile.delete()
+            }
+            if (!tempEntriesFile.renameTo(localEntriesFile)) {
+                throw IOException("Failed to move downloaded dictionary entries into place.")
+            }
 
-            val totalSize = manifestBytes.size.toLong() + entriesBytes.size.toLong()
+            val totalSize = manifestBytes.size.toLong() + entriesSize
             _snapshot.value = DownloadSnapshot(
                 state = DownloadSnapshot.State.Completed,
                 downloadedBytes = totalSize,
                 totalBytes = totalSize,
             )
+        } catch (error: CancellationException) {
+            val pausedBytes = localSourceSizeIncludingTemp()
+            _snapshot.value = DownloadSnapshot(
+                state = DownloadSnapshot.State.Paused,
+                downloadedBytes = pausedBytes,
+                totalBytes = _snapshot.value.totalBytes,
+            )
+            throw error
         } catch (error: Exception) {
             _snapshot.value = DownloadSnapshot(
                 state = DownloadSnapshot.State.Failed,
@@ -159,8 +187,21 @@ class DictionarySourceResourceStore(
         }
     }
 
+    override suspend fun pauseDownload(): Result<Unit> = runCatching {
+        val pausedBytes = localSourceSizeIncludingTemp()
+        _snapshot.value = DownloadSnapshot(
+            state = DownloadSnapshot.State.Paused,
+            downloadedBytes = pausedBytes,
+            totalBytes = _snapshot.value.totalBytes,
+        )
+    }
+
+    override suspend fun resumeDownload(): Result<Unit> {
+        return downloadSource()
+    }
+
     private fun downloadFile(urlString: String): ByteArray {
-        val connection = java.net.URL(urlString).openConnection() as java.net.HttpURLConnection
+        val connection = URL(urlString).openConnection() as HttpURLConnection
         return try {
             connection.requestMethod = "GET"
             if (connection.responseCode == 200) {
@@ -168,6 +209,65 @@ class DictionarySourceResourceStore(
             } else {
                 throw Exception("HTTP ${connection.responseCode}: ${connection.responseMessage}")
             }
+        } finally {
+            connection.disconnect()
+        }
+    }
+
+    private fun downloadEntriesFile(
+        urlString: String,
+        targetTempFile: File,
+        resumeBytes: Long,
+        baseDownloadedBytes: Long,
+    ): Long {
+        val connection = (URL(urlString).openConnection() as HttpURLConnection).apply {
+            requestMethod = "GET"
+            if (resumeBytes > 0) {
+                setRequestProperty("Range", "bytes=$resumeBytes-")
+            }
+            setRequestProperty("Accept-Encoding", "identity")
+        }
+
+        try {
+            val responseCode = connection.responseCode
+            val canAppend = resumeBytes > 0 && responseCode == HttpURLConnection.HTTP_PARTIAL
+            if (responseCode != HttpURLConnection.HTTP_OK && responseCode != HttpURLConnection.HTTP_PARTIAL) {
+                throw Exception("HTTP $responseCode: ${connection.responseMessage}")
+            }
+
+            if (!canAppend && targetTempFile.exists()) {
+                targetTempFile.delete()
+            }
+
+            targetTempFile.parentFile?.mkdirs()
+
+            val startingBytes = if (canAppend) resumeBytes else 0L
+            val contentLength = connection.contentLengthLong.takeIf { it > 0 }
+            val totalBytes = contentLength?.let {
+                baseDownloadedBytes + if (canAppend) startingBytes + it else it
+            }
+
+            connection.inputStream.use { input ->
+                FileOutputStream(targetTempFile, canAppend).buffered().use { output ->
+                    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                    var downloaded = startingBytes
+                    while (true) {
+                        val read = input.read(buffer)
+                        if (read <= 0) {
+                            break
+                        }
+                        output.write(buffer, 0, read)
+                        downloaded += read.toLong()
+                        _snapshot.value = DownloadSnapshot(
+                            state = DownloadSnapshot.State.Downloading,
+                            downloadedBytes = baseDownloadedBytes + downloaded,
+                            totalBytes = totalBytes,
+                        )
+                    }
+                }
+            }
+
+            return targetTempFile.length()
         } finally {
             connection.disconnect()
         }
@@ -207,5 +307,14 @@ class DictionarySourceResourceStore(
         }
 
         return size
+    }
+
+    private fun localSourceSizeIncludingTemp(): Long {
+        val committed = localSourceSize()
+        val tempSize = localSourceDirectory.listFiles()
+            ?.filter { it.name.endsWith(".download") }
+            ?.sumOf { it.length() }
+            ?: 0L
+        return committed + tempSize
     }
 }

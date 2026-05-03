@@ -85,9 +85,15 @@
     <string name="settings_language_traditional_chinese">Traditional Chinese</string>
     <string name="settings_language_simplified_chinese">Simplified Chinese</string>
     <string name="settings_language_english">English</string>
+    <string name="settings_advanced_title">Advanced maintenance</string>
+    <string name="settings_advanced_body">Rebuild or clear dictionary data and repair offline resources.</string>
+    <string name="settings_advanced_open">Open advanced settings</string>
+    <string name="settings_advanced_back">Back to settings</string>
     <string name="settings_dictionary_source_title">Dictionary source</string>
     <string name="settings_source_action_restore">Restore bundled</string>
     <string name="settings_source_action_download">Download</string>
+    <string name="settings_source_action_pause">Pause</string>
+    <string name="settings_source_action_resume">Resume</string>
     <string name="source_status_idle">Not downloaded</string>
     <string name="source_status_downloading">Downloading</string>
     <string name="source_status_paused">Paused</string>

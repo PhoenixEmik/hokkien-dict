@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import java.io.File
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -75,6 +76,7 @@ class SettingsViewModel(
         SettingsUiState(databasePath = databaseFile.path),
     )
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
+    private var sourceDownloadJob: Job? = null
 
     init {
         refresh()
@@ -122,8 +124,42 @@ class SettingsViewModel(
     }
 
     fun downloadDictionarySource() {
-        viewModelScope.launch {
+        if (sourceDownloadJob?.isActive == true) {
+            return
+        }
+
+        sourceDownloadJob = viewModelScope.launch {
             sourceStore.downloadSource()
+        }.also { job ->
+            job.invokeOnCompletion {
+                if (sourceDownloadJob === job) {
+                    sourceDownloadJob = null
+                }
+            }
+        }
+    }
+
+    fun pauseDictionarySourceDownload() {
+        sourceDownloadJob?.cancel()
+        sourceDownloadJob = null
+        viewModelScope.launch {
+            sourceStore.pauseDownload()
+        }
+    }
+
+    fun resumeDictionarySourceDownload() {
+        if (sourceDownloadJob?.isActive == true) {
+            return
+        }
+
+        sourceDownloadJob = viewModelScope.launch {
+            sourceStore.resumeDownload()
+        }.also { job ->
+            job.invokeOnCompletion {
+                if (sourceDownloadJob === job) {
+                    sourceDownloadJob = null
+                }
+            }
         }
     }
 
