@@ -126,6 +126,7 @@ class SettingsViewModelTest {
             repository = repository,
             importService = importService,
             databaseFile = databaseFile,
+            settingsStore = FakeAppSettingsStore(),
             ioDispatcher = dispatcher,
         )
     }
@@ -191,5 +192,17 @@ private class FakeBundledDictionaryImporter(
             ),
             imported = true,
         )
+    }
+}
+
+private class FakeAppSettingsStore : org.taigidict.app.core.settings.AppSettingsStoring {
+    private val _themePreference = kotlinx.coroutines.flow.MutableStateFlow(
+        org.taigidict.app.core.settings.AppThemePreference.System
+    )
+    override val themePreference: kotlinx.coroutines.flow.Flow<org.taigidict.app.core.settings.AppThemePreference>
+        get() = _themePreference
+
+    override fun setThemePreference(preference: org.taigidict.app.core.settings.AppThemePreference) {
+        _themePreference.value = preference
     }
 }

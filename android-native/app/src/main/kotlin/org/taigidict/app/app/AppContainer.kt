@@ -2,6 +2,8 @@ package org.taigidict.app.app
 
 import android.content.Context
 import org.taigidict.app.core.constants.AppConstants
+import org.taigidict.app.core.settings.AppSettingsStoring
+import org.taigidict.app.core.settings.SharedPreferencesAppSettingsStore
 import org.taigidict.app.data.audio.DictionaryAudioPlayer
 import org.taigidict.app.data.audio.OfflineAudioArchiveManager
 import org.taigidict.app.data.audio.OfflineDictionaryAudioPlayer
@@ -43,5 +45,10 @@ class AppContainer(context: Context) {
     }
     val dictionaryAudioPlayer: DictionaryAudioPlayer by lazy {
         OfflineDictionaryAudioPlayer(filesDirectory = appContext.filesDir)
+    }
+    val appSettingsStore: AppSettingsStoring by lazy {
+        SharedPreferencesAppSettingsStore(
+            prefs = appContext.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+        )
     }
 }

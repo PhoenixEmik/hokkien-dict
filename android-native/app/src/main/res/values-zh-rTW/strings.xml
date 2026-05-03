@@ -73,6 +73,10 @@
     <string name="settings_audio_action_pause">暫停</string>
     <string name="settings_audio_action_resume">續傳</string>
     <string name="settings_audio_action_redownload">重新下載</string>
+    <string name="settings_theme_title">外觀</string>
+    <string name="settings_theme_system">跟隨系統</string>
+    <string name="settings_theme_light">淺色</string>
+    <string name="settings_theme_dark">深色</string>
     <string name="bundled_package_label">內建資料包目錄：%1$s</string>
     <string name="bundled_manifest_label">內建 manifest 資產：%1$s</string>
     <string name="bundled_entries_label">內建 entries 資產：%1$s</string>

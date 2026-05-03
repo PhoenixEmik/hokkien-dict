@@ -73,6 +73,10 @@
     <string name="settings_audio_action_pause">Pause</string>
     <string name="settings_audio_action_resume">Resume</string>
     <string name="settings_audio_action_redownload">Redownload</string>
+    <string name="settings_theme_title">Appearance</string>
+    <string name="settings_theme_system">System default</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
     <string name="bundled_package_label">Bundled package directory: %1$s</string>
     <string name="bundled_manifest_label">Bundled manifest asset: %1$s</string>
     <string name="bundled_entries_label">Bundled entries asset: %1$s</string>

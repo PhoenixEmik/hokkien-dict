@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.taigidict.app.app.TaigiDictApplication
+import org.taigidict.app.core.settings.AppSettingsStoring
+import org.taigidict.app.core.settings.AppThemePreference
 import org.taigidict.app.data.database.DictionaryDatabase
 import org.taigidict.app.data.importer.BundledDictionaryImporting
 import org.taigidict.app.data.repository.DictionaryRepositoryDataSource
@@ -27,6 +29,7 @@ data class SettingsUiState(
     val runningAction: SettingsMaintenanceAction? = null,
     val status: SettingsStatus? = null,
     val errorMessage: String? = null,
+    val themePreference: AppThemePreference = AppThemePreference.System,
 )
 
 enum class SettingsMaintenanceAction {
@@ -44,6 +47,7 @@ class SettingsViewModel(
     private val repository: DictionaryRepositoryDataSource,
     private val importService: BundledDictionaryImporting,
     private val databaseFile: File,
+    private val settingsStore: AppSettingsStoring,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : AndroidViewModel(application) {
     constructor(application: Application) : this(
@@ -51,6 +55,7 @@ class SettingsViewModel(
         repository = (application as TaigiDictApplication).appContainer.dictionaryRepository,
         importService = application.appContainer.dictionaryImportService,
         databaseFile = application.appContainer.dictionaryDatabaseFile,
+        settingsStore = application.appContainer.appSettingsStore,
     )
 
     private val _uiState = MutableStateFlow(
@@ -60,6 +65,15 @@ class SettingsViewModel(
 
     init {
         refresh()
+        viewModelScope.launch {
+            settingsStore.themePreference.collect { pref ->
+                _uiState.update { it.copy(themePreference = pref) }
+            }
+        }
+    }
+
+    fun setThemePreference(preference: AppThemePreference) {
+        settingsStore.setThemePreference(preference)
     }
 
     fun refresh() {

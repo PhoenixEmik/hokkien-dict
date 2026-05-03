@@ -19,9 +19,11 @@ private val DarkColors = darkColorScheme(
 )
 
 @Composable
-fun TaigiDictTheme(content: @Composable () -> Unit) {
+fun TaigiDictTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit,
+) {
     val context = LocalContext.current
-    val darkTheme = isSystemInDarkTheme()
 
     val colorScheme = when {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && darkTheme -> dynamicDarkColorScheme(context)
