@@ -81,6 +81,7 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    implementation("com.github.xyrlsz:android-opencc:1.3.8")
 
     testImplementation("androidx.test:core:1.6.1")
     testImplementation("junit:junit:4.13.2")
