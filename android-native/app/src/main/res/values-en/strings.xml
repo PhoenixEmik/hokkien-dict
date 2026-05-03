@@ -95,6 +95,13 @@
     <string name="source_status_failed">Failed</string>
     <string name="settings_text_scale_title">Reading text size</string>
     <string name="settings_text_scale_label">Scale</string>
+    <string name="settings_info_title">About and documents</string>
+    <string name="settings_info_body">Read the bundled privacy policy and data license documents inside the app.</string>
+    <string name="settings_info_privacy_policy">Privacy Policy</string>
+    <string name="settings_info_data_license">Data License</string>
+    <string name="settings_info_back">Back to settings</string>
+    <string name="settings_info_loading">Loading document…</string>
+    <string name="settings_info_load_error">Failed to load document: %1$s</string>
     <string name="bundled_package_label">Bundled package directory: %1$s</string>
     <string name="bundled_manifest_label">Bundled manifest asset: %1$s</string>
     <string name="bundled_entries_label">Bundled entries asset: %1$s</string>

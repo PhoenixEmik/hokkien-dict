@@ -21,8 +21,12 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
@@ -38,12 +42,15 @@ import org.taigidict.app.core.settings.AppThemePreference
 import org.taigidict.app.data.audio.AudioArchiveDownloadSnapshot
 import org.taigidict.app.data.audio.AudioArchiveDownloadState
 import org.taigidict.app.data.audio.DictionaryAudioArchiveType
+import org.taigidict.app.feature.info.AppDocument
+import org.taigidict.app.feature.info.AppDocumentViewer
 
 @Composable
 fun SettingsScreen(
     assetDirectory: String,
     onDictionaryDataChanged: () -> Unit = {},
 ) {
+    var selectedDocument by rememberSaveable { mutableStateOf<AppDocument?>(null) }
     val context = LocalContext.current
     val appContainer = (context.applicationContext as TaigiDictApplication).appContainer
     val audioArchiveManager = appContainer.offlineAudioArchiveManager
@@ -51,6 +58,15 @@ fun SettingsScreen(
     val sentenceSnapshot = audioArchiveManager.snapshotFlow(DictionaryAudioArchiveType.Sentence).collectAsStateWithLifecycle().value
     val viewModel: SettingsViewModel = viewModel()
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+
+    val currentDocument = selectedDocument
+    if (currentDocument != null) {
+        AppDocumentViewer(
+            document = currentDocument,
+            onBack = { selectedDocument = null },
+        )
+        return
+    }
 
     LaunchedEffect(audioArchiveManager) {
         audioArchiveManager.refreshAll()
@@ -86,6 +102,14 @@ fun SettingsScreen(
             TextScaleCard(
                 currentScale = uiState.readingTextScale,
                 onScaleChanged = viewModel::setReadingTextScale,
+            )
+        }
+
+        item {
+            SettingsInfoCard(
+                onOpenDocument = { document ->
+                    selectedDocument = document
+                },
             )
         }
 
@@ -358,6 +382,40 @@ private enum class AudioArchiveAction {
     Pause,
     Resume,
     Redownload,
+}
+
+@Composable
+private fun SettingsInfoCard(
+    onOpenDocument: (AppDocument) -> Unit,
+) {
+    Card {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.settings_info_title),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = stringResource(R.string.settings_info_body),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                OutlinedButton(onClick = { onOpenDocument(AppDocument.PrivacyPolicy) }) {
+                    Text(text = stringResource(R.string.settings_info_privacy_policy))
+                }
+                OutlinedButton(onClick = { onOpenDocument(AppDocument.DataLicense) }) {
+                    Text(text = stringResource(R.string.settings_info_data_license))
+                }
+            }
+        }
+    }
 }
 
 @Composable

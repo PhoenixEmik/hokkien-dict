@@ -95,6 +95,13 @@
     <string name="source_status_failed">失败</string>
     <string name="settings_text_scale_title">阅读文字大小</string>
     <string name="settings_text_scale_label">比例</string>
+    <string name="settings_info_title">关于与文档</string>
+    <string name="settings_info_body">可在 App 内阅读隐私政策与数据授权文件。</string>
+    <string name="settings_info_privacy_policy">隐私政策</string>
+    <string name="settings_info_data_license">数据授权</string>
+    <string name="settings_info_back">返回设置</string>
+    <string name="settings_info_loading">文档载入中…</string>
+    <string name="settings_info_load_error">文档载入失败：%1$s</string>
     <string name="bundled_package_label">内建数据包目录：%1$s</string>
     <string name="bundled_manifest_label">内建 manifest 资产：%1$s</string>
     <string name="bundled_entries_label">内建 entries 资产：%1$s</string>
