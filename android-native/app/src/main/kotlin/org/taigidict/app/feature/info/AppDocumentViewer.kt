@@ -1,17 +1,20 @@
 package org.taigidict.app.feature.info
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
@@ -49,6 +52,7 @@ enum class AppDocument(
     ),
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppDocumentViewer(
     document: AppDocument,
@@ -65,25 +69,26 @@ fun AppDocumentViewer(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        FilledTonalButton(onClick = onBack) {
-            Text(text = stringResource(R.string.settings_info_back))
-        }
-
-        Text(
-            text = stringResource(document.titleRes),
-            style = MaterialTheme.typography.headlineMedium,
-        )
-
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(text = stringResource(document.titleRes)) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = stringResource(R.string.settings_info_back),
+                        )
+                    }
+                },
+            )
+        },
+    ) { innerPadding ->
         when (val result = documentText) {
             null -> Text(
                 text = stringResource(R.string.settings_info_loading),
                 style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(innerPadding).padding(16.dp),
             )
 
             else -> {
@@ -96,19 +101,19 @@ fun AppDocumentViewer(
                                 ?: stringResource(R.string.unknown_error),
                         ),
                         style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(innerPadding).padding(16.dp),
                     )
                 } else {
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        SelectionContainer {
-                            Text(
-                                text = text,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .verticalScroll(rememberScrollState())
-                                    .padding(16.dp),
-                                style = MaterialTheme.typography.bodyMedium,
-                            )
-                        }
+                    SelectionContainer {
+                        Text(
+                            text = text,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState())
+                                .padding(innerPadding)
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
                     }
                 }
             }
