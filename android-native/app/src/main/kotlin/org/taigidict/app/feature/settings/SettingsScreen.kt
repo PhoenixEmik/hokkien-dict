@@ -33,6 +33,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.taigidict.app.R
 import org.taigidict.app.app.TaigiDictApplication
+import org.taigidict.app.core.settings.AppLanguagePreference
 import org.taigidict.app.core.settings.AppThemePreference
 import org.taigidict.app.data.audio.AudioArchiveDownloadSnapshot
 import org.taigidict.app.data.audio.AudioArchiveDownloadState
@@ -71,6 +72,13 @@ fun SettingsScreen(
             ThemePreferenceCard(
                 selectedTheme = uiState.themePreference,
                 onThemeSelected = viewModel::setThemePreference,
+            )
+        }
+
+        item {
+            LanguagePreferenceCard(
+                selectedLanguage = uiState.languagePreference,
+                onLanguageSelected = viewModel::setLanguagePreference,
             )
         }
 
@@ -402,6 +410,58 @@ private fun AppThemePreference.displayLabel(): String = when (this) {
     AppThemePreference.System -> stringResource(R.string.settings_theme_system)
     AppThemePreference.Light -> stringResource(R.string.settings_theme_light)
     AppThemePreference.Dark -> stringResource(R.string.settings_theme_dark)
+}
+
+@Composable
+private fun LanguagePreferenceCard(
+    selectedLanguage: AppLanguagePreference,
+    onLanguageSelected: (AppLanguagePreference) -> Unit,
+) {
+    Card {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.settings_language_title),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Column(modifier = Modifier.selectableGroup()) {
+                AppLanguagePreference.entries.forEach { pref ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .selectable(
+                                selected = selectedLanguage == pref,
+                                onClick = { onLanguageSelected(pref) },
+                                role = Role.RadioButton,
+                            )
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(
+                            selected = selectedLanguage == pref,
+                            onClick = null,
+                        )
+                        Text(
+                            text = pref.displayLabel(),
+                            modifier = Modifier.padding(start = 12.dp),
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AppLanguagePreference.displayLabel(): String = when (this) {
+    AppLanguagePreference.System -> stringResource(R.string.settings_language_system)
+    AppLanguagePreference.TraditionalChinese -> stringResource(R.string.settings_language_traditional_chinese)
+    AppLanguagePreference.English -> stringResource(R.string.settings_language_english)
 }
 
 @Composable

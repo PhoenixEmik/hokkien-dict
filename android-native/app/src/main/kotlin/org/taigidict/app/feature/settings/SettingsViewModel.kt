@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.taigidict.app.app.TaigiDictApplication
+import org.taigidict.app.core.settings.AppLanguagePreference
 import org.taigidict.app.core.settings.AppSettingsStoring
 import org.taigidict.app.core.settings.AppThemePreference
 import org.taigidict.app.data.database.DictionaryDatabase
@@ -32,6 +33,7 @@ data class SettingsUiState(
     val status: SettingsStatus? = null,
     val errorMessage: String? = null,
     val themePreference: AppThemePreference = AppThemePreference.System,
+    val languagePreference: AppLanguagePreference = AppLanguagePreference.System,
     val sourceSnapshot: DownloadSnapshot = DownloadSnapshot(),
     val readingTextScale: Double = 1.0,
 )
@@ -82,6 +84,11 @@ class SettingsViewModel(
             }
         }
         viewModelScope.launch {
+            settingsStore.languagePreference.collect { pref ->
+                _uiState.update { it.copy(languagePreference = pref) }
+            }
+        }
+        viewModelScope.launch {
             sourceStore.snapshot.collect { snapshot ->
                 _uiState.update { it.copy(sourceSnapshot = snapshot) }
             }
@@ -98,6 +105,10 @@ class SettingsViewModel(
 
     fun setThemePreference(preference: AppThemePreference) {
         settingsStore.setThemePreference(preference)
+    }
+
+    fun setLanguagePreference(preference: AppLanguagePreference) {
+        settingsStore.setLanguagePreference(preference)
     }
 
     fun setReadingTextScale(value: Double) {

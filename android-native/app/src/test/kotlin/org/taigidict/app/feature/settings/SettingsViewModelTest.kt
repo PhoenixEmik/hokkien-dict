@@ -207,8 +207,18 @@ private class FakeAppSettingsStore : org.taigidict.app.core.settings.AppSettings
     override val readingTextScale: kotlinx.coroutines.flow.Flow<Double>
         get() = _readingTextScale
 
+    private val _languagePreference = kotlinx.coroutines.flow.MutableStateFlow(
+        org.taigidict.app.core.settings.AppLanguagePreference.System
+    )
+    override val languagePreference: kotlinx.coroutines.flow.Flow<org.taigidict.app.core.settings.AppLanguagePreference>
+        get() = _languagePreference
+
     override fun setThemePreference(preference: org.taigidict.app.core.settings.AppThemePreference) {
         _themePreference.value = preference
+    }
+
+    override fun setLanguagePreference(preference: org.taigidict.app.core.settings.AppLanguagePreference) {
+        _languagePreference.value = preference
     }
 
     override fun setReadingTextScale(value: Double) {

@@ -23,8 +23,10 @@ object AppSettingsConstants {
 
 interface AppSettingsStoring {
     val themePreference: Flow<AppThemePreference>
+    val languagePreference: Flow<AppLanguagePreference>
     val readingTextScale: Flow<Double>
     fun setThemePreference(preference: AppThemePreference)
+    fun setLanguagePreference(preference: AppLanguagePreference)
     fun setReadingTextScale(value: Double)
 }
 
@@ -35,12 +37,20 @@ class SharedPreferencesAppSettingsStore(
     private val _themePreference = MutableStateFlow(loadTheme())
     override val themePreference: Flow<AppThemePreference> = _themePreference.asStateFlow()
 
+    private val _languagePreference = MutableStateFlow(loadLanguage())
+    override val languagePreference: Flow<AppLanguagePreference> = _languagePreference.asStateFlow()
+
     private val _readingTextScale = MutableStateFlow(loadReadingTextScale())
     override val readingTextScale: Flow<Double> = _readingTextScale.asStateFlow()
 
     override fun setThemePreference(preference: AppThemePreference) {
         prefs.edit().putString(KEY_THEME, preference.name).apply()
         _themePreference.value = preference
+    }
+
+    override fun setLanguagePreference(preference: AppLanguagePreference) {
+        prefs.edit().putString(KEY_LANGUAGE, preference.name).apply()
+        _languagePreference.value = preference
     }
 
     override fun setReadingTextScale(value: Double) {
@@ -54,12 +64,18 @@ class SharedPreferencesAppSettingsStore(
         return AppThemePreference.entries.firstOrNull { it.name == name } ?: AppThemePreference.System
     }
 
+    private fun loadLanguage(): AppLanguagePreference {
+        val name = prefs.getString(KEY_LANGUAGE, AppLanguagePreference.System.name)
+        return AppLanguagePreference.entries.firstOrNull { it.name == name } ?: AppLanguagePreference.System
+    }
+
     private fun loadReadingTextScale(): Double {
         return prefs.getFloat(KEY_READING_TEXT_SCALE, AppSettingsConstants.DEFAULT_READING_TEXT_SCALE.toFloat()).toDouble()
     }
 
     companion object {
         private const val KEY_THEME = "theme_preference"
+        private const val KEY_LANGUAGE = "language_preference"
         private const val KEY_READING_TEXT_SCALE = "reading_text_scale"
     }
 }
