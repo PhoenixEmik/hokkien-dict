@@ -13,11 +13,11 @@
     <string name="dictionary_search_placeholder">Search</string>
     <string name="dictionary_home_hint">Enter a keyword to start searching the dictionary.</string>
     <string name="dictionary_empty_state_title">Start searching</string>
-    <string name="dictionary_empty_state_body">Enter Taiwanese Hanji, Tailo, or Mandarin meaning to show entries.</string>
+    <string name="dictionary_empty_state_body">Type Hanji, romanization, or Mandarin meaning to see entries.</string>
     <string name="dictionary_searching">Searching dictionary…</string>
-    <string name="dictionary_search_results_title">Search Results</string>
-    <string name="dictionary_recent_searches_title">Search History</string>
-    <string name="dictionary_recent_searches_clear">Clear</string>
+    <string name="dictionary_search_results_title">Results</string>
+    <string name="dictionary_recent_searches_title">Search history</string>
+    <string name="dictionary_recent_searches_clear">Delete</string>
     <string name="dictionary_clear_search_history">Clear search history</string>
     <string name="dictionary_loading_bundle">Loading local dictionary database metadata…</string>
     <string name="dictionary_database_label">Local database: %1$s</string>
@@ -54,7 +54,7 @@
     <string name="settings_title">Settings</string>
     <string name="settings_overview_body">Manage appearance, language, reading text size, and offline resources.</string>
     <string name="settings_display_section">Display</string>
-    <string name="settings_info_section">Data and information</string>
+    <string name="settings_info_section">Data and info</string>
     <string name="settings_placeholder_title">Settings</string>
     <string name="settings_placeholder_body">Manage appearance, language, reading text size, and offline resources.</string>
     <string name="settings_dictionary_title">Local dictionary database</string>
