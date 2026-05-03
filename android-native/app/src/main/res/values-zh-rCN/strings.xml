@@ -101,6 +101,7 @@
     <string name="settings_info_privacy_policy">隐私政策</string>
     <string name="settings_info_data_license">数据授权</string>
     <string name="settings_info_open_source_license">开源授权</string>
+    <string name="settings_info_reference">参考资料</string>
     <string name="settings_info_back">返回设置</string>
     <string name="settings_info_loading">文档载入中…</string>
     <string name="settings_info_load_error">文档载入失败：%1$s</string>

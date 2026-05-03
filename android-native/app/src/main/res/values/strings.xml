@@ -101,6 +101,7 @@
     <string name="settings_info_privacy_policy">Privacy Policy</string>
     <string name="settings_info_data_license">Data License</string>
     <string name="settings_info_open_source_license">Open Source License</string>
+    <string name="settings_info_reference">Reference</string>
     <string name="settings_info_back">Back to settings</string>
     <string name="settings_info_loading">Loading document…</string>
     <string name="settings_info_load_error">Failed to load document: %1$s</string>

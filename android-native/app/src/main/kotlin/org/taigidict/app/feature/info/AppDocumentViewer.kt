@@ -43,6 +43,10 @@ enum class AppDocument(
         titleRes = R.string.settings_info_open_source_license,
         assetPath = "docs/LICENSE.md",
     ),
+    ReferenceLinks(
+        titleRes = R.string.settings_info_reference,
+        assetPath = "docs/REFERENCE_LINKS.md",
+    ),
 }
 
 @Composable

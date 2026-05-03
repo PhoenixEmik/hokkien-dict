@@ -419,6 +419,9 @@ private fun SettingsInfoCard(
                 OutlinedButton(onClick = { onOpenDocument(AppDocument.OpenSourceLicense) }) {
                     Text(text = stringResource(R.string.settings_info_open_source_license))
                 }
+                OutlinedButton(onClick = { onOpenDocument(AppDocument.ReferenceLinks) }) {
+                    Text(text = stringResource(R.string.settings_info_reference))
+                }
             }
         }
     }
