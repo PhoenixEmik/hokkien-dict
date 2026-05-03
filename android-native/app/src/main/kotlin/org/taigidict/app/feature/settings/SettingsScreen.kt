@@ -169,6 +169,20 @@ fun SettingsScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
+                    text = stringResource(R.string.settings_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                )
+                Text(
+                    text = stringResource(R.string.settings_overview_body),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+
+        item {
             ThemePreferenceCard(
                 selectedTheme = uiState.themePreference,
                 onThemeSelected = viewModel::setThemePreference,
@@ -195,19 +209,6 @@ fun SettingsScreen(
                     selectedDocument = document
                 },
             )
-        }
-
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(
-                    text = stringResource(R.string.settings_title),
-                    style = MaterialTheme.typography.headlineMedium,
-                )
-                Text(
-                    text = stringResource(R.string.settings_placeholder_body),
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-            }
         }
 
         item {

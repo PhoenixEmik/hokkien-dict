@@ -8,10 +8,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -20,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.taigidict.app.R
 import org.taigidict.app.app.TaigiDictApplication
+import org.taigidict.app.domain.model.DictionaryEntry
 import org.taigidict.app.feature.common.DictionaryFallbackText
 import org.taigidict.app.feature.dictionary.DictionaryEntryDetailPane
 
@@ -33,91 +46,155 @@ fun BookmarksScreen(
     val bookmarkedIds by appContainer.bookmarkStore.bookmarkedIds.collectAsStateWithLifecycle()
     val showsEntryDetail = uiState.isLoadingEntryDetail || uiState.selectedEntry != null || uiState.entryDetailErrorMessage != null
 
+    if (showsEntryDetail) {
+        DictionaryEntryDetailPane(
+            isLoading = uiState.isLoadingEntryDetail,
+            entry = uiState.selectedEntry,
+            openableLinkedWords = uiState.openableLinkedWords,
+            errorMessage = uiState.entryDetailErrorMessage,
+            isBookmarked = uiState.selectedEntry?.id in bookmarkedIds,
+            onToggleBookmark = {
+                uiState.selectedEntry?.let { entry ->
+                    appContainer.bookmarkStore.toggleBookmark(entry.id)
+                }
+            },
+            onBack = viewModel::onEntryDetailDismissed,
+            onOpenLinkedWord = viewModel::onLinkedWordSelected,
+        )
+        return
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        if (showsEntryDetail) {
-            DictionaryEntryDetailPane(
-                isLoading = uiState.isLoadingEntryDetail,
-                entry = uiState.selectedEntry,
-                openableLinkedWords = uiState.openableLinkedWords,
-                errorMessage = uiState.entryDetailErrorMessage,
-                isBookmarked = uiState.selectedEntry?.id in bookmarkedIds,
-                onToggleBookmark = {
-                    uiState.selectedEntry?.let { entry ->
-                        appContainer.bookmarkStore.toggleBookmark(entry.id)
-                    }
-                },
-                onBack = viewModel::onEntryDetailDismissed,
-                onOpenLinkedWord = viewModel::onLinkedWordSelected,
-            )
-        } else {
-            Text(
-                text = stringResource(R.string.bookmarks_title),
-                style = MaterialTheme.typography.headlineMedium,
-            )
+        Text(
+            text = stringResource(R.string.bookmarks_title),
+            style = MaterialTheme.typography.headlineLarge,
+        )
 
-            when {
-                uiState.isLoadingEntries -> Text(
-                    text = stringResource(R.string.bookmarks_loading),
-                    style = MaterialTheme.typography.bodyLarge,
-                )
+        Text(
+            text = stringResource(R.string.bookmarks_overview_body),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
 
-                uiState.entriesErrorMessage != null -> Text(
-                    text = stringResource(R.string.bookmarks_load_error, uiState.entriesErrorMessage),
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-
-                uiState.entries.isEmpty() -> {
+        when {
+            uiState.isLoadingEntries -> {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    CircularProgressIndicator(strokeWidth = 2.dp)
                     Text(
-                        text = stringResource(R.string.bookmarks_empty_title),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Text(
-                        text = stringResource(R.string.bookmarks_empty_body),
-                        style = MaterialTheme.typography.bodyLarge,
+                        text = stringResource(R.string.bookmarks_loading),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
+            }
 
-                else -> {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        items(uiState.entries, key = { it.id }) { entry ->
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { viewModel.onEntrySelected(entry.id) }
-                                    .padding(vertical = 4.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp),
-                            ) {
-                                DictionaryFallbackText(
-                                    text = entry.hanji,
-                                    style = MaterialTheme.typography.titleMedium,
-                                )
-                                DictionaryFallbackText(
-                                    text = entry.romanization,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                )
-                                if (entry.briefSummary.isNotBlank()) {
-                                    DictionaryFallbackText(
-                                        text = entry.briefSummary,
-                                        style = MaterialTheme.typography.bodySmall,
-                                    )
-                                }
-                                Text(
-                                    text = stringResource(R.string.bookmarks_remove_action),
-                                    modifier = Modifier.clickable { viewModel.removeBookmark(entry.id) },
-                                    style = MaterialTheme.typography.labelLarge,
-                                )
-                            }
-                        }
+            uiState.entriesErrorMessage != null -> {
+                Text(
+                    text = stringResource(R.string.bookmarks_load_error, uiState.entriesErrorMessage),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+
+            uiState.entries.isEmpty() -> {
+                BookmarksEmptyCard()
+            }
+
+            else -> {
+                LazyColumn(
+                    modifier = Modifier.weight(1f, fill = true),
+                    verticalArrangement = Arrangement.spacedBy(0.dp),
+                ) {
+                    items(uiState.entries, key = { it.id }) { entry ->
+                        BookmarkEntryListItem(
+                            entry = entry,
+                            onClick = { viewModel.onEntrySelected(entry.id) },
+                        )
+                        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+private fun BookmarksEmptyCard() {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.BookmarkBorder,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = stringResource(R.string.bookmarks_empty_title),
+                style = MaterialTheme.typography.titleLarge,
+            )
+            Text(
+                text = stringResource(R.string.bookmarks_empty_body),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun BookmarkEntryListItem(
+    entry: DictionaryEntry,
+    onClick: () -> Unit,
+) {
+    ListItem(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
+        headlineContent = {
+            DictionaryFallbackText(
+                text = entry.hanji,
+                style = MaterialTheme.typography.titleMedium,
+            )
+        },
+        supportingContent = {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                DictionaryFallbackText(
+                    text = entry.romanization,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (entry.briefSummary.isNotBlank()) {
+                    DictionaryFallbackText(
+                        text = entry.briefSummary,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        },
+        trailingContent = {
+            Icon(
+                imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        },
+    )
 }

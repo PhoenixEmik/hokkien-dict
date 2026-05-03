@@ -2,13 +2,13 @@
 <resources>
     <string name="app_name">台語辭典</string>
     <string name="initialization_title">準備離線辭典</string>
-    <string name="initialization_body">正在建立 Android 原生骨架並掛載內建詞典資料包。</string>
+    <string name="initialization_body">正在準備離線辭典資源，這只需要一點時間。</string>
     <string name="retry">重試</string>
     <string name="tab_dictionary">辭典</string>
     <string name="tab_bookmarks">書籤</string>
     <string name="tab_settings">設定</string>
     <string name="dictionary_placeholder_title">辭典</string>
-    <string name="dictionary_placeholder_body">Gradle / Compose 骨架已建立，下一步會接上搜尋與資料匯入。</string>
+    <string name="dictionary_placeholder_body">可搜尋台語詞目、Tailo 羅馬字與華語釋義。</string>
     <string name="dictionary_search_label">搜尋</string>
     <string name="dictionary_search_placeholder">輸入台語漢字、白話字或華語詞義</string>
     <string name="dictionary_home_hint">請輸入關鍵字開始搜尋辭典。</string>
@@ -45,14 +45,16 @@
     <string name="dictionary_audio_missing_clip">這個項目目前沒有可播放的音檔。</string>
     <string name="dictionary_audio_unavailable">請先到設定下載離線音檔資源。</string>
     <string name="bookmarks_title">書籤</string>
+    <string name="bookmarks_overview_body">已儲存的詞條會顯示在這裡，方便快速開啟。</string>
     <string name="bookmarks_loading">正在載入書籤…</string>
     <string name="bookmarks_empty_title">尚未加入任何書籤</string>
     <string name="bookmarks_empty_body">從詞條詳情加入書籤後，就會顯示在這裡。</string>
     <string name="bookmarks_load_error">載入書籤失敗：%1$s</string>
     <string name="bookmarks_remove_action">移除書籤</string>
     <string name="settings_title">設定</string>
+    <string name="settings_overview_body">管理外觀、語言、閱讀字級與離線資源。</string>
     <string name="settings_placeholder_title">設定</string>
-    <string name="settings_placeholder_body">此頁之後會管理離線資源、外觀、語言與閱讀字級。</string>
+    <string name="settings_placeholder_body">管理外觀、語言、閱讀字級與離線資源。</string>
     <string name="settings_dictionary_title">本地辭典資料庫</string>
     <string name="settings_database_path_label">資料庫路徑：%1$s</string>
     <string name="settings_entry_count_label">詞目數：%1$d</string>

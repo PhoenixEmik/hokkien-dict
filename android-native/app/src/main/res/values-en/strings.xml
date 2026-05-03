@@ -2,13 +2,13 @@
 <resources>
     <string name="app_name">Taigi Dict</string>
     <string name="initialization_title">Preparing Offline Dictionary</string>
-    <string name="initialization_body">Setting up the native Android shell and bundled dictionary package.</string>
+    <string name="initialization_body">Preparing offline dictionary resources. This only takes a moment.</string>
     <string name="retry">Retry</string>
     <string name="tab_dictionary">Dictionary</string>
     <string name="tab_bookmarks">Bookmarks</string>
     <string name="tab_settings">Settings</string>
     <string name="dictionary_placeholder_title">Dictionary</string>
-    <string name="dictionary_placeholder_body">The Gradle/Compose skeleton is ready. Search and import wiring comes next.</string>
+    <string name="dictionary_placeholder_body">Search Taiwanese headwords, Tailo romanization, or Mandarin definitions.</string>
     <string name="dictionary_search_label">Search</string>
     <string name="dictionary_search_placeholder">Enter Taiwanese Hanji, Tailo, or Mandarin meaning</string>
     <string name="dictionary_home_hint">Enter a keyword to start searching the dictionary.</string>
@@ -45,14 +45,16 @@
     <string name="dictionary_audio_missing_clip">No audio clip is available for this item.</string>
     <string name="dictionary_audio_unavailable">Download the offline audio archive from Settings first.</string>
     <string name="bookmarks_title">Bookmarks</string>
+    <string name="bookmarks_overview_body">Saved entries appear here for quick access.</string>
     <string name="bookmarks_loading">Loading bookmarks…</string>
     <string name="bookmarks_empty_title">No bookmarks yet</string>
     <string name="bookmarks_empty_body">Bookmark a dictionary entry from detail and it will appear here.</string>
     <string name="bookmarks_load_error">Failed to load bookmarks: %1$s</string>
     <string name="bookmarks_remove_action">Remove bookmark</string>
     <string name="settings_title">Settings</string>
+    <string name="settings_overview_body">Manage appearance, language, reading text size, and offline resources.</string>
     <string name="settings_placeholder_title">Settings</string>
-    <string name="settings_placeholder_body">This screen will manage offline resources, appearance, language, and reading size.</string>
+    <string name="settings_placeholder_body">Manage appearance, language, reading text size, and offline resources.</string>
     <string name="settings_dictionary_title">Local dictionary database</string>
     <string name="settings_database_path_label">Database path: %1$s</string>
     <string name="settings_entry_count_label">Entries: %1$d</string>

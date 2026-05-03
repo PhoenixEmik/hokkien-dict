@@ -2,13 +2,13 @@
 <resources>
     <string name="app_name">台语辞典</string>
     <string name="initialization_title">准备离线辞典</string>
-    <string name="initialization_body">正在建立 Android 原生骨架并挂载内建词典数据包。</string>
+    <string name="initialization_body">正在准备离线辞典资源，这只需要一点时间。</string>
     <string name="retry">重试</string>
     <string name="tab_dictionary">辞典</string>
     <string name="tab_bookmarks">书签</string>
     <string name="tab_settings">设置</string>
     <string name="dictionary_placeholder_title">辞典</string>
-    <string name="dictionary_placeholder_body">Gradle / Compose 骨架已建立，下一步会接上搜索与数据导入。</string>
+    <string name="dictionary_placeholder_body">可搜索台语词目、Tailo 罗马字与华语释义。</string>
     <string name="dictionary_search_label">搜索</string>
     <string name="dictionary_search_placeholder">输入台语汉字、白话字或华语词义</string>
     <string name="dictionary_home_hint">请输入关键词开始搜索辞典。</string>
@@ -45,14 +45,16 @@
     <string name="dictionary_audio_missing_clip">这个项目目前没有可播放的音档。</string>
     <string name="dictionary_audio_unavailable">请先到设置下载离线音档资源。</string>
     <string name="bookmarks_title">书签</string>
+    <string name="bookmarks_overview_body">已保存的词条会显示在这里，方便快速打开。</string>
     <string name="bookmarks_loading">正在载入书签…</string>
     <string name="bookmarks_empty_title">尚未加入任何书签</string>
     <string name="bookmarks_empty_body">从词条详情加入书签后，就会显示在这里。</string>
     <string name="bookmarks_load_error">载入书签失败：%1$s</string>
     <string name="bookmarks_remove_action">移除书签</string>
     <string name="settings_title">设置</string>
+    <string name="settings_overview_body">管理外观、语言、阅读字级与离线资源。</string>
     <string name="settings_placeholder_title">设置</string>
-    <string name="settings_placeholder_body">此页之后会管理离线资源、外观、语言与阅读字级。</string>
+    <string name="settings_placeholder_body">管理外观、语言、阅读字级与离线资源。</string>
     <string name="settings_dictionary_title">本地辞典数据库</string>
     <string name="settings_database_path_label">数据库路径：%1$s</string>
     <string name="settings_entry_count_label">词目数：%1$d</string>

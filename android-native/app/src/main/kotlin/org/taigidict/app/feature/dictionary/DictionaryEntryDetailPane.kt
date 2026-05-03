@@ -273,7 +273,7 @@ private fun DictionaryEntryDetailContent(
                     if (metadataLine.isNotBlank()) {
                         DictionaryFallbackText(
                             text = metadataLine,
-                            style = MaterialTheme.typography.labelLarge,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
@@ -544,12 +544,7 @@ private fun DictionaryDetailRelationshipSection(
                             style = scaledChipStyle,
                         )
                     },
-                    colors = AssistChipDefaults.assistChipColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        labelColor = MaterialTheme.colorScheme.primary,
-                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    ),
+                    colors = AssistChipDefaults.assistChipColors(),
                 )
             }
         }
