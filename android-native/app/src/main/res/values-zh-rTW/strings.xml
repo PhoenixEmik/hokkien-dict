@@ -77,6 +77,14 @@
     <string name="settings_theme_system">跟隨系統</string>
     <string name="settings_theme_light">淺色</string>
     <string name="settings_theme_dark">深色</string>
+    <string name="settings_dictionary_source_title">輔助較作賀料</string>
+    <string name="settings_source_action_restore">恢複套件稿</string>
+    <string name="settings_source_action_download">下載</string>
+    <string name="source_status_idle">待下載</string>
+    <string name="source_status_downloading">下載中</string>
+    <string name="source_status_paused">已暇置</string>
+    <string name="source_status_completed">已下載</string>
+    <string name="source_status_failed">失敗</string>
     <string name="bundled_package_label">內建資料包目錄：%1$s</string>
     <string name="bundled_manifest_label">內建 manifest 資產：%1$s</string>
     <string name="bundled_entries_label">內建 entries 資產：%1$s</string>

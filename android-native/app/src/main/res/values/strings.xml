@@ -77,6 +77,14 @@
     <string name="settings_theme_system">System default</string>
     <string name="settings_theme_light">Light</string>
     <string name="settings_theme_dark">Dark</string>
+    <string name="settings_dictionary_source_title">Dictionary source</string>
+    <string name="settings_source_action_restore">Restore bundled</string>
+    <string name="settings_source_action_download">Download</string>
+    <string name="source_status_idle">Not downloaded</string>
+    <string name="source_status_downloading">Downloading</string>
+    <string name="source_status_paused">Paused</string>
+    <string name="source_status_completed">Downloaded</string>
+    <string name="source_status_failed">Failed</string>
     <string name="bundled_package_label">Bundled package directory: %1$s</string>
     <string name="bundled_manifest_label">Bundled manifest asset: %1$s</string>
     <string name="bundled_entries_label">Bundled entries asset: %1$s</string>

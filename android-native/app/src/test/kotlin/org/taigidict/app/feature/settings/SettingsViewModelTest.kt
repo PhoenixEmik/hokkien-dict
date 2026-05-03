@@ -127,6 +127,7 @@ class SettingsViewModelTest {
             importService = importService,
             databaseFile = databaseFile,
             settingsStore = FakeAppSettingsStore(),
+            sourceStore = FakeDictionarySourceResourceStore(),
             ioDispatcher = dispatcher,
         )
     }
@@ -205,4 +206,18 @@ private class FakeAppSettingsStore : org.taigidict.app.core.settings.AppSettings
     override fun setThemePreference(preference: org.taigidict.app.core.settings.AppThemePreference) {
         _themePreference.value = preference
     }
+}
+
+private class FakeDictionarySourceResourceStore : org.taigidict.app.data.source.DictionarySourceResourceManaging {
+    private val _snapshot = kotlinx.coroutines.flow.MutableStateFlow(
+        org.taigidict.app.data.source.DownloadSnapshot()
+    )
+    override val snapshot: kotlinx.coroutines.flow.StateFlow<org.taigidict.app.data.source.DownloadSnapshot>
+        get() = _snapshot
+
+    override suspend fun refresh(): Result<Unit> = Result.success(Unit)
+
+    override suspend fun restoreBundledSource(): Result<Unit> = Result.success(Unit)
+
+    override suspend fun downloadSource(): Result<Unit> = Result.success(Unit)
 }

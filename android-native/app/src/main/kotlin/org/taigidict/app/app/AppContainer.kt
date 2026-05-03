@@ -1,6 +1,7 @@
 package org.taigidict.app.app
 
 import android.content.Context
+import java.io.File
 import org.taigidict.app.core.constants.AppConstants
 import org.taigidict.app.core.settings.AppSettingsStoring
 import org.taigidict.app.core.settings.SharedPreferencesAppSettingsStore
@@ -12,6 +13,7 @@ import org.taigidict.app.data.importer.DictionaryImportService
 import org.taigidict.app.data.importer.DictionaryJsonlReader
 import org.taigidict.app.data.importer.DictionaryPackageLoader
 import org.taigidict.app.data.repository.SQLiteDictionaryRepository
+import org.taigidict.app.data.source.DictionarySourceResourceStore
 
 class AppContainer(context: Context) {
     val appContext: Context = context.applicationContext
@@ -19,6 +21,7 @@ class AppContainer(context: Context) {
     val bundledDictionaryManifestAssetPath: String = AppConstants.BUNDLED_DICTIONARY_MANIFEST_ASSET_PATH
     val bundledDictionaryEntriesAssetPath: String = AppConstants.BUNDLED_DICTIONARY_ENTRIES_ASSET_PATH
     val dictionaryDatabaseFile = appContext.getDatabasePath(AppConstants.DICTIONARY_DATABASE_FILE_NAME)
+    val localDictionarySourceDirectory = File(appContext.filesDir, "dictionary_source")
     val dictionaryPackageLoader: DictionaryPackageLoader by lazy {
         DictionaryPackageLoader(
             assetManager = appContext.assets,
@@ -49,6 +52,14 @@ class AppContainer(context: Context) {
     val appSettingsStore: AppSettingsStoring by lazy {
         SharedPreferencesAppSettingsStore(
             prefs = appContext.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+        )
+    }
+    val dictionarySourceResourceStore: DictionarySourceResourceStore by lazy {
+        DictionarySourceResourceStore(
+            assetManager = appContext.assets,
+            bundledManifestAssetPath = bundledDictionaryManifestAssetPath,
+            bundledEntriesAssetPath = bundledDictionaryEntriesAssetPath,
+            localSourceDirectory = localDictionarySourceDirectory,
         )
     }
 }

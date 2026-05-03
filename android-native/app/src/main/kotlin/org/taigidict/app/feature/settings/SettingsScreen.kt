@@ -95,6 +95,14 @@ fun SettingsScreen(
         }
 
         item {
+            DictionarySourceCard(
+                snapshot = uiState.sourceSnapshot,
+                onRestore = viewModel::restoreDictionarySource,
+                onDownload = viewModel::downloadDictionarySource,
+            )
+        }
+
+        item {
             Text(
                 text = stringResource(R.string.settings_offline_audio_title),
                 style = MaterialTheme.typography.titleMedium,
@@ -387,3 +395,71 @@ private fun AppThemePreference.displayLabel(): String = when (this) {
     AppThemePreference.Light -> stringResource(R.string.settings_theme_light)
     AppThemePreference.Dark -> stringResource(R.string.settings_theme_dark)
 }
+
+@Composable
+private fun DictionarySourceCard(
+    snapshot: org.taigidict.app.data.source.DownloadSnapshot,
+    onRestore: () -> Unit,
+    onDownload: () -> Unit,
+) {
+    Card {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.settings_dictionary_source_title),
+                style = MaterialTheme.typography.titleMedium,
+            )
+
+            val stateLabel = snapshot.state.label()
+            val sizeLabel = snapshot.totalBytes?.let { total ->
+                Formatter.formatFileSize(null, total)
+            } ?: "?"
+
+            Text(
+                text = "$stateLabel · $sizeLabel",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+
+            if (snapshot.progress != null && snapshot.state == org.taigidict.app.data.source.DownloadSnapshot.State.Downloading) {
+                LinearProgressIndicator(
+                    progress = { snapshot.progress!!.toFloat() },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                OutlinedButton(
+                    onClick = onRestore,
+                    modifier = Modifier.weight(1f),
+                    enabled = snapshot.state != org.taigidict.app.data.source.DownloadSnapshot.State.Downloading,
+                ) {
+                    Text(stringResource(R.string.settings_source_action_restore))
+                }
+                OutlinedButton(
+                    onClick = onDownload,
+                    modifier = Modifier.weight(1f),
+                    enabled = snapshot.state != org.taigidict.app.data.source.DownloadSnapshot.State.Downloading,
+                ) {
+                    Text(stringResource(R.string.settings_source_action_download))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun org.taigidict.app.data.source.DownloadSnapshot.State.label(): String = when (this) {
+    org.taigidict.app.data.source.DownloadSnapshot.State.Idle -> stringResource(R.string.source_status_idle)
+    org.taigidict.app.data.source.DownloadSnapshot.State.Downloading -> stringResource(R.string.source_status_downloading)
+    org.taigidict.app.data.source.DownloadSnapshot.State.Paused -> stringResource(R.string.source_status_paused)
+    org.taigidict.app.data.source.DownloadSnapshot.State.Completed -> stringResource(R.string.source_status_completed)
+    org.taigidict.app.data.source.DownloadSnapshot.State.Failed -> stringResource(R.string.source_status_failed)
+}
+

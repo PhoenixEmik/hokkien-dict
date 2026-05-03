@@ -18,6 +18,8 @@ import org.taigidict.app.core.settings.AppThemePreference
 import org.taigidict.app.data.database.DictionaryDatabase
 import org.taigidict.app.data.importer.BundledDictionaryImporting
 import org.taigidict.app.data.repository.DictionaryRepositoryDataSource
+import org.taigidict.app.data.source.DictionarySourceResourceManaging
+import org.taigidict.app.data.source.DownloadSnapshot
 import org.taigidict.app.domain.model.DictionaryBundle
 
 data class SettingsUiState(
@@ -30,6 +32,7 @@ data class SettingsUiState(
     val status: SettingsStatus? = null,
     val errorMessage: String? = null,
     val themePreference: AppThemePreference = AppThemePreference.System,
+    val sourceSnapshot: DownloadSnapshot = DownloadSnapshot(),
 )
 
 enum class SettingsMaintenanceAction {
@@ -42,12 +45,18 @@ enum class SettingsStatus {
     DatabaseCleared,
 }
 
+enum class SettingsSourceAction {
+    Restore,
+    Download,
+}
+
 class SettingsViewModel(
     application: Application,
     private val repository: DictionaryRepositoryDataSource,
     private val importService: BundledDictionaryImporting,
     private val databaseFile: File,
     private val settingsStore: AppSettingsStoring,
+    private val sourceStore: DictionarySourceResourceManaging,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : AndroidViewModel(application) {
     constructor(application: Application) : this(
@@ -56,6 +65,7 @@ class SettingsViewModel(
         importService = application.appContainer.dictionaryImportService,
         databaseFile = application.appContainer.dictionaryDatabaseFile,
         settingsStore = application.appContainer.appSettingsStore,
+        sourceStore = application.appContainer.dictionarySourceResourceStore,
     )
 
     private val _uiState = MutableStateFlow(
@@ -70,10 +80,30 @@ class SettingsViewModel(
                 _uiState.update { it.copy(themePreference = pref) }
             }
         }
+        viewModelScope.launch {
+            sourceStore.snapshot.collect { snapshot ->
+                _uiState.update { it.copy(sourceSnapshot = snapshot) }
+            }
+        }
+        viewModelScope.launch {
+            sourceStore.refresh()
+        }
     }
 
     fun setThemePreference(preference: AppThemePreference) {
         settingsStore.setThemePreference(preference)
+    }
+
+    fun restoreDictionarySource() {
+        viewModelScope.launch {
+            sourceStore.restoreBundledSource()
+        }
+    }
+
+    fun downloadDictionarySource() {
+        viewModelScope.launch {
+            sourceStore.downloadSource()
+        }
     }
 
     fun refresh() {
