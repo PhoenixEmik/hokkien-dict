@@ -58,6 +58,9 @@
     <string name="settings_placeholder_title">Settings</string>
     <string name="settings_placeholder_body">Manage appearance, language, reading text size, and offline resources.</string>
     <string name="settings_dictionary_title">Current database summary</string>
+    <string name="settings_summary_title">Summary</string>
+    <string name="settings_source_time_title">Source time</string>
+    <string name="settings_source_section">Dictionary source</string>
     <string name="settings_database_path_label">Database path: %1$s</string>
     <string name="settings_entry_count_label">Entries: %1$d</string>
     <string name="settings_sense_count_label">Senses: %1$d</string>

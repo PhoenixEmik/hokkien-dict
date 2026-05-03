@@ -58,6 +58,9 @@
     <string name="settings_placeholder_title">設定</string>
     <string name="settings_placeholder_body">管理外觀、語言、閱讀字級與離線資源。</string>
     <string name="settings_dictionary_title">目前資料庫摘要</string>
+    <string name="settings_summary_title">摘要</string>
+    <string name="settings_source_time_title">來源時間</string>
+    <string name="settings_source_section">辭典來源</string>
     <string name="settings_database_path_label">資料庫路徑：%1$s</string>
     <string name="settings_entry_count_label">詞目數：%1$d</string>
     <string name="settings_sense_count_label">義項數：%1$d</string>

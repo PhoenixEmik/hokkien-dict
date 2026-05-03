@@ -58,6 +58,9 @@
     <string name="settings_placeholder_title">设置</string>
     <string name="settings_placeholder_body">管理外观、语言、阅读字级与离线资源。</string>
     <string name="settings_dictionary_title">目前资料库摘要</string>
+        <string name="settings_summary_title">摘要</string>
+        <string name="settings_source_time_title">来源时间</string>
+        <string name="settings_source_section">辞典来源</string>
     <string name="settings_database_path_label">数据库路径：%1$s</string>
     <string name="settings_entry_count_label">词目数：%1$d</string>
     <string name="settings_sense_count_label">义项数：%1$d</string>

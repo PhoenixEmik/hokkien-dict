@@ -64,6 +64,7 @@ import org.taigidict.app.data.audio.AudioArchiveDownloadSnapshot
 import org.taigidict.app.data.audio.AudioArchiveDownloadState
 import org.taigidict.app.data.audio.DictionaryAudioArchiveType
 import org.taigidict.app.feature.info.AppDocument
+import org.taigidict.app.domain.model.DictionaryBundle
 import org.taigidict.app.feature.info.AppDocumentViewer
 
 private val RootHorizontalPadding = 16.dp
@@ -547,22 +548,60 @@ private fun AdvancedSettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(24.dp),
+                .padding(horizontal = RootHorizontalPadding)
+                .padding(top = RootVerticalPadding, bottom = RootVerticalPadding),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item {
                 Text(
                     text = stringResource(R.string.settings_advanced_body),
                     style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
+            // Maintenance section
             item {
-                DictionaryMaintenanceCard(
+                SectionHeader(text = stringResource(R.string.settings_dictionary_title))
+            }
+
+            item {
+                MaintenanceActionsCard(
                     uiState = uiState,
                     onRebuild = onRebuild,
                     onClear = onClear,
                 )
+            }
+
+            if (uiState.bundle != null) {
+                item {
+                    DictionarySummaryCard(bundle = uiState.bundle)
+                }
+            }
+
+            if (uiState.builtAt != null || uiState.sourceModifiedAt != null) {
+                item {
+                    DictionaryMetadataCard(
+                        builtAt = uiState.builtAt,
+                        sourceModifiedAt = uiState.sourceModifiedAt,
+                    )
+                }
+            }
+
+            if (uiState.isRunningMaintenance || uiState.status != null || uiState.errorMessage != null) {
+                item {
+                    MaintenanceStatusCard(
+                        isRunning = uiState.isRunningMaintenance,
+                        runningAction = uiState.runningAction,
+                        status = uiState.status,
+                        errorMessage = uiState.errorMessage,
+                    )
+                }
+            }
+
+            // Dictionary source section
+            item {
+                SectionHeader(text = stringResource(R.string.settings_source_section))
             }
 
             item {
@@ -572,11 +611,9 @@ private fun AdvancedSettingsScreen(
                 )
             }
 
+            // Offline audio section
             item {
-                Text(
-                    text = stringResource(R.string.settings_offline_audio_title),
-                    style = MaterialTheme.typography.titleMedium,
-                )
+                SectionHeader(text = stringResource(R.string.settings_offline_audio_title))
             }
 
             items(
@@ -592,13 +629,6 @@ private fun AdvancedSettingsScreen(
                     onAction = { action ->
                         onAudioAction(type, action)
                     },
-                )
-            }
-
-            item {
-                Text(
-                    text = stringResource(R.string.bundled_package_label, assetDirectory),
-                    style = MaterialTheme.typography.bodyMedium,
                 )
             }
         }
@@ -633,7 +663,7 @@ private fun AdvancedSettingsEntryCard(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun DictionaryMaintenanceCard(
+private fun MaintenanceActionsCard(
     uiState: SettingsUiState,
     onRebuild: () -> Unit,
     onClear: () -> Unit,
@@ -645,71 +675,6 @@ private fun DictionaryMaintenanceCard(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(
-                text = stringResource(R.string.settings_dictionary_title),
-                style = MaterialTheme.typography.titleMedium,
-            )
-            Text(
-                text = stringResource(R.string.settings_database_path_label, uiState.databasePath),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            if (uiState.bundle != null) {
-                Text(
-                    text = stringResource(R.string.settings_entry_count_label, uiState.bundle.entryCount),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Text(
-                    text = stringResource(R.string.settings_sense_count_label, uiState.bundle.senseCount),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Text(
-                    text = stringResource(R.string.settings_example_count_label, uiState.bundle.exampleCount),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            } else {
-                Text(
-                    text = stringResource(R.string.settings_dictionary_empty),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-            uiState.builtAt?.let { builtAt ->
-                Text(
-                    text = stringResource(R.string.settings_dictionary_built_at, builtAt),
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-            uiState.sourceModifiedAt?.let { sourceModifiedAt ->
-                Text(
-                    text = stringResource(R.string.settings_dictionary_source_updated, sourceModifiedAt),
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-            if (uiState.isRunningMaintenance) {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                Text(
-                    text = when (uiState.runningAction) {
-                        SettingsMaintenanceAction.Rebuild -> stringResource(R.string.settings_running_rebuild)
-                        SettingsMaintenanceAction.Clear -> stringResource(R.string.settings_running_clear)
-                        null -> stringResource(R.string.settings_running_rebuild)
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-            uiState.status?.let { status ->
-                Text(
-                    text = when (status) {
-                        SettingsStatus.DatabaseRebuilt -> stringResource(R.string.settings_status_rebuild_completed)
-                        SettingsStatus.DatabaseCleared -> stringResource(R.string.settings_status_clear_completed)
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-            uiState.errorMessage?.let { errorMessage ->
-                Text(
-                    text = stringResource(R.string.settings_dictionary_error, errorMessage),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -726,6 +691,172 @@ private fun DictionaryMaintenanceCard(
                 ) {
                     Text(text = stringResource(R.string.settings_action_clear))
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DictionarySummaryCard(
+    bundle: DictionaryBundle,
+) {
+    Card {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.settings_summary_title),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = stringResource(R.string.settings_entry_count_label, bundle.entryCount),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = stringResource(R.string.settings_sense_count_label, bundle.senseCount),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = stringResource(R.string.settings_example_count_label, bundle.exampleCount),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+    }
+}
+
+@Composable
+private fun DictionaryMetadataCard(
+    builtAt: String?,
+    sourceModifiedAt: String?,
+) {
+    Card {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.settings_source_time_title),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            builtAt?.let {
+                Text(
+                    text = stringResource(R.string.settings_dictionary_built_at, it),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+            sourceModifiedAt?.let {
+                Text(
+                    text = stringResource(R.string.settings_dictionary_source_updated, it),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DictionarySummaryRow(
+    label: String,
+    value: String,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.primary,
+        )
+    }
+}
+
+@Composable
+private fun DictionaryMetadataRow(
+    label: String,
+    value: String,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun MaintenanceStatusCard(
+    isRunning: Boolean,
+    runningAction: SettingsMaintenanceAction?,
+    status: SettingsStatus?,
+    errorMessage: String?,
+) {
+    Card(
+        colors = when {
+            errorMessage != null -> CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.errorContainer,
+            )
+            else -> CardDefaults.cardColors()
+        },
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            if (isRunning) {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Text(
+                    text = when (runningAction) {
+                        SettingsMaintenanceAction.Rebuild -> stringResource(R.string.settings_running_rebuild)
+                        SettingsMaintenanceAction.Clear -> stringResource(R.string.settings_running_clear)
+                        null -> stringResource(R.string.settings_running_rebuild)
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+
+            status?.let {
+                Text(
+                    text = when (it) {
+                        SettingsStatus.DatabaseRebuilt -> stringResource(R.string.settings_status_rebuild_completed)
+                        SettingsStatus.DatabaseCleared -> stringResource(R.string.settings_status_clear_completed)
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+
+            errorMessage?.let { error ->
+                Text(
+                    text = stringResource(R.string.settings_dictionary_error, error),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                )
             }
         }
     }
