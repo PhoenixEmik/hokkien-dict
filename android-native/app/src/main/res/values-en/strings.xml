@@ -12,6 +12,7 @@
     <string name="dictionary_search_label">Search</string>
     <string name="dictionary_search_placeholder">Search headword, Tailo, or definition</string>
     <string name="dictionary_searching">Searching dictionary…</string>
+    <string name="dictionary_search_results_title">Search Results</string>
     <string name="dictionary_loading_bundle">Loading local dictionary database metadata…</string>
     <string name="dictionary_database_label">Local database: %1$s</string>
     <string name="dictionary_entry_count_label">Entries: %1$d</string>

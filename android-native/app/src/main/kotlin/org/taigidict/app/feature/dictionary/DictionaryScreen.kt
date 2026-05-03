@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -124,31 +125,47 @@ fun DictionaryScreen(
                 )
 
                 uiState.results.isNotEmpty() -> {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        items(uiState.results, key = { it.id }) { entry ->
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { viewModel.onEntrySelected(entry.id) }
-                                    .padding(vertical = 4.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp),
-                            ) {
-                                Text(
-                                    text = entry.hanji,
-                                    style = MaterialTheme.typography.titleMedium,
-                                )
-                                Text(
-                                    text = entry.romanization,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                )
-                                if (entry.briefSummary.isNotBlank()) {
+                    Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
+                        Text(
+                            text = stringResource(R.string.dictionary_search_results_title),
+                            style = MaterialTheme.typography.labelMedium,
+                            modifier = Modifier.padding(vertical = 12.dp),
+                        )
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(0.dp),
+                        ) {
+                            items(
+                                uiState.results,
+                                key = { it.id },
+                            ) { entry ->
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { viewModel.onEntrySelected(entry.id) }
+                                        .padding(vertical = 12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                                ) {
                                     Text(
-                                        text = entry.briefSummary,
-                                        style = MaterialTheme.typography.bodySmall,
+                                        text = entry.hanji,
+                                        style = MaterialTheme.typography.titleSmall,
                                     )
+                                    Text(
+                                        text = entry.romanization,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    if (entry.briefSummary.isNotBlank()) {
+                                        Text(
+                                            text = entry.briefSummary,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
                                 }
+                                Divider(
+                                    modifier = Modifier.padding(vertical = 0.dp),
+                                    thickness = 0.5.dp,
+                                )
                             }
                         }
                     }
