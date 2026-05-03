@@ -11,6 +11,7 @@
     <string name="dictionary_placeholder_body">The Gradle/Compose skeleton is ready. Search and import wiring comes next.</string>
     <string name="dictionary_search_label">Search</string>
     <string name="dictionary_search_placeholder">Search headword, Tailo, or definition</string>
+    <string name="dictionary_home_hint">Enter a keyword to start searching the dictionary.</string>
     <string name="dictionary_searching">Searching dictionary…</string>
     <string name="dictionary_search_results_title">Search Results</string>
     <string name="dictionary_recent_searches_title">Recent Searches</string>

@@ -13,15 +13,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Bookmark
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.VolumeUp
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -64,10 +65,6 @@ fun DictionaryEntryDetailPane(
     val scope = rememberCoroutineScope()
     var audioMessage by remember(entry?.id) { mutableStateOf<String?>(null) }
 
-    FilledTonalButton(onClick = onBack) {
-        Text(text = stringResource(R.string.dictionary_detail_back))
-    }
-
     when {
         isLoading -> Text(
             text = stringResource(R.string.dictionary_detail_loading),
@@ -85,6 +82,7 @@ fun DictionaryEntryDetailPane(
             openableLinkedWords = openableLinkedWords,
             isBookmarked = isBookmarked,
             readingTextScale = readingTextScale,
+            onBack = onBack,
             onToggleBookmark = onToggleBookmark,
             onShareEntry = {
                 shareEntry(
@@ -130,6 +128,7 @@ private fun DictionaryEntryDetailContent(
     openableLinkedWords: Set<String>,
     isBookmarked: Boolean,
     readingTextScale: Double,
+    onBack: () -> Unit,
     onToggleBookmark: () -> Unit,
     onShareEntry: () -> Unit,
     onPlayEntryAudio: () -> Unit,
@@ -155,6 +154,47 @@ private fun DictionaryEntryDetailContent(
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                        contentDescription = stringResource(R.string.dictionary_detail_back),
+                    )
+                }
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    IconButton(onClick = onShareEntry) {
+                        Icon(
+                            imageVector = Icons.Outlined.Share,
+                            contentDescription = stringResource(R.string.dictionary_share_action),
+                        )
+                    }
+                    IconButton(onClick = onToggleBookmark) {
+                        Icon(
+                            imageVector = if (isBookmarked) {
+                                Icons.Outlined.Bookmark
+                            } else {
+                                Icons.Outlined.BookmarkBorder
+                            },
+                            contentDescription = if (isBookmarked) {
+                                stringResource(R.string.dictionary_detail_remove_bookmark)
+                            } else {
+                                stringResource(R.string.dictionary_detail_add_bookmark)
+                            },
+                        )
+                    }
+                }
+            }
+        }
+
         item {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(
@@ -195,27 +235,6 @@ private fun DictionaryEntryDetailContent(
                         text = metadataLine,
                         style = MaterialTheme.typography.bodyMedium,
                     )
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedButton(onClick = onShareEntry) {
-                        Icon(
-                            imageVector = Icons.Outlined.Share,
-                            contentDescription = null,
-                        )
-                        Text(
-                            text = stringResource(R.string.dictionary_share_action),
-                            modifier = Modifier.padding(start = 8.dp),
-                        )
-                    }
-                    OutlinedButton(onClick = onToggleBookmark) {
-                        Text(
-                            text = if (isBookmarked) {
-                                stringResource(R.string.dictionary_detail_remove_bookmark)
-                            } else {
-                                stringResource(R.string.dictionary_detail_add_bookmark)
-                            },
-                        )
-                    }
                 }
                 if (audioMessage != null) {
                     Text(

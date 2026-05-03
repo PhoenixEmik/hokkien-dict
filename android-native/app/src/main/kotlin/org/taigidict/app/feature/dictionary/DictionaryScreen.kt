@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -63,14 +63,6 @@ fun DictionaryScreen(
                 onOpenLinkedWord = viewModel::onLinkedWordSelected,
             )
         } else {
-            Text(
-                text = stringResource(R.string.dictionary_placeholder_title),
-                style = MaterialTheme.typography.headlineMedium,
-            )
-            Text(
-                text = stringResource(R.string.dictionary_placeholder_body),
-                style = MaterialTheme.typography.bodyLarge,
-            )
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = uiState.query,
@@ -91,25 +83,8 @@ fun DictionaryScreen(
                     style = MaterialTheme.typography.bodyMedium,
                 )
 
-                uiState.bundle != null -> {
-                    val bundle = requireNotNull(uiState.bundle)
-                    Text(
-                        text = stringResource(R.string.dictionary_database_label, bundle.databasePath.orEmpty()),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                    Text(
-                        text = stringResource(R.string.dictionary_entry_count_label, bundle.entryCount),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                    Text(
-                        text = stringResource(R.string.dictionary_sense_count_label, bundle.senseCount),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                    Text(
-                        text = stringResource(R.string.dictionary_example_count_label, bundle.exampleCount),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                }
+                uiState.bundle != null -> Unit
+
                 uiState.bundleErrorMessage != null -> Text(
                     text = stringResource(
                         R.string.dictionary_bundle_error,
@@ -147,7 +122,10 @@ fun DictionaryScreen(
                                 Text(text = stringResource(R.string.dictionary_recent_searches_clear))
                             }
                         }
-                        LazyColumn(verticalArrangement = Arrangement.spacedBy(0.dp)) {
+                        LazyColumn(
+                            modifier = Modifier.weight(1f, fill = true),
+                            verticalArrangement = Arrangement.spacedBy(0.dp),
+                        ) {
                             items(uiState.recentSearches, key = { it }) { query ->
                                 Column(
                                     modifier = Modifier
@@ -160,11 +138,17 @@ fun DictionaryScreen(
                                         style = MaterialTheme.typography.bodyMedium,
                                     )
                                 }
-                                Divider(thickness = 0.5.dp)
+                                HorizontalDivider(thickness = 0.5.dp)
                             }
                         }
                     }
                 }
+
+                uiState.query.isBlank() -> Text(
+                    text = stringResource(R.string.dictionary_home_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
 
                 uiState.results.isNotEmpty() -> {
                     Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
@@ -174,6 +158,7 @@ fun DictionaryScreen(
                             modifier = Modifier.padding(vertical = 12.dp),
                         )
                         LazyColumn(
+                            modifier = Modifier.weight(1f, fill = true),
                             verticalArrangement = Arrangement.spacedBy(0.dp),
                         ) {
                             items(
@@ -204,7 +189,7 @@ fun DictionaryScreen(
                                         )
                                     }
                                 }
-                                Divider(
+                                HorizontalDivider(
                                     modifier = Modifier.padding(vertical = 0.dp),
                                     thickness = 0.5.dp,
                                 )
@@ -218,15 +203,6 @@ fun DictionaryScreen(
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
-
-            Text(
-                text = stringResource(R.string.bundled_manifest_label, manifestAssetPath),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            Text(
-                text = stringResource(R.string.bundled_entries_label, entriesAssetPath),
-                style = MaterialTheme.typography.bodyMedium,
-            )
         }
     }
 }

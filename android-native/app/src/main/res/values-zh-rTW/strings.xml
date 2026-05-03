@@ -11,6 +11,7 @@
     <string name="dictionary_placeholder_body">Gradle / Compose 骨架已建立，下一步會接上搜尋與資料匯入。</string>
     <string name="dictionary_search_label">搜尋</string>
     <string name="dictionary_search_placeholder">搜尋詞目、Tailo 或釋義</string>
+    <string name="dictionary_home_hint">請輸入關鍵字開始搜尋辭典。</string>
     <string name="dictionary_searching">正在搜尋辭典…</string>
     <string name="dictionary_search_results_title">搜尋結果</string>
     <string name="dictionary_recent_searches_title">最近搜尋</string>
