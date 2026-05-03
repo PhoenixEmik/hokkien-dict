@@ -9,6 +9,8 @@ import org.taigidict.app.data.audio.DictionaryAudioPlayer
 import org.taigidict.app.data.audio.OfflineAudioArchiveManager
 import org.taigidict.app.data.audio.OfflineDictionaryAudioPlayer
 import org.taigidict.app.data.bookmarks.BookmarkStore
+import org.taigidict.app.data.conversion.ChineseConversionService
+import org.taigidict.app.data.conversion.GuardedNoOpChineseConversionService
 import org.taigidict.app.data.importer.DictionaryImportService
 import org.taigidict.app.data.importer.DictionaryJsonlReader
 import org.taigidict.app.data.importer.DictionaryPackageLoader
@@ -52,6 +54,9 @@ class AppContainer(context: Context) {
     }
     val dictionaryAudioPlayer: DictionaryAudioPlayer by lazy {
         OfflineDictionaryAudioPlayer(filesDirectory = appContext.filesDir)
+    }
+    val chineseConversionService: ChineseConversionService by lazy {
+        GuardedNoOpChineseConversionService()
     }
     val appSettingsStore: AppSettingsStoring by lazy {
         SharedPreferencesAppSettingsStore(

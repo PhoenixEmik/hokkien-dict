@@ -14,7 +14,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.taigidict.app.app.TaigiDictApplication
+import org.taigidict.app.core.localization.AppLocale
+import org.taigidict.app.core.localization.AppLocaleResolver
+import org.taigidict.app.core.settings.AppSettingsStoring
 import org.taigidict.app.data.repository.DictionaryRepositoryDataSource
+import org.taigidict.app.data.conversion.ChineseConversionService
 import org.taigidict.app.data.search.SearchHistoryStoring
 import org.taigidict.app.domain.model.DictionaryBundle
 import org.taigidict.app.domain.model.DictionaryEntry
@@ -38,6 +42,10 @@ class DictionarySearchViewModel(
     application: Application,
     private val repository: DictionaryRepositoryDataSource =
         (application as TaigiDictApplication).appContainer.dictionaryRepository,
+    private val settingsStore: AppSettingsStoring =
+        (application as TaigiDictApplication).appContainer.appSettingsStore,
+    private val chineseConversionService: ChineseConversionService =
+        (application as TaigiDictApplication).appContainer.chineseConversionService,
     private val searchHistoryStore: SearchHistoryStoring =
         (application as TaigiDictApplication).appContainer.searchHistoryStore,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
@@ -45,6 +53,8 @@ class DictionarySearchViewModel(
     constructor(application: Application) : this(
         application = application,
         repository = (application as TaigiDictApplication).appContainer.dictionaryRepository,
+        settingsStore = (application as TaigiDictApplication).appContainer.appSettingsStore,
+        chineseConversionService = (application as TaigiDictApplication).appContainer.chineseConversionService,
         searchHistoryStore = (application as TaigiDictApplication).appContainer.searchHistoryStore,
         ioDispatcher = Dispatchers.IO,
     )
@@ -54,8 +64,10 @@ class DictionarySearchViewModel(
     val uiState: StateFlow<DictionarySearchUiState> = _uiState.asStateFlow()
     private var searchJob: Job? = null
     private var entryDetailJob: Job? = null
+    private var currentLocale: AppLocale = AppLocale.TraditionalChinese
 
     init {
+        observeLanguagePreference()
         observeSearchHistory()
         loadBundle()
     }
@@ -102,7 +114,11 @@ class DictionarySearchViewModel(
 
             val result = withContext(ioDispatcher) {
                 runCatching {
-                    repository.search(query)
+                    val convertedQuery = chineseConversionService.normalizeSearchInput(
+                        text = query,
+                        locale = currentLocale,
+                    )
+                    repository.search(convertedQuery)
                 }
             }
 
@@ -165,10 +181,14 @@ class DictionarySearchViewModel(
 
             val result = withContext(ioDispatcher) {
                 runCatching {
+                    val convertedWord = chineseConversionService.normalizeSearchInput(
+                        text = word,
+                        locale = currentLocale,
+                    )
                     detailController.prepareLinkedEntry(
                         currentEntryId = currentEntry.id,
                         openableLinkedWords = _uiState.value.openableLinkedWords,
-                        word = word,
+                        word = convertedWord,
                     )
                 }
             }
@@ -220,6 +240,14 @@ class DictionarySearchViewModel(
                 _uiState.update {
                     it.copy(recentSearches = queries)
                 }
+            }
+        }
+    }
+
+    private fun observeLanguagePreference() {
+        viewModelScope.launch {
+            settingsStore.languagePreference.collectLatest { preference ->
+                currentLocale = AppLocaleResolver.resolve(preference)
             }
         }
     }

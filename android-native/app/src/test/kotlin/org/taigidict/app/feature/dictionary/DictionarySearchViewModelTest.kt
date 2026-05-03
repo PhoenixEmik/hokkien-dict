@@ -22,6 +22,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.taigidict.app.core.localization.AppLocale
+import org.taigidict.app.core.settings.AppLanguagePreference
+import org.taigidict.app.core.settings.AppSettingsConstants
+import org.taigidict.app.core.settings.AppSettingsStoring
+import org.taigidict.app.core.settings.AppThemePreference
+import org.taigidict.app.data.conversion.ChineseConversionService
 import org.taigidict.app.data.repository.DictionaryRepositoryDataSource
 import org.taigidict.app.data.search.SearchHistoryStoring
 import org.taigidict.app.domain.model.DictionaryBundle
@@ -148,6 +154,33 @@ class DictionarySearchViewModelTest {
     }
 
     @Test
+    fun onQueryChange_usesConvertedQueryForSimplifiedChinese() = runTest(dispatcher) {
+        val repository = FakeDictionaryRepository(
+            bundle = DictionaryBundle(1, 1, 0, "/tmp/dictionary.sqlite"),
+        )
+        val settingsStore = FakeDictionarySettingsStore()
+        val conversionService = FakeChineseConversionService(
+            normalizedQuery = "辭典",
+        )
+
+        settingsStore.setLanguagePreference(AppLanguagePreference.SimplifiedChinese)
+
+        val viewModel = createViewModel(
+            repository = repository,
+            settingsStore = settingsStore,
+            conversionService = conversionService,
+        )
+        advanceUntilIdle()
+
+        viewModel.onQueryChange("词典")
+        advanceUntilIdle()
+
+        assertEquals(listOf("辭典"), repository.searchQueries)
+        assertEquals(listOf("词典"), conversionService.capturedQueries)
+        assertEquals(listOf(AppLocale.SimplifiedChinese), conversionService.capturedLocales)
+    }
+
+    @Test
     fun onEntrySelected_loadsFullEntryIntoUiState() = runTest(dispatcher) {
         val linkedEntry = sampleEntry(id = 8, hanji = "字典", romanization = "jī-tián")
         val entry = sampleEntry(
@@ -265,14 +298,57 @@ class DictionarySearchViewModelTest {
     private fun createViewModel(
         repository: DictionaryRepositoryDataSource,
         searchHistoryStore: SearchHistoryStoring = FakeSearchHistoryStore(),
+        settingsStore: AppSettingsStoring = FakeDictionarySettingsStore(),
+        conversionService: ChineseConversionService = FakeChineseConversionService(),
     ): DictionarySearchViewModel {
         val application = ApplicationProvider.getApplicationContext<Application>()
         return DictionarySearchViewModel(
             application = application,
             repository = repository,
+            settingsStore = settingsStore,
+            chineseConversionService = conversionService,
             searchHistoryStore = searchHistoryStore,
             ioDispatcher = dispatcher,
         )
+    }
+}
+
+private class FakeDictionarySettingsStore : AppSettingsStoring {
+    private val _themePreference = MutableStateFlow(AppThemePreference.System)
+    private val _languagePreference = MutableStateFlow(AppLanguagePreference.System)
+    private val _readingTextScale = MutableStateFlow(AppSettingsConstants.DEFAULT_READING_TEXT_SCALE)
+
+    override val themePreference: StateFlow<AppThemePreference> = _themePreference
+    override val languagePreference: StateFlow<AppLanguagePreference> = _languagePreference
+    override val readingTextScale: StateFlow<Double> = _readingTextScale
+
+    override fun setThemePreference(preference: AppThemePreference) {
+        _themePreference.value = preference
+    }
+
+    override fun setLanguagePreference(preference: AppLanguagePreference) {
+        _languagePreference.value = preference
+    }
+
+    override fun setReadingTextScale(value: Double) {
+        _readingTextScale.value = AppSettingsConstants.snapReadingTextScale(value)
+    }
+}
+
+private class FakeChineseConversionService(
+    private val normalizedQuery: String? = null,
+) : ChineseConversionService {
+    val capturedQueries = mutableListOf<String>()
+    val capturedLocales = mutableListOf<AppLocale>()
+
+    override suspend fun normalizeSearchInput(text: String, locale: AppLocale): String {
+        capturedQueries += text
+        capturedLocales += locale
+        return normalizedQuery ?: text
+    }
+
+    override suspend fun translateForDisplay(text: String, locale: AppLocale): String {
+        return text
     }
 }
 
