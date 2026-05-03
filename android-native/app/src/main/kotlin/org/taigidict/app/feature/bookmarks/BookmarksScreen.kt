@@ -20,6 +20,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.taigidict.app.R
 import org.taigidict.app.app.TaigiDictApplication
+import org.taigidict.app.feature.common.DictionaryFallbackText
 import org.taigidict.app.feature.dictionary.DictionaryEntryDetailPane
 
 @Composable
@@ -93,16 +94,16 @@ fun BookmarksScreen(
                                     .padding(vertical = 4.dp),
                                 verticalArrangement = Arrangement.spacedBy(4.dp),
                             ) {
-                                Text(
+                                DictionaryFallbackText(
                                     text = entry.hanji,
                                     style = MaterialTheme.typography.titleMedium,
                                 )
-                                Text(
+                                DictionaryFallbackText(
                                     text = entry.romanization,
                                     style = MaterialTheme.typography.bodyMedium,
                                 )
                                 if (entry.briefSummary.isNotBlank()) {
-                                    Text(
+                                    DictionaryFallbackText(
                                         text = entry.briefSummary,
                                         style = MaterialTheme.typography.bodySmall,
                                     )

@@ -43,6 +43,7 @@ import org.taigidict.app.data.audio.DictionaryAudioPlaybackResult
 import org.taigidict.app.domain.model.DictionaryEntry
 import org.taigidict.app.domain.model.DictionaryExample
 import org.taigidict.app.domain.model.DictionarySense
+import org.taigidict.app.feature.common.DictionaryFallbackText
 
 @Composable
 fun DictionaryEntryDetailPane(
@@ -165,12 +166,12 @@ private fun DictionaryEntryDetailContent(
                         modifier = Modifier.weight(1f),
                         verticalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
-                        Text(
+                        DictionaryFallbackText(
                             text = entry.hanji,
                             style = scaledHeadlineStyle,
                         )
                         if (entry.romanization.isNotBlank()) {
-                            Text(
+                            DictionaryFallbackText(
                                 text = entry.romanization,
                                 style = scaledTitleStyle,
                             )
@@ -190,7 +191,7 @@ private fun DictionaryEntryDetailContent(
                     .filter { it.isNotBlank() }
                     .joinToString(separator = " · ")
                 if (metadataLine.isNotBlank()) {
-                    Text(
+                    DictionaryFallbackText(
                         text = metadataLine,
                         style = MaterialTheme.typography.bodyMedium,
                     )
@@ -303,12 +304,12 @@ private fun DictionarySenseSection(
             style = scaledTitleStyle,
         )
         if (sense.partOfSpeech.isNotBlank()) {
-            Text(
+            DictionaryFallbackText(
                 text = sense.partOfSpeech,
                 style = scaledLabelLargeStyle,
             )
         }
-        Text(
+        DictionaryFallbackText(
             text = sense.definition,
             style = scaledBodyLargeStyle,
         )
@@ -374,19 +375,19 @@ private fun DictionaryExampleBlock(
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             if (example.hanji.isNotBlank()) {
-                Text(
+                DictionaryFallbackText(
                     text = example.hanji,
                     style = scaledBodyLargeStyle,
                 )
             }
             if (example.romanization.isNotBlank()) {
-                Text(
+                DictionaryFallbackText(
                     text = example.romanization,
                     style = scaledBodyMediumStyle,
                 )
             }
             if (example.mandarin.isNotBlank()) {
-                Text(
+                DictionaryFallbackText(
                     text = example.mandarin,
                     style = scaledBodySmallStyle,
                 )
@@ -434,7 +435,7 @@ private fun DictionaryDetailRelationshipSection(
                     onClick = { onOpenLinkedWord(value) },
                     enabled = openableLinkedWords.contains(value),
                     label = {
-                        Text(text = value, style = scaledBodySmallStyle)
+                        DictionaryFallbackText(text = value, style = scaledBodySmallStyle)
                     },
                     colors = AssistChipDefaults.assistChipColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,

@@ -27,6 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.taigidict.app.R
 import org.taigidict.app.app.TaigiDictApplication
+import org.taigidict.app.feature.common.DictionaryFallbackText
 
 @Composable
 fun DictionaryScreen(
@@ -154,7 +155,7 @@ fun DictionaryScreen(
                                         .clickable { viewModel.onRecentSearchSelected(query) }
                                         .padding(vertical = 12.dp),
                                 ) {
-                                    Text(
+                                    DictionaryFallbackText(
                                         text = query,
                                         style = MaterialTheme.typography.bodyMedium,
                                     )
@@ -186,17 +187,17 @@ fun DictionaryScreen(
                                         .padding(vertical = 12.dp),
                                     verticalArrangement = Arrangement.spacedBy(2.dp),
                                 ) {
-                                    Text(
+                                    DictionaryFallbackText(
                                         text = entry.hanji,
                                         style = MaterialTheme.typography.titleSmall,
                                     )
-                                    Text(
+                                    DictionaryFallbackText(
                                         text = entry.romanization,
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                     if (entry.briefSummary.isNotBlank()) {
-                                        Text(
+                                        DictionaryFallbackText(
                                             text = entry.briefSummary,
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
