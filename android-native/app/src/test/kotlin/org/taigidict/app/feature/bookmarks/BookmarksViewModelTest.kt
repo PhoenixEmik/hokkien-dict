@@ -18,7 +18,13 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.taigidict.app.core.localization.AppLocale
+import org.taigidict.app.core.settings.AppLanguagePreference
+import org.taigidict.app.core.settings.AppSettingsConstants
+import org.taigidict.app.core.settings.AppSettingsStoring
+import org.taigidict.app.core.settings.AppThemePreference
 import org.taigidict.app.data.bookmarks.BookmarkStore
+import org.taigidict.app.data.conversion.ChineseConversionService
 import org.taigidict.app.data.repository.DictionaryRepositoryDataSource
 import org.taigidict.app.domain.model.DictionaryBundle
 import org.taigidict.app.domain.model.DictionaryEntry
@@ -93,6 +99,34 @@ class BookmarksViewModelTest {
         assertEquals(linked, viewModel.uiState.value.selectedEntry)
     }
 
+    @Test
+    fun simplifiedChinese_translatesBookmarkDisplayFields() = runTest(dispatcher) {
+        val entry = sampleEntry(id = 20, hanji = "辭典", romanization = "sû-tián")
+        val repository = FakeBookmarksRepository(
+            entryById = mapOf(entry.id to entry),
+        )
+        val bookmarkStore = createBookmarkStore().apply {
+            toggleBookmark(entry.id)
+        }
+        val settingsStore = FakeBookmarksSettingsStore().apply {
+            setLanguagePreference(AppLanguagePreference.SimplifiedChinese)
+        }
+        val conversionService = FakeBookmarksChineseConversionService(
+            translatedMap = mapOf("辭典" to "词典", "一種工具書。" to "一种工具书。"),
+        )
+
+        val viewModel = createViewModel(
+            repository = repository,
+            bookmarkStore = bookmarkStore,
+            settingsStore = settingsStore,
+            conversionService = conversionService,
+        )
+        advanceUntilIdle()
+
+        assertEquals("词典", viewModel.uiState.value.entries.first().hanji)
+        assertEquals("一种工具书。", viewModel.uiState.value.entries.first().senses.first().definition)
+    }
+
     private fun createBookmarkStore(): BookmarkStore {
         val context = ApplicationProvider.getApplicationContext<Context>()
         return BookmarkStore(
@@ -104,14 +138,52 @@ class BookmarksViewModelTest {
     private fun createViewModel(
         repository: DictionaryRepositoryDataSource,
         bookmarkStore: BookmarkStore,
+        settingsStore: AppSettingsStoring = FakeBookmarksSettingsStore(),
+        conversionService: ChineseConversionService = FakeBookmarksChineseConversionService(),
     ): BookmarksViewModel {
         val application = ApplicationProvider.getApplicationContext<Application>()
         return BookmarksViewModel(
             application = application,
             repository = repository,
+            settingsStore = settingsStore,
+            chineseConversionService = conversionService,
             bookmarkStore = bookmarkStore,
             ioDispatcher = dispatcher,
         )
+    }
+}
+
+private class FakeBookmarksSettingsStore : AppSettingsStoring {
+    private val _themePreference = kotlinx.coroutines.flow.MutableStateFlow(AppThemePreference.System)
+    private val _languagePreference = kotlinx.coroutines.flow.MutableStateFlow(AppLanguagePreference.System)
+    private val _readingTextScale = kotlinx.coroutines.flow.MutableStateFlow(AppSettingsConstants.DEFAULT_READING_TEXT_SCALE)
+
+    override val themePreference: kotlinx.coroutines.flow.StateFlow<AppThemePreference> = _themePreference
+    override val languagePreference: kotlinx.coroutines.flow.StateFlow<AppLanguagePreference> = _languagePreference
+    override val readingTextScale: kotlinx.coroutines.flow.StateFlow<Double> = _readingTextScale
+
+    override fun setThemePreference(preference: AppThemePreference) {
+        _themePreference.value = preference
+    }
+
+    override fun setLanguagePreference(preference: AppLanguagePreference) {
+        _languagePreference.value = preference
+    }
+
+    override fun setReadingTextScale(value: Double) {
+        _readingTextScale.value = AppSettingsConstants.snapReadingTextScale(value)
+    }
+}
+
+private class FakeBookmarksChineseConversionService(
+    private val translatedMap: Map<String, String> = emptyMap(),
+) : ChineseConversionService {
+    override suspend fun normalizeSearchInput(text: String, locale: AppLocale): String {
+        return translatedMap[text] ?: text
+    }
+
+    override suspend fun translateForDisplay(text: String, locale: AppLocale): String {
+        return translatedMap[text] ?: text
     }
 }
 
