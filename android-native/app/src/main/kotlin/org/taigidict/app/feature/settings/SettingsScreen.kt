@@ -18,6 +18,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Slider
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -70,6 +71,13 @@ fun SettingsScreen(
             ThemePreferenceCard(
                 selectedTheme = uiState.themePreference,
                 onThemeSelected = viewModel::setThemePreference,
+            )
+        }
+
+        item {
+            TextScaleCard(
+                currentScale = uiState.readingTextScale,
+                onScaleChanged = viewModel::setReadingTextScale,
             )
         }
 
@@ -461,5 +469,51 @@ private fun org.taigidict.app.data.source.DownloadSnapshot.State.label(): String
     org.taigidict.app.data.source.DownloadSnapshot.State.Paused -> stringResource(R.string.source_status_paused)
     org.taigidict.app.data.source.DownloadSnapshot.State.Completed -> stringResource(R.string.source_status_completed)
     org.taigidict.app.data.source.DownloadSnapshot.State.Failed -> stringResource(R.string.source_status_failed)
+}
+
+@Composable
+private fun TextScaleCard(
+    currentScale: Double,
+    onScaleChanged: (Double) -> Unit,
+) {
+    Card {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.settings_text_scale_title),
+                style = MaterialTheme.typography.titleMedium,
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_text_scale_label),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Text(
+                    text = String.format("%.1f", currentScale),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+
+            Slider(
+                value = currentScale.toFloat(),
+                onValueChange = { newValue ->
+                    onScaleChanged(newValue.toDouble())
+                },
+                valueRange = org.taigidict.app.core.settings.AppSettingsConstants.MIN_READING_TEXT_SCALE.toFloat()
+                    ..org.taigidict.app.core.settings.AppSettingsConstants.MAX_READING_TEXT_SCALE.toFloat(),
+                steps = org.taigidict.app.core.settings.AppSettingsConstants.READING_TEXT_SCALE_DIVISIONS,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
 }
 

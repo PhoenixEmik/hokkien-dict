@@ -33,6 +33,7 @@ data class SettingsUiState(
     val errorMessage: String? = null,
     val themePreference: AppThemePreference = AppThemePreference.System,
     val sourceSnapshot: DownloadSnapshot = DownloadSnapshot(),
+    val readingTextScale: Double = 1.0,
 )
 
 enum class SettingsMaintenanceAction {
@@ -86,12 +87,21 @@ class SettingsViewModel(
             }
         }
         viewModelScope.launch {
+            settingsStore.readingTextScale.collect { scale ->
+                _uiState.update { it.copy(readingTextScale = scale) }
+            }
+        }
+        viewModelScope.launch {
             sourceStore.refresh()
         }
     }
 
     fun setThemePreference(preference: AppThemePreference) {
         settingsStore.setThemePreference(preference)
+    }
+
+    fun setReadingTextScale(value: Double) {
+        settingsStore.setReadingTextScale(value)
     }
 
     fun restoreDictionarySource() {

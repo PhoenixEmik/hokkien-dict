@@ -85,6 +85,8 @@
     <string name="source_status_paused">已暇置</string>
     <string name="source_status_completed">已下載</string>
     <string name="source_status_failed">失敗</string>
+    <string name="settings_text_scale_title">閱讀文一日大小</string>
+    <string name="settings_text_scale_label">比例</string>
     <string name="bundled_package_label">內建資料包目錄：%1$s</string>
     <string name="bundled_manifest_label">內建 manifest 資產：%1$s</string>
     <string name="bundled_entries_label">內建 entries 資產：%1$s</string>

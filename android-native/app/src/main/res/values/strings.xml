@@ -85,6 +85,8 @@
     <string name="source_status_paused">Paused</string>
     <string name="source_status_completed">Downloaded</string>
     <string name="source_status_failed">Failed</string>
+    <string name="settings_text_scale_title">Reading text size</string>
+    <string name="settings_text_scale_label">Scale</string>
     <string name="bundled_package_label">Bundled package directory: %1$s</string>
     <string name="bundled_manifest_label">Bundled manifest asset: %1$s</string>
     <string name="bundled_entries_label">Bundled entries asset: %1$s</string>
