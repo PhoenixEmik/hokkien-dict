@@ -110,6 +110,9 @@ fun DictionaryScreen(
                         },
                         expanded = false,
                         onExpandedChange = {},
+                        placeholder = {
+                            Text(text = stringResource(R.string.dictionary_search_placeholder))
+                        },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Outlined.Search,
@@ -188,7 +191,9 @@ fun DictionaryScreen(
                     )
                 }
 
-                uiState.query.isBlank() -> DictionaryHomeEmptyCard()
+                uiState.query.isBlank() &&
+                    uiState.hasLoadedRecentSearches &&
+                    uiState.recentSearches.isEmpty() -> DictionaryHomeEmptyCard()
 
                 uiState.results.isNotEmpty() -> {
                     Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {

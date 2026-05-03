@@ -39,6 +39,7 @@ data class DictionarySearchUiState(
     val entryDetailErrorMessage: String? = null,
     val results: List<DictionaryEntry> = emptyList(),
     val recentSearches: List<String> = emptyList(),
+    val hasLoadedRecentSearches: Boolean = false,
 )
 
 class DictionarySearchViewModel(
@@ -269,7 +270,10 @@ class DictionarySearchViewModel(
         viewModelScope.launch {
             searchHistoryStore.recentQueries.collectLatest { queries ->
                 _uiState.update {
-                    it.copy(recentSearches = queries)
+                    it.copy(
+                        recentSearches = queries,
+                        hasLoadedRecentSearches = true,
+                    )
                 }
             }
         }

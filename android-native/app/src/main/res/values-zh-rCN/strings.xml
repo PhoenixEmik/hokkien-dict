@@ -10,7 +10,7 @@
     <string name="dictionary_placeholder_title">辞典</string>
     <string name="dictionary_placeholder_body">可搜索台语词目、Tailo 罗马字与华语释义。</string>
     <string name="dictionary_search_label">搜索</string>
-    <string name="dictionary_search_placeholder">输入台语汉字、白话字或华语词义</string>
+    <string name="dictionary_search_placeholder">搜索</string>
     <string name="dictionary_home_hint">请输入关键词开始搜索辞典。</string>
     <string name="dictionary_empty_state_title">开始搜索</string>
     <string name="dictionary_empty_state_body">输入台语汉字、白话字，或华语释义后才显示词条。</string>

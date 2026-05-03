@@ -10,7 +10,7 @@
     <string name="dictionary_placeholder_title">辭典</string>
     <string name="dictionary_placeholder_body">可搜尋台語詞目、Tailo 羅馬字與華語釋義。</string>
     <string name="dictionary_search_label">搜尋</string>
-    <string name="dictionary_search_placeholder">輸入台語漢字、白話字或華語詞義</string>
+    <string name="dictionary_search_placeholder">搜尋</string>
     <string name="dictionary_home_hint">請輸入關鍵字開始搜尋辭典。</string>
     <string name="dictionary_empty_state_title">開始搜尋</string>
     <string name="dictionary_empty_state_body">輸入台語漢字、白話字，或華語釋義後才顯示詞條。</string>
