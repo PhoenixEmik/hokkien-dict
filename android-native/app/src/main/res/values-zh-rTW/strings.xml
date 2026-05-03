@@ -83,6 +83,7 @@
     <string name="settings_language_title">語言</string>
     <string name="settings_language_system">跟隨系統</string>
     <string name="settings_language_traditional_chinese">繁體中文</string>
+    <string name="settings_language_simplified_chinese">簡體中文</string>
     <string name="settings_language_english">English</string>
     <string name="settings_dictionary_source_title">輔助較作賀料</string>
     <string name="settings_source_action_restore">恢複套件稿</string>

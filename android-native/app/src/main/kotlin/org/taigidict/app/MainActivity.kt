@@ -41,6 +41,7 @@ class MainActivity : ComponentActivity() {
                 val locales = when (languagePreference) {
                     AppLanguagePreference.System -> LocaleListCompat.getEmptyLocaleList()
                     AppLanguagePreference.TraditionalChinese -> LocaleListCompat.forLanguageTags("zh-TW")
+                    AppLanguagePreference.SimplifiedChinese -> LocaleListCompat.forLanguageTags("zh-CN")
                     AppLanguagePreference.English -> LocaleListCompat.forLanguageTags("en")
                 }
                 AppCompatDelegate.setApplicationLocales(locales)

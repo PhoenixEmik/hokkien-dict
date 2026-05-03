@@ -461,6 +461,7 @@ private fun LanguagePreferenceCard(
 private fun AppLanguagePreference.displayLabel(): String = when (this) {
     AppLanguagePreference.System -> stringResource(R.string.settings_language_system)
     AppLanguagePreference.TraditionalChinese -> stringResource(R.string.settings_language_traditional_chinese)
+    AppLanguagePreference.SimplifiedChinese -> stringResource(R.string.settings_language_simplified_chinese)
     AppLanguagePreference.English -> stringResource(R.string.settings_language_english)
 }
 

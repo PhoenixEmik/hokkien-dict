@@ -83,6 +83,7 @@
     <string name="settings_language_title">Language</string>
     <string name="settings_language_system">Follow system</string>
     <string name="settings_language_traditional_chinese">Traditional Chinese</string>
+    <string name="settings_language_simplified_chinese">Simplified Chinese</string>
     <string name="settings_language_english">English</string>
     <string name="settings_dictionary_source_title">Dictionary source</string>
     <string name="settings_source_action_restore">Restore bundled</string>
