@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -90,6 +91,49 @@ class DictionarySearchViewModelTest {
         assertEquals("辭典", uiState.query)
         assertFalse(uiState.isSearching)
         assertEquals(listOf(entry), uiState.results)
+        assertEquals(listOf("辭典"), repository.searchQueries)
+    }
+
+    @Test
+    fun onQueryChange_waitsForDebounceBeforeSearching() = runTest(dispatcher) {
+        val entry = sampleEntry(id = 7, hanji = "辭典", romanization = "sû-tián")
+        val repository = FakeDictionaryRepository(
+            bundle = DictionaryBundle(1, 1, 0, "/tmp/dictionary.sqlite"),
+            searchResults = listOf(entry),
+        )
+
+        val viewModel = createViewModel(repository)
+        advanceUntilIdle()
+
+        viewModel.onQueryChange("辭典")
+
+        advanceTimeBy(299)
+        assertTrue(repository.searchQueries.isEmpty())
+
+        advanceTimeBy(1)
+        advanceUntilIdle()
+        assertEquals(listOf("辭典"), repository.searchQueries)
+    }
+
+    @Test
+    fun onQueryChange_newerQueryCancelsOlderDebouncedSearch() = runTest(dispatcher) {
+        val repository = FakeDictionaryRepository(
+            bundle = DictionaryBundle(1, 1, 0, "/tmp/dictionary.sqlite"),
+            searchResults = listOf(sampleEntry(id = 7, hanji = "辭典", romanization = "sû-tián")),
+        )
+
+        val viewModel = createViewModel(repository)
+        advanceUntilIdle()
+
+        viewModel.onQueryChange("辭")
+        advanceTimeBy(150)
+        viewModel.onQueryChange("辭典")
+
+        advanceTimeBy(299)
+        assertTrue(repository.searchQueries.isEmpty())
+
+        advanceTimeBy(1)
+        advanceUntilIdle()
         assertEquals(listOf("辭典"), repository.searchQueries)
     }
 

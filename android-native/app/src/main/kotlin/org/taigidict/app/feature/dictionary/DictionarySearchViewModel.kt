@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.taigidict.app.app.TaigiDictApplication
@@ -51,6 +52,7 @@ class DictionarySearchViewModel(
     private val searchHistoryStore: SearchHistoryStoring =
         (application as TaigiDictApplication).appContainer.searchHistoryStore,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val searchDebounceMillis: Long = SEARCH_DEBOUNCE_MILLIS,
 ) : AndroidViewModel(application) {
     constructor(application: Application) : this(
         application = application,
@@ -59,6 +61,7 @@ class DictionarySearchViewModel(
         chineseConversionService = (application as TaigiDictApplication).appContainer.chineseConversionService,
         searchHistoryStore = (application as TaigiDictApplication).appContainer.searchHistoryStore,
         ioDispatcher = Dispatchers.IO,
+        searchDebounceMillis = SEARCH_DEBOUNCE_MILLIS,
     )
 
     private val detailController = DictionaryEntryDetailController(repository)
@@ -113,6 +116,8 @@ class DictionarySearchViewModel(
                     searchErrorMessage = null,
                 )
             }
+
+            delay(searchDebounceMillis)
 
             val result = withContext(ioDispatcher) {
                 runCatching {
@@ -358,5 +363,9 @@ class DictionarySearchViewModel(
             },
             senses = senses,
         )
+    }
+
+    private companion object {
+        const val SEARCH_DEBOUNCE_MILLIS = 300L
     }
 }
