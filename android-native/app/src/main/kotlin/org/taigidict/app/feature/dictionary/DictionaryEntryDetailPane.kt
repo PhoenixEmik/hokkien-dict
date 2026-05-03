@@ -180,6 +180,7 @@ private fun DictionaryEntryDetailContent(
                             Icon(
                                 imageVector = Icons.Outlined.VolumeUp,
                                 contentDescription = stringResource(R.string.dictionary_play_word_audio),
+                                tint = MaterialTheme.colorScheme.primary,
                             )
                         }
                     }
@@ -395,6 +396,7 @@ private fun DictionaryExampleBlock(
                 Icon(
                     imageVector = Icons.Outlined.VolumeUp,
                     contentDescription = stringResource(R.string.dictionary_play_example_audio),
+                    tint = MaterialTheme.colorScheme.primary,
                 )
             }
         }
