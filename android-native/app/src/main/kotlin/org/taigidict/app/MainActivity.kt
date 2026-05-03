@@ -1,8 +1,8 @@
 package org.taigidict.app
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -22,7 +22,7 @@ import org.taigidict.app.feature.initialization.InitializationViewModel
 import org.taigidict.app.navigation.MainNavGraph
 import org.taigidict.app.ui.theme.TaigiDictTheme
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     private val initializationViewModel: InitializationViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
