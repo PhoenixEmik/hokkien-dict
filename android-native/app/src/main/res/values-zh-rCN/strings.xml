@@ -53,6 +53,8 @@
     <string name="bookmarks_remove_action">移除书签</string>
     <string name="settings_title">设置</string>
     <string name="settings_overview_body">管理外观、语言、阅读字级与离线资源。</string>
+    <string name="settings_display_section">显示</string>
+    <string name="settings_info_section">资料与说明</string>
     <string name="settings_placeholder_title">设置</string>
     <string name="settings_placeholder_body">管理外观、语言、阅读字级与离线资源。</string>
     <string name="settings_dictionary_title">本地辞典数据库</string>

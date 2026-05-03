@@ -53,6 +53,8 @@
     <string name="bookmarks_remove_action">Remove bookmark</string>
     <string name="settings_title">Settings</string>
     <string name="settings_overview_body">Manage appearance, language, reading text size, and offline resources.</string>
+    <string name="settings_display_section">Display</string>
+    <string name="settings_info_section">Data and information</string>
     <string name="settings_placeholder_title">Settings</string>
     <string name="settings_placeholder_body">Manage appearance, language, reading text size, and offline resources.</string>
     <string name="settings_dictionary_title">Local dictionary database</string>

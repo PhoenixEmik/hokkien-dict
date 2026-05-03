@@ -1,6 +1,7 @@
 package org.taigidict.app.feature.settings
 
 import android.text.format.Formatter
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,15 +14,31 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
+import androidx.compose.material.icons.outlined.Build
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,14 +63,18 @@ import org.taigidict.app.data.audio.DictionaryAudioArchiveType
 import org.taigidict.app.feature.info.AppDocument
 import org.taigidict.app.feature.info.AppDocumentViewer
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     assetDirectory: String,
     onDictionaryDataChanged: () -> Unit = {},
+    modifier: Modifier = Modifier,
 ) {
     var selectedDocument by rememberSaveable { mutableStateOf<AppDocument?>(null) }
     var pendingAction by rememberSaveable { mutableStateOf<SettingsDangerousAction?>(null) }
     var showAdvancedSettings by rememberSaveable { mutableStateOf(false) }
+    var showThemeDialog by rememberSaveable { mutableStateOf(false) }
+    var showLanguageDialog by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     val appContainer = (context.applicationContext as TaigiDictApplication).appContainer
     val audioArchiveManager = appContainer.offlineAudioArchiveManager
@@ -80,30 +101,60 @@ fun SettingsScreen(
             text = {
                 Text(text = action.message())
             },
-            confirmButton = {
-                OutlinedButton(
-                    onClick = {
-                        pendingAction = null
-                        when (action) {
-                            SettingsDangerousAction.RebuildDatabase -> viewModel.rebuildDatabase()
-                            SettingsDangerousAction.ClearDatabase -> viewModel.clearDatabase()
-                            SettingsDangerousAction.RestoreDictionarySource -> viewModel.restoreDictionarySource()
-                            SettingsDangerousAction.DownloadDictionarySource -> viewModel.downloadDictionarySource()
-                            SettingsDangerousAction.RedownloadWordArchive ->
-                                audioArchiveManager.restartDownload(DictionaryAudioArchiveType.Word)
-                            SettingsDangerousAction.RedownloadSentenceArchive ->
-                                audioArchiveManager.restartDownload(DictionaryAudioArchiveType.Sentence)
-                        }
-                    },
-                ) {
-                    Text(text = stringResource(R.string.settings_confirm_continue))
-                }
-            },
             dismissButton = {
                 TextButton(onClick = { pendingAction = null }) {
                     Text(text = stringResource(R.string.settings_confirm_cancel))
                 }
             },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        when (action) {
+                            SettingsDangerousAction.RebuildDatabase -> viewModel.rebuildDatabase()
+                            SettingsDangerousAction.ClearDatabase -> viewModel.clearDatabase()
+                            SettingsDangerousAction.RestoreDictionarySource -> viewModel.restoreDictionarySource()
+                            SettingsDangerousAction.DownloadDictionarySource -> viewModel.downloadDictionarySource()
+                            SettingsDangerousAction.RedownloadWordArchive -> {
+                                audioArchiveManager.restartDownload(DictionaryAudioArchiveType.Word)
+                            }
+                            SettingsDangerousAction.RedownloadSentenceArchive -> {
+                                audioArchiveManager.restartDownload(DictionaryAudioArchiveType.Sentence)
+                            }
+                        }
+                        pendingAction = null
+                    },
+                ) {
+                    Text(text = stringResource(R.string.settings_confirm_continue))
+                }
+            },
+        )
+    }
+
+    if (showThemeDialog) {
+        PreferenceSelectionDialog(
+            title = stringResource(R.string.settings_theme_title),
+            options = AppThemePreference.entries,
+            selectedOption = uiState.themePreference,
+            optionLabel = { it.displayLabel() },
+            onSelect = {
+                viewModel.setThemePreference(it)
+                showThemeDialog = false
+            },
+            onDismiss = { showThemeDialog = false },
+        )
+    }
+
+    if (showLanguageDialog) {
+        PreferenceSelectionDialog(
+            title = stringResource(R.string.settings_language_title),
+            options = AppLanguagePreference.entries,
+            selectedOption = uiState.languagePreference,
+            optionLabel = { it.displayLabel() },
+            onSelect = {
+                viewModel.setLanguagePreference(it)
+                showLanguageDialog = false
+            },
+            onDismiss = { showLanguageDialog = false },
         )
     }
 
@@ -114,6 +165,7 @@ fun SettingsScreen(
             wordSnapshot = wordSnapshot,
             sentenceSnapshot = sentenceSnapshot,
             assetDirectory = assetDirectory,
+            modifier = modifier,
             onBack = { showAdvancedSettings = false },
             onRebuild = {
                 pendingAction = SettingsDangerousAction.RebuildDatabase
@@ -162,59 +214,276 @@ fun SettingsScreen(
         }
     }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(
-                    text = stringResource(R.string.settings_title),
-                    style = MaterialTheme.typography.headlineMedium,
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(text = stringResource(R.string.settings_title))
+                },
+            )
+        },
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            item {
+                SectionHeader(text = stringResource(R.string.settings_display_section))
+            }
+
+            item {
+                DisplaySettingsCard(
+                    selectedLanguage = uiState.languagePreference,
+                    selectedTheme = uiState.themePreference,
+                    currentScale = uiState.readingTextScale,
+                    onOpenLanguage = { showLanguageDialog = true },
+                    onOpenTheme = { showThemeDialog = true },
+                    onScaleChanged = viewModel::setReadingTextScale,
                 )
-                Text(
-                    text = stringResource(R.string.settings_overview_body),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+            }
+
+            item {
+                SectionHeader(text = stringResource(R.string.settings_info_section))
+            }
+
+            item {
+                InfoAndMaintenanceCard(
+                    onOpenAdvancedSettings = { showAdvancedSettings = true },
+                    onOpenAbout = { selectedDocument = AppDocument.About },
+                    onOpenReference = { selectedDocument = AppDocument.ReferenceLinks },
+                )
+            }
+
+            item {
+                SectionHeader(text = stringResource(R.string.settings_offline_audio_title))
+            }
+
+            items(
+                listOf(
+                    DictionaryAudioArchiveType.Word to wordSnapshot,
+                    DictionaryAudioArchiveType.Sentence to sentenceSnapshot,
+                ),
+                key = { (type, _) -> type.storageKey },
+            ) { (type, snapshot) ->
+                AudioArchiveResourceCard(
+                    type = type,
+                    snapshot = snapshot,
+                    onAction = { action ->
+                        when (action) {
+                            AudioArchiveAction.Download -> audioArchiveManager.startDownload(type)
+                            AudioArchiveAction.Pause -> audioArchiveManager.pauseDownload(type)
+                            AudioArchiveAction.Resume -> audioArchiveManager.resumeDownload(type)
+                            AudioArchiveAction.Redownload -> {
+                                pendingAction = when (type) {
+                                    DictionaryAudioArchiveType.Word -> SettingsDangerousAction.RedownloadWordArchive
+                                    DictionaryAudioArchiveType.Sentence -> SettingsDangerousAction.RedownloadSentenceArchive
+                                }
+                            }
+                        }
+                    },
                 )
             }
         }
+    }
+}
 
-        item {
-            ThemePreferenceCard(
-                selectedTheme = uiState.themePreference,
-                onThemeSelected = viewModel::setThemePreference,
+@Composable
+private fun SectionHeader(
+    text: String,
+) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(horizontal = 2.dp),
+    )
+}
+
+@Composable
+private fun DisplaySettingsCard(
+    selectedLanguage: AppLanguagePreference,
+    selectedTheme: AppThemePreference,
+    currentScale: Double,
+    onOpenLanguage: () -> Unit,
+    onOpenTheme: () -> Unit,
+    onScaleChanged: (Double) -> Unit,
+) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            SettingsNavigationRow(
+                title = stringResource(R.string.settings_language_title),
+                value = selectedLanguage.displayLabel(),
+                onClick = onOpenLanguage,
+            )
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+            SettingsNavigationRow(
+                title = stringResource(R.string.settings_theme_title),
+                value = selectedTheme.displayLabel(),
+                onClick = onOpenTheme,
+            )
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(R.string.settings_text_scale_title),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(
+                        text = String.format("%.2fx", currentScale),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
+                Slider(
+                    value = currentScale.toFloat(),
+                    onValueChange = { onScaleChanged(it.toDouble()) },
+                    valueRange = org.taigidict.app.core.settings.AppSettingsConstants.MIN_READING_TEXT_SCALE.toFloat()
+                        ..org.taigidict.app.core.settings.AppSettingsConstants.MAX_READING_TEXT_SCALE.toFloat(),
+                    steps = org.taigidict.app.core.settings.AppSettingsConstants.READING_TEXT_SCALE_DIVISIONS,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingsNavigationRow(
+    title: String,
+    value: String,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+        )
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Icon(
+                imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+    }
+}
 
-        item {
-            LanguagePreferenceCard(
-                selectedLanguage = uiState.languagePreference,
-                onLanguageSelected = viewModel::setLanguagePreference,
-            )
-        }
-
-        item {
-            TextScaleCard(
-                currentScale = uiState.readingTextScale,
-                onScaleChanged = viewModel::setReadingTextScale,
-            )
-        }
-
-        item {
-            SettingsInfoCard(
-                onOpenDocument = { document ->
-                    selectedDocument = document
+@Composable
+private fun InfoAndMaintenanceCard(
+    onOpenAdvancedSettings: () -> Unit,
+    onOpenAbout: () -> Unit,
+    onOpenReference: () -> Unit,
+) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            ListItem(
+                modifier = Modifier.clickable(onClick = onOpenAdvancedSettings),
+                colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Outlined.Build,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                },
+                headlineContent = {
+                    Text(
+                        text = stringResource(R.string.settings_advanced_title),
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                },
+                trailingContent = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 },
             )
-        }
-
-        item {
-            AdvancedSettingsEntryCard(
-                onOpenAdvancedSettings = {
-                    showAdvancedSettings = true
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+            ListItem(
+                modifier = Modifier.clickable(onClick = onOpenAbout),
+                colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Outlined.Info,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                },
+                headlineContent = {
+                    Text(
+                        text = stringResource(R.string.settings_info_about),
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                },
+                trailingContent = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                },
+            )
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+            ListItem(
+                modifier = Modifier.clickable(onClick = onOpenReference),
+                colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.MenuBook,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                },
+                headlineContent = {
+                    Text(
+                        text = stringResource(R.string.settings_info_reference),
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                },
+                trailingContent = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 },
             )
         }
@@ -222,87 +491,143 @@ fun SettingsScreen(
 }
 
 @Composable
+private fun <T> PreferenceSelectionDialog(
+    title: String,
+    options: List<T>,
+    selectedOption: T,
+    optionLabel: @Composable (T) -> String,
+    onSelect: (T) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(text = title)
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                options.forEach { option ->
+                    val selected = option == selectedOption
+                    ListItem(
+                        modifier = Modifier.clickable {
+                            onSelect(option)
+                        },
+                        colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
+                        headlineContent = {
+                            Text(text = optionLabel(option))
+                        },
+                        trailingContent = {
+                            if (selected) {
+                                Text(
+                                    text = "✓",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                            }
+                        },
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(R.string.settings_confirm_cancel))
+            }
+        },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 private fun AdvancedSettingsScreen(
     uiState: SettingsUiState,
     sourceSnapshot: org.taigidict.app.data.source.DownloadSnapshot,
     wordSnapshot: AudioArchiveDownloadSnapshot,
     sentenceSnapshot: AudioArchiveDownloadSnapshot,
     assetDirectory: String,
+    modifier: Modifier = Modifier,
     onBack: () -> Unit,
     onRebuild: () -> Unit,
     onClear: () -> Unit,
     onSourceAction: (DictionarySourceAction) -> Unit,
     onAudioAction: (DictionaryAudioArchiveType, AudioArchiveAction) -> Unit,
 ) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        item {
-            OutlinedButton(onClick = onBack) {
-                Text(text = stringResource(R.string.settings_advanced_back))
-            }
-        }
-
-        item {
-            Text(
-                text = stringResource(R.string.settings_advanced_title),
-                style = MaterialTheme.typography.headlineMedium,
-            )
-        }
-
-        item {
-            Text(
-                text = stringResource(R.string.settings_advanced_body),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
-
-        item {
-            DictionaryMaintenanceCard(
-                uiState = uiState,
-                onRebuild = onRebuild,
-                onClear = onClear,
-            )
-        }
-
-        item {
-            DictionarySourceCard(
-                snapshot = sourceSnapshot,
-                onAction = onSourceAction,
-            )
-        }
-
-        item {
-            Text(
-                text = stringResource(R.string.settings_offline_audio_title),
-                style = MaterialTheme.typography.titleMedium,
-            )
-        }
-
-        items(
-            listOf(
-                DictionaryAudioArchiveType.Word to wordSnapshot,
-                DictionaryAudioArchiveType.Sentence to sentenceSnapshot,
-            ),
-            key = { (type, _) -> type.storageKey },
-        ) { (type, snapshot) ->
-            AudioArchiveResourceCard(
-                type = type,
-                snapshot = snapshot,
-                onAction = { action ->
-                    onAudioAction(type, action)
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(text = stringResource(R.string.settings_advanced_title))
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = stringResource(R.string.settings_advanced_back),
+                        )
+                    }
                 },
             )
-        }
+        },
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            item {
+                Text(
+                    text = stringResource(R.string.settings_advanced_body),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
 
-        item {
-            Text(
-                text = stringResource(R.string.bundled_package_label, assetDirectory),
-                style = MaterialTheme.typography.bodyMedium,
-            )
+            item {
+                DictionaryMaintenanceCard(
+                    uiState = uiState,
+                    onRebuild = onRebuild,
+                    onClear = onClear,
+                )
+            }
+
+            item {
+                DictionarySourceCard(
+                    snapshot = sourceSnapshot,
+                    onAction = onSourceAction,
+                )
+            }
+
+            item {
+                Text(
+                    text = stringResource(R.string.settings_offline_audio_title),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
+
+            items(
+                listOf(
+                    DictionaryAudioArchiveType.Word to wordSnapshot,
+                    DictionaryAudioArchiveType.Sentence to sentenceSnapshot,
+                ),
+                key = { (type, _) -> type.storageKey },
+            ) { (type, snapshot) ->
+                AudioArchiveResourceCard(
+                    type = type,
+                    snapshot = snapshot,
+                    onAction = { action ->
+                        onAudioAction(type, action)
+                    },
+                )
+            }
+
+            item {
+                Text(
+                    text = stringResource(R.string.bundled_package_label, assetDirectory),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
         }
     }
 }
@@ -753,6 +1078,7 @@ private fun DictionarySourceCard(
     snapshot: org.taigidict.app.data.source.DownloadSnapshot,
     onAction: (DictionarySourceAction) -> Unit,
 ) {
+    val context = LocalContext.current
     Card {
         Column(
             modifier = Modifier
@@ -767,7 +1093,7 @@ private fun DictionarySourceCard(
 
             val stateLabel = snapshot.state.label()
             val sizeLabel = snapshot.totalBytes?.let { total ->
-                Formatter.formatFileSize(null, total)
+                Formatter.formatFileSize(context, total)
             } ?: "?"
 
             Text(

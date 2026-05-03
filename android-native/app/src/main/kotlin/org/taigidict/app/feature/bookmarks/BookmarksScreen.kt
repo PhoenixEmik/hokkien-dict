@@ -15,12 +15,15 @@ import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -36,9 +39,11 @@ import org.taigidict.app.domain.model.DictionaryEntry
 import org.taigidict.app.feature.common.DictionaryFallbackText
 import org.taigidict.app.feature.dictionary.DictionaryEntryDetailPane
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookmarksScreen(
     dataVersion: Int,
+    modifier: Modifier = Modifier,
     viewModel: BookmarksViewModel = viewModel(key = "bookmarks-$dataVersion"),
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
@@ -60,70 +65,78 @@ fun BookmarksScreen(
             },
             onBack = viewModel::onEntryDetailDismissed,
             onOpenLinkedWord = viewModel::onLinkedWordSelected,
+            modifier = modifier.fillMaxSize(),
         )
         return
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Text(
-            text = stringResource(R.string.bookmarks_title),
-            style = MaterialTheme.typography.headlineLarge,
-        )
-
-        Text(
-            text = stringResource(R.string.bookmarks_overview_body),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-
-        when {
-            uiState.isLoadingEntries -> {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    CircularProgressIndicator(strokeWidth = 2.dp)
-                    Text(
-                        text = stringResource(R.string.bookmarks_loading),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-
-            uiState.entriesErrorMessage != null -> {
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(text = stringResource(R.string.bookmarks_title))
+                },
+            )
+        },
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
                 Text(
-                    text = stringResource(R.string.bookmarks_load_error, uiState.entriesErrorMessage),
+                    text = stringResource(R.string.bookmarks_overview_body),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-            }
 
-            uiState.entries.isEmpty() -> {
-                BookmarksEmptyCard()
-            }
+                when {
+                    uiState.isLoadingEntries -> {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            CircularProgressIndicator(strokeWidth = 2.dp)
+                            Text(
+                                text = stringResource(R.string.bookmarks_loading),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
 
-            else -> {
-                LazyColumn(
-                    modifier = Modifier.weight(1f, fill = true),
-                    verticalArrangement = Arrangement.spacedBy(0.dp),
-                ) {
-                    items(uiState.entries, key = { it.id }) { entry ->
-                        BookmarkEntryListItem(
-                            entry = entry,
-                            onClick = { viewModel.onEntrySelected(entry.id) },
+                    uiState.entriesErrorMessage != null -> {
+                        Text(
+                            text = stringResource(R.string.bookmarks_load_error, uiState.entriesErrorMessage),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error,
                         )
-                        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+                    }
+
+                    uiState.entries.isEmpty() -> {
+                        BookmarksEmptyCard()
+                    }
+
+                    else -> {
+                        LazyColumn(
+                            modifier = Modifier.weight(1f, fill = true),
+                            verticalArrangement = Arrangement.spacedBy(0.dp),
+                        ) {
+                            items(uiState.entries, key = { it.id }) { entry ->
+                                BookmarkEntryListItem(
+                                    entry = entry,
+                                    onClick = { viewModel.onEntrySelected(entry.id) },
+                                )
+                                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+                            }
+                        }
                     }
                 }
             }
-        }
     }
 }
 

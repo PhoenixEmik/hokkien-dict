@@ -50,21 +50,24 @@ fun MainNavGraph(appState: MainAppState) {
                 }
             }
         },
-    ) { _ ->
+    ) { innerPadding ->
         when (currentDestination) {
             MainDestination.Dictionary -> DictionaryScreen(
                 manifestAssetPath = appState.appContainer.bundledDictionaryManifestAssetPath,
                 entriesAssetPath = appState.appContainer.bundledDictionaryEntriesAssetPath,
                 dataVersion = appState.dictionaryDataVersion,
+                modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
             )
 
             MainDestination.Bookmarks -> BookmarksScreen(
                 dataVersion = appState.dictionaryDataVersion,
+                modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
             )
 
             MainDestination.Settings -> SettingsScreen(
                 assetDirectory = appState.appContainer.bundledDictionaryAssetDirectory,
                 onDictionaryDataChanged = appState::invalidateDictionaryData,
+                modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
             )
         }
     }

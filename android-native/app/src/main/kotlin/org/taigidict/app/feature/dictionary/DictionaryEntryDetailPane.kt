@@ -28,6 +28,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -40,7 +41,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -69,6 +69,7 @@ fun DictionaryEntryDetailPane(
     onToggleBookmark: () -> Unit,
     onBack: () -> Unit,
     onOpenLinkedWord: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val appContainer = (context.applicationContext as TaigiDictApplication).appContainer
@@ -87,6 +88,7 @@ fun DictionaryEntryDetailPane(
             onToggleBookmark = {},
             isBookmarked = isBookmarked,
             showActions = false,
+            modifier = modifier,
         )
 
         errorMessage != null -> DetailStatusScreen(
@@ -97,6 +99,7 @@ fun DictionaryEntryDetailPane(
             onToggleBookmark = {},
             isBookmarked = isBookmarked,
             showActions = false,
+            modifier = modifier,
         )
 
         entry != null -> DictionaryEntryDetailContent(
@@ -140,6 +143,7 @@ fun DictionaryEntryDetailPane(
                 }
             },
             onOpenLinkedWord = onOpenLinkedWord,
+            modifier = modifier,
         )
     }
 }
@@ -153,34 +157,41 @@ private fun DetailStatusScreen(
     onToggleBookmark: () -> Unit,
     isBookmarked: Boolean,
     showActions: Boolean,
+    modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = DetailHorizontalPadding, vertical = DetailVerticalPadding),
-        verticalArrangement = Arrangement.spacedBy(DetailSectionSpacing),
-    ) {
-        DetailTopBar(
-            title = title,
-            onBack = onBack,
-            onShareEntry = onShareEntry,
-            onToggleBookmark = onToggleBookmark,
-            isBookmarked = isBookmarked,
-            showActions = showActions,
-        )
-
-        Card(
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            shape = RoundedCornerShape(16.dp),
-        ) {
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 18.dp),
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            DetailTopBar(
+                title = title,
+                onBack = onBack,
+                onShareEntry = onShareEntry,
+                onToggleBookmark = onToggleBookmark,
+                isBookmarked = isBookmarked,
+                showActions = showActions,
             )
+        },
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = DetailHorizontalPadding, vertical = DetailVerticalPadding),
+            verticalArrangement = Arrangement.spacedBy(DetailSectionSpacing),
+        ) {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(16.dp),
+            ) {
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 18.dp),
+                )
+            }
         }
     }
 }
@@ -198,6 +209,7 @@ private fun DictionaryEntryDetailContent(
     onPlayEntryAudio: () -> Unit,
     onPlayExampleAudio: (DictionaryExample) -> Unit,
     onOpenLinkedWord: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val scaledHeadlineStyle = MaterialTheme.typography.headlineLarge.copy(
         fontSize = MaterialTheme.typography.headlineMedium.fontSize * readingTextScale.toFloat(),
@@ -206,13 +218,9 @@ private fun DictionaryEntryDetailContent(
         fontSize = MaterialTheme.typography.titleMedium.fontSize * readingTextScale.toFloat(),
     )
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = DetailHorizontalPadding, vertical = DetailVerticalPadding),
-        verticalArrangement = Arrangement.spacedBy(DetailSectionSpacing),
-    ) {
-        item {
+    Scaffold(
+        modifier = modifier,
+        topBar = {
             DetailTopBar(
                 title = entry.hanji,
                 onBack = onBack,
@@ -221,9 +229,16 @@ private fun DictionaryEntryDetailContent(
                 isBookmarked = isBookmarked,
                 showActions = true,
             )
-        }
-
-        item {
+        },
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = DetailHorizontalPadding, vertical = DetailVerticalPadding),
+            verticalArrangement = Arrangement.spacedBy(DetailSectionSpacing),
+        ) {
+            item {
             Card(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
                 shape = RoundedCornerShape(16.dp),
@@ -289,15 +304,16 @@ private fun DictionaryEntryDetailContent(
             }
         }
 
-        items(entry.senses.size, key = { index -> "sense-${entry.id}-$index" }) { index ->
-            DictionarySenseSection(
-                index = index,
-                sense = entry.senses[index],
-                readingTextScale = readingTextScale,
-                openableLinkedWords = openableLinkedWords,
-                onPlayExampleAudio = onPlayExampleAudio,
-                onOpenLinkedWord = onOpenLinkedWord,
-            )
+            items(entry.senses.size, key = { index -> "sense-${entry.id}-$index" }) { index ->
+                DictionarySenseSection(
+                    index = index,
+                    sense = entry.senses[index],
+                    readingTextScale = readingTextScale,
+                    openableLinkedWords = openableLinkedWords,
+                    onPlayExampleAudio = onPlayExampleAudio,
+                    onOpenLinkedWord = onOpenLinkedWord,
+                )
+            }
         }
     }
 }
@@ -314,7 +330,7 @@ private fun DetailTopBar(
 ) {
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Transparent,
+            containerColor = MaterialTheme.colorScheme.surface,
             navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
             titleContentColor = MaterialTheme.colorScheme.onSurface,
             actionIconContentColor = MaterialTheme.colorScheme.onSurface,

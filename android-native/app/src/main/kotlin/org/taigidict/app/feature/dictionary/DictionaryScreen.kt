@@ -26,10 +26,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -57,6 +59,7 @@ fun DictionaryScreen(
     @Suppress("UNUSED_PARAMETER") manifestAssetPath: String,
     @Suppress("UNUSED_PARAMETER") entriesAssetPath: String,
     dataVersion: Int,
+    modifier: Modifier = Modifier,
     viewModel: DictionarySearchViewModel = viewModel(key = "dictionary-$dataVersion"),
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
@@ -65,32 +68,42 @@ fun DictionaryScreen(
     val bookmarkedIds = appContainer.bookmarkStore.bookmarkedIds.collectAsStateWithLifecycle().value
     val showsEntryDetail = uiState.isLoadingEntryDetail || uiState.selectedEntry != null || uiState.entryDetailErrorMessage != null
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = ScreenHorizontalPadding, vertical = ScreenVerticalPadding),
-        verticalArrangement = Arrangement.spacedBy(SectionSpacing),
-    ) {
-        if (showsEntryDetail) {
-            DictionaryEntryDetailPane(
-                isLoading = uiState.isLoadingEntryDetail,
-                entry = uiState.selectedEntry,
-                openableLinkedWords = uiState.openableLinkedWords,
-                errorMessage = uiState.entryDetailErrorMessage,
-                isBookmarked = uiState.selectedEntry?.id in bookmarkedIds,
-                onToggleBookmark = {
-                    uiState.selectedEntry?.let { entry ->
-                        appContainer.bookmarkStore.toggleBookmark(entry.id)
-                    }
+    if (showsEntryDetail) {
+        DictionaryEntryDetailPane(
+            isLoading = uiState.isLoadingEntryDetail,
+            entry = uiState.selectedEntry,
+            openableLinkedWords = uiState.openableLinkedWords,
+            errorMessage = uiState.entryDetailErrorMessage,
+            isBookmarked = uiState.selectedEntry?.id in bookmarkedIds,
+            onToggleBookmark = {
+                uiState.selectedEntry?.let { entry ->
+                    appContainer.bookmarkStore.toggleBookmark(entry.id)
+                }
+            },
+            onBack = viewModel::onEntryDetailDismissed,
+            onOpenLinkedWord = viewModel::onLinkedWordSelected,
+            modifier = modifier.fillMaxSize(),
+        )
+        return
+    }
+
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(text = stringResource(R.string.tab_dictionary))
                 },
-                onBack = viewModel::onEntryDetailDismissed,
-                onOpenLinkedWord = viewModel::onLinkedWordSelected,
             )
-        } else {
-            Text(
-                text = stringResource(R.string.tab_dictionary),
-                style = MaterialTheme.typography.headlineLarge,
-            )
+        },
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = ScreenHorizontalPadding, vertical = ScreenVerticalPadding),
+            verticalArrangement = Arrangement.spacedBy(SectionSpacing),
+        ) {
 
             SearchBar(
                 modifier = Modifier.fillMaxWidth(),
@@ -262,7 +275,7 @@ fun DictionaryScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-            }
+        }
         }
     }
 }
