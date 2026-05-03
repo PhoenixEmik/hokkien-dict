@@ -87,7 +87,7 @@ fun DictionaryScreen(
     Scaffold(
         modifier = modifier,
         contentWindowInsets = WindowInsets.safeDrawing.only(
-            WindowInsetsSides.Top + WindowInsetsSides.Horizontal,
+            WindowInsetsSides.Horizontal,
         ),
     ) { innerPadding ->
         Column(

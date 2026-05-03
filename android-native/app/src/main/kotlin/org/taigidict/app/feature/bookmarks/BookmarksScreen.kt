@@ -41,7 +41,6 @@ import org.taigidict.app.feature.dictionary.DictionaryEntryDetailPane
 
 private val RootHorizontalPadding = 16.dp
 private val RootVerticalPadding = 16.dp
-private val RootTopContentPadding = 16.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,7 +76,7 @@ fun BookmarksScreen(
     Scaffold(
         modifier = modifier,
         contentWindowInsets = WindowInsets.safeDrawing.only(
-            WindowInsetsSides.Top + WindowInsetsSides.Horizontal,
+            WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
         ),
     ) { innerPadding ->
         Column(
@@ -85,20 +84,9 @@ fun BookmarksScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(horizontal = RootHorizontalPadding)
-                .padding(top = RootTopContentPadding, bottom = RootVerticalPadding),
+                .padding(top = RootVerticalPadding, bottom = RootVerticalPadding),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-                Text(
-                    text = stringResource(R.string.bookmarks_title),
-                    style = MaterialTheme.typography.headlineLarge,
-                )
-
-                Text(
-                    text = stringResource(R.string.bookmarks_overview_body),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
                 when {
                     uiState.isLoadingEntries -> {
                         Column(

@@ -68,7 +68,6 @@ import org.taigidict.app.feature.info.AppDocumentViewer
 
 private val RootHorizontalPadding = 16.dp
 private val RootVerticalPadding = 16.dp
-private val RootTopContentPadding = 16.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -224,7 +223,7 @@ fun SettingsScreen(
     Scaffold(
         modifier = modifier,
         contentWindowInsets = WindowInsets.safeDrawing.only(
-            WindowInsetsSides.Top + WindowInsetsSides.Horizontal,
+            WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
         ),
     ) { innerPadding ->
         LazyColumn(
@@ -232,16 +231,9 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(horizontal = RootHorizontalPadding)
-                .padding(top = RootTopContentPadding, bottom = RootVerticalPadding),
+                .padding(top = RootVerticalPadding, bottom = RootVerticalPadding),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            item {
-                Text(
-                    text = stringResource(R.string.settings_title),
-                    style = MaterialTheme.typography.headlineLarge,
-                )
-            }
-
             item {
                 SectionHeader(text = stringResource(R.string.settings_display_section))
             }
