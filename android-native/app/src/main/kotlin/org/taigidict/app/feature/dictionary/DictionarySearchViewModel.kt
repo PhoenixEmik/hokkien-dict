@@ -75,7 +75,7 @@ class DictionarySearchViewModel(
     }
 
     fun onSearchSubmitted() {
-        searchHistoryStore.addQuery(_uiState.value.query)
+        persistCurrentQueryIfNeeded()
     }
 
     fun onRecentSearchSelected(query: String) {
@@ -138,7 +138,7 @@ class DictionarySearchViewModel(
     }
 
     fun onEntrySelected(entryId: Long) {
-        onSearchSubmitted()
+        persistCurrentQueryIfNeeded()
         entryDetailJob?.cancel()
         entryDetailJob = viewModelScope.launch {
             _uiState.update {
@@ -276,6 +276,15 @@ class DictionarySearchViewModel(
                 currentLocale = AppLocaleResolver.resolve(preference)
             }
         }
+    }
+
+    private fun persistCurrentQueryIfNeeded() {
+        val state = _uiState.value
+        if (state.query.isBlank() || state.results.isEmpty()) {
+            return
+        }
+
+        searchHistoryStore.addQuery(state.query)
     }
 
     private suspend fun translateEntryForDisplay(entry: DictionaryEntry): DictionaryEntry {

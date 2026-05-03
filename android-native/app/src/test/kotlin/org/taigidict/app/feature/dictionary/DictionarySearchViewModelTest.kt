@@ -121,6 +121,7 @@ class DictionarySearchViewModelTest {
     fun onSearchSubmitted_addsQueryToHistory() = runTest(dispatcher) {
         val repository = FakeDictionaryRepository(
             bundle = DictionaryBundle(1, 1, 0, "/tmp/dictionary.sqlite"),
+            searchResults = listOf(sampleEntry(id = 7, hanji = "辭典", romanization = "sû-tián")),
         )
         val historyStore = FakeSearchHistoryStore()
 
@@ -134,6 +135,26 @@ class DictionarySearchViewModelTest {
 
         assertEquals(listOf("辭典"), historyStore.recentQueries.value)
         assertEquals(listOf("辭典"), viewModel.uiState.value.recentSearches)
+    }
+
+    @Test
+    fun onSearchSubmitted_doesNotAddQueryWithoutResults() = runTest(dispatcher) {
+        val repository = FakeDictionaryRepository(
+            bundle = DictionaryBundle(1, 1, 0, "/tmp/dictionary.sqlite"),
+            searchResults = emptyList(),
+        )
+        val historyStore = FakeSearchHistoryStore()
+
+        val viewModel = createViewModel(repository, historyStore)
+        advanceUntilIdle()
+
+        viewModel.onQueryChange("辭典")
+        advanceUntilIdle()
+        viewModel.onSearchSubmitted()
+        advanceUntilIdle()
+
+        assertTrue(historyStore.recentQueries.value.isEmpty())
+        assertTrue(viewModel.uiState.value.recentSearches.isEmpty())
     }
 
     @Test

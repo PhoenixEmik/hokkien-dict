@@ -77,6 +77,6 @@ class SearchHistoryStore(
     companion object {
         private const val DEFAULT_PREFERENCES_NAME = "org.taigidict.app.search_history"
         private const val DEFAULT_STORAGE_KEY = "recent_search_queries"
-        private const val DEFAULT_MAX_ENTRIES = 20
+        private const val DEFAULT_MAX_ENTRIES = 10
     }
 }

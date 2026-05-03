@@ -42,4 +42,22 @@ class SearchHistoryStoreTest {
 
         assertTrue(store.recentQueries.value.isEmpty())
     }
+
+    @Test
+    fun addQuery_keepsAtMostTenEntries() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val store = SearchHistoryStore(
+            context = context,
+            preferencesName = "search-history-test-${UUID.randomUUID()}",
+        )
+
+        (1..12).forEach { index ->
+            store.addQuery("query-$index")
+        }
+
+        assertEquals(
+            (12 downTo 3).map { index -> "query-$index" },
+            store.recentQueries.value,
+        )
+    }
 }
