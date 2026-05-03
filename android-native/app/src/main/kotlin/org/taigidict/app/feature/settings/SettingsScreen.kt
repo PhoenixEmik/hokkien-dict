@@ -407,11 +407,17 @@ private fun SettingsInfoCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                OutlinedButton(onClick = { onOpenDocument(AppDocument.About) }) {
+                    Text(text = stringResource(R.string.settings_info_about))
+                }
                 OutlinedButton(onClick = { onOpenDocument(AppDocument.PrivacyPolicy) }) {
                     Text(text = stringResource(R.string.settings_info_privacy_policy))
                 }
                 OutlinedButton(onClick = { onOpenDocument(AppDocument.DataLicense) }) {
                     Text(text = stringResource(R.string.settings_info_data_license))
+                }
+                OutlinedButton(onClick = { onOpenDocument(AppDocument.OpenSourceLicense) }) {
+                    Text(text = stringResource(R.string.settings_info_open_source_license))
                 }
             }
         }

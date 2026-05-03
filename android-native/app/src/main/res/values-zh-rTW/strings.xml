@@ -97,8 +97,10 @@
     <string name="settings_text_scale_label">比例</string>
     <string name="settings_info_title">關於與文件</string>
     <string name="settings_info_body">App 內底會使讀隱私權政策佮資料授權文件。</string>
+    <string name="settings_info_about">關於</string>
     <string name="settings_info_privacy_policy">隱私權政策</string>
     <string name="settings_info_data_license">資料授權</string>
+    <string name="settings_info_open_source_license">開源授權</string>
     <string name="settings_info_back">轉來設定</string>
     <string name="settings_info_loading">文件載入中…</string>
     <string name="settings_info_load_error">文件載入失敗：%1$s</string>

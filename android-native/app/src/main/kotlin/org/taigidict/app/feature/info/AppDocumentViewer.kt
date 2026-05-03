@@ -27,6 +27,10 @@ enum class AppDocument(
     val titleRes: Int,
     val assetPath: String,
 ) {
+    About(
+        titleRes = R.string.settings_info_about,
+        assetPath = "docs/ABOUT_APP.md",
+    ),
     PrivacyPolicy(
         titleRes = R.string.settings_info_privacy_policy,
         assetPath = "docs/PRIVACY_POLICY.md",
@@ -34,6 +38,10 @@ enum class AppDocument(
     DataLicense(
         titleRes = R.string.settings_info_data_license,
         assetPath = "docs/DATA_LICENSE.md",
+    ),
+    OpenSourceLicense(
+        titleRes = R.string.settings_info_open_source_license,
+        assetPath = "docs/LICENSE.md",
     ),
 }
 
