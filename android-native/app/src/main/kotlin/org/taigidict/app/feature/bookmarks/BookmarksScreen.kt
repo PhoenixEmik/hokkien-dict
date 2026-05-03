@@ -3,17 +3,19 @@ package org.taigidict.app.feature.bookmarks
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -22,7 +24,6 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -37,6 +38,10 @@ import org.taigidict.app.app.TaigiDictApplication
 import org.taigidict.app.domain.model.DictionaryEntry
 import org.taigidict.app.feature.common.DictionaryFallbackText
 import org.taigidict.app.feature.dictionary.DictionaryEntryDetailPane
+
+private val RootHorizontalPadding = 16.dp
+private val RootVerticalPadding = 16.dp
+private val RootTopContentPadding = 16.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,21 +76,23 @@ fun BookmarksScreen(
 
     Scaffold(
         modifier = modifier,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(text = stringResource(R.string.bookmarks_title))
-                },
-            )
-        },
+        contentWindowInsets = WindowInsets.safeDrawing.only(
+            WindowInsetsSides.Top + WindowInsetsSides.Horizontal,
+        ),
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 16.dp, vertical = 16.dp),
+                .padding(horizontal = RootHorizontalPadding)
+                .padding(top = RootTopContentPadding, bottom = RootVerticalPadding),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+                Text(
+                    text = stringResource(R.string.bookmarks_title),
+                    style = MaterialTheme.typography.headlineLarge,
+                )
+
                 Text(
                     text = stringResource(R.string.bookmarks_overview_body),
                     style = MaterialTheme.typography.bodyMedium,
@@ -141,10 +148,7 @@ fun BookmarksScreen(
 
 @Composable
 private fun BookmarksEmptyCard() {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-    ) {
+    Card {
         Column(
             modifier = Modifier
                 .fillMaxWidth()

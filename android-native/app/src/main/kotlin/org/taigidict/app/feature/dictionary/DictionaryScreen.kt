@@ -4,20 +4,22 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -30,12 +32,8 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
@@ -49,6 +47,7 @@ import org.taigidict.app.feature.common.DictionaryFallbackText
 
 private val ScreenHorizontalPadding = 16.dp
 private val ScreenVerticalPadding = 16.dp
+private val TopContentPadding = 16.dp
 private val SectionSpacing = 16.dp
 private val ComponentSpacing = 8.dp
 
@@ -62,7 +61,6 @@ fun DictionaryScreen(
     viewModel: DictionarySearchViewModel = viewModel(key = "dictionary-$dataVersion"),
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
-    var searchExpanded by rememberSaveable { mutableStateOf(false) }
     val appContainer = (LocalContext.current.applicationContext as TaigiDictApplication).appContainer
     val bookmarkedIds = appContainer.bookmarkStore.bookmarkedIds.collectAsStateWithLifecycle().value
     val showsEntryDetail = uiState.isLoadingEntryDetail || uiState.selectedEntry != null || uiState.entryDetailErrorMessage != null
@@ -88,20 +86,16 @@ fun DictionaryScreen(
 
     Scaffold(
         modifier = modifier,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(text = stringResource(R.string.tab_dictionary))
-                },
-            )
-        },
+        contentWindowInsets = WindowInsets.safeDrawing.only(
+            WindowInsetsSides.Top + WindowInsetsSides.Horizontal,
+        ),
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(horizontal = ScreenHorizontalPadding)
-                .padding(top = 0.dp, bottom = ScreenVerticalPadding),
+                .padding(top = TopContentPadding, bottom = ScreenVerticalPadding),
             verticalArrangement = Arrangement.spacedBy(SectionSpacing),
         ) {
 
@@ -113,10 +107,9 @@ fun DictionaryScreen(
                         onQueryChange = viewModel::onQueryChange,
                         onSearch = {
                             viewModel.onSearchSubmitted()
-                            searchExpanded = false
                         },
-                        expanded = searchExpanded,
-                        onExpandedChange = { searchExpanded = it },
+                        expanded = false,
+                        onExpandedChange = {},
                         placeholder = {
                             Text(text = stringResource(R.string.dictionary_search_placeholder))
                         },
@@ -138,8 +131,8 @@ fun DictionaryScreen(
                         },
                     )
                 },
-                expanded = searchExpanded,
-                onExpandedChange = { searchExpanded = it },
+                expanded = false,
+                onExpandedChange = {},
                 content = {},
             )
 
@@ -204,7 +197,7 @@ fun DictionaryScreen(
                     Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
                         Text(
                             text = stringResource(R.string.dictionary_search_results_title),
-                            style = MaterialTheme.typography.titleLarge,
+                            style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.padding(bottom = ComponentSpacing),
                         )
                         LazyColumn(
@@ -276,12 +269,7 @@ fun DictionaryScreen(
 
 @Composable
 private fun DictionaryHomeEmptyCard() {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
-    ) {
+    Card {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -313,12 +301,7 @@ private fun RecentSearchHistoryCard(
     recentSearches: List<String>,
     onRecentSearchSelected: (String) -> Unit,
 ) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-        ),
-    ) {
+    Card {
         Column(modifier = Modifier.fillMaxWidth()) {
             recentSearches.take(8).forEachIndexed { index, query ->
                 ListItem(

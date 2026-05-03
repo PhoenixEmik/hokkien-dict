@@ -7,9 +7,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
@@ -61,6 +65,10 @@ import org.taigidict.app.data.audio.AudioArchiveDownloadState
 import org.taigidict.app.data.audio.DictionaryAudioArchiveType
 import org.taigidict.app.feature.info.AppDocument
 import org.taigidict.app.feature.info.AppDocumentViewer
+
+private val RootHorizontalPadding = 16.dp
+private val RootVerticalPadding = 16.dp
+private val RootTopContentPadding = 16.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -215,21 +223,25 @@ fun SettingsScreen(
 
     Scaffold(
         modifier = modifier,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(text = stringResource(R.string.settings_title))
-                },
-            )
-        },
+        contentWindowInsets = WindowInsets.safeDrawing.only(
+            WindowInsetsSides.Top + WindowInsetsSides.Horizontal,
+        ),
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 16.dp, vertical = 16.dp),
+                .padding(horizontal = RootHorizontalPadding)
+                .padding(top = RootTopContentPadding, bottom = RootVerticalPadding),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            item {
+                Text(
+                    text = stringResource(R.string.settings_title),
+                    style = MaterialTheme.typography.headlineLarge,
+                )
+            }
+
             item {
                 SectionHeader(text = stringResource(R.string.settings_display_section))
             }
@@ -296,7 +308,7 @@ private fun SectionHeader(
 ) {
     Text(
         text = text,
-        style = MaterialTheme.typography.titleLarge,
+        style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(horizontal = 2.dp),
     )
@@ -311,10 +323,7 @@ private fun DisplaySettingsCard(
     onOpenTheme: () -> Unit,
     onScaleChanged: (Double) -> Unit,
 ) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    ) {
+    Card {
         Column(modifier = Modifier.fillMaxWidth()) {
             SettingsNavigationRow(
                 title = stringResource(R.string.settings_language_title),
@@ -331,8 +340,8 @@ private fun DisplaySettingsCard(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -406,10 +415,7 @@ private fun InfoAndMaintenanceCard(
     onOpenAbout: () -> Unit,
     onOpenReference: () -> Unit,
 ) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    ) {
+    Card {
         Column(modifier = Modifier.fillMaxWidth()) {
             ListItem(
                 modifier = Modifier.clickable(onClick = onOpenAdvancedSettings),
@@ -636,7 +642,7 @@ private fun AdvancedSettingsEntryCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
                 text = stringResource(R.string.settings_advanced_title),
@@ -665,7 +671,7 @@ private fun DictionaryMaintenanceCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
                 text = stringResource(R.string.settings_dictionary_title),
@@ -798,7 +804,7 @@ private fun AudioArchiveResourceCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
                 text = title,
@@ -929,7 +935,7 @@ private fun SettingsInfoCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
                 text = stringResource(R.string.settings_info_title),
@@ -1079,7 +1085,7 @@ private fun DictionarySourceCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
                 text = stringResource(R.string.settings_dictionary_source_title),
