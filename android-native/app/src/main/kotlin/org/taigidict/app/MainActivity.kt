@@ -35,16 +35,20 @@ class MainActivity : AppCompatActivity() {
             val themePreference = appContainer.appSettingsStore.themePreference
                 .collectAsState(initial = AppThemePreference.System).value
             val languagePreference = appContainer.appSettingsStore.languagePreference
-                .collectAsState(initial = AppLanguagePreference.System).value
+                .collectAsState(initial = null).value
 
             LaunchedEffect(languagePreference) {
-                val locales = when (languagePreference) {
+                val preference = languagePreference ?: return@LaunchedEffect
+                val targetLocales = when (preference) {
                     AppLanguagePreference.System -> LocaleListCompat.getEmptyLocaleList()
                     AppLanguagePreference.TraditionalChinese -> LocaleListCompat.forLanguageTags("zh-TW")
                     AppLanguagePreference.SimplifiedChinese -> LocaleListCompat.forLanguageTags("zh-CN")
                     AppLanguagePreference.English -> LocaleListCompat.forLanguageTags("en")
                 }
-                AppCompatDelegate.setApplicationLocales(locales)
+                val currentLocales = AppCompatDelegate.getApplicationLocales()
+                if (currentLocales != targetLocales) {
+                    AppCompatDelegate.setApplicationLocales(targetLocales)
+                }
             }
 
             val systemDark = isSystemInDarkTheme()
