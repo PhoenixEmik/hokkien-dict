@@ -342,11 +342,9 @@ private fun DisplaySettingsCard(
                 ) {
                     Text(
                         text = stringResource(R.string.settings_text_scale_title),
-                        style = MaterialTheme.typography.titleMedium,
                     )
                     Text(
                         text = String.format("%.2fx", currentScale),
-                        style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -370,35 +368,26 @@ private fun SettingsNavigationRow(
     value: String,
     onClick: () -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-        )
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = value,
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Icon(
-                imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
+    ListItem(
+        modifier = Modifier.clickable(onClick = onClick),
+        headlineContent = { Text(text = title) },
+        trailingContent = {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = value,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+    )
 }
 
 @Composable
@@ -419,10 +408,7 @@ private fun InfoAndMaintenanceCard(
                     )
                 },
                 headlineContent = {
-                    Text(
-                        text = stringResource(R.string.settings_advanced_title),
-                        style = MaterialTheme.typography.titleLarge,
-                    )
+                    Text(text = stringResource(R.string.settings_advanced_title))
                 },
                 trailingContent = {
                     Icon(
@@ -443,10 +429,7 @@ private fun InfoAndMaintenanceCard(
                     )
                 },
                 headlineContent = {
-                    Text(
-                        text = stringResource(R.string.settings_info_about),
-                        style = MaterialTheme.typography.titleLarge,
-                    )
+                    Text(text = stringResource(R.string.settings_info_about))
                 },
                 trailingContent = {
                     Icon(
@@ -467,10 +450,7 @@ private fun InfoAndMaintenanceCard(
                     )
                 },
                 headlineContent = {
-                    Text(
-                        text = stringResource(R.string.settings_info_reference),
-                        style = MaterialTheme.typography.titleLarge,
-                    )
+                    Text(text = stringResource(R.string.settings_info_reference))
                 },
                 trailingContent = {
                     Icon(
