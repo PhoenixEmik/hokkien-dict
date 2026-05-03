@@ -413,6 +413,9 @@ private fun DictionaryDetailRelationshipSection(
     val scaledLabelLargeStyle = MaterialTheme.typography.labelLarge.copy(
         fontSize = MaterialTheme.typography.labelLarge.fontSize * readingTextScale.toFloat()
     )
+    val scaledBodySmallStyle = MaterialTheme.typography.bodySmall.copy(
+        fontSize = MaterialTheme.typography.bodySmall.fontSize * readingTextScale.toFloat()
+    )
     
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
@@ -428,7 +431,7 @@ private fun DictionaryDetailRelationshipSection(
                     onClick = { onOpenLinkedWord(value) },
                     enabled = openableLinkedWords.contains(value),
                     label = {
-                        Text(text = value)
+                        Text(text = value, style = scaledBodySmallStyle)
                     },
                 )
             }
