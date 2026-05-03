@@ -10,12 +10,15 @@
     <string name="dictionary_placeholder_title">Dictionary</string>
     <string name="dictionary_placeholder_body">The Gradle/Compose skeleton is ready. Search and import wiring comes next.</string>
     <string name="dictionary_search_label">Search</string>
-    <string name="dictionary_search_placeholder">Search headword, Tailo, or definition</string>
+    <string name="dictionary_search_placeholder">Enter Taiwanese Hanji, Tailo, or Mandarin meaning</string>
     <string name="dictionary_home_hint">Enter a keyword to start searching the dictionary.</string>
+    <string name="dictionary_empty_state_title">Start searching</string>
+    <string name="dictionary_empty_state_body">Enter Taiwanese Hanji, Tailo, or Mandarin meaning to show entries.</string>
     <string name="dictionary_searching">Searching dictionary…</string>
     <string name="dictionary_search_results_title">Search Results</string>
-    <string name="dictionary_recent_searches_title">Recent Searches</string>
+    <string name="dictionary_recent_searches_title">Search History</string>
     <string name="dictionary_recent_searches_clear">Clear</string>
+    <string name="dictionary_clear_search_history">Clear search history</string>
     <string name="dictionary_loading_bundle">Loading local dictionary database metadata…</string>
     <string name="dictionary_database_label">Local database: %1$s</string>
     <string name="dictionary_entry_count_label">Entries: %1$d</string>

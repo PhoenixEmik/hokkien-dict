@@ -7,36 +7,60 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.taigidict.app.R
 import org.taigidict.app.app.TaigiDictApplication
 import org.taigidict.app.feature.common.DictionaryFallbackText
 
+private val ScreenHorizontalPadding = 16.dp
+private val ScreenVerticalPadding = 16.dp
+private val SectionSpacing = 16.dp
+private val ComponentSpacing = 8.dp
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DictionaryScreen(
-    manifestAssetPath: String,
-    entriesAssetPath: String,
+    @Suppress("UNUSED_PARAMETER") manifestAssetPath: String,
+    @Suppress("UNUSED_PARAMETER") entriesAssetPath: String,
     dataVersion: Int,
     viewModel: DictionarySearchViewModel = viewModel(key = "dictionary-$dataVersion"),
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+    var searchExpanded by rememberSaveable { mutableStateOf(false) }
     val appContainer = (LocalContext.current.applicationContext as TaigiDictApplication).appContainer
     val bookmarkedIds = appContainer.bookmarkStore.bookmarkedIds.collectAsStateWithLifecycle().value
     val showsEntryDetail = uiState.isLoadingEntryDetail || uiState.selectedEntry != null || uiState.entryDetailErrorMessage != null
@@ -44,8 +68,8 @@ fun DictionaryScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+            .padding(horizontal = ScreenHorizontalPadding, vertical = ScreenVerticalPadding),
+        verticalArrangement = Arrangement.spacedBy(SectionSpacing),
     ) {
         if (showsEntryDetail) {
             DictionaryEntryDetailPane(
@@ -63,24 +87,57 @@ fun DictionaryScreen(
                 onOpenLinkedWord = viewModel::onLinkedWordSelected,
             )
         } else {
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = uiState.query,
-                onValueChange = viewModel::onQueryChange,
-                label = {
-                    Text(text = stringResource(R.string.dictionary_search_label))
-                },
-                placeholder = {
-                    Text(text = stringResource(R.string.dictionary_search_placeholder))
-                },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(onSearch = { viewModel.onSearchSubmitted() }),
+            Text(
+                text = stringResource(R.string.tab_dictionary),
+                style = MaterialTheme.typography.headlineLarge,
             )
+
+            SearchBar(
+                modifier = Modifier.fillMaxWidth(),
+                inputField = {
+                    SearchBarDefaults.InputField(
+                        query = uiState.query,
+                        onQueryChange = viewModel::onQueryChange,
+                        onSearch = {
+                            viewModel.onSearchSubmitted()
+                            searchExpanded = false
+                        },
+                        expanded = searchExpanded,
+                        onExpandedChange = { searchExpanded = it },
+                        placeholder = {
+                            Text(text = stringResource(R.string.dictionary_search_placeholder))
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Outlined.Search,
+                                contentDescription = null,
+                            )
+                        },
+                        trailingIcon = {
+                            if (uiState.query.isNotBlank()) {
+                                IconButton(onClick = { viewModel.onQueryChange("") }) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Close,
+                                        contentDescription = stringResource(R.string.dictionary_recent_searches_clear),
+                                    )
+                                }
+                            }
+                        },
+                    )
+                },
+                expanded = searchExpanded,
+                onExpandedChange = { searchExpanded = it },
+                shape = RoundedCornerShape(16.dp),
+                tonalElevation = 0.dp,
+                shadowElevation = 0.dp,
+                content = {},
+            )
+
             when {
                 uiState.isLoadingBundle -> Text(
                     text = stringResource(R.string.dictionary_loading_bundle),
                     style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
                 uiState.bundle != null -> Unit
@@ -100,62 +157,45 @@ fun DictionaryScreen(
                         uiState.searchErrorMessage,
                     ),
                     style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
                 )
 
                 uiState.query.isNotBlank() && uiState.results.isEmpty() && !uiState.isSearching -> Text(
                     text = stringResource(R.string.dictionary_no_results),
                     style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
                 uiState.query.isBlank() && uiState.recentSearches.isNotEmpty() -> {
-                    Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                        ) {
-                            Text(
-                                text = stringResource(R.string.dictionary_recent_searches_title),
-                                style = MaterialTheme.typography.labelMedium,
-                                modifier = Modifier.padding(vertical = 12.dp),
-                            )
-                            TextButton(onClick = viewModel::onClearRecentSearches) {
-                                Text(text = stringResource(R.string.dictionary_recent_searches_clear))
-                            }
-                        }
-                        LazyColumn(
-                            modifier = Modifier.weight(1f, fill = true),
-                            verticalArrangement = Arrangement.spacedBy(0.dp),
-                        ) {
-                            items(uiState.recentSearches, key = { it }) { query ->
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable { viewModel.onRecentSearchSelected(query) }
-                                        .padding(vertical = 12.dp),
-                                ) {
-                                    DictionaryFallbackText(
-                                        text = query,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                    )
-                                }
-                                HorizontalDivider(thickness = 0.5.dp)
-                            }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.dictionary_recent_searches_title),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        TextButton(onClick = viewModel::onClearRecentSearches) {
+                            Text(text = stringResource(R.string.dictionary_recent_searches_clear))
                         }
                     }
+
+                    RecentSearchHistoryCard(
+                        recentSearches = uiState.recentSearches,
+                        onRecentSearchSelected = viewModel::onRecentSearchSelected,
+                    )
                 }
 
-                uiState.query.isBlank() -> Text(
-                    text = stringResource(R.string.dictionary_home_hint),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                uiState.query.isBlank() -> DictionaryHomeEmptyCard()
 
                 uiState.results.isNotEmpty() -> {
                     Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
                         Text(
                             text = stringResource(R.string.dictionary_search_results_title),
-                            style = MaterialTheme.typography.labelMedium,
-                            modifier = Modifier.padding(vertical = 12.dp),
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier.padding(bottom = ComponentSpacing),
                         )
                         LazyColumn(
                             modifier = Modifier.weight(1f, fill = true),
@@ -165,32 +205,45 @@ fun DictionaryScreen(
                                 uiState.results,
                                 key = { it.id },
                             ) { entry ->
-                                Column(
+                                ListItem(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .clickable { viewModel.onEntrySelected(entry.id) }
-                                        .padding(vertical = 12.dp),
-                                    verticalArrangement = Arrangement.spacedBy(2.dp),
-                                ) {
-                                    DictionaryFallbackText(
-                                        text = entry.hanji,
-                                        style = MaterialTheme.typography.titleSmall,
-                                    )
-                                    DictionaryFallbackText(
-                                        text = entry.romanization,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                    if (entry.briefSummary.isNotBlank()) {
+                                        .clickable { viewModel.onEntrySelected(entry.id) },
+                                    colors = ListItemDefaults.colors(
+                                        containerColor = MaterialTheme.colorScheme.surface,
+                                    ),
+                                    headlineContent = {
                                         DictionaryFallbackText(
-                                            text = entry.briefSummary,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            text = entry.hanji,
+                                            style = MaterialTheme.typography.titleMedium,
                                         )
-                                    }
-                                }
+                                    },
+                                    supportingContent = {
+                                        Column(verticalArrangement = Arrangement.spacedBy(ComponentSpacing / 2)) {
+                                            DictionaryFallbackText(
+                                                text = entry.romanization,
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            )
+                                            if (entry.briefSummary.isNotBlank()) {
+                                                DictionaryFallbackText(
+                                                    text = entry.briefSummary,
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                )
+                                            }
+                                        }
+                                    },
+                                    trailingContent = {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    },
+                                )
                                 HorizontalDivider(
-                                    modifier = Modifier.padding(vertical = 0.dp),
+                                    modifier = Modifier.padding(horizontal = 16.dp),
                                     thickness = 0.5.dp,
                                 )
                             }
@@ -198,10 +251,94 @@ fun DictionaryScreen(
                     }
                 }
 
-                uiState.isSearching -> Text(
-                    text = stringResource(R.string.dictionary_searching),
-                    style = MaterialTheme.typography.bodyMedium,
+                uiState.isSearching -> Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                    Text(
+                        text = stringResource(R.string.dictionary_searching),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DictionaryHomeEmptyCard() {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        ),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(ComponentSpacing),
+            horizontalAlignment = Alignment.Start,
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Search,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(32.dp),
+            )
+            Text(
+                text = stringResource(R.string.dictionary_empty_state_title),
+                style = MaterialTheme.typography.titleLarge,
+            )
+            Text(
+                text = stringResource(R.string.dictionary_empty_state_body),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun RecentSearchHistoryCard(
+    recentSearches: List<String>,
+    onRecentSearchSelected: (String) -> Unit,
+) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        ),
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            recentSearches.take(8).forEachIndexed { index, query ->
+                ListItem(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onRecentSearchSelected(query) },
+                    colors = ListItemDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                    ),
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.Outlined.History,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    },
+                    headlineContent = {
+                        DictionaryFallbackText(
+                            text = query,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    },
                 )
+                if (index < recentSearches.take(8).lastIndex) {
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                }
             }
         }
     }

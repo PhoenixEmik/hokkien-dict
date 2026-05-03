@@ -10,12 +10,15 @@
     <string name="dictionary_placeholder_title">辭典</string>
     <string name="dictionary_placeholder_body">Gradle / Compose 骨架已建立，下一步會接上搜尋與資料匯入。</string>
     <string name="dictionary_search_label">搜尋</string>
-    <string name="dictionary_search_placeholder">搜尋詞目、Tailo 或釋義</string>
+    <string name="dictionary_search_placeholder">輸入台語漢字、白話字或華語詞義</string>
     <string name="dictionary_home_hint">請輸入關鍵字開始搜尋辭典。</string>
+    <string name="dictionary_empty_state_title">開始搜尋</string>
+    <string name="dictionary_empty_state_body">輸入台語漢字、白話字，或華語釋義後才顯示詞條。</string>
     <string name="dictionary_searching">正在搜尋辭典…</string>
     <string name="dictionary_search_results_title">搜尋結果</string>
-    <string name="dictionary_recent_searches_title">最近搜尋</string>
+    <string name="dictionary_recent_searches_title">搜尋紀錄</string>
     <string name="dictionary_recent_searches_clear">清除</string>
+    <string name="dictionary_clear_search_history">清除搜尋紀錄</string>
     <string name="dictionary_loading_bundle">正在讀取本地辭典資料庫資訊…</string>
     <string name="dictionary_database_label">本地資料庫：%1$s</string>
     <string name="dictionary_entry_count_label">詞目數：%1$d</string>

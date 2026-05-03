@@ -7,24 +7,32 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.VolumeUp
 import androidx.compose.material.icons.outlined.Bookmark
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material.icons.outlined.VolumeUp
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,11 +40,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.runtime.collectAsState
 import kotlinx.coroutines.launch
 import org.taigidict.app.R
 import org.taigidict.app.app.TaigiDictApplication
@@ -45,6 +54,10 @@ import org.taigidict.app.domain.model.DictionaryEntry
 import org.taigidict.app.domain.model.DictionaryExample
 import org.taigidict.app.domain.model.DictionarySense
 import org.taigidict.app.feature.common.DictionaryFallbackText
+
+private val DetailHorizontalPadding = 16.dp
+private val DetailVerticalPadding = 12.dp
+private val DetailSectionSpacing = 16.dp
 
 @Composable
 fun DictionaryEntryDetailPane(
@@ -66,14 +79,24 @@ fun DictionaryEntryDetailPane(
     var audioMessage by remember(entry?.id) { mutableStateOf<String?>(null) }
 
     when {
-        isLoading -> Text(
-            text = stringResource(R.string.dictionary_detail_loading),
-            style = MaterialTheme.typography.bodyMedium,
+        isLoading -> DetailStatusScreen(
+            title = entry?.hanji.orEmpty(),
+            message = stringResource(R.string.dictionary_detail_loading),
+            onBack = onBack,
+            onShareEntry = {},
+            onToggleBookmark = {},
+            isBookmarked = isBookmarked,
+            showActions = false,
         )
 
-        errorMessage != null -> Text(
-            text = stringResource(R.string.dictionary_detail_error, errorMessage),
-            style = MaterialTheme.typography.bodyMedium,
+        errorMessage != null -> DetailStatusScreen(
+            title = entry?.hanji.orEmpty(),
+            message = stringResource(R.string.dictionary_detail_error, errorMessage),
+            onBack = onBack,
+            onShareEntry = {},
+            onToggleBookmark = {},
+            isBookmarked = isBookmarked,
+            showActions = false,
         )
 
         entry != null -> DictionaryEntryDetailContent(
@@ -122,6 +145,47 @@ fun DictionaryEntryDetailPane(
 }
 
 @Composable
+private fun DetailStatusScreen(
+    title: String,
+    message: String,
+    onBack: () -> Unit,
+    onShareEntry: () -> Unit,
+    onToggleBookmark: () -> Unit,
+    isBookmarked: Boolean,
+    showActions: Boolean,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = DetailHorizontalPadding, vertical = DetailVerticalPadding),
+        verticalArrangement = Arrangement.spacedBy(DetailSectionSpacing),
+    ) {
+        DetailTopBar(
+            title = title,
+            onBack = onBack,
+            onShareEntry = onShareEntry,
+            onToggleBookmark = onToggleBookmark,
+            isBookmarked = isBookmarked,
+            showActions = showActions,
+        )
+
+        Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 18.dp),
+            )
+        }
+    }
+}
+
+@Composable
 private fun DictionaryEntryDetailContent(
     audioMessage: String?,
     entry: DictionaryEntry,
@@ -135,149 +199,93 @@ private fun DictionaryEntryDetailContent(
     onPlayExampleAudio: (DictionaryExample) -> Unit,
     onOpenLinkedWord: (String) -> Unit,
 ) {
-    val scaledHeadlineStyle = MaterialTheme.typography.headlineMedium.copy(
-        fontSize = MaterialTheme.typography.headlineMedium.fontSize * readingTextScale.toFloat()
+    val scaledHeadlineStyle = MaterialTheme.typography.headlineLarge.copy(
+        fontSize = MaterialTheme.typography.headlineMedium.fontSize * readingTextScale.toFloat(),
     )
-    val scaledTitleStyle = MaterialTheme.typography.titleMedium.copy(
-        fontSize = MaterialTheme.typography.titleMedium.fontSize * readingTextScale.toFloat()
-    )
-    val scaledBodyMediumStyle = MaterialTheme.typography.bodyMedium.copy(
-        fontSize = MaterialTheme.typography.bodyMedium.fontSize * readingTextScale.toFloat()
-    )
-    val scaledBodyLargeStyle = MaterialTheme.typography.bodyLarge.copy(
-        fontSize = MaterialTheme.typography.bodyLarge.fontSize * readingTextScale.toFloat()
-    )
-    val scaledLabelLargeStyle = MaterialTheme.typography.labelLarge.copy(
-        fontSize = MaterialTheme.typography.labelLarge.fontSize * readingTextScale.toFloat()
+    val scaledTitleStyle = MaterialTheme.typography.titleLarge.copy(
+        fontSize = MaterialTheme.typography.titleMedium.fontSize * readingTextScale.toFloat(),
     )
 
     LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = DetailHorizontalPadding, vertical = DetailVerticalPadding),
+        verticalArrangement = Arrangement.spacedBy(DetailSectionSpacing),
     ) {
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = stringResource(R.string.dictionary_detail_back),
-                    )
-                }
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    IconButton(onClick = onShareEntry) {
-                        Icon(
-                            imageVector = Icons.Outlined.Share,
-                            contentDescription = stringResource(R.string.dictionary_share_action),
-                        )
-                    }
-                    IconButton(onClick = onToggleBookmark) {
-                        Icon(
-                            imageVector = if (isBookmarked) {
-                                Icons.Outlined.Bookmark
-                            } else {
-                                Icons.Outlined.BookmarkBorder
-                            },
-                            contentDescription = if (isBookmarked) {
-                                stringResource(R.string.dictionary_detail_remove_bookmark)
-                            } else {
-                                stringResource(R.string.dictionary_detail_add_bookmark)
-                            },
-                        )
-                    }
-                }
-            }
+            DetailTopBar(
+                title = entry.hanji,
+                onBack = onBack,
+                onShareEntry = onShareEntry,
+                onToggleBookmark = onToggleBookmark,
+                isBookmarked = isBookmarked,
+                showActions = true,
+            )
         }
 
         item {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.Top,
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                shape = RoundedCornerShape(16.dp),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 18.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Top,
                     ) {
-                        DictionaryFallbackText(
-                            text = entry.hanji,
-                            style = scaledHeadlineStyle,
-                        )
-                        if (entry.romanization.isNotBlank()) {
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                        ) {
                             DictionaryFallbackText(
-                                text = entry.romanization,
-                                style = scaledTitleStyle,
+                                text = entry.hanji,
+                                style = scaledHeadlineStyle,
                             )
+                            if (entry.romanization.isNotBlank()) {
+                                DictionaryFallbackText(
+                                    text = entry.romanization,
+                                    style = scaledTitleStyle,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+
+                        if (entry.audioId.isNotBlank()) {
+                            IconButton(onClick = onPlayEntryAudio) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Outlined.VolumeUp,
+                                    contentDescription = stringResource(R.string.dictionary_play_word_audio),
+                                    tint = MaterialTheme.colorScheme.primary,
+                                )
+                            }
                         }
                     }
-                    if (entry.audioId.isNotBlank()) {
-                        IconButton(onClick = onPlayEntryAudio) {
-                            Icon(
-                                imageVector = Icons.Outlined.VolumeUp,
-                                contentDescription = stringResource(R.string.dictionary_play_word_audio),
-                                tint = MaterialTheme.colorScheme.primary,
-                            )
-                        }
+
+                    val metadataLine = listOf(entry.type, entry.category)
+                        .filter { it.isNotBlank() }
+                        .joinToString(separator = " · ")
+                    if (metadataLine.isNotBlank()) {
+                        DictionaryFallbackText(
+                            text = metadataLine,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+
+                    if (audioMessage != null) {
+                        Text(
+                            text = audioMessage,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
                     }
                 }
-                val metadataLine = listOf(entry.type, entry.category)
-                    .filter { it.isNotBlank() }
-                    .joinToString(separator = " · ")
-                if (metadataLine.isNotBlank()) {
-                    DictionaryFallbackText(
-                        text = metadataLine,
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                }
-                if (audioMessage != null) {
-                    Text(
-                        text = audioMessage,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
-            }
-        }
-
-        if (entry.variantChars.isNotEmpty()) {
-            item {
-                DictionaryDetailRelationshipSection(
-                    title = stringResource(R.string.dictionary_detail_variants),
-                    values = entry.variantChars,
-                    openableLinkedWords = openableLinkedWords,
-                    onOpenLinkedWord = onOpenLinkedWord,
-                    readingTextScale = readingTextScale,
-                )
-            }
-        }
-
-        if (entry.wordSynonyms.isNotEmpty()) {
-            item {
-                DictionaryDetailRelationshipSection(
-                    title = stringResource(R.string.dictionary_detail_synonyms),
-                    values = entry.wordSynonyms,
-                    openableLinkedWords = openableLinkedWords,
-                    onOpenLinkedWord = onOpenLinkedWord,
-                    readingTextScale = readingTextScale,
-                )
-            }
-        }
-
-        if (entry.wordAntonyms.isNotEmpty()) {
-            item {
-                DictionaryDetailRelationshipSection(
-                    title = stringResource(R.string.dictionary_detail_antonyms),
-                    values = entry.wordAntonyms,
-                    openableLinkedWords = openableLinkedWords,
-                    onOpenLinkedWord = onOpenLinkedWord,
-                    readingTextScale = readingTextScale,
-                )
             }
         }
 
@@ -291,11 +299,62 @@ private fun DictionaryEntryDetailContent(
                 onOpenLinkedWord = onOpenLinkedWord,
             )
         }
-
-        item {
-            Spacer(modifier = Modifier.padding(bottom = 8.dp))
-        }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DetailTopBar(
+    title: String,
+    onBack: () -> Unit,
+    onShareEntry: () -> Unit,
+    onToggleBookmark: () -> Unit,
+    isBookmarked: Boolean,
+    showActions: Boolean,
+) {
+    TopAppBar(
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.Transparent,
+            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            actionIconContentColor = MaterialTheme.colorScheme.onSurface,
+        ),
+        title = {
+            DictionaryFallbackText(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(end = 4.dp),
+            )
+        },
+        navigationIcon = {
+            IconButton(onClick = onBack) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                    contentDescription = stringResource(R.string.dictionary_detail_back),
+                )
+            }
+        },
+        actions = {
+            if (showActions) {
+                IconButton(onClick = onToggleBookmark) {
+                    Icon(
+                        imageVector = if (isBookmarked) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder,
+                        contentDescription = if (isBookmarked) {
+                            stringResource(R.string.dictionary_detail_remove_bookmark)
+                        } else {
+                            stringResource(R.string.dictionary_detail_add_bookmark)
+                        },
+                    )
+                }
+                IconButton(onClick = onShareEntry) {
+                    Icon(
+                        imageVector = Icons.Outlined.Share,
+                        contentDescription = stringResource(R.string.dictionary_share_action),
+                    )
+                }
+            }
+        },
+    )
 }
 
 @Composable
@@ -307,55 +366,71 @@ private fun DictionarySenseSection(
     onPlayExampleAudio: (DictionaryExample) -> Unit,
     onOpenLinkedWord: (String) -> Unit,
 ) {
-    val scaledTitleStyle = MaterialTheme.typography.titleMedium.copy(
-        fontSize = MaterialTheme.typography.titleMedium.fontSize * readingTextScale.toFloat()
+    val scaledTitleStyle = MaterialTheme.typography.titleLarge.copy(
+        fontSize = MaterialTheme.typography.titleMedium.fontSize * readingTextScale.toFloat(),
     )
-    val scaledLabelLargeStyle = MaterialTheme.typography.labelLarge.copy(
-        fontSize = MaterialTheme.typography.labelLarge.fontSize * readingTextScale.toFloat()
+    val scaledLabelStyle = MaterialTheme.typography.titleMedium.copy(
+        fontSize = MaterialTheme.typography.labelLarge.fontSize * readingTextScale.toFloat(),
     )
-    val scaledBodyLargeStyle = MaterialTheme.typography.bodyLarge.copy(
-        fontSize = MaterialTheme.typography.bodyLarge.fontSize * readingTextScale.toFloat()
+    val scaledBodyStyle = MaterialTheme.typography.bodyLarge.copy(
+        fontSize = MaterialTheme.typography.bodyLarge.fontSize * readingTextScale.toFloat(),
     )
 
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            text = stringResource(R.string.dictionary_detail_sense_title, index + 1),
-            style = scaledTitleStyle,
-        )
-        if (sense.partOfSpeech.isNotBlank()) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(16.dp),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.dictionary_detail_sense_title, index + 1),
+                style = scaledTitleStyle,
+            )
+
+            if (sense.partOfSpeech.isNotBlank()) {
+                DictionaryFallbackText(
+                    text = sense.partOfSpeech,
+                    style = scaledLabelStyle,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+
             DictionaryFallbackText(
-                text = sense.partOfSpeech,
-                style = scaledLabelLargeStyle,
+                text = sense.definition,
+                style = scaledBodyStyle,
             )
-        }
-        DictionaryFallbackText(
-            text = sense.definition,
-            style = scaledBodyLargeStyle,
-        )
-        if (sense.definitionSynonyms.isNotEmpty()) {
-            DictionaryDetailRelationshipSection(
-                title = stringResource(R.string.dictionary_detail_synonyms),
-                values = sense.definitionSynonyms,
-                openableLinkedWords = openableLinkedWords,
-                onOpenLinkedWord = onOpenLinkedWord,
-                readingTextScale = readingTextScale,
-            )
-        }
-        if (sense.definitionAntonyms.isNotEmpty()) {
-            DictionaryDetailRelationshipSection(
-                title = stringResource(R.string.dictionary_detail_antonyms),
-                values = sense.definitionAntonyms,
-                openableLinkedWords = openableLinkedWords,
-                onOpenLinkedWord = onOpenLinkedWord,
-                readingTextScale = readingTextScale,
-            )
-        }
-        if (sense.examples.isNotEmpty()) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+
+            if (sense.definitionSynonyms.isNotEmpty()) {
+                DictionaryDetailRelationshipSection(
+                    title = stringResource(R.string.dictionary_detail_synonyms),
+                    values = sense.definitionSynonyms,
+                    openableLinkedWords = openableLinkedWords,
+                    onOpenLinkedWord = onOpenLinkedWord,
+                    readingTextScale = readingTextScale,
+                )
+            }
+
+            if (sense.definitionAntonyms.isNotEmpty()) {
+                DictionaryDetailRelationshipSection(
+                    title = stringResource(R.string.dictionary_detail_antonyms),
+                    values = sense.definitionAntonyms,
+                    openableLinkedWords = openableLinkedWords,
+                    onOpenLinkedWord = onOpenLinkedWord,
+                    readingTextScale = readingTextScale,
+                )
+            }
+
+            if (sense.examples.isNotEmpty()) {
                 Text(
                     text = stringResource(R.string.dictionary_detail_examples),
-                    style = scaledLabelLargeStyle,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+
                 sense.examples.forEach { example ->
                     DictionaryExampleBlock(
                         example = example,
@@ -375,50 +450,59 @@ private fun DictionaryExampleBlock(
     readingTextScale: Double,
 ) {
     val scaledBodyLargeStyle = MaterialTheme.typography.bodyLarge.copy(
-        fontSize = MaterialTheme.typography.bodyLarge.fontSize * readingTextScale.toFloat()
+        fontSize = MaterialTheme.typography.bodyLarge.fontSize * readingTextScale.toFloat(),
     )
     val scaledBodyMediumStyle = MaterialTheme.typography.bodyMedium.copy(
-        fontSize = MaterialTheme.typography.bodyMedium.fontSize * readingTextScale.toFloat()
+        fontSize = MaterialTheme.typography.bodyMedium.fontSize * readingTextScale.toFloat(),
     )
     val scaledBodySmallStyle = MaterialTheme.typography.bodySmall.copy(
-        fontSize = MaterialTheme.typography.bodySmall.fontSize * readingTextScale.toFloat()
+        fontSize = MaterialTheme.typography.bodySmall.fontSize * readingTextScale.toFloat(),
     )
-    
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.Top,
+
+    Card(
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
     ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.Top,
         ) {
-            if (example.hanji.isNotBlank()) {
-                DictionaryFallbackText(
-                    text = example.hanji,
-                    style = scaledBodyLargeStyle,
-                )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                if (example.hanji.isNotBlank()) {
+                    DictionaryFallbackText(
+                        text = example.hanji,
+                        style = scaledBodyLargeStyle,
+                    )
+                }
+                if (example.romanization.isNotBlank()) {
+                    DictionaryFallbackText(
+                        text = example.romanization,
+                        style = scaledBodyMediumStyle,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                if (example.mandarin.isNotBlank()) {
+                    DictionaryFallbackText(
+                        text = example.mandarin,
+                        style = scaledBodySmallStyle,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
-            if (example.romanization.isNotBlank()) {
-                DictionaryFallbackText(
-                    text = example.romanization,
-                    style = scaledBodyMediumStyle,
-                )
-            }
-            if (example.mandarin.isNotBlank()) {
-                DictionaryFallbackText(
-                    text = example.mandarin,
-                    style = scaledBodySmallStyle,
-                )
-            }
-        }
-        if (example.audioId.isNotBlank()) {
-            IconButton(onClick = { onPlayExampleAudio(example) }) {
-                Icon(
-                    imageVector = Icons.Outlined.VolumeUp,
-                    contentDescription = stringResource(R.string.dictionary_play_example_audio),
-                    tint = MaterialTheme.colorScheme.primary,
-                )
+            if (example.audioId.isNotBlank()) {
+                IconButton(onClick = { onPlayExampleAudio(example) }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.VolumeUp,
+                        contentDescription = stringResource(R.string.dictionary_play_example_audio),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
             }
         }
     }
@@ -433,17 +517,18 @@ private fun DictionaryDetailRelationshipSection(
     onOpenLinkedWord: (String) -> Unit,
     readingTextScale: Double,
 ) {
-    val scaledLabelLargeStyle = MaterialTheme.typography.labelLarge.copy(
-        fontSize = MaterialTheme.typography.labelLarge.fontSize * readingTextScale.toFloat()
+    val scaledLabelStyle = MaterialTheme.typography.labelLarge.copy(
+        fontSize = MaterialTheme.typography.labelLarge.fontSize * readingTextScale.toFloat(),
     )
-    val scaledBodySmallStyle = MaterialTheme.typography.bodySmall.copy(
-        fontSize = MaterialTheme.typography.bodySmall.fontSize * readingTextScale.toFloat()
+    val scaledChipStyle = MaterialTheme.typography.bodySmall.copy(
+        fontSize = MaterialTheme.typography.bodySmall.fontSize * readingTextScale.toFloat(),
     )
-    
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(
             text = title,
-            style = scaledLabelLargeStyle,
+            style = scaledLabelStyle,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -454,12 +539,14 @@ private fun DictionaryDetailRelationshipSection(
                     onClick = { onOpenLinkedWord(value) },
                     enabled = openableLinkedWords.contains(value),
                     label = {
-                        DictionaryFallbackText(text = value, style = scaledBodySmallStyle)
+                        DictionaryFallbackText(
+                            text = value,
+                            style = scaledChipStyle,
+                        )
                     },
                     colors = AssistChipDefaults.assistChipColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                         labelColor = MaterialTheme.colorScheme.primary,
-                        leadingIconContentColor = MaterialTheme.colorScheme.primary,
                         disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                         disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     ),
