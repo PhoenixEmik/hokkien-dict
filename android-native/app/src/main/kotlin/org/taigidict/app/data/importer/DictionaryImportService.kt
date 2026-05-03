@@ -34,14 +34,21 @@ data class DictionaryImportResult(
     val imported: Boolean,
 )
 
+interface BundledDictionaryImporting {
+    fun ensureBundledDatabase(
+        onProgress: ((DictionaryImportProgress) -> Unit)? = null,
+    ): DictionaryImportResult
+}
+
 class DictionaryImportService(
     private val databaseFile: File,
     private val packageLoader: DictionaryPackageLoading,
     private val jsonlReader: DictionaryJsonlReader,
     private val json: Json = Json,
-) {
+) : BundledDictionaryImporting {
+    override
     fun ensureBundledDatabase(
-        onProgress: ((DictionaryImportProgress) -> Unit)? = null,
+        onProgress: ((DictionaryImportProgress) -> Unit)?,
     ): DictionaryImportResult {
         val validatedPackage = packageLoader.validateBundledPackage()
         val manifest = validatedPackage.manifest

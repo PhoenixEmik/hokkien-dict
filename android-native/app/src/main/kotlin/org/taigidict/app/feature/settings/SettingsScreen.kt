@@ -14,6 +14,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.taigidict.app.R
 import org.taigidict.app.app.TaigiDictApplication
 import org.taigidict.app.data.audio.AudioArchiveDownloadSnapshot
@@ -35,6 +37,8 @@ fun SettingsScreen(assetDirectory: String) {
     val audioArchiveManager = appContainer.offlineAudioArchiveManager
     val wordSnapshot = audioArchiveManager.snapshotFlow(DictionaryAudioArchiveType.Word).collectAsStateWithLifecycle().value
     val sentenceSnapshot = audioArchiveManager.snapshotFlow(DictionaryAudioArchiveType.Sentence).collectAsStateWithLifecycle().value
+    val viewModel: SettingsViewModel = viewModel()
+    val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
 
     LaunchedEffect(audioArchiveManager) {
         audioArchiveManager.refreshAll()
@@ -57,6 +61,14 @@ fun SettingsScreen(assetDirectory: String) {
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }
+        }
+
+        item {
+            DictionaryMaintenanceCard(
+                uiState = uiState,
+                onRebuild = viewModel::rebuildDatabase,
+                onClear = viewModel::clearDatabase,
+            )
         }
 
         item {
@@ -92,6 +104,106 @@ fun SettingsScreen(assetDirectory: String) {
                 text = stringResource(R.string.bundled_package_label, assetDirectory),
                 style = MaterialTheme.typography.bodyMedium,
             )
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun DictionaryMaintenanceCard(
+    uiState: SettingsUiState,
+    onRebuild: () -> Unit,
+    onClear: () -> Unit,
+) {
+    Card {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.settings_dictionary_title),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = stringResource(R.string.settings_database_path_label, uiState.databasePath),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            if (uiState.bundle != null) {
+                Text(
+                    text = stringResource(R.string.settings_entry_count_label, uiState.bundle.entryCount),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Text(
+                    text = stringResource(R.string.settings_sense_count_label, uiState.bundle.senseCount),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Text(
+                    text = stringResource(R.string.settings_example_count_label, uiState.bundle.exampleCount),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            } else {
+                Text(
+                    text = stringResource(R.string.settings_dictionary_empty),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+            uiState.builtAt?.let { builtAt ->
+                Text(
+                    text = stringResource(R.string.settings_dictionary_built_at, builtAt),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            uiState.sourceModifiedAt?.let { sourceModifiedAt ->
+                Text(
+                    text = stringResource(R.string.settings_dictionary_source_updated, sourceModifiedAt),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            if (uiState.isRunningMaintenance) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                Text(
+                    text = when (uiState.runningAction) {
+                        SettingsMaintenanceAction.Rebuild -> stringResource(R.string.settings_running_rebuild)
+                        SettingsMaintenanceAction.Clear -> stringResource(R.string.settings_running_clear)
+                        null -> stringResource(R.string.settings_running_rebuild)
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+            uiState.status?.let { status ->
+                Text(
+                    text = when (status) {
+                        SettingsStatus.DatabaseRebuilt -> stringResource(R.string.settings_status_rebuild_completed)
+                        SettingsStatus.DatabaseCleared -> stringResource(R.string.settings_status_clear_completed)
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+            uiState.errorMessage?.let { errorMessage ->
+                Text(
+                    text = stringResource(R.string.settings_dictionary_error, errorMessage),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                OutlinedButton(
+                    onClick = onRebuild,
+                    enabled = !uiState.isRunningMaintenance,
+                ) {
+                    Text(text = stringResource(R.string.settings_action_rebuild))
+                }
+                TextButton(
+                    onClick = onClear,
+                    enabled = !uiState.isRunningMaintenance,
+                ) {
+                    Text(text = stringResource(R.string.settings_action_clear))
+                }
+            }
         }
     }
 }
