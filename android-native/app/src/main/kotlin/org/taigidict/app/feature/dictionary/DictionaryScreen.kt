@@ -24,7 +24,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
@@ -101,7 +100,8 @@ fun DictionaryScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = ScreenHorizontalPadding, vertical = ScreenVerticalPadding),
+                .padding(horizontal = ScreenHorizontalPadding)
+                .padding(top = 0.dp, bottom = ScreenVerticalPadding),
             verticalArrangement = Arrangement.spacedBy(SectionSpacing),
         ) {
 
@@ -140,9 +140,6 @@ fun DictionaryScreen(
                 },
                 expanded = searchExpanded,
                 onExpandedChange = { searchExpanded = it },
-                shape = RoundedCornerShape(16.dp),
-                tonalElevation = 0.dp,
-                shadowElevation = 0.dp,
                 content = {},
             )
 
@@ -222,9 +219,6 @@ fun DictionaryScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clickable { viewModel.onEntrySelected(entry.id) },
-                                    colors = ListItemDefaults.colors(
-                                        containerColor = MaterialTheme.colorScheme.surface,
-                                    ),
                                     headlineContent = {
                                         DictionaryFallbackText(
                                             text = entry.hanji,
@@ -331,9 +325,6 @@ private fun RecentSearchHistoryCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { onRecentSearchSelected(query) },
-                    colors = ListItemDefaults.colors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                    ),
                     leadingContent = {
                         Icon(
                             imageVector = Icons.Outlined.History,

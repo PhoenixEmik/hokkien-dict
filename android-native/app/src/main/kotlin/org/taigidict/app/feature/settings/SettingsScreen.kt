@@ -25,7 +25,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.AlertDialog
@@ -414,7 +413,6 @@ private fun InfoAndMaintenanceCard(
         Column(modifier = Modifier.fillMaxWidth()) {
             ListItem(
                 modifier = Modifier.clickable(onClick = onOpenAdvancedSettings),
-                colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.Build,
@@ -439,7 +437,6 @@ private fun InfoAndMaintenanceCard(
             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
             ListItem(
                 modifier = Modifier.clickable(onClick = onOpenAbout),
-                colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.Info,
@@ -464,7 +461,6 @@ private fun InfoAndMaintenanceCard(
             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
             ListItem(
                 modifier = Modifier.clickable(onClick = onOpenReference),
-                colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.MenuBook,
@@ -512,7 +508,6 @@ private fun <T> PreferenceSelectionDialog(
                         modifier = Modifier.clickable {
                             onSelect(option)
                         },
-                        colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
                         headlineContent = {
                             Text(text = optionLabel(option))
                         },
