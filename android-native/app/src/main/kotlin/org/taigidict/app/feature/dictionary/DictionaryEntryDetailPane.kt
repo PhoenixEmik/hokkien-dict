@@ -33,6 +33,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.collectAsState
 import kotlinx.coroutines.launch
 import org.taigidict.app.R
 import org.taigidict.app.app.TaigiDictApplication
@@ -55,6 +57,8 @@ fun DictionaryEntryDetailPane(
     val context = LocalContext.current
     val appContainer = (context.applicationContext as TaigiDictApplication).appContainer
     val audioPlayer = appContainer.dictionaryAudioPlayer
+    val readingTextScale = appContainer.appSettingsStore.readingTextScale
+        .collectAsState(initial = 1.0).value
     val scope = rememberCoroutineScope()
     var audioMessage by remember(entry?.id) { mutableStateOf<String?>(null) }
 
@@ -78,6 +82,7 @@ fun DictionaryEntryDetailPane(
             entry = entry,
             openableLinkedWords = openableLinkedWords,
             isBookmarked = isBookmarked,
+            readingTextScale = readingTextScale,
             onToggleBookmark = onToggleBookmark,
             onShareEntry = {
                 shareEntry(
@@ -122,12 +127,29 @@ private fun DictionaryEntryDetailContent(
     entry: DictionaryEntry,
     openableLinkedWords: Set<String>,
     isBookmarked: Boolean,
+    readingTextScale: Double,
     onToggleBookmark: () -> Unit,
     onShareEntry: () -> Unit,
     onPlayEntryAudio: () -> Unit,
     onPlayExampleAudio: (DictionaryExample) -> Unit,
     onOpenLinkedWord: (String) -> Unit,
 ) {
+    val scaledHeadlineStyle = MaterialTheme.typography.headlineMedium.copy(
+        fontSize = MaterialTheme.typography.headlineMedium.fontSize * readingTextScale.toFloat()
+    )
+    val scaledTitleStyle = MaterialTheme.typography.titleMedium.copy(
+        fontSize = MaterialTheme.typography.titleMedium.fontSize * readingTextScale.toFloat()
+    )
+    val scaledBodyMediumStyle = MaterialTheme.typography.bodyMedium.copy(
+        fontSize = MaterialTheme.typography.bodyMedium.fontSize * readingTextScale.toFloat()
+    )
+    val scaledBodyLargeStyle = MaterialTheme.typography.bodyLarge.copy(
+        fontSize = MaterialTheme.typography.bodyLarge.fontSize * readingTextScale.toFloat()
+    )
+    val scaledLabelLargeStyle = MaterialTheme.typography.labelLarge.copy(
+        fontSize = MaterialTheme.typography.labelLarge.fontSize * readingTextScale.toFloat()
+    )
+
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -144,12 +166,12 @@ private fun DictionaryEntryDetailContent(
                     ) {
                         Text(
                             text = entry.hanji,
-                            style = MaterialTheme.typography.headlineMedium,
+                            style = scaledHeadlineStyle,
                         )
                         if (entry.romanization.isNotBlank()) {
                             Text(
                                 text = entry.romanization,
-                                style = MaterialTheme.typography.titleMedium,
+                                style = scaledTitleStyle,
                             )
                         }
                     }
@@ -238,6 +260,7 @@ private fun DictionaryEntryDetailContent(
             DictionarySenseSection(
                 index = index,
                 sense = entry.senses[index],
+                readingTextScale = readingTextScale,
                 openableLinkedWords = openableLinkedWords,
                 onPlayExampleAudio = onPlayExampleAudio,
                 onOpenLinkedWord = onOpenLinkedWord,
@@ -254,10 +277,18 @@ private fun DictionaryEntryDetailContent(
 private fun DictionarySenseSection(
     index: Int,
     sense: DictionarySense,
+    readingTextScale: Double,
     openableLinkedWords: Set<String>,
     onPlayExampleAudio: (DictionaryExample) -> Unit,
     onOpenLinkedWord: (String) -> Unit,
 ) {
+    val scaledLabelLargeStyle = MaterialTheme.typography.labelLarge.copy(
+        fontSize = MaterialTheme.typography.labelLarge.fontSize * readingTextScale.toFloat()
+    )
+    val scaledBodyLargeStyle = MaterialTheme.typography.bodyLarge.copy(
+        fontSize = MaterialTheme.typography.bodyLarge.fontSize * readingTextScale.toFloat()
+    )
+
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             text = stringResource(R.string.dictionary_detail_sense_title, index + 1),
@@ -266,12 +297,12 @@ private fun DictionarySenseSection(
         if (sense.partOfSpeech.isNotBlank()) {
             Text(
                 text = sense.partOfSpeech,
-                style = MaterialTheme.typography.labelLarge,
+                style = scaledLabelLargeStyle,
             )
         }
         Text(
             text = sense.definition,
-            style = MaterialTheme.typography.bodyLarge,
+            style = scaledBodyLargeStyle,
         )
         if (sense.definitionSynonyms.isNotEmpty()) {
             DictionaryDetailRelationshipSection(
