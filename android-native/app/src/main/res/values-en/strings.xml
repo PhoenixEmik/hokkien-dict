@@ -105,6 +105,15 @@
     <string name="settings_info_back">Back to settings</string>
     <string name="settings_info_loading">Loading document…</string>
     <string name="settings_info_load_error">Failed to load document: %1$s</string>
+    <string name="settings_confirm_title">Confirm action</string>
+    <string name="settings_confirm_continue">Continue</string>
+    <string name="settings_confirm_cancel">Cancel</string>
+    <string name="settings_confirm_rebuild_database">Rebuild the local dictionary database now? This can take a while.</string>
+    <string name="settings_confirm_clear_database">Clear the local dictionary database now? Search results will be unavailable until rebuilt.</string>
+    <string name="settings_confirm_restore_source">Restore bundled dictionary source files now? Existing source files may be replaced.</string>
+    <string name="settings_confirm_download_source">Download dictionary source files now? Existing source files may be replaced.</string>
+    <string name="settings_confirm_redownload_word_audio">Redownload the word audio archive now? Existing archive data may be replaced.</string>
+    <string name="settings_confirm_redownload_sentence_audio">Redownload the example audio archive now? Existing archive data may be replaced.</string>
     <string name="bundled_package_label">Bundled package directory: %1$s</string>
     <string name="bundled_manifest_label">Bundled manifest asset: %1$s</string>
     <string name="bundled_entries_label">Bundled entries asset: %1$s</string>

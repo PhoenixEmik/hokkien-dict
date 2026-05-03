@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.Card
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -51,6 +52,7 @@ fun SettingsScreen(
     onDictionaryDataChanged: () -> Unit = {},
 ) {
     var selectedDocument by rememberSaveable { mutableStateOf<AppDocument?>(null) }
+    var pendingAction by rememberSaveable { mutableStateOf<SettingsDangerousAction?>(null) }
     val context = LocalContext.current
     val appContainer = (context.applicationContext as TaigiDictApplication).appContainer
     val audioArchiveManager = appContainer.offlineAudioArchiveManager
@@ -66,6 +68,42 @@ fun SettingsScreen(
             onBack = { selectedDocument = null },
         )
         return
+    }
+
+    pendingAction?.let { action ->
+        AlertDialog(
+            onDismissRequest = { pendingAction = null },
+            title = {
+                Text(text = stringResource(R.string.settings_confirm_title))
+            },
+            text = {
+                Text(text = action.message())
+            },
+            confirmButton = {
+                OutlinedButton(
+                    onClick = {
+                        pendingAction = null
+                        when (action) {
+                            SettingsDangerousAction.RebuildDatabase -> viewModel.rebuildDatabase()
+                            SettingsDangerousAction.ClearDatabase -> viewModel.clearDatabase()
+                            SettingsDangerousAction.RestoreDictionarySource -> viewModel.restoreDictionarySource()
+                            SettingsDangerousAction.DownloadDictionarySource -> viewModel.downloadDictionarySource()
+                            SettingsDangerousAction.RedownloadWordArchive ->
+                                audioArchiveManager.restartDownload(DictionaryAudioArchiveType.Word)
+                            SettingsDangerousAction.RedownloadSentenceArchive ->
+                                audioArchiveManager.restartDownload(DictionaryAudioArchiveType.Sentence)
+                        }
+                    },
+                ) {
+                    Text(text = stringResource(R.string.settings_confirm_continue))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingAction = null }) {
+                    Text(text = stringResource(R.string.settings_confirm_cancel))
+                }
+            },
+        )
     }
 
     LaunchedEffect(audioArchiveManager) {
@@ -129,16 +167,24 @@ fun SettingsScreen(
         item {
             DictionaryMaintenanceCard(
                 uiState = uiState,
-                onRebuild = viewModel::rebuildDatabase,
-                onClear = viewModel::clearDatabase,
+                onRebuild = {
+                    pendingAction = SettingsDangerousAction.RebuildDatabase
+                },
+                onClear = {
+                    pendingAction = SettingsDangerousAction.ClearDatabase
+                },
             )
         }
 
         item {
             DictionarySourceCard(
                 snapshot = uiState.sourceSnapshot,
-                onRestore = viewModel::restoreDictionarySource,
-                onDownload = viewModel::downloadDictionarySource,
+                onRestore = {
+                    pendingAction = SettingsDangerousAction.RestoreDictionarySource
+                },
+                onDownload = {
+                    pendingAction = SettingsDangerousAction.DownloadDictionarySource
+                },
             )
         }
 
@@ -164,7 +210,12 @@ fun SettingsScreen(
                         AudioArchiveAction.Download -> audioArchiveManager.startDownload(type)
                         AudioArchiveAction.Pause -> audioArchiveManager.pauseDownload(type)
                         AudioArchiveAction.Resume -> audioArchiveManager.resumeDownload(type)
-                        AudioArchiveAction.Redownload -> audioArchiveManager.restartDownload(type)
+                        AudioArchiveAction.Redownload -> {
+                            pendingAction = when (type) {
+                                DictionaryAudioArchiveType.Word -> SettingsDangerousAction.RedownloadWordArchive
+                                DictionaryAudioArchiveType.Sentence -> SettingsDangerousAction.RedownloadSentenceArchive
+                            }
+                        }
                     }
                 },
             )
@@ -382,6 +433,33 @@ private enum class AudioArchiveAction {
     Pause,
     Resume,
     Redownload,
+}
+
+private enum class SettingsDangerousAction {
+    RebuildDatabase,
+    ClearDatabase,
+    RestoreDictionarySource,
+    DownloadDictionarySource,
+    RedownloadWordArchive,
+    RedownloadSentenceArchive,
+}
+
+@Composable
+private fun SettingsDangerousAction.message(): String {
+    return when (this) {
+        SettingsDangerousAction.RebuildDatabase ->
+            stringResource(R.string.settings_confirm_rebuild_database)
+        SettingsDangerousAction.ClearDatabase ->
+            stringResource(R.string.settings_confirm_clear_database)
+        SettingsDangerousAction.RestoreDictionarySource ->
+            stringResource(R.string.settings_confirm_restore_source)
+        SettingsDangerousAction.DownloadDictionarySource ->
+            stringResource(R.string.settings_confirm_download_source)
+        SettingsDangerousAction.RedownloadWordArchive ->
+            stringResource(R.string.settings_confirm_redownload_word_audio)
+        SettingsDangerousAction.RedownloadSentenceArchive ->
+            stringResource(R.string.settings_confirm_redownload_sentence_audio)
+    }
 }
 
 @Composable

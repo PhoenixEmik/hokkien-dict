@@ -105,6 +105,15 @@
     <string name="settings_info_back">轉來設定</string>
     <string name="settings_info_loading">文件載入中…</string>
     <string name="settings_info_load_error">文件載入失敗：%1$s</string>
+    <string name="settings_confirm_title">確認操作</string>
+    <string name="settings_confirm_continue">繼續</string>
+    <string name="settings_confirm_cancel">取消</string>
+    <string name="settings_confirm_rebuild_database">欲閣重建本地辭典資料庫？這可能會當久。</string>
+    <string name="settings_confirm_clear_database">欲清除本地辭典資料庫？閣重建進前會查無資料。</string>
+    <string name="settings_confirm_restore_source">欲恢復內建詞典來源檔案？現有來源檔可能會予替換。</string>
+    <string name="settings_confirm_download_source">欲下載詞典來源檔案？現有來源檔可能會予替換。</string>
+    <string name="settings_confirm_redownload_word_audio">欲重新下載詞條音檔資源？現有資源可能會予替換。</string>
+    <string name="settings_confirm_redownload_sentence_audio">欲重新下載例句音檔資源？現有資源可能會予替換。</string>
     <string name="bundled_package_label">內建資料包目錄：%1$s</string>
     <string name="bundled_manifest_label">內建 manifest 資產：%1$s</string>
     <string name="bundled_entries_label">內建 entries 資產：%1$s</string>

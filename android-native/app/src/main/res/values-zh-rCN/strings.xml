@@ -105,6 +105,15 @@
     <string name="settings_info_back">返回设置</string>
     <string name="settings_info_loading">文档载入中…</string>
     <string name="settings_info_load_error">文档载入失败：%1$s</string>
+    <string name="settings_confirm_title">确认操作</string>
+    <string name="settings_confirm_continue">继续</string>
+    <string name="settings_confirm_cancel">取消</string>
+    <string name="settings_confirm_rebuild_database">现在重建本地辞典数据库？这可能需要一些时间。</string>
+    <string name="settings_confirm_clear_database">现在清除本地辞典数据库？重建前将无法查询词典。</string>
+    <string name="settings_confirm_restore_source">现在恢复内建词典来源文件？现有来源文件可能会被替换。</string>
+    <string name="settings_confirm_download_source">现在下载词典来源文件？现有来源文件可能会被替换。</string>
+    <string name="settings_confirm_redownload_word_audio">现在重新下载词条音档资源？现有资源可能会被替换。</string>
+    <string name="settings_confirm_redownload_sentence_audio">现在重新下载例句音档资源？现有资源可能会被替换。</string>
     <string name="bundled_package_label">内建数据包目录：%1$s</string>
     <string name="bundled_manifest_label">内建 manifest 资产：%1$s</string>
     <string name="bundled_entries_label">内建 entries 资产：%1$s</string>
