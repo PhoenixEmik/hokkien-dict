@@ -13,6 +13,7 @@ import org.taigidict.app.data.importer.DictionaryImportService
 import org.taigidict.app.data.importer.DictionaryJsonlReader
 import org.taigidict.app.data.importer.DictionaryPackageLoader
 import org.taigidict.app.data.repository.SQLiteDictionaryRepository
+import org.taigidict.app.data.search.SearchHistoryStore
 import org.taigidict.app.data.source.DictionarySourceResourceStore
 
 class AppContainer(context: Context) {
@@ -42,6 +43,9 @@ class AppContainer(context: Context) {
     }
     val bookmarkStore: BookmarkStore by lazy {
         BookmarkStore(context = appContext)
+    }
+    val searchHistoryStore: SearchHistoryStore by lazy {
+        SearchHistoryStore(context = appContext)
     }
     internal val offlineAudioArchiveManager: OfflineAudioArchiveManager by lazy {
         OfflineAudioArchiveManager(filesDirectory = appContext.filesDir)

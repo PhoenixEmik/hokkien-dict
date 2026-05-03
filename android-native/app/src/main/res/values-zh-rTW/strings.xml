@@ -13,6 +13,8 @@
     <string name="dictionary_search_placeholder">搜尋詞目、Tailo 或釋義</string>
     <string name="dictionary_searching">正在搜尋辭典…</string>
     <string name="dictionary_search_results_title">搜尋結果</string>
+    <string name="dictionary_recent_searches_title">最近搜尋</string>
+    <string name="dictionary_recent_searches_clear">清除</string>
     <string name="dictionary_loading_bundle">正在讀取本地辭典資料庫資訊…</string>
     <string name="dictionary_database_label">本地資料庫：%1$s</string>
     <string name="dictionary_entry_count_label">詞目數：%1$d</string>

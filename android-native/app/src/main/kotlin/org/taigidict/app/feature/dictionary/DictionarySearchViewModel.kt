@@ -9,11 +9,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.taigidict.app.app.TaigiDictApplication
 import org.taigidict.app.data.repository.DictionaryRepositoryDataSource
+import org.taigidict.app.data.search.SearchHistoryStoring
 import org.taigidict.app.domain.model.DictionaryBundle
 import org.taigidict.app.domain.model.DictionaryEntry
 
@@ -29,17 +31,21 @@ data class DictionarySearchUiState(
     val searchErrorMessage: String? = null,
     val entryDetailErrorMessage: String? = null,
     val results: List<DictionaryEntry> = emptyList(),
+    val recentSearches: List<String> = emptyList(),
 )
 
 class DictionarySearchViewModel(
     application: Application,
     private val repository: DictionaryRepositoryDataSource =
         (application as TaigiDictApplication).appContainer.dictionaryRepository,
+    private val searchHistoryStore: SearchHistoryStoring =
+        (application as TaigiDictApplication).appContainer.searchHistoryStore,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : AndroidViewModel(application) {
     constructor(application: Application) : this(
         application = application,
         repository = (application as TaigiDictApplication).appContainer.dictionaryRepository,
+        searchHistoryStore = (application as TaigiDictApplication).appContainer.searchHistoryStore,
         ioDispatcher = Dispatchers.IO,
     )
 
@@ -50,7 +56,20 @@ class DictionarySearchViewModel(
     private var entryDetailJob: Job? = null
 
     init {
+        observeSearchHistory()
         loadBundle()
+    }
+
+    fun onSearchSubmitted() {
+        searchHistoryStore.addQuery(_uiState.value.query)
+    }
+
+    fun onRecentSearchSelected(query: String) {
+        onQueryChange(query)
+    }
+
+    fun onClearRecentSearches() {
+        searchHistoryStore.clear()
     }
 
     fun onQueryChange(query: String) {
@@ -98,6 +117,7 @@ class DictionarySearchViewModel(
     }
 
     fun onEntrySelected(entryId: Long) {
+        onSearchSubmitted()
         entryDetailJob?.cancel()
         entryDetailJob = viewModelScope.launch {
             _uiState.update {
@@ -190,6 +210,16 @@ class DictionarySearchViewModel(
                     bundle = result.getOrNull(),
                     bundleErrorMessage = result.exceptionOrNull()?.message,
                 )
+            }
+        }
+    }
+
+    private fun observeSearchHistory() {
+        viewModelScope.launch {
+            searchHistoryStore.recentQueries.collectLatest { queries ->
+                _uiState.update {
+                    it.copy(recentSearches = queries)
+                }
             }
         }
     }

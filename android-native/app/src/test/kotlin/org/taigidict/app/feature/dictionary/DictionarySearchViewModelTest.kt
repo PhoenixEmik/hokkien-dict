@@ -4,6 +4,9 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -20,6 +23,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.taigidict.app.data.repository.DictionaryRepositoryDataSource
+import org.taigidict.app.data.search.SearchHistoryStoring
 import org.taigidict.app.domain.model.DictionaryBundle
 import org.taigidict.app.domain.model.DictionaryEntry
 import org.taigidict.app.domain.model.DictionaryExample
@@ -105,6 +109,42 @@ class DictionarySearchViewModelTest {
         assertEquals("", uiState.query)
         assertTrue(uiState.results.isEmpty())
         assertFalse(uiState.isSearching)
+    }
+
+    @Test
+    fun onSearchSubmitted_addsQueryToHistory() = runTest(dispatcher) {
+        val repository = FakeDictionaryRepository(
+            bundle = DictionaryBundle(1, 1, 0, "/tmp/dictionary.sqlite"),
+        )
+        val historyStore = FakeSearchHistoryStore()
+
+        val viewModel = createViewModel(repository, historyStore)
+        advanceUntilIdle()
+
+        viewModel.onQueryChange("辭典")
+        advanceUntilIdle()
+        viewModel.onSearchSubmitted()
+        advanceUntilIdle()
+
+        assertEquals(listOf("辭典"), historyStore.recentQueries.value)
+        assertEquals(listOf("辭典"), viewModel.uiState.value.recentSearches)
+    }
+
+    @Test
+    fun onClearRecentSearches_clearsHistoryInUiState() = runTest(dispatcher) {
+        val repository = FakeDictionaryRepository(
+            bundle = DictionaryBundle(1, 1, 0, "/tmp/dictionary.sqlite"),
+        )
+        val historyStore = FakeSearchHistoryStore(initialQueries = listOf("辭典", "字典"))
+
+        val viewModel = createViewModel(repository, historyStore)
+        advanceUntilIdle()
+        assertEquals(listOf("辭典", "字典"), viewModel.uiState.value.recentSearches)
+
+        viewModel.onClearRecentSearches()
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.recentSearches.isEmpty())
     }
 
     @Test
@@ -222,13 +262,40 @@ class DictionarySearchViewModelTest {
         assertNull(clearedState.selectedEntry)
     }
 
-    private fun createViewModel(repository: DictionaryRepositoryDataSource): DictionarySearchViewModel {
+    private fun createViewModel(
+        repository: DictionaryRepositoryDataSource,
+        searchHistoryStore: SearchHistoryStoring = FakeSearchHistoryStore(),
+    ): DictionarySearchViewModel {
         val application = ApplicationProvider.getApplicationContext<Application>()
         return DictionarySearchViewModel(
             application = application,
             repository = repository,
+            searchHistoryStore = searchHistoryStore,
             ioDispatcher = dispatcher,
         )
+    }
+}
+
+private class FakeSearchHistoryStore(
+    initialQueries: List<String> = emptyList(),
+) : SearchHistoryStoring {
+    private val queries = MutableStateFlow(initialQueries)
+
+    override val recentQueries: StateFlow<List<String>> = queries.asStateFlow()
+
+    override fun addQuery(query: String) {
+        val normalized = query.trim()
+        if (normalized.isBlank()) {
+            return
+        }
+
+        queries.value = listOf(normalized) + queries.value.filterNot {
+            it.equals(normalized, ignoreCase = true)
+        }
+    }
+
+    override fun clear() {
+        queries.value = emptyList()
     }
 }
 

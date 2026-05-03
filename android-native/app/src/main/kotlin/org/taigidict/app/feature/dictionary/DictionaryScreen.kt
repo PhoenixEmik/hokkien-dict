@@ -3,6 +3,7 @@ package org.taigidict.app.feature.dictionary
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,12 +13,16 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.taigidict.app.R
@@ -76,6 +81,8 @@ fun DictionaryScreen(
                     Text(text = stringResource(R.string.dictionary_search_placeholder))
                 },
                 singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { viewModel.onSearchSubmitted() }),
             )
             when {
                 uiState.isLoadingBundle -> Text(
@@ -123,6 +130,40 @@ fun DictionaryScreen(
                     text = stringResource(R.string.dictionary_no_results),
                     style = MaterialTheme.typography.bodyMedium,
                 )
+
+                uiState.query.isBlank() && uiState.recentSearches.isNotEmpty() -> {
+                    Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(
+                                text = stringResource(R.string.dictionary_recent_searches_title),
+                                style = MaterialTheme.typography.labelMedium,
+                                modifier = Modifier.padding(vertical = 12.dp),
+                            )
+                            TextButton(onClick = viewModel::onClearRecentSearches) {
+                                Text(text = stringResource(R.string.dictionary_recent_searches_clear))
+                            }
+                        }
+                        LazyColumn(verticalArrangement = Arrangement.spacedBy(0.dp)) {
+                            items(uiState.recentSearches, key = { it }) { query ->
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { viewModel.onRecentSearchSelected(query) }
+                                        .padding(vertical = 12.dp),
+                                ) {
+                                    Text(
+                                        text = query,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                    )
+                                }
+                                Divider(thickness = 0.5.dp)
+                            }
+                        }
+                    }
+                }
 
                 uiState.results.isNotEmpty() -> {
                     Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
