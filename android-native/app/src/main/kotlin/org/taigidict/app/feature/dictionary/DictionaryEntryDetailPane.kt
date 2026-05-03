@@ -230,6 +230,7 @@ private fun DictionaryEntryDetailContent(
                     values = entry.variantChars,
                     openableLinkedWords = openableLinkedWords,
                     onOpenLinkedWord = onOpenLinkedWord,
+                    readingTextScale = readingTextScale,
                 )
             }
         }
@@ -241,6 +242,7 @@ private fun DictionaryEntryDetailContent(
                     values = entry.wordSynonyms,
                     openableLinkedWords = openableLinkedWords,
                     onOpenLinkedWord = onOpenLinkedWord,
+                    readingTextScale = readingTextScale,
                 )
             }
         }
@@ -252,6 +254,7 @@ private fun DictionaryEntryDetailContent(
                     values = entry.wordAntonyms,
                     openableLinkedWords = openableLinkedWords,
                     onOpenLinkedWord = onOpenLinkedWord,
+                    readingTextScale = readingTextScale,
                 )
             }
         }
@@ -282,6 +285,9 @@ private fun DictionarySenseSection(
     onPlayExampleAudio: (DictionaryExample) -> Unit,
     onOpenLinkedWord: (String) -> Unit,
 ) {
+    val scaledTitleStyle = MaterialTheme.typography.titleMedium.copy(
+        fontSize = MaterialTheme.typography.titleMedium.fontSize * readingTextScale.toFloat()
+    )
     val scaledLabelLargeStyle = MaterialTheme.typography.labelLarge.copy(
         fontSize = MaterialTheme.typography.labelLarge.fontSize * readingTextScale.toFloat()
     )
@@ -292,7 +298,7 @@ private fun DictionarySenseSection(
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             text = stringResource(R.string.dictionary_detail_sense_title, index + 1),
-            style = MaterialTheme.typography.titleMedium,
+            style = scaledTitleStyle,
         )
         if (sense.partOfSpeech.isNotBlank()) {
             Text(
@@ -310,6 +316,7 @@ private fun DictionarySenseSection(
                 values = sense.definitionSynonyms,
                 openableLinkedWords = openableLinkedWords,
                 onOpenLinkedWord = onOpenLinkedWord,
+                readingTextScale = readingTextScale,
             )
         }
         if (sense.definitionAntonyms.isNotEmpty()) {
@@ -318,18 +325,20 @@ private fun DictionarySenseSection(
                 values = sense.definitionAntonyms,
                 openableLinkedWords = openableLinkedWords,
                 onOpenLinkedWord = onOpenLinkedWord,
+                readingTextScale = readingTextScale,
             )
         }
         if (sense.examples.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = stringResource(R.string.dictionary_detail_examples),
-                    style = MaterialTheme.typography.labelLarge,
+                    style = scaledLabelLargeStyle,
                 )
                 sense.examples.forEach { example ->
                     DictionaryExampleBlock(
                         example = example,
                         onPlayExampleAudio = onPlayExampleAudio,
+                        readingTextScale = readingTextScale,
                     )
                 }
             }
@@ -341,7 +350,18 @@ private fun DictionarySenseSection(
 private fun DictionaryExampleBlock(
     example: DictionaryExample,
     onPlayExampleAudio: (DictionaryExample) -> Unit,
+    readingTextScale: Double,
 ) {
+    val scaledBodyLargeStyle = MaterialTheme.typography.bodyLarge.copy(
+        fontSize = MaterialTheme.typography.bodyLarge.fontSize * readingTextScale.toFloat()
+    )
+    val scaledBodyMediumStyle = MaterialTheme.typography.bodyMedium.copy(
+        fontSize = MaterialTheme.typography.bodyMedium.fontSize * readingTextScale.toFloat()
+    )
+    val scaledBodySmallStyle = MaterialTheme.typography.bodySmall.copy(
+        fontSize = MaterialTheme.typography.bodySmall.fontSize * readingTextScale.toFloat()
+    )
+    
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -354,19 +374,19 @@ private fun DictionaryExampleBlock(
             if (example.hanji.isNotBlank()) {
                 Text(
                     text = example.hanji,
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = scaledBodyLargeStyle,
                 )
             }
             if (example.romanization.isNotBlank()) {
                 Text(
                     text = example.romanization,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = scaledBodyMediumStyle,
                 )
             }
             if (example.mandarin.isNotBlank()) {
                 Text(
                     text = example.mandarin,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = scaledBodySmallStyle,
                 )
             }
         }
@@ -388,11 +408,16 @@ private fun DictionaryDetailRelationshipSection(
     values: List<String>,
     openableLinkedWords: Set<String>,
     onOpenLinkedWord: (String) -> Unit,
+    readingTextScale: Double,
 ) {
+    val scaledLabelLargeStyle = MaterialTheme.typography.labelLarge.copy(
+        fontSize = MaterialTheme.typography.labelLarge.fontSize * readingTextScale.toFloat()
+    )
+    
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
             text = title,
-            style = MaterialTheme.typography.labelLarge,
+            style = scaledLabelLargeStyle,
         )
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
