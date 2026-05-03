@@ -157,10 +157,12 @@ class DictionarySearchViewModelTest {
     fun onQueryChange_usesConvertedQueryForSimplifiedChinese() = runTest(dispatcher) {
         val repository = FakeDictionaryRepository(
             bundle = DictionaryBundle(1, 1, 0, "/tmp/dictionary.sqlite"),
+            searchResults = listOf(sampleEntry(id = 7, hanji = "辭典", romanization = "sû-tián")),
         )
         val settingsStore = FakeDictionarySettingsStore()
         val conversionService = FakeChineseConversionService(
             normalizedQuery = "辭典",
+            translatedMap = mapOf("辭典" to "词典"),
         )
 
         settingsStore.setLanguagePreference(AppLanguagePreference.SimplifiedChinese)
@@ -178,6 +180,7 @@ class DictionarySearchViewModelTest {
         assertEquals(listOf("辭典"), repository.searchQueries)
         assertEquals(listOf("词典"), conversionService.capturedQueries)
         assertEquals(listOf(AppLocale.SimplifiedChinese), conversionService.capturedLocales)
+        assertEquals("词典", viewModel.uiState.value.results.first().hanji)
     }
 
     @Test
@@ -337,6 +340,7 @@ private class FakeDictionarySettingsStore : AppSettingsStoring {
 
 private class FakeChineseConversionService(
     private val normalizedQuery: String? = null,
+    private val translatedMap: Map<String, String> = emptyMap(),
 ) : ChineseConversionService {
     val capturedQueries = mutableListOf<String>()
     val capturedLocales = mutableListOf<AppLocale>()
@@ -348,7 +352,7 @@ private class FakeChineseConversionService(
     }
 
     override suspend fun translateForDisplay(text: String, locale: AppLocale): String {
-        return text
+        return translatedMap[text] ?: text
     }
 }
 

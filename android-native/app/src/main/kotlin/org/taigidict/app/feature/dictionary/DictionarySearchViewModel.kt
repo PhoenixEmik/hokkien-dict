@@ -22,6 +22,8 @@ import org.taigidict.app.data.conversion.ChineseConversionService
 import org.taigidict.app.data.search.SearchHistoryStoring
 import org.taigidict.app.domain.model.DictionaryBundle
 import org.taigidict.app.domain.model.DictionaryEntry
+import org.taigidict.app.domain.model.DictionaryExample
+import org.taigidict.app.domain.model.DictionarySense
 
 data class DictionarySearchUiState(
     val query: String = "",
@@ -118,7 +120,10 @@ class DictionarySearchViewModel(
                         text = query,
                         locale = currentLocale,
                     )
-                    repository.search(convertedQuery)
+                    val rawResults = repository.search(convertedQuery)
+                    rawResults.map { entry ->
+                        translateEntryForDisplay(entry)
+                    }
                 }
             }
 
@@ -149,7 +154,13 @@ class DictionarySearchViewModel(
                 runCatching {
                     val entry = repository.entry(entryId)
                         ?: throw IllegalStateException("Entry $entryId not found")
-                    detailController.prepareEntryDetail(entry)
+                    val prepared = detailController.prepareEntryDetail(entry)
+                    PreparedDictionaryEntryDetail(
+                        entry = translateEntryForDisplay(prepared.entry),
+                        openableLinkedWords = prepared.openableLinkedWords.map {
+                            chineseConversionService.translateForDisplay(it, currentLocale)
+                        }.toSet(),
+                    )
                 }
             }
 
@@ -185,9 +196,15 @@ class DictionarySearchViewModel(
                         text = word,
                         locale = currentLocale,
                     )
+                    val convertedOpenableWords = _uiState.value.openableLinkedWords.map {
+                        chineseConversionService.normalizeSearchInput(
+                            text = it,
+                            locale = currentLocale,
+                        )
+                    }.toSet()
                     detailController.prepareLinkedEntry(
                         currentEntryId = currentEntry.id,
-                        openableLinkedWords = _uiState.value.openableLinkedWords,
+                        openableLinkedWords = convertedOpenableWords,
                         word = convertedWord,
                     )
                 }
@@ -196,8 +213,17 @@ class DictionarySearchViewModel(
             _uiState.update {
                 it.copy(
                     isLoadingEntryDetail = false,
-                    selectedEntry = result.getOrNull()?.entry ?: currentEntry,
-                    openableLinkedWords = result.getOrNull()?.openableLinkedWords ?: it.openableLinkedWords,
+                    selectedEntry = result.getOrNull()?.entry?.let { entry ->
+                        runCatching { translateEntryForDisplay(entry) }.getOrDefault(entry)
+                    } ?: currentEntry,
+                    openableLinkedWords = result.getOrNull()?.openableLinkedWords?.map { linkedWord ->
+                        runCatching {
+                            chineseConversionService.translateForDisplay(
+                                linkedWord,
+                                currentLocale,
+                            )
+                        }.getOrDefault(linkedWord)
+                    }?.toSet() ?: it.openableLinkedWords,
                     entryDetailErrorMessage = result.exceptionOrNull()?.message,
                 )
             }
@@ -250,5 +276,78 @@ class DictionarySearchViewModel(
                 currentLocale = AppLocaleResolver.resolve(preference)
             }
         }
+    }
+
+    private suspend fun translateEntryForDisplay(entry: DictionaryEntry): DictionaryEntry {
+        val senses = entry.senses.map { sense ->
+            DictionarySense(
+                partOfSpeech = chineseConversionService.translateForDisplay(
+                    sense.partOfSpeech,
+                    currentLocale,
+                ),
+                definition = chineseConversionService.translateForDisplay(
+                    sense.definition,
+                    currentLocale,
+                ),
+                definitionSynonyms = sense.definitionSynonyms.map { value ->
+                    chineseConversionService.translateForDisplay(value, currentLocale)
+                },
+                definitionAntonyms = sense.definitionAntonyms.map { value ->
+                    chineseConversionService.translateForDisplay(value, currentLocale)
+                },
+                examples = sense.examples.map { example ->
+                    DictionaryExample(
+                        hanji = chineseConversionService.translateForDisplay(
+                            example.hanji,
+                            currentLocale,
+                        ),
+                        romanization = chineseConversionService.translateForDisplay(
+                            example.romanization,
+                            currentLocale,
+                        ),
+                        mandarin = chineseConversionService.translateForDisplay(
+                            example.mandarin,
+                            currentLocale,
+                        ),
+                        audioId = example.audioId,
+                    )
+                },
+            )
+        }
+
+        return entry.copy(
+            type = chineseConversionService.translateForDisplay(entry.type, currentLocale),
+            hanji = chineseConversionService.translateForDisplay(entry.hanji, currentLocale),
+            category = chineseConversionService.translateForDisplay(entry.category, currentLocale),
+            mandarinSearch = chineseConversionService.translateForDisplay(
+                entry.mandarinSearch,
+                currentLocale,
+            ),
+            variantChars = entry.variantChars.map { value ->
+                chineseConversionService.translateForDisplay(value, currentLocale)
+            },
+            wordSynonyms = entry.wordSynonyms.map { value ->
+                chineseConversionService.translateForDisplay(value, currentLocale)
+            },
+            wordAntonyms = entry.wordAntonyms.map { value ->
+                chineseConversionService.translateForDisplay(value, currentLocale)
+            },
+            alternativePronunciations = entry.alternativePronunciations.map { value ->
+                chineseConversionService.translateForDisplay(value, currentLocale)
+            },
+            contractedPronunciations = entry.contractedPronunciations.map { value ->
+                chineseConversionService.translateForDisplay(value, currentLocale)
+            },
+            colloquialPronunciations = entry.colloquialPronunciations.map { value ->
+                chineseConversionService.translateForDisplay(value, currentLocale)
+            },
+            phoneticDifferences = entry.phoneticDifferences.map { value ->
+                chineseConversionService.translateForDisplay(value, currentLocale)
+            },
+            vocabularyComparisons = entry.vocabularyComparisons.map { value ->
+                chineseConversionService.translateForDisplay(value, currentLocale)
+            },
+            senses = senses,
+        )
     }
 }
