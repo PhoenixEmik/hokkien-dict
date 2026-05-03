@@ -31,7 +31,10 @@ import org.taigidict.app.data.audio.AudioArchiveDownloadState
 import org.taigidict.app.data.audio.DictionaryAudioArchiveType
 
 @Composable
-fun SettingsScreen(assetDirectory: String) {
+fun SettingsScreen(
+    assetDirectory: String,
+    onDictionaryDataChanged: () -> Unit = {},
+) {
     val context = LocalContext.current
     val appContainer = (context.applicationContext as TaigiDictApplication).appContainer
     val audioArchiveManager = appContainer.offlineAudioArchiveManager
@@ -42,6 +45,12 @@ fun SettingsScreen(assetDirectory: String) {
 
     LaunchedEffect(audioArchiveManager) {
         audioArchiveManager.refreshAll()
+    }
+
+    LaunchedEffect(uiState.status) {
+        if (uiState.status != null) {
+            onDictionaryDataChanged()
+        }
     }
 
     LazyColumn(

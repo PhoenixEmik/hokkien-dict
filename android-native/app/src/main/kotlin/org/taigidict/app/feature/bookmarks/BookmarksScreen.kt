@@ -24,7 +24,8 @@ import org.taigidict.app.feature.dictionary.DictionaryEntryDetailPane
 
 @Composable
 fun BookmarksScreen(
-    viewModel: BookmarksViewModel = viewModel(),
+    dataVersion: Int,
+    viewModel: BookmarksViewModel = viewModel(key = "bookmarks-$dataVersion"),
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
     val appContainer = (LocalContext.current.applicationContext as TaigiDictApplication).appContainer

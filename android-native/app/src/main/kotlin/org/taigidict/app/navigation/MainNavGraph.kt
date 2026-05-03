@@ -43,12 +43,16 @@ fun MainNavGraph(appState: MainAppState) {
             MainDestination.Dictionary -> DictionaryScreen(
                 manifestAssetPath = appState.appContainer.bundledDictionaryManifestAssetPath,
                 entriesAssetPath = appState.appContainer.bundledDictionaryEntriesAssetPath,
+                dataVersion = appState.dictionaryDataVersion,
             )
 
-            MainDestination.Bookmarks -> BookmarksScreen()
+            MainDestination.Bookmarks -> BookmarksScreen(
+                dataVersion = appState.dictionaryDataVersion,
+            )
 
             MainDestination.Settings -> SettingsScreen(
                 assetDirectory = appState.appContainer.bundledDictionaryAssetDirectory,
+                onDictionaryDataChanged = appState::invalidateDictionaryData,
             )
         }
     }

@@ -26,7 +26,8 @@ import org.taigidict.app.app.TaigiDictApplication
 fun DictionaryScreen(
     manifestAssetPath: String,
     entriesAssetPath: String,
-    viewModel: DictionarySearchViewModel = viewModel(),
+    dataVersion: Int,
+    viewModel: DictionarySearchViewModel = viewModel(key = "dictionary-$dataVersion"),
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
     val appContainer = (LocalContext.current.applicationContext as TaigiDictApplication).appContainer

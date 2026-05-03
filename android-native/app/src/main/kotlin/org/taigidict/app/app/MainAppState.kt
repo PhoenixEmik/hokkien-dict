@@ -16,8 +16,15 @@ class MainAppState(
     var currentDestination by mutableStateOf(initialDestination)
         private set
 
+    var dictionaryDataVersion by mutableStateOf(0)
+        private set
+
     fun navigate(destination: MainDestination) {
         currentDestination = destination
+    }
+
+    fun invalidateDictionaryData() {
+        dictionaryDataVersion += 1
     }
 }
 
