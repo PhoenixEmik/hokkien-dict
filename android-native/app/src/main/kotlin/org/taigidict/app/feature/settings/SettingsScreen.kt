@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -18,12 +19,14 @@ import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Card
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -74,8 +77,6 @@ fun SettingsScreen(
     var selectedDocument by rememberSaveable { mutableStateOf<AppDocument?>(null) }
     var route by rememberSaveable { mutableStateOf(SettingsRoute.Main) }
     var pendingAction by rememberSaveable { mutableStateOf<SettingsDangerousAction?>(null) }
-    var showThemeDialog by rememberSaveable { mutableStateOf(false) }
-    var showLanguageDialog by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     val appContainer = (context.applicationContext as TaigiDictApplication).appContainer
     val audioArchiveManager = appContainer.offlineAudioArchiveManager
@@ -157,34 +158,6 @@ fun SettingsScreen(
         )
     }
 
-    if (showThemeDialog) {
-        PreferenceSelectionDialog(
-            title = stringResource(R.string.settings_theme_title),
-            options = AppThemePreference.entries,
-            selectedOption = uiState.themePreference,
-            optionLabel = { it.displayLabel() },
-            onSelect = {
-                viewModel.setThemePreference(it)
-                showThemeDialog = false
-            },
-            onDismiss = { showThemeDialog = false },
-        )
-    }
-
-    if (showLanguageDialog) {
-        PreferenceSelectionDialog(
-            title = stringResource(R.string.settings_language_title),
-            options = AppLanguagePreference.entries,
-            selectedOption = uiState.languagePreference,
-            optionLabel = { it.displayLabel() },
-            onSelect = {
-                viewModel.setLanguagePreference(it)
-                showLanguageDialog = false
-            },
-            onDismiss = { showLanguageDialog = false },
-        )
-    }
-
     LaunchedEffect(audioArchiveManager) {
         audioArchiveManager.refreshAll()
     }
@@ -218,8 +191,8 @@ fun SettingsScreen(
                     selectedLanguage = uiState.languagePreference,
                     selectedTheme = uiState.themePreference,
                     currentScale = uiState.readingTextScale,
-                    onOpenLanguage = { showLanguageDialog = true },
-                    onOpenTheme = { showThemeDialog = true },
+                    onSelectLanguage = viewModel::setLanguagePreference,
+                    onSelectTheme = viewModel::setThemePreference,
                     onScaleChanged = viewModel::setReadingTextScale,
                 )
             }
@@ -332,22 +305,28 @@ private fun DisplaySettingsCard(
     selectedLanguage: AppLanguagePreference,
     selectedTheme: AppThemePreference,
     currentScale: Double,
-    onOpenLanguage: () -> Unit,
-    onOpenTheme: () -> Unit,
+    onSelectLanguage: (AppLanguagePreference) -> Unit,
+    onSelectTheme: (AppThemePreference) -> Unit,
     onScaleChanged: (Double) -> Unit,
 ) {
     Card {
         Column(modifier = Modifier.fillMaxWidth()) {
-            SettingsNavigationRow(
+            PreferenceMenuRow(
                 title = stringResource(R.string.settings_language_title),
                 value = selectedLanguage.displayLabel(),
-                onClick = onOpenLanguage,
+                options = AppLanguagePreference.entries,
+                selectedOption = selectedLanguage,
+                optionLabel = { it.displayLabel() },
+                onSelect = onSelectLanguage,
             )
             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
-            SettingsNavigationRow(
+            PreferenceMenuRow(
                 title = stringResource(R.string.settings_theme_title),
                 value = selectedTheme.displayLabel(),
-                onClick = onOpenTheme,
+                options = AppThemePreference.entries,
+                selectedOption = selectedTheme,
+                optionLabel = { it.displayLabel() },
+                onSelect = onSelectTheme,
             )
             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
             Column(
@@ -384,31 +363,57 @@ private fun DisplaySettingsCard(
 }
 
 @Composable
-private fun SettingsNavigationRow(
+private fun <T> PreferenceMenuRow(
     title: String,
     value: String,
-    onClick: () -> Unit,
+    options: List<T>,
+    selectedOption: T,
+    optionLabel: @Composable (T) -> String,
+    onSelect: (T) -> Unit,
 ) {
-    ListItem(
-        modifier = Modifier.clickable(onClick = onClick),
-        headlineContent = { Text(text = title) },
-        trailingContent = {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = value,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+    var expanded by androidx.compose.runtime.remember { mutableStateOf(false) }
+    Box {
+        ListItem(
+            modifier = Modifier.clickable { expanded = true },
+            headlineContent = { Text(text = title) },
+            trailingContent = {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = value,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            },
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(text = optionLabel(option)) },
+                    onClick = {
+                        onSelect(option)
+                        expanded = false
+                    },
+                    trailingIcon = if (option == selectedOption) ({
+                        Icon(
+                            imageVector = Icons.Outlined.Check,
+                            contentDescription = null,
+                        )
+                    }) else null,
                 )
             }
-        },
-    )
+        }
+    }
 }
 
 @Composable
@@ -485,48 +490,7 @@ private fun InfoAndMaintenanceCard(
     }
 }
 
-@Composable
-private fun <T> PreferenceSelectionDialog(
-    title: String,
-    options: List<T>,
-    selectedOption: T,
-    optionLabel: @Composable (T) -> String,
-    onSelect: (T) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(text = title)
-        },
-        text = {
-            Column {
-                options.forEach { option ->
-                    val selected = option == selectedOption
-                    ListItem(
-                        modifier = Modifier.clickable {
-                            onSelect(option)
-                        },
-                        leadingContent = {
-                            RadioButton(
-                                selected = selected,
-                                onClick = { onSelect(option) },
-                            )
-                        },
-                        headlineContent = {
-                            Text(text = optionLabel(option))
-                        },
-                    )
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text(text = stringResource(R.string.settings_confirm_cancel))
-            }
-        },
-    )
-}
+
 
 
 private enum class SettingsDangerousAction {
