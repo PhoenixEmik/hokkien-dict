@@ -852,7 +852,8 @@ interface DictionarySearchService {
 - [x] Reference article 結構化渲染（2026-05-04）
   - 需求來源：1.13、3.8、Phase 4
   - 已完成：`AppDocumentViewer` 改為 markdown block 渲染（標題/段落/清單/表格），不再純文字整頁顯示
-- [ ] `LicenseSummaryScreen` / `ReferenceArticleScreen` 命名與職責對齊
+- [x] `LicenseSummaryScreen` / `ReferenceArticleScreen` 命名與職責對齊
+  - 2026-05-04: 新增 `LicenseSummaryScreen.kt`、`ReferenceArticleScreen.kt`，`SettingsScreen` 導航改用新命名；舊 `LicenseInfoScreen` / `ReferenceScreen` 保留為相容 wrapper。
   - 需求來源：5.1 藍圖
   - 目標：screen 名稱與實際 UI 職責一致，降低後續維護歧義
 

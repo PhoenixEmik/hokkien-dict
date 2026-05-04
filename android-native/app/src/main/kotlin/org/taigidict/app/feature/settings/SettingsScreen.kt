@@ -58,8 +58,8 @@ import org.taigidict.app.core.settings.AppThemePreference
 import org.taigidict.app.data.audio.AudioArchiveDownloadSnapshot
 import org.taigidict.app.data.audio.DictionaryAudioArchiveType
 import org.taigidict.app.feature.info.AboutScreen
-import org.taigidict.app.feature.info.ReferenceScreen
-import org.taigidict.app.feature.info.LicenseInfoScreen
+import org.taigidict.app.feature.info.ReferenceArticleScreen
+import org.taigidict.app.feature.info.LicenseSummaryScreen
 import org.taigidict.app.feature.info.ThirdPartyLicensesScreen
 import org.taigidict.app.feature.info.AppDocumentViewer
 import org.taigidict.app.feature.info.AppDocument
@@ -279,7 +279,7 @@ private fun renderRouteScreen(
         }
 
         SettingsRoute.LicenseInfo -> {
-            LicenseInfoScreen(
+            LicenseSummaryScreen(
                 onBack = onBackToMain,
                 onOpenThirdPartyLicenses = onOpenThirdPartyLicenses,
                 modifier = modifier,
@@ -296,7 +296,7 @@ private fun renderRouteScreen(
         }
 
         SettingsRoute.Reference -> {
-            ReferenceScreen(
+            ReferenceArticleScreen(
                 onBack = onBackToMain,
                 modifier = modifier,
             )

@@ -25,7 +25,7 @@ class ReferenceScreenTest {
 
         composeRule.setContent {
             MaterialTheme {
-                ReferenceScreen(onBack = {})
+                ReferenceArticleScreen(onBack = {})
             }
         }
 

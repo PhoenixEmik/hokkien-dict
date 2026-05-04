@@ -25,7 +25,7 @@ class LicenseInfoScreenTest {
 
         composeRule.setContent {
             MaterialTheme {
-                LicenseInfoScreen(
+                LicenseSummaryScreen(
                     onBack = {},
                     onOpenThirdPartyLicenses = {},
                 )
