@@ -13,6 +13,7 @@ import org.taigidict.app.data.conversion.AndroidOpenCcChineseConversionService
 import org.taigidict.app.data.conversion.ChineseConversionService
 import org.taigidict.app.data.importer.DictionaryImportService
 import org.taigidict.app.data.importer.DictionaryJsonlReader
+import org.taigidict.app.data.importer.LocalDictionaryPackageLoader
 import org.taigidict.app.data.importer.DictionaryPackageLoader
 import org.taigidict.app.data.repository.SQLiteDictionaryRepository
 import org.taigidict.app.data.search.SearchHistoryStore
@@ -37,6 +38,16 @@ class AppContainer(context: Context) {
         DictionaryImportService(
             databaseFile = dictionaryDatabaseFile,
             packageLoader = dictionaryPackageLoader,
+            jsonlReader = DictionaryJsonlReader(),
+        )
+    }
+    val localDictionaryImportService: DictionaryImportService by lazy {
+        DictionaryImportService(
+            databaseFile = dictionaryDatabaseFile,
+            packageLoader = LocalDictionaryPackageLoader(
+                sourceDirectory = localDictionarySourceDirectory,
+                jsonlReader = DictionaryJsonlReader(),
+            ),
             jsonlReader = DictionaryJsonlReader(),
         )
     }

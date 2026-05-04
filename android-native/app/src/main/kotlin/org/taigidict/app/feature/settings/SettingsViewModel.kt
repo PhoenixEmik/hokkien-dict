@@ -58,6 +58,7 @@ class SettingsViewModel(
     application: Application,
     private val repository: DictionaryRepositoryDataSource,
     private val importService: BundledDictionaryImporting,
+    private val localImportService: BundledDictionaryImporting,
     private val databaseFile: File,
     private val settingsStore: AppSettingsStoring,
     private val sourceStore: DictionarySourceResourceManaging,
@@ -67,6 +68,7 @@ class SettingsViewModel(
         application = application,
         repository = (application as TaigiDictApplication).appContainer.dictionaryRepository,
         importService = application.appContainer.dictionaryImportService,
+        localImportService = application.appContainer.localDictionaryImportService,
         databaseFile = application.appContainer.dictionaryDatabaseFile,
         settingsStore = application.appContainer.appSettingsStore,
         sourceStore = application.appContainer.dictionarySourceResourceStore,
@@ -184,7 +186,17 @@ class SettingsViewModel(
             if (databaseFile.exists()) {
                 databaseFile.delete()
             }
-            importService.ensureBundledDatabase()
+            val preferredLocalSource = _uiState.value.sourceSnapshot.state == DownloadSnapshot.State.Completed
+            if (preferredLocalSource) {
+                val importedFromLocal = runCatching {
+                    localImportService.ensureBundledDatabase()
+                }.isSuccess
+                if (!importedFromLocal) {
+                    importService.ensureBundledDatabase()
+                }
+            } else {
+                importService.ensureBundledDatabase()
+            }
             SettingsStatus.DatabaseRebuilt
         }
     }

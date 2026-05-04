@@ -2,10 +2,12 @@ package org.taigidict.app.feature.dictionary
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
@@ -38,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -50,6 +53,8 @@ private val ScreenVerticalPadding = 16.dp
 private val TopContentPadding = 16.dp
 private val SectionSpacing = 16.dp
 private val ComponentSpacing = 8.dp
+private val TwoPaneMinWidth = 900.dp
+private val TwoPaneContentSpacing = 16.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,208 +68,334 @@ fun DictionaryScreen(
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
     val appContainer = (LocalContext.current.applicationContext as TaigiDictApplication).appContainer
     val bookmarkedIds = appContainer.bookmarkStore.bookmarkedIds.collectAsStateWithLifecycle().value
-    val showsEntryDetail = uiState.isLoadingEntryDetail || uiState.selectedEntry != null || uiState.entryDetailErrorMessage != null
+    val showsEntryDetail = uiState.isLoadingEntryDetail ||
+        uiState.selectedEntry != null ||
+        uiState.entryDetailErrorMessage != null
 
-    if (showsEntryDetail) {
-        DictionaryEntryDetailPane(
-            isLoading = uiState.isLoadingEntryDetail,
-            entry = uiState.selectedEntry,
-            openableLinkedWords = uiState.openableLinkedWords,
-            errorMessage = uiState.entryDetailErrorMessage,
-            isBookmarked = uiState.selectedEntry?.id in bookmarkedIds,
-            onToggleBookmark = {
-                uiState.selectedEntry?.let { entry ->
-                    appContainer.bookmarkStore.toggleBookmark(entry.id)
-                }
-            },
-            onBack = viewModel::onEntryDetailDismissed,
-            onOpenLinkedWord = viewModel::onLinkedWordSelected,
-            modifier = modifier.fillMaxSize(),
-        )
-        return
-    }
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val usesTwoPaneLayout = maxWidth >= TwoPaneMinWidth
 
-    Scaffold(
-        modifier = modifier,
-        contentWindowInsets = WindowInsets.safeDrawing.only(
-            WindowInsetsSides.Horizontal,
-        ),
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = ScreenHorizontalPadding)
-                .padding(top = TopContentPadding, bottom = ScreenVerticalPadding),
-            verticalArrangement = Arrangement.spacedBy(SectionSpacing),
-        ) {
-
-            SearchBar(
-                modifier = Modifier.fillMaxWidth(),
-                inputField = {
-                    SearchBarDefaults.InputField(
-                        query = uiState.query,
-                        onQueryChange = viewModel::onQueryChange,
-                        onSearch = {
-                            viewModel.onSearchSubmitted()
-                        },
-                        expanded = false,
-                        onExpandedChange = {},
-                        placeholder = {
-                            Text(text = stringResource(R.string.dictionary_search_placeholder))
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Outlined.Search,
-                                contentDescription = null,
-                            )
-                        },
-                        trailingIcon = {
-                            if (uiState.query.isNotBlank()) {
-                                IconButton(onClick = { viewModel.onQueryChange("") }) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Close,
-                                        contentDescription = stringResource(R.string.dictionary_recent_searches_clear),
-                                    )
-                                }
-                            }
-                        },
-                    )
+        if (showsEntryDetail && !usesTwoPaneLayout) {
+            DictionaryEntryDetailPane(
+                isLoading = uiState.isLoadingEntryDetail,
+                entry = uiState.selectedEntry,
+                openableLinkedWords = uiState.openableLinkedWords,
+                errorMessage = uiState.entryDetailErrorMessage,
+                isBookmarked = uiState.selectedEntry?.id in bookmarkedIds,
+                onToggleBookmark = {
+                    uiState.selectedEntry?.let { entry ->
+                        appContainer.bookmarkStore.toggleBookmark(entry.id)
+                    }
                 },
-                expanded = false,
-                onExpandedChange = {},
-                content = {},
+                onBack = viewModel::onEntryDetailDismissed,
+                onOpenLinkedWord = viewModel::onLinkedWordSelected,
+                modifier = Modifier.fillMaxSize(),
             )
+            return@BoxWithConstraints
+        }
 
-            when {
-                uiState.isLoadingBundle -> Text(
-                    text = stringResource(R.string.dictionary_loading_bundle),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            contentWindowInsets = WindowInsets.safeDrawing.only(
+                WindowInsetsSides.Horizontal,
+            ),
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = ScreenHorizontalPadding)
+                    .padding(top = TopContentPadding, bottom = ScreenVerticalPadding),
+                verticalArrangement = Arrangement.spacedBy(SectionSpacing),
+            ) {
 
-                uiState.bundle != null -> Unit
-
-                uiState.bundleErrorMessage != null -> Text(
-                    text = stringResource(
-                        R.string.dictionary_bundle_error,
-                        uiState.bundleErrorMessage,
-                    ),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-            when {
-                uiState.searchErrorMessage != null -> Text(
-                    text = stringResource(
-                        R.string.dictionary_search_error,
-                        uiState.searchErrorMessage,
-                    ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
-                )
-
-                uiState.query.isNotBlank() && uiState.results.isEmpty() && !uiState.isSearching -> Text(
-                    text = stringResource(R.string.dictionary_no_results),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                uiState.query.isBlank() && uiState.recentSearches.isNotEmpty() -> {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            text = stringResource(R.string.dictionary_recent_searches_title),
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        TextButton(onClick = viewModel::onClearRecentSearches) {
-                            Text(text = stringResource(R.string.dictionary_recent_searches_clear))
-                        }
-                    }
-
-                    RecentSearchHistoryCard(
-                        recentSearches = uiState.recentSearches,
-                        onRecentSearchSelected = viewModel::onRecentSearchSelected,
-                    )
-                }
-
-                uiState.query.isBlank() &&
-                    uiState.hasLoadedRecentSearches &&
-                    uiState.recentSearches.isEmpty() -> DictionaryHomeEmptyCard()
-
-                uiState.results.isNotEmpty() -> {
-                    Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
-                        Text(
-                            text = stringResource(R.string.dictionary_search_results_title),
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(bottom = ComponentSpacing),
-                        )
-                        LazyColumn(
-                            modifier = Modifier.weight(1f, fill = true),
-                            verticalArrangement = Arrangement.spacedBy(0.dp),
-                        ) {
-                            items(
-                                uiState.results,
-                                key = { it.id },
-                            ) { entry ->
-                                ListItem(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable { viewModel.onEntrySelected(entry.id) },
-                                    headlineContent = {
-                                        DictionaryFallbackText(
-                                            text = entry.hanji,
-                                            style = MaterialTheme.typography.titleMedium,
-                                        )
-                                    },
-                                    supportingContent = {
-                                        Column(verticalArrangement = Arrangement.spacedBy(ComponentSpacing / 2)) {
-                                            DictionaryFallbackText(
-                                                text = entry.romanization,
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            )
-                                            if (entry.briefSummary.isNotBlank()) {
-                                                DictionaryFallbackText(
-                                                    text = entry.briefSummary,
-                                                    style = MaterialTheme.typography.bodySmall,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                )
-                                            }
-                                        }
-                                    },
-                                    trailingContent = {
+                SearchBar(
+                    modifier = Modifier.fillMaxWidth(),
+                    inputField = {
+                        SearchBarDefaults.InputField(
+                            query = uiState.query,
+                            onQueryChange = viewModel::onQueryChange,
+                            onSearch = {
+                                viewModel.onSearchSubmitted()
+                            },
+                            expanded = false,
+                            onExpandedChange = {},
+                            placeholder = {
+                                Text(text = stringResource(R.string.dictionary_search_placeholder))
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.Search,
+                                    contentDescription = null,
+                                )
+                            },
+                            trailingIcon = {
+                                if (uiState.query.isNotBlank()) {
+                                    IconButton(onClick = { viewModel.onQueryChange("") }) {
                                         Icon(
-                                            imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            imageVector = Icons.Outlined.Close,
+                                            contentDescription = stringResource(R.string.dictionary_recent_searches_clear),
                                         )
-                                    },
-                                )
-                                HorizontalDivider(
-                                    modifier = Modifier.padding(horizontal = 16.dp),
-                                    thickness = 0.5.dp,
-                                )
-                            }
-                        }
-                    }
-                }
+                                    }
+                                }
+                            },
+                        )
+                    },
+                    expanded = false,
+                    onExpandedChange = {},
+                    content = {},
+                )
 
-                uiState.isSearching -> Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
-                    Text(
-                        text = stringResource(R.string.dictionary_searching),
+                when {
+                    uiState.isLoadingBundle -> Text(
+                        text = stringResource(R.string.dictionary_loading_bundle),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+
+                    uiState.bundle != null -> Unit
+
+                    uiState.bundleErrorMessage != null -> Text(
+                        text = stringResource(
+                            R.string.dictionary_bundle_error,
+                            uiState.bundleErrorMessage,
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
                 }
+                when {
+                    uiState.searchErrorMessage != null -> Text(
+                        text = stringResource(
+                            R.string.dictionary_search_error,
+                            uiState.searchErrorMessage,
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+
+                    uiState.query.isNotBlank() && uiState.results.isEmpty() && !uiState.isSearching -> Text(
+                        text = stringResource(R.string.dictionary_no_results),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+
+                    uiState.query.isBlank() && uiState.recentSearches.isNotEmpty() -> {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = stringResource(R.string.dictionary_recent_searches_title),
+                                style = MaterialTheme.typography.titleLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            TextButton(onClick = viewModel::onClearRecentSearches) {
+                                Text(text = stringResource(R.string.dictionary_recent_searches_clear))
+                            }
+                        }
+
+                        RecentSearchHistoryCard(
+                            recentSearches = uiState.recentSearches,
+                            onRecentSearchSelected = viewModel::onRecentSearchSelected,
+                        )
+                    }
+
+                    uiState.query.isBlank() &&
+                        uiState.hasLoadedRecentSearches &&
+                        uiState.recentSearches.isEmpty() -> DictionaryHomeEmptyCard()
+
+                    uiState.results.isNotEmpty() && usesTwoPaneLayout -> {
+                        Row(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalArrangement = Arrangement.spacedBy(TwoPaneContentSpacing),
+                        ) {
+                            Column(
+                                modifier = Modifier.weight(0.46f),
+                                verticalArrangement = Arrangement.spacedBy(0.dp),
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.dictionary_search_results_title),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    modifier = Modifier.padding(bottom = ComponentSpacing),
+                                )
+                                LazyColumn(
+                                    modifier = Modifier.fillMaxSize(),
+                                    verticalArrangement = Arrangement.spacedBy(0.dp),
+                                ) {
+                                    items(
+                                        uiState.results,
+                                        key = { it.id },
+                                    ) { entry ->
+                                        ListItem(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable { viewModel.onEntrySelected(entry.id) },
+                                            headlineContent = {
+                                                DictionaryFallbackText(
+                                                    text = entry.hanji,
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                )
+                                            },
+                                            supportingContent = {
+                                                Column(verticalArrangement = Arrangement.spacedBy(ComponentSpacing / 2)) {
+                                                    DictionaryFallbackText(
+                                                        text = entry.romanization,
+                                                        style = MaterialTheme.typography.bodyMedium,
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    )
+                                                    if (entry.briefSummary.isNotBlank()) {
+                                                        DictionaryFallbackText(
+                                                            text = entry.briefSummary,
+                                                            style = MaterialTheme.typography.bodySmall,
+                                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                        )
+                                                    }
+                                                }
+                                            },
+                                            trailingContent = {
+                                                Icon(
+                                                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                )
+                                            },
+                                        )
+                                        HorizontalDivider(
+                                            modifier = Modifier.padding(horizontal = 16.dp),
+                                            thickness = 0.5.dp,
+                                        )
+                                    }
+                                }
+                            }
+
+                            if (showsEntryDetail) {
+                                DictionaryEntryDetailPane(
+                                    isLoading = uiState.isLoadingEntryDetail,
+                                    entry = uiState.selectedEntry,
+                                    openableLinkedWords = uiState.openableLinkedWords,
+                                    errorMessage = uiState.entryDetailErrorMessage,
+                                    isBookmarked = uiState.selectedEntry?.id in bookmarkedIds,
+                                    onToggleBookmark = {
+                                        uiState.selectedEntry?.let { entry ->
+                                            appContainer.bookmarkStore.toggleBookmark(entry.id)
+                                        }
+                                    },
+                                    onBack = viewModel::onEntryDetailDismissed,
+                                    onOpenLinkedWord = viewModel::onLinkedWordSelected,
+                                    modifier = Modifier
+                                        .weight(0.54f)
+                                        .fillMaxHeight(),
+                                )
+                            } else {
+                                TwoPaneDetailPlaceholder(
+                                    modifier = Modifier
+                                        .weight(0.54f)
+                                        .fillMaxHeight(),
+                                )
+                            }
+                        }
+                    }
+
+                    uiState.results.isNotEmpty() -> {
+                        Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
+                            Text(
+                                text = stringResource(R.string.dictionary_search_results_title),
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(bottom = ComponentSpacing),
+                            )
+                            LazyColumn(
+                                modifier = Modifier.weight(1f, fill = true),
+                                verticalArrangement = Arrangement.spacedBy(0.dp),
+                            ) {
+                                items(
+                                    uiState.results,
+                                    key = { it.id },
+                                ) { entry ->
+                                    ListItem(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { viewModel.onEntrySelected(entry.id) },
+                                        headlineContent = {
+                                            DictionaryFallbackText(
+                                                text = entry.hanji,
+                                                style = MaterialTheme.typography.titleMedium,
+                                            )
+                                        },
+                                        supportingContent = {
+                                            Column(verticalArrangement = Arrangement.spacedBy(ComponentSpacing / 2)) {
+                                                DictionaryFallbackText(
+                                                    text = entry.romanization,
+                                                    style = MaterialTheme.typography.bodyMedium,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                )
+                                                if (entry.briefSummary.isNotBlank()) {
+                                                    DictionaryFallbackText(
+                                                        text = entry.briefSummary,
+                                                        style = MaterialTheme.typography.bodySmall,
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    )
+                                                }
+                                            }
+                                        },
+                                        trailingContent = {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            )
+                                        },
+                                    )
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(horizontal = 16.dp),
+                                        thickness = 0.5.dp,
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    uiState.isSearching -> Row(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                        Text(
+                            text = stringResource(R.string.dictionary_searching),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun TwoPaneDetailPlaceholder(
+    modifier: Modifier = Modifier,
+) {
+    Card(modifier = modifier) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp, vertical = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Text(
+                text = stringResource(R.string.dictionary_search_results_title),
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                text = stringResource(R.string.dictionary_empty_state_body),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = 8.dp),
+            )
         }
     }
 }

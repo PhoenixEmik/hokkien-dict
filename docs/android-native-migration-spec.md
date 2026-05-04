@@ -824,3 +824,53 @@ interface DictionarySearchService {
 - 不可把簡體轉換直接改成 UI 層字串替換。
 - 不可把音訊 archive 改成整包解壓為預設行為。
 - 第一版不可用 network-only dictionary 取代本機 SQLite。
+
+### 5.6 目前缺口與下一步（2026-05-04）
+
+以下清單根據目前 `android-native/` 程式碼實作狀態整理，作為下一輪實作的直接待辦。
+
+#### P0（先做，會影響功能語意完整性）
+
+- [ ] 平板 `Dictionary` list-detail 兩欄佈局
+  - 需求來源：3.3、4.9、5.4 Phase 2
+  - 目標：同一畫面同時呈現結果列表與 detail pane，phone 維持 push detail
+- [x] 設定頁「詞典資料來源」到 rebuild 的整合流程（2026-05-04）
+  - 需求來源：1.2、1.3、3.6、3.7
+  - 已完成：rebuild 優先嘗試 local source package，失敗時 fallback bundled package
+- [ ] 初始化 phase 補齊
+  - 需求來源：2.3
+  - 目標：加入 `RestoringBundledSource`、`DownloadingSource` 並反映真實流程
+- [ ] `databaseGeneration` 機制
+  - 需求來源：2.3、5.2（InitializationViewModel）
+  - 目標：rebuild 成功後 generation 遞增，供搜索/詳情 cache 失效使用
+
+#### P1（第二優先，影響平台適配與使用體驗）
+
+- [ ] `Bookmarks` 大螢幕 adaptive grid
+  - 需求來源：3.5、4.9
+  - 目標：寬螢幕使用 grid；窄螢幕保持 list
+- [ ] Reference article 結構化渲染
+  - 需求來源：1.13、3.8、Phase 4
+  - 目標：段落、清單、表格可讀；避免純文字長字串檢視
+- [ ] `LicenseSummaryScreen` / `ReferenceArticleScreen` 命名與職責對齊
+  - 需求來源：5.1 藍圖
+  - 目標：screen 名稱與實際 UI 職責一致，降低後續維護歧義
+
+#### P2（治理與可靠性補強）
+
+- [ ] OpenCC 升級字典清理策略
+  - 需求來源：1.11
+  - 目標：加入受控的一次性 `clearDictDataFolder()` 觸發策略（版本升級時）
+- [ ] 平板與混合字型相關 UI 測試補齊
+  - 需求來源：10 Testing Matrix
+  - 目標：覆蓋 list-detail、adaptive grid、mixed Hanji + Tailo fallback
+
+#### 建議實作順序
+
+1. P0-1 平板 list-detail
+2. P0-2 source -> rebuild 整合
+3. P0-3 初始化 phase 補齊
+4. P0-4 databaseGeneration
+5. P1-1 Bookmarks adaptive grid
+6. P1-2 Reference article 結構化渲染
+7. P2 OpenCC 升級清理 + 測試補強

@@ -119,12 +119,14 @@ class SettingsViewModelTest {
         repository: DictionaryRepositoryDataSource,
         importService: BundledDictionaryImporting,
         databaseFile: File,
+        localImportService: BundledDictionaryImporting = importService,
     ): SettingsViewModel {
         val application = ApplicationProvider.getApplicationContext<Application>()
         return SettingsViewModel(
             application = application,
             repository = repository,
             importService = importService,
+            localImportService = localImportService,
             databaseFile = databaseFile,
             settingsStore = FakeAppSettingsStore(),
             sourceStore = FakeDictionarySourceResourceStore(),
