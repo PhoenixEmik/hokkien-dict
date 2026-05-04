@@ -1,0 +1,547 @@
+package org.taigidict.app.feature.settings
+
+import android.text.format.Formatter
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import org.taigidict.app.R
+import org.taigidict.app.data.audio.AudioArchiveDownloadSnapshot
+import org.taigidict.app.data.audio.AudioArchiveDownloadState
+import org.taigidict.app.data.audio.DictionaryAudioArchiveType
+import org.taigidict.app.domain.model.DictionaryBundle
+
+private val AdvancedHorizontalPadding = 16.dp
+private val AdvancedVerticalPadding = 16.dp
+
+internal enum class AudioArchiveAction {
+    Download,
+    Pause,
+    Resume,
+    Redownload,
+}
+
+internal enum class DictionarySourceAction {
+    Restore,
+    Download,
+    Pause,
+    Resume,
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun AdvancedSettingsScreen(
+    uiState: SettingsUiState,
+    sourceSnapshot: org.taigidict.app.data.source.DownloadSnapshot,
+    wordSnapshot: AudioArchiveDownloadSnapshot,
+    sentenceSnapshot: AudioArchiveDownloadSnapshot,
+    assetDirectory: String,
+    modifier: Modifier = Modifier,
+    onBack: () -> Unit,
+    onRebuild: () -> Unit,
+    onClear: () -> Unit,
+    onSourceAction: (DictionarySourceAction) -> Unit,
+    onAudioAction: (DictionaryAudioArchiveType, AudioArchiveAction) -> Unit,
+) {
+    Scaffold(
+        modifier = modifier,
+        contentWindowInsets = WindowInsets.safeDrawing.only(
+            WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
+        ),
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(text = stringResource(R.string.settings_advanced_title))
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = stringResource(R.string.settings_advanced_back),
+                        )
+                    }
+                },
+            )
+        },
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = AdvancedHorizontalPadding)
+                .padding(top = AdvancedVerticalPadding, bottom = AdvancedVerticalPadding),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            item {
+                Text(
+                    text = stringResource(R.string.settings_advanced_body),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            // Maintenance section
+            item {
+                AdvancedSectionHeader(text = stringResource(R.string.settings_dictionary_title))
+            }
+
+            item {
+                MaintenanceActionsCard(
+                    uiState = uiState,
+                    onRebuild = onRebuild,
+                    onClear = onClear,
+                )
+            }
+
+            if (uiState.bundle != null) {
+                item {
+                    DictionarySummaryCard(bundle = uiState.bundle)
+                }
+            }
+
+            if (uiState.builtAt != null || uiState.sourceModifiedAt != null) {
+                item {
+                    DictionaryMetadataCard(
+                        builtAt = uiState.builtAt,
+                        sourceModifiedAt = uiState.sourceModifiedAt,
+                    )
+                }
+            }
+
+            if (uiState.isRunningMaintenance || uiState.status != null || uiState.errorMessage != null) {
+                item {
+                    MaintenanceStatusCard(
+                        isRunning = uiState.isRunningMaintenance,
+                        runningAction = uiState.runningAction,
+                        status = uiState.status,
+                        errorMessage = uiState.errorMessage,
+                    )
+                }
+            }
+
+            // Dictionary source section
+            item {
+                AdvancedSectionHeader(text = stringResource(R.string.settings_source_section))
+            }
+
+            item {
+                DictionarySourceCard(
+                    snapshot = sourceSnapshot,
+                    onAction = onSourceAction,
+                )
+            }
+
+            // Offline audio section
+            item {
+                AdvancedSectionHeader(text = stringResource(R.string.settings_offline_audio_title))
+            }
+
+            items(
+                listOf(
+                    DictionaryAudioArchiveType.Word to wordSnapshot,
+                    DictionaryAudioArchiveType.Sentence to sentenceSnapshot,
+                ),
+                key = { (type, _) -> type.storageKey },
+            ) { (type, snapshot) ->
+                AudioArchiveResourceCard(
+                    type = type,
+                    snapshot = snapshot,
+                    onAction = { action ->
+                        onAudioAction(type, action)
+                    },
+                )
+            }
+
+            item {
+                Text(
+                    text = stringResource(R.string.bundled_package_label, assetDirectory),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AdvancedSectionHeader(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(horizontal = 2.dp),
+    )
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun MaintenanceActionsCard(
+    uiState: SettingsUiState,
+    onRebuild: () -> Unit,
+    onClear: () -> Unit,
+) {
+    Card {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                OutlinedButton(
+                    onClick = onRebuild,
+                    enabled = !uiState.isRunningMaintenance,
+                ) {
+                    Text(text = stringResource(R.string.settings_action_rebuild))
+                }
+                TextButton(
+                    onClick = onClear,
+                    enabled = !uiState.isRunningMaintenance,
+                ) {
+                    Text(text = stringResource(R.string.settings_action_clear))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DictionarySummaryCard(
+    bundle: DictionaryBundle,
+) {
+    Card {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.settings_summary_title),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = stringResource(R.string.settings_entry_count_label, bundle.entryCount),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = stringResource(R.string.settings_sense_count_label, bundle.senseCount),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = stringResource(R.string.settings_example_count_label, bundle.exampleCount),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+    }
+}
+
+@Composable
+private fun DictionaryMetadataCard(
+    builtAt: String?,
+    sourceModifiedAt: String?,
+) {
+    Card {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.settings_source_time_title),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            builtAt?.let {
+                Text(
+                    text = stringResource(R.string.settings_dictionary_built_at, it),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+            sourceModifiedAt?.let {
+                Text(
+                    text = stringResource(R.string.settings_dictionary_source_updated, it),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MaintenanceStatusCard(
+    isRunning: Boolean,
+    runningAction: SettingsMaintenanceAction?,
+    status: SettingsStatus?,
+    errorMessage: String?,
+) {
+    Card(
+        colors = when {
+            errorMessage != null -> CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.errorContainer,
+            )
+            else -> CardDefaults.cardColors()
+        },
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            if (isRunning) {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Text(
+                    text = when (runningAction) {
+                        SettingsMaintenanceAction.Rebuild -> stringResource(R.string.settings_running_rebuild)
+                        SettingsMaintenanceAction.Clear -> stringResource(R.string.settings_running_clear)
+                        null -> stringResource(R.string.settings_running_rebuild)
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+
+            status?.let {
+                Text(
+                    text = when (it) {
+                        SettingsStatus.DatabaseRebuilt -> stringResource(R.string.settings_status_rebuild_completed)
+                        SettingsStatus.DatabaseCleared -> stringResource(R.string.settings_status_clear_completed)
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+
+            errorMessage?.let { error ->
+                Text(
+                    text = stringResource(R.string.settings_dictionary_error, error),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun AudioArchiveResourceCard(
+    type: DictionaryAudioArchiveType,
+    snapshot: AudioArchiveDownloadSnapshot,
+    onAction: (AudioArchiveAction) -> Unit,
+) {
+    val context = LocalContext.current
+    val title = when (type) {
+        DictionaryAudioArchiveType.Word -> stringResource(R.string.settings_word_audio)
+        DictionaryAudioArchiveType.Sentence -> stringResource(R.string.settings_sentence_audio)
+    }
+    val fileSize = Formatter.formatFileSize(context, type.archiveBytes)
+    val downloadedSize = Formatter.formatFileSize(context, snapshot.downloadedBytes)
+    val totalSize = Formatter.formatFileSize(
+        context,
+        if (snapshot.totalBytes > 0) snapshot.totalBytes else type.archiveBytes,
+    )
+    val statusText = when (snapshot.state) {
+        AudioArchiveDownloadState.Idle -> stringResource(R.string.settings_audio_status_idle, fileSize)
+        AudioArchiveDownloadState.Downloading -> stringResource(
+            R.string.settings_audio_status_downloading,
+            downloadedSize,
+            totalSize,
+        )
+        AudioArchiveDownloadState.Paused -> stringResource(
+            R.string.settings_audio_status_paused,
+            downloadedSize,
+            totalSize,
+        )
+        AudioArchiveDownloadState.Completed -> stringResource(
+            R.string.settings_audio_status_completed,
+            downloadedSize,
+        )
+        AudioArchiveDownloadState.Failed -> stringResource(
+            R.string.settings_audio_status_failed,
+            snapshot.errorMessage ?: stringResource(R.string.unknown_error),
+        )
+    }
+
+    Card {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = type.archiveFileName,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = statusText,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            snapshot.progress?.let { progress ->
+                if (snapshot.state == AudioArchiveDownloadState.Downloading || snapshot.state == AudioArchiveDownloadState.Paused) {
+                    LinearProgressIndicator(progress = { progress.coerceIn(0f, 1f) })
+                }
+            }
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                availableActions(snapshot).forEach { action ->
+                    OutlinedButton(onClick = { onAction(action) }) {
+                        Text(text = action.label())
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AudioArchiveAction.label(): String {
+    return when (this) {
+        AudioArchiveAction.Download -> stringResource(R.string.settings_audio_action_download)
+        AudioArchiveAction.Pause -> stringResource(R.string.settings_audio_action_pause)
+        AudioArchiveAction.Resume -> stringResource(R.string.settings_audio_action_resume)
+        AudioArchiveAction.Redownload -> stringResource(R.string.settings_audio_action_redownload)
+    }
+}
+
+private fun availableActions(snapshot: AudioArchiveDownloadSnapshot): List<AudioArchiveAction> {
+    return when (snapshot.state) {
+        AudioArchiveDownloadState.Idle -> listOf(AudioArchiveAction.Download)
+        AudioArchiveDownloadState.Downloading -> listOf(AudioArchiveAction.Pause, AudioArchiveAction.Redownload)
+        AudioArchiveDownloadState.Paused -> listOf(AudioArchiveAction.Resume, AudioArchiveAction.Redownload)
+        AudioArchiveDownloadState.Completed -> listOf(AudioArchiveAction.Redownload)
+        AudioArchiveDownloadState.Failed -> listOf(AudioArchiveAction.Redownload)
+    }
+}
+
+@Composable
+private fun DictionarySourceAction.label(): String {
+    return when (this) {
+        DictionarySourceAction.Restore -> stringResource(R.string.settings_source_action_restore)
+        DictionarySourceAction.Download -> stringResource(R.string.settings_source_action_download)
+        DictionarySourceAction.Pause -> stringResource(R.string.settings_source_action_pause)
+        DictionarySourceAction.Resume -> stringResource(R.string.settings_source_action_resume)
+    }
+}
+
+private fun availableSourceActions(
+    snapshot: org.taigidict.app.data.source.DownloadSnapshot,
+): List<DictionarySourceAction> {
+    return when (snapshot.state) {
+        org.taigidict.app.data.source.DownloadSnapshot.State.Downloading -> {
+            listOf(DictionarySourceAction.Pause)
+        }
+
+        org.taigidict.app.data.source.DownloadSnapshot.State.Paused -> {
+            listOf(DictionarySourceAction.Resume)
+        }
+
+        else -> {
+            listOf(DictionarySourceAction.Restore, DictionarySourceAction.Download)
+        }
+    }
+}
+
+@Composable
+private fun DictionarySourceCard(
+    snapshot: org.taigidict.app.data.source.DownloadSnapshot,
+    onAction: (DictionarySourceAction) -> Unit,
+) {
+    val context = LocalContext.current
+    Card {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.settings_dictionary_source_title),
+                style = MaterialTheme.typography.titleMedium,
+            )
+
+            val stateLabel = snapshot.state.label()
+            val sizeLabel = snapshot.totalBytes?.let { total ->
+                Formatter.formatFileSize(context, total)
+            } ?: "?"
+
+            Text(
+                text = "$stateLabel · $sizeLabel",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+
+            if (snapshot.progress != null && snapshot.state == org.taigidict.app.data.source.DownloadSnapshot.State.Downloading) {
+                LinearProgressIndicator(
+                    progress = { snapshot.progress!!.toFloat() },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                availableSourceActions(snapshot).forEach { action ->
+                    OutlinedButton(
+                        onClick = { onAction(action) },
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text(action.label())
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun org.taigidict.app.data.source.DownloadSnapshot.State.label(): String = when (this) {
+    org.taigidict.app.data.source.DownloadSnapshot.State.Idle -> stringResource(R.string.source_status_idle)
+    org.taigidict.app.data.source.DownloadSnapshot.State.Downloading -> stringResource(R.string.source_status_downloading)
+    org.taigidict.app.data.source.DownloadSnapshot.State.Paused -> stringResource(R.string.source_status_paused)
+    org.taigidict.app.data.source.DownloadSnapshot.State.Completed -> stringResource(R.string.source_status_completed)
+    org.taigidict.app.data.source.DownloadSnapshot.State.Failed -> stringResource(R.string.source_status_failed)
+}

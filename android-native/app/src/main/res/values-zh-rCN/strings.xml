@@ -115,6 +115,17 @@
     <string name="settings_info_title">关于与文档</string>
     <string name="settings_info_body">可在 App 内阅读隐私政策与数据授权文件。</string>
     <string name="settings_info_about">关于</string>
+    <string name="about_title">关于台语辞典</string>
+    <string name="about_app_section">台语辞典</string>
+    <string name="about_version">版本</string>
+    <string name="about_author">作者</string>
+    <string name="about_author_value">PhoenixEmik</string>
+    <string name="about_github">开放源码</string>
+    <string name="about_github_value">GitHub</string>
+    <string name="about_project_section">专案</string>
+    <string name="about_reference_page">参考页面</string>
+    <string name="about_tailo_title">台罗标注说明</string>
+    <string name="about_hanji_title">汉字用字原则</string>
     <string name="settings_info_privacy_policy">隐私政策</string>
     <string name="settings_info_data_license">数据授权</string>
     <string name="settings_info_open_source_license">开源授权</string>
