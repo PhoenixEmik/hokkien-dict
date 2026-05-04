@@ -131,45 +131,26 @@ fun SettingsScreen(
             }
         },
     )
+    ConfirmDangerousActionDialog(
+        pendingAction = pendingAction,
+        onDismiss = { pendingAction = null },
+        onConfirm = { action ->
+            when (action) {
+                SettingsDangerousAction.RebuildDatabase -> viewModel.rebuildDatabase()
+                SettingsDangerousAction.ClearDatabase -> viewModel.clearDatabase()
+                SettingsDangerousAction.RestoreDictionarySource -> viewModel.restoreDictionarySource()
+                SettingsDangerousAction.DownloadDictionarySource -> viewModel.downloadDictionarySource()
+                SettingsDangerousAction.RedownloadWordArchive -> {
+                    audioArchiveManager.restartDownload(DictionaryAudioArchiveType.Word)
+                }
+                SettingsDangerousAction.RedownloadSentenceArchive -> {
+                    audioArchiveManager.restartDownload(DictionaryAudioArchiveType.Sentence)
+                }
+            }
+            pendingAction = null
+        },
+    )
     if (showingRouteScreen) return
-
-    pendingAction?.let { action ->
-        AlertDialog(
-            onDismissRequest = { pendingAction = null },
-            title = {
-                Text(text = stringResource(R.string.settings_confirm_title))
-            },
-            text = {
-                Text(text = action.message())
-            },
-            dismissButton = {
-                TextButton(onClick = { pendingAction = null }) {
-                    Text(text = stringResource(R.string.settings_confirm_cancel))
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        when (action) {
-                            SettingsDangerousAction.RebuildDatabase -> viewModel.rebuildDatabase()
-                            SettingsDangerousAction.ClearDatabase -> viewModel.clearDatabase()
-                            SettingsDangerousAction.RestoreDictionarySource -> viewModel.restoreDictionarySource()
-                            SettingsDangerousAction.DownloadDictionarySource -> viewModel.downloadDictionarySource()
-                            SettingsDangerousAction.RedownloadWordArchive -> {
-                                audioArchiveManager.restartDownload(DictionaryAudioArchiveType.Word)
-                            }
-                            SettingsDangerousAction.RedownloadSentenceArchive -> {
-                                audioArchiveManager.restartDownload(DictionaryAudioArchiveType.Sentence)
-                            }
-                        }
-                        pendingAction = null
-                    },
-                ) {
-                    Text(text = stringResource(R.string.settings_confirm_continue))
-                }
-            },
-        )
-    }
 
     LaunchedEffect(audioArchiveManager) {
         audioArchiveManager.refreshAll()
@@ -253,6 +234,35 @@ fun SettingsScreen(
             }
         }
     }
+}
+
+@Composable
+private fun ConfirmDangerousActionDialog(
+    pendingAction: SettingsDangerousAction?,
+    onDismiss: () -> Unit,
+    onConfirm: (SettingsDangerousAction) -> Unit,
+) {
+    val action = pendingAction ?: return
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(text = stringResource(R.string.settings_confirm_title))
+        },
+        text = {
+            Text(text = action.message())
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(R.string.settings_confirm_cancel))
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(action) }) {
+                Text(text = stringResource(R.string.settings_confirm_continue))
+            }
+        },
+    )
 }
 
 @Composable
