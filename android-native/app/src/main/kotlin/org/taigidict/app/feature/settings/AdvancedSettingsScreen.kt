@@ -72,12 +72,15 @@ internal enum class DictionarySourceAction {
 @Composable
 internal fun AdvancedSettingsScreen(
     uiState: SettingsUiState,
+    @Suppress("UNUSED_PARAMETER")
     sourceSnapshot: org.taigidict.app.data.source.DownloadSnapshot,
+    @Suppress("UNUSED_PARAMETER")
     assetDirectory: String,
     modifier: Modifier = Modifier,
     onBack: () -> Unit,
     onRebuild: () -> Unit,
     onClear: () -> Unit,
+    @Suppress("UNUSED_PARAMETER")
     onSourceAction: (DictionarySourceAction) -> Unit,
 ) {
     Scaffold(
@@ -152,25 +155,6 @@ internal fun AdvancedSettingsScreen(
                     )
                 }
             }
-
-            item {
-                AdvancedSectionHeader(text = stringResource(R.string.settings_source_section))
-            }
-
-            item {
-                DictionarySourceCard(
-                    snapshot = sourceSnapshot,
-                    onAction = onSourceAction,
-                )
-            }
-
-            item {
-                Text(
-                    text = stringResource(R.string.bundled_package_label, assetDirectory),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
         }
     }
 }
@@ -240,7 +224,7 @@ private fun MaintenanceActionRow(
         headlineContent = {
             Text(
                 text = title,
-                color = if (enabled) textColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
             )
         },
     )
@@ -510,77 +494,4 @@ private fun DictionarySourceAction.label(): String {
         DictionarySourceAction.Pause -> stringResource(R.string.settings_source_action_pause)
         DictionarySourceAction.Resume -> stringResource(R.string.settings_source_action_resume)
     }
-}
-
-private fun availableSourceActions(
-    snapshot: org.taigidict.app.data.source.DownloadSnapshot,
-): List<DictionarySourceAction> {
-    return when (snapshot.state) {
-        org.taigidict.app.data.source.DownloadSnapshot.State.Downloading -> {
-            listOf(DictionarySourceAction.Pause)
-        }
-
-        org.taigidict.app.data.source.DownloadSnapshot.State.Paused -> {
-            listOf(DictionarySourceAction.Resume)
-        }
-
-        else -> {
-            listOf(DictionarySourceAction.Restore, DictionarySourceAction.Download)
-        }
-    }
-}
-
-@Composable
-private fun DictionarySourceCard(
-    snapshot: org.taigidict.app.data.source.DownloadSnapshot,
-    onAction: (DictionarySourceAction) -> Unit,
-) {
-    val context = LocalContext.current
-    val stateLabel = snapshot.state.label()
-    val sizeLabel = snapshot.totalBytes?.let { total ->
-        Formatter.formatFileSize(context, total)
-    } ?: "?"
-    val actions = availableSourceActions(snapshot)
-
-    Card {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            ListItem(
-                headlineContent = { Text(text = stringResource(R.string.settings_dictionary_source_title)) },
-                supportingContent = {
-                    Text(text = "$stateLabel · $sizeLabel")
-                },
-            )
-
-            if (snapshot.progress != null && snapshot.state == org.taigidict.app.data.source.DownloadSnapshot.State.Downloading) {
-                LinearProgressIndicator(
-                    progress = { snapshot.progress!!.toFloat().coerceIn(0f, 1f) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                )
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.End,
-            ) {
-                actions.forEach { action ->
-                    TextButton(onClick = { onAction(action) }) {
-                        Text(action.label())
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun org.taigidict.app.data.source.DownloadSnapshot.State.label(): String = when (this) {
-    org.taigidict.app.data.source.DownloadSnapshot.State.Idle -> stringResource(R.string.source_status_idle)
-    org.taigidict.app.data.source.DownloadSnapshot.State.Downloading -> stringResource(R.string.source_status_downloading)
-    org.taigidict.app.data.source.DownloadSnapshot.State.Paused -> stringResource(R.string.source_status_paused)
-    org.taigidict.app.data.source.DownloadSnapshot.State.Completed -> stringResource(R.string.source_status_completed)
-    org.taigidict.app.data.source.DownloadSnapshot.State.Failed -> stringResource(R.string.source_status_failed)
 }

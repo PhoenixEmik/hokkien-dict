@@ -57,6 +57,5 @@ class AdvancedSettingsScreenTest {
         composeRule.onNodeWithText(context.getString(R.string.settings_dictionary_title)).assertIsDisplayed()
         composeRule.onNodeWithText(context.getString(R.string.settings_action_rebuild)).assertIsDisplayed()
         composeRule.onNodeWithText(context.getString(R.string.settings_action_clear)).assertIsDisplayed()
-        composeRule.onNodeWithText(context.getString(R.string.settings_source_section)).assertIsDisplayed()
     }
 }
