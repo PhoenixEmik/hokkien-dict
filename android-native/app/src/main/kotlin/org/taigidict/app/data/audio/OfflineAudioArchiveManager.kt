@@ -1,6 +1,7 @@
 package org.taigidict.app.data.audio
 
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
@@ -12,6 +13,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,6 +42,7 @@ internal class OfflineAudioArchiveManager(
         )
     }
     private val activeJobs = mutableMapOf<DictionaryAudioArchiveType, Job?>()
+    private val activeConnections = mutableMapOf<DictionaryAudioArchiveType, AudioArchiveConnection?>()
 
     fun snapshotFlow(type: DictionaryAudioArchiveType): StateFlow<AudioArchiveDownloadSnapshot> {
         return snapshots.getValue(type).asStateFlow()
@@ -74,12 +78,14 @@ internal class OfflineAudioArchiveManager(
     @Synchronized
     fun pauseDownload(type: DictionaryAudioArchiveType): Job? {
         val currentJob = activeJobs[type] ?: return null
+        activeConnections[type]?.close()
         return managerScope.launch {
             currentJob.cancelAndJoin()
             synchronized(this@OfflineAudioArchiveManager) {
                 if (activeJobs[type] === currentJob) {
                     activeJobs[type] = null
                 }
+                activeConnections[type] = null
             }
             publishLocalSnapshot(type)
         }
@@ -88,7 +94,9 @@ internal class OfflineAudioArchiveManager(
     @Synchronized
     fun restartDownload(type: DictionaryAudioArchiveType): Job {
         val currentJob = activeJobs[type]
+        val currentConnection = activeConnections[type]
         val restartJob = managerScope.launch {
+            currentConnection?.close()
             currentJob?.cancelAndJoin()
             clearArchiveState(type)
             updateSnapshot(type) {
@@ -115,6 +123,9 @@ internal class OfflineAudioArchiveManager(
                 val tempFile = storage.downloadTempFile(type)
                 val resumeBytes = if (allowResume && tempFile.exists()) tempFile.length() else 0L
                 val connection = connectionFactory.open(type.sourceUrl, resumeBytes)
+                synchronized(this@OfflineAudioArchiveManager) {
+                    activeConnections[type] = connection
+                }
 
                 connection.use {
                     val responseCode = connection.responseCode
@@ -141,31 +152,14 @@ internal class OfflineAudioArchiveManager(
                     }
 
                     tempFile.parentFile?.mkdirs()
-                    tempFile.outputStream().buffered().use { output ->
-                        if (appendToTemp) {
-                            output.write(tempFile.readBytes())
-                        }
-                    }
-
-                    if (appendToTemp) {
-                        appendStreamToFile(
-                            inputStream = connection.inputStream,
-                            targetFile = tempFile,
-                            append = true,
-                            type = type,
-                            baseDownloadedBytes = baseDownloadedBytes,
-                            totalBytes = resolvedTotalBytes,
-                        )
-                    } else {
-                        appendStreamToFile(
-                            inputStream = connection.inputStream,
-                            targetFile = tempFile,
-                            append = false,
-                            type = type,
-                            baseDownloadedBytes = 0,
-                            totalBytes = resolvedTotalBytes,
-                        )
-                    }
+                    appendStreamToFile(
+                        inputStream = connection.inputStream,
+                        targetFile = tempFile,
+                        append = appendToTemp,
+                        type = type,
+                        baseDownloadedBytes = baseDownloadedBytes,
+                        totalBytes = resolvedTotalBytes,
+                    )
                 }
 
                 val index = zipIndexer.buildIndex(tempFile)
@@ -205,6 +199,7 @@ internal class OfflineAudioArchiveManager(
                 if (currentJob != null && !currentJob.isActive) {
                     activeJobs[type] = null
                 }
+                activeConnections[type] = null
             }
         }
     }
@@ -221,14 +216,12 @@ internal class OfflineAudioArchiveManager(
             targetFile.delete()
         }
 
-        targetFile.outputStream().buffered().use { output ->
-            if (append && targetFile.exists()) {
-                output.write(targetFile.readBytes())
-            }
+        FileOutputStream(targetFile, append).buffered().use { output ->
             inputStream.buffered().use { input ->
                 val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
                 var downloadedBytes = baseDownloadedBytes
                 while (true) {
+                    currentCoroutineContext().ensureActive()
                     val bytesRead = input.read(buffer)
                     if (bytesRead <= 0) {
                         break
