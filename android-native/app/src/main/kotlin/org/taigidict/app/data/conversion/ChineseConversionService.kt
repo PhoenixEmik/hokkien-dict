@@ -3,6 +3,7 @@ package org.taigidict.app.data.conversion
 import android.content.Context
 import com.xyrlsz.opencc.android.lib.ChineseConverter
 import com.xyrlsz.opencc.android.lib.ConversionType
+import org.taigidict.app.BuildConfig
 import org.taigidict.app.core.localization.AppLocale
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -20,6 +21,10 @@ internal class AndroidOpenCcChineseConversionService(
     appContext: Context,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val engine: OpenCcEngine = NativeOpenCcEngine,
+    private val appVersionCode: Int = BuildConfig.VERSION_CODE,
+    private val migrationTracker: OpenCcMigrationTracker = SharedPreferencesOpenCcMigrationTracker(
+        appContext.applicationContext.getSharedPreferences("opencc_migrations", Context.MODE_PRIVATE),
+    ),
 ) : ChineseConversionService {
     private val context = appContext.applicationContext
     private val lock = Mutex()
@@ -28,9 +33,21 @@ internal class AndroidOpenCcChineseConversionService(
 
     init {
         runCatching {
+            maybeClearOpenCcDictDataFolder()
             engine.init(context)
             initialized = true
         }
+    }
+
+    private fun maybeClearOpenCcDictDataFolder() {
+        if (!migrationTracker.shouldClearDictDataFolder(appVersionCode)) {
+            return
+        }
+
+        runCatching {
+            engine.clearDictDataFolder(context)
+        }
+        migrationTracker.markDictDataFolderCleared(appVersionCode)
     }
 
     override suspend fun normalizeSearchInput(text: String, locale: AppLocale): String {
@@ -72,12 +89,18 @@ internal enum class OpenCcMode {
 internal interface OpenCcEngine {
     fun init(context: Context)
 
+    fun clearDictDataFolder(context: Context)
+
     fun convert(text: String, mode: OpenCcMode): String
 }
 
 internal object NativeOpenCcEngine : OpenCcEngine {
     override fun init(context: Context) {
         ChineseConverter.init(context)
+    }
+
+    override fun clearDictDataFolder(context: Context) {
+        ChineseConverter.clearDictDataFolder(context)
     }
 
     override fun convert(text: String, mode: OpenCcMode): String {

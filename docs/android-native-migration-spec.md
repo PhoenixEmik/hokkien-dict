@@ -859,7 +859,8 @@ interface DictionarySearchService {
 
 #### P2（治理與可靠性補強）
 
-- [ ] OpenCC 升級字典清理策略
+- [x] OpenCC 升級字典清理策略
+  - 2026-05-04: `AndroidOpenCcChineseConversionService` 新增 version-gated migration（`OpenCcMigrationTracker`），僅在 app version 升級時一次性觸發 `clearDictDataFolder()`。
   - 需求來源：1.11
   - 目標：加入受控的一次性 `clearDictDataFolder()` 觸發策略（版本升級時）
 - [ ] 平板與混合字型相關 UI 測試補齊

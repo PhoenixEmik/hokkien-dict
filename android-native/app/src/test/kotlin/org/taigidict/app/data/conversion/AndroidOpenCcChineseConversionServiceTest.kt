@@ -20,6 +20,42 @@ class AndroidOpenCcChineseConversionServiceTest {
     private val dispatcher = StandardTestDispatcher()
 
     @Test
+    fun init_clearsDictDataFolderWhenVersionNotMigrated() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val engine = FakeOpenCcEngine()
+        val tracker = FakeMigrationTracker(shouldClear = true)
+
+        AndroidOpenCcChineseConversionService(
+            appContext = context,
+            dispatcher = dispatcher,
+            engine = engine,
+            appVersionCode = 3,
+            migrationTracker = tracker,
+        )
+
+        assertEquals(1, engine.clearDictDataFolderCalls)
+        assertEquals(listOf(3), tracker.markedVersions)
+    }
+
+    @Test
+    fun init_skipsDictDataFolderClearWhenAlreadyMigrated() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val engine = FakeOpenCcEngine()
+        val tracker = FakeMigrationTracker(shouldClear = false)
+
+        AndroidOpenCcChineseConversionService(
+            appContext = context,
+            dispatcher = dispatcher,
+            engine = engine,
+            appVersionCode = 3,
+            migrationTracker = tracker,
+        )
+
+        assertEquals(0, engine.clearDictDataFolderCalls)
+        assertTrue(tracker.markedVersions.isEmpty())
+    }
+
+    @Test
     fun normalizeSearchInput_usesS2TwpInSimplifiedChinese() = runTest(dispatcher) {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val engine = FakeOpenCcEngine(converted = "辭典")
@@ -95,6 +131,12 @@ private class FakeOpenCcEngine(
     override fun init(context: Context) {
     }
 
+    var clearDictDataFolderCalls = 0
+
+    override fun clearDictDataFolder(context: Context) {
+        clearDictDataFolderCalls += 1
+    }
+
     override fun convert(text: String, mode: OpenCcMode): String {
         if (shouldThrow) {
             throw RuntimeException("test conversion failure")
@@ -102,5 +144,17 @@ private class FakeOpenCcEngine(
         inputs += text
         modes += mode
         return converted
+    }
+}
+
+private class FakeMigrationTracker(
+    private val shouldClear: Boolean,
+) : OpenCcMigrationTracker {
+    val markedVersions = mutableListOf<Int>()
+
+    override fun shouldClearDictDataFolder(versionCode: Int): Boolean = shouldClear
+
+    override fun markDictDataFolderCleared(versionCode: Int) {
+        markedVersions += versionCode
     }
 }
