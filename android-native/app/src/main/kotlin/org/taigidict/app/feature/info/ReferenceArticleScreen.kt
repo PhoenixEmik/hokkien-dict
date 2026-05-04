@@ -41,15 +41,9 @@ import org.taigidict.app.R
 private val ReferenceHorizontalPadding = 16.dp
 private val ReferenceVerticalPadding = 16.dp
 
-private enum class ReferenceArticle(val titleRes: Int, val document: AppDocument) {
-    Tailo(
-        titleRes = R.string.about_tailo_title,
-        document = AppDocument.TailoGuide,
-    ),
-    Hanji(
-        titleRes = R.string.about_hanji_title,
-        document = AppDocument.HanjiGuide,
-    ),
+private enum class ReferenceArticle(val titleRes: Int) {
+    Tailo(titleRes = R.string.about_tailo_title),
+    Hanji(titleRes = R.string.about_hanji_title),
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,8 +57,8 @@ fun ReferenceArticleScreen(
     val article = selectedArticle
     if (article != null) {
         BackHandler { selectedArticle = null }
-        AppDocumentViewer(
-            document = article.document,
+        ReferenceDetailScreen(
+            article = article,
             onBack = { selectedArticle = null },
         )
         return
@@ -124,6 +118,45 @@ fun ReferenceArticleScreen(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ReferenceDetailScreen(
+    article: ReferenceArticle,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Scaffold(
+        modifier = modifier,
+        contentWindowInsets = WindowInsets.safeDrawing.only(
+            WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
+        ),
+        topBar = {
+            TopAppBar(
+                title = { Text(text = stringResource(article.titleRes)) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = stringResource(R.string.settings_info_back),
+                        )
+                    }
+                },
+            )
+        },
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+        ) {
+            when (article) {
+                ReferenceArticle.Tailo -> TailoGuideContent()
+                ReferenceArticle.Hanji -> HanjiGuideContent()
             }
         }
     }
