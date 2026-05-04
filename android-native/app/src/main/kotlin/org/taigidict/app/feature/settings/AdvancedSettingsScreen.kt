@@ -14,15 +14,15 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -63,15 +63,12 @@ internal enum class DictionarySourceAction {
 internal fun AdvancedSettingsScreen(
     uiState: SettingsUiState,
     sourceSnapshot: org.taigidict.app.data.source.DownloadSnapshot,
-    wordSnapshot: AudioArchiveDownloadSnapshot,
-    sentenceSnapshot: AudioArchiveDownloadSnapshot,
     assetDirectory: String,
     modifier: Modifier = Modifier,
     onBack: () -> Unit,
     onRebuild: () -> Unit,
     onClear: () -> Unit,
     onSourceAction: (DictionarySourceAction) -> Unit,
-    onAudioAction: (DictionaryAudioArchiveType, AudioArchiveAction) -> Unit,
 ) {
     Scaffold(
         modifier = modifier,
@@ -161,27 +158,6 @@ internal fun AdvancedSettingsScreen(
                 )
             }
 
-            // Offline audio section
-            item {
-                AdvancedSectionHeader(text = stringResource(R.string.settings_offline_audio_title))
-            }
-
-            items(
-                listOf(
-                    DictionaryAudioArchiveType.Word to wordSnapshot,
-                    DictionaryAudioArchiveType.Sentence to sentenceSnapshot,
-                ),
-                key = { (type, _) -> type.storageKey },
-            ) { (type, snapshot) ->
-                AudioArchiveResourceCard(
-                    type = type,
-                    snapshot = snapshot,
-                    onAction = { action ->
-                        onAudioAction(type, action)
-                    },
-                )
-            }
-
             item {
                 Text(
                     text = stringResource(R.string.bundled_package_label, assetDirectory),
@@ -210,31 +186,29 @@ private fun MaintenanceActionsCard(
     onRebuild: () -> Unit,
     onClear: () -> Unit,
 ) {
-    Card {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        FlowRow(
+            modifier = Modifier.padding(horizontal = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+            OutlinedButton(
+                onClick = onRebuild,
+                enabled = !uiState.isRunningMaintenance,
             ) {
-                OutlinedButton(
-                    onClick = onRebuild,
-                    enabled = !uiState.isRunningMaintenance,
-                ) {
-                    Text(text = stringResource(R.string.settings_action_rebuild))
-                }
-                TextButton(
-                    onClick = onClear,
-                    enabled = !uiState.isRunningMaintenance,
-                ) {
-                    Text(text = stringResource(R.string.settings_action_clear))
-                }
+                Text(text = stringResource(R.string.settings_action_rebuild))
+            }
+            TextButton(
+                onClick = onClear,
+                enabled = !uiState.isRunningMaintenance,
+            ) {
+                Text(text = stringResource(R.string.settings_action_clear))
             }
         }
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 4.dp), thickness = 0.5.dp)
     }
 }
 
@@ -242,31 +216,20 @@ private fun MaintenanceActionsCard(
 private fun DictionarySummaryCard(
     bundle: DictionaryBundle,
 ) {
-    Card {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.settings_summary_title),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                text = stringResource(R.string.settings_entry_count_label, bundle.entryCount),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            Text(
-                text = stringResource(R.string.settings_sense_count_label, bundle.senseCount),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            Text(
-                text = stringResource(R.string.settings_example_count_label, bundle.exampleCount),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
+    Column(modifier = Modifier.fillMaxWidth()) {
+        ListItem(headlineContent = { Text(text = stringResource(R.string.settings_summary_title)) })
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+        ListItem(
+            headlineContent = { Text(text = stringResource(R.string.settings_entry_count_label, bundle.entryCount)) },
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+        ListItem(
+            headlineContent = { Text(text = stringResource(R.string.settings_sense_count_label, bundle.senseCount)) },
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+        ListItem(
+            headlineContent = { Text(text = stringResource(R.string.settings_example_count_label, bundle.exampleCount)) },
+        )
     }
 }
 
@@ -275,30 +238,15 @@ private fun DictionaryMetadataCard(
     builtAt: String?,
     sourceModifiedAt: String?,
 ) {
-    Card {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.settings_source_time_title),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            builtAt?.let {
-                Text(
-                    text = stringResource(R.string.settings_dictionary_built_at, it),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-            sourceModifiedAt?.let {
-                Text(
-                    text = stringResource(R.string.settings_dictionary_source_updated, it),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
+    Column(modifier = Modifier.fillMaxWidth()) {
+        ListItem(headlineContent = { Text(text = stringResource(R.string.settings_source_time_title)) })
+        builtAt?.let {
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+            ListItem(headlineContent = { Text(text = stringResource(R.string.settings_dictionary_built_at, it)) })
+        }
+        sourceModifiedAt?.let {
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+            ListItem(headlineContent = { Text(text = stringResource(R.string.settings_dictionary_source_updated, it)) })
         }
     }
 }
@@ -310,52 +258,42 @@ private fun MaintenanceStatusCard(
     status: SettingsStatus?,
     errorMessage: String?,
 ) {
-    Card(
-        colors = when {
-            errorMessage != null -> CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.errorContainer,
-            )
-            else -> CardDefaults.cardColors()
-        },
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            if (isRunning) {
-                LinearProgressIndicator(
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Text(
-                    text = when (runningAction) {
-                        SettingsMaintenanceAction.Rebuild -> stringResource(R.string.settings_running_rebuild)
-                        SettingsMaintenanceAction.Clear -> stringResource(R.string.settings_running_clear)
-                        null -> stringResource(R.string.settings_running_rebuild)
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-
-            status?.let {
-                Text(
-                    text = when (it) {
-                        SettingsStatus.DatabaseRebuilt -> stringResource(R.string.settings_status_rebuild_completed)
-                        SettingsStatus.DatabaseCleared -> stringResource(R.string.settings_status_clear_completed)
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-
-            errorMessage?.let { error ->
-                Text(
-                    text = stringResource(R.string.settings_dictionary_error, error),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
-                )
-            }
+        if (isRunning) {
+            LinearProgressIndicator(
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Text(
+                text = when (runningAction) {
+                    SettingsMaintenanceAction.Rebuild -> stringResource(R.string.settings_running_rebuild)
+                    SettingsMaintenanceAction.Clear -> stringResource(R.string.settings_running_clear)
+                    null -> stringResource(R.string.settings_running_rebuild)
+                },
+                style = MaterialTheme.typography.bodyMedium,
+            )
         }
+
+        status?.let {
+            Text(
+                text = when (it) {
+                    SettingsStatus.DatabaseRebuilt -> stringResource(R.string.settings_status_rebuild_completed)
+                    SettingsStatus.DatabaseCleared -> stringResource(R.string.settings_status_clear_completed)
+                },
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+
+        errorMessage?.let { error ->
+            Text(
+                text = stringResource(R.string.settings_dictionary_error, error),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 4.dp), thickness = 0.5.dp)
     }
 }
 
@@ -491,49 +429,43 @@ private fun DictionarySourceCard(
     onAction: (DictionarySourceAction) -> Unit,
 ) {
     val context = LocalContext.current
-    Card {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.settings_dictionary_source_title),
-                style = MaterialTheme.typography.titleMedium,
-            )
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        val stateLabel = snapshot.state.label()
+        val sizeLabel = snapshot.totalBytes?.let { total ->
+            Formatter.formatFileSize(context, total)
+        } ?: "?"
 
-            val stateLabel = snapshot.state.label()
-            val sizeLabel = snapshot.totalBytes?.let { total ->
-                Formatter.formatFileSize(context, total)
-            } ?: "?"
+        ListItem(
+            headlineContent = { Text(text = stringResource(R.string.settings_dictionary_source_title)) },
+            supportingContent = {
+                Text(text = "$stateLabel · $sizeLabel")
+            },
+        )
 
-            Text(
-                text = "$stateLabel · $sizeLabel",
-                style = MaterialTheme.typography.bodyMedium,
-            )
-
-            if (snapshot.progress != null && snapshot.state == org.taigidict.app.data.source.DownloadSnapshot.State.Downloading) {
-                LinearProgressIndicator(
-                    progress = { snapshot.progress!!.toFloat() },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-
-            Row(
+        if (snapshot.progress != null && snapshot.state == org.taigidict.app.data.source.DownloadSnapshot.State.Downloading) {
+            LinearProgressIndicator(
+                progress = { snapshot.progress!!.toFloat() },
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                availableSourceActions(snapshot).forEach { action ->
-                    OutlinedButton(
-                        onClick = { onAction(action) },
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Text(action.label())
-                    }
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            availableSourceActions(snapshot).forEach { action ->
+                OutlinedButton(
+                    onClick = { onAction(action) },
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(action.label())
                 }
             }
         }
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 4.dp), thickness = 0.5.dp)
     }
 }
 

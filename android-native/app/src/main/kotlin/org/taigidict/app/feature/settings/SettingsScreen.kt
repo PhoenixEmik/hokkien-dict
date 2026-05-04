@@ -1,11 +1,8 @@
 package org.taigidict.app.feature.settings
 
-import android.text.format.Formatter
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -16,35 +13,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -52,7 +39,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -61,12 +47,11 @@ import org.taigidict.app.app.TaigiDictApplication
 import org.taigidict.app.core.settings.AppLanguagePreference
 import org.taigidict.app.core.settings.AppThemePreference
 import org.taigidict.app.data.audio.AudioArchiveDownloadSnapshot
-import org.taigidict.app.data.audio.AudioArchiveDownloadState
 import org.taigidict.app.data.audio.DictionaryAudioArchiveType
 import org.taigidict.app.feature.info.AboutScreen
-import org.taigidict.app.feature.info.AppDocument
-import org.taigidict.app.domain.model.DictionaryBundle
+import org.taigidict.app.feature.info.ReferenceScreen
 import org.taigidict.app.feature.info.AppDocumentViewer
+import org.taigidict.app.feature.info.AppDocument
 
 private val RootHorizontalPadding = 16.dp
 private val RootVerticalPadding = 16.dp
@@ -74,6 +59,7 @@ private val RootVerticalPadding = 16.dp
 private enum class SettingsRoute {
     Main,
     About,
+    Reference,
     Advanced,
 }
 
@@ -106,13 +92,31 @@ fun SettingsScreen(
         return
     }
 
-    if (route == SettingsRoute.About) {
-        AboutScreen(
-            onBack = { route = SettingsRoute.Main },
-            onOpenDocument = { selectedDocument = it },
-        )
-        return
-    }
+    val showingRouteScreen = renderRouteScreen(
+        route = route,
+        modifier = modifier,
+        assetDirectory = assetDirectory,
+        uiState = uiState,
+        onBackToMain = { route = SettingsRoute.Main },
+        onOpenDocument = { selectedDocument = it },
+        onRebuild = { pendingAction = SettingsDangerousAction.RebuildDatabase },
+        onClear = { pendingAction = SettingsDangerousAction.ClearDatabase },
+        onSourceAction = { action ->
+            when (action) {
+                DictionarySourceAction.Restore -> {
+                    pendingAction = SettingsDangerousAction.RestoreDictionarySource
+                }
+
+                DictionarySourceAction.Download -> {
+                    pendingAction = SettingsDangerousAction.DownloadDictionarySource
+                }
+
+                DictionarySourceAction.Pause -> viewModel.pauseDictionarySourceDownload()
+                DictionarySourceAction.Resume -> viewModel.resumeDictionarySourceDownload()
+            }
+        },
+    )
+    if (showingRouteScreen) return
 
     pendingAction?.let { action ->
         AlertDialog(
@@ -180,52 +184,6 @@ fun SettingsScreen(
         )
     }
 
-    if (route == SettingsRoute.Advanced) {
-        AdvancedSettingsScreen(
-            uiState = uiState,
-            sourceSnapshot = uiState.sourceSnapshot,
-            wordSnapshot = wordSnapshot,
-            sentenceSnapshot = sentenceSnapshot,
-            assetDirectory = assetDirectory,
-            modifier = modifier,
-            onBack = { route = SettingsRoute.Main },
-            onRebuild = {
-                pendingAction = SettingsDangerousAction.RebuildDatabase
-            },
-            onClear = {
-                pendingAction = SettingsDangerousAction.ClearDatabase
-            },
-            onSourceAction = { action ->
-                when (action) {
-                    DictionarySourceAction.Restore -> {
-                        pendingAction = SettingsDangerousAction.RestoreDictionarySource
-                    }
-
-                    DictionarySourceAction.Download -> {
-                        pendingAction = SettingsDangerousAction.DownloadDictionarySource
-                    }
-
-                    DictionarySourceAction.Pause -> viewModel.pauseDictionarySourceDownload()
-                    DictionarySourceAction.Resume -> viewModel.resumeDictionarySourceDownload()
-                }
-            },
-            onAudioAction = { type, action ->
-                when (action) {
-                    AudioArchiveAction.Download -> audioArchiveManager.startDownload(type)
-                    AudioArchiveAction.Pause -> audioArchiveManager.pauseDownload(type)
-                    AudioArchiveAction.Resume -> audioArchiveManager.resumeDownload(type)
-                    AudioArchiveAction.Redownload -> {
-                        pendingAction = when (type) {
-                            DictionaryAudioArchiveType.Word -> SettingsDangerousAction.RedownloadWordArchive
-                            DictionaryAudioArchiveType.Sentence -> SettingsDangerousAction.RedownloadSentenceArchive
-                        }
-                    }
-                }
-            },
-        )
-        return
-    }
-
     LaunchedEffect(audioArchiveManager) {
         audioArchiveManager.refreshAll()
     }
@@ -273,7 +231,7 @@ fun SettingsScreen(
                 InfoAndMaintenanceCard(
                     onOpenAdvancedSettings = { route = SettingsRoute.Advanced },
                     onOpenAbout = { route = SettingsRoute.About },
-                    onOpenReference = { selectedDocument = AppDocument.ReferenceLinks },
+                    onOpenReference = { route = SettingsRoute.Reference },
                 )
             }
 
@@ -306,6 +264,52 @@ fun SettingsScreen(
                     },
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun renderRouteScreen(
+    route: SettingsRoute,
+    modifier: Modifier,
+    assetDirectory: String,
+    uiState: SettingsUiState,
+    onBackToMain: () -> Unit,
+    onOpenDocument: (AppDocument) -> Unit,
+    onRebuild: () -> Unit,
+    onClear: () -> Unit,
+    onSourceAction: (DictionarySourceAction) -> Unit,
+): Boolean {
+    return when (route) {
+        SettingsRoute.Main -> false
+        SettingsRoute.About -> {
+            AboutScreen(
+                onBack = onBackToMain,
+                onOpenDocument = onOpenDocument,
+            )
+            true
+        }
+
+        SettingsRoute.Reference -> {
+            ReferenceScreen(
+                onBack = onBackToMain,
+                modifier = modifier,
+            )
+            true
+        }
+
+        SettingsRoute.Advanced -> {
+            AdvancedSettingsScreen(
+                uiState = uiState,
+                sourceSnapshot = uiState.sourceSnapshot,
+                assetDirectory = assetDirectory,
+                modifier = modifier,
+                onBack = onBackToMain,
+                onRebuild = onRebuild,
+                onClear = onClear,
+                onSourceAction = onSourceAction,
+            )
+            true
         }
     }
 }
@@ -555,143 +559,10 @@ private fun SettingsDangerousAction.message(): String {
 }
 
 @Composable
-private fun SettingsInfoCard(
-    onOpenDocument: (AppDocument) -> Unit,
-) {
-    Card {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.settings_info_title),
-                style = MaterialTheme.typography.titleMedium,
-            )
-            Text(
-                text = stringResource(R.string.settings_info_body),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                OutlinedButton(onClick = { onOpenDocument(AppDocument.About) }) {
-                    Text(text = stringResource(R.string.settings_info_about))
-                }
-                OutlinedButton(onClick = { onOpenDocument(AppDocument.PrivacyPolicy) }) {
-                    Text(text = stringResource(R.string.settings_info_privacy_policy))
-                }
-                OutlinedButton(onClick = { onOpenDocument(AppDocument.DataLicense) }) {
-                    Text(text = stringResource(R.string.settings_info_data_license))
-                }
-                OutlinedButton(onClick = { onOpenDocument(AppDocument.OpenSourceLicense) }) {
-                    Text(text = stringResource(R.string.settings_info_open_source_license))
-                }
-                OutlinedButton(onClick = { onOpenDocument(AppDocument.ReferenceLinks) }) {
-                    Text(text = stringResource(R.string.settings_info_reference))
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ThemePreferenceCard(
-    selectedTheme: AppThemePreference,
-    onThemeSelected: (AppThemePreference) -> Unit,
-) {
-    Card {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.settings_theme_title),
-                style = MaterialTheme.typography.titleMedium,
-            )
-            Column(modifier = Modifier.selectableGroup()) {
-                AppThemePreference.entries.forEach { pref ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .selectable(
-                                selected = selectedTheme == pref,
-                                onClick = { onThemeSelected(pref) },
-                                role = Role.RadioButton,
-                            )
-                            .padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        RadioButton(
-                            selected = selectedTheme == pref,
-                            onClick = null,
-                        )
-                        Text(
-                            text = pref.displayLabel(),
-                            modifier = Modifier.padding(start = 12.dp),
-                            style = MaterialTheme.typography.bodyLarge,
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
 private fun AppThemePreference.displayLabel(): String = when (this) {
     AppThemePreference.System -> stringResource(R.string.settings_theme_system)
     AppThemePreference.Light -> stringResource(R.string.settings_theme_light)
     AppThemePreference.Dark -> stringResource(R.string.settings_theme_dark)
-}
-
-@Composable
-private fun LanguagePreferenceCard(
-    selectedLanguage: AppLanguagePreference,
-    onLanguageSelected: (AppLanguagePreference) -> Unit,
-) {
-    Card {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.settings_language_title),
-                style = MaterialTheme.typography.titleMedium,
-            )
-            Column(modifier = Modifier.selectableGroup()) {
-                AppLanguagePreference.entries.forEach { pref ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .selectable(
-                                selected = selectedLanguage == pref,
-                                onClick = { onLanguageSelected(pref) },
-                                role = Role.RadioButton,
-                            )
-                            .padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        RadioButton(
-                            selected = selectedLanguage == pref,
-                            onClick = null,
-                        )
-                        Text(
-                            text = pref.displayLabel(),
-                            modifier = Modifier.padding(start = 12.dp),
-                            style = MaterialTheme.typography.bodyLarge,
-                        )
-                    }
-                }
-            }
-        }
-    }
 }
 
 @Composable
@@ -700,51 +571,5 @@ private fun AppLanguagePreference.displayLabel(): String = when (this) {
     AppLanguagePreference.TraditionalChinese -> stringResource(R.string.settings_language_traditional_chinese)
     AppLanguagePreference.SimplifiedChinese -> stringResource(R.string.settings_language_simplified_chinese)
     AppLanguagePreference.English -> stringResource(R.string.settings_language_english)
-}
-
-@Composable
-private fun TextScaleCard(
-    currentScale: Double,
-    onScaleChanged: (Double) -> Unit,
-) {
-    Card {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.settings_text_scale_title),
-                style = MaterialTheme.typography.titleMedium,
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(R.string.settings_text_scale_label),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Text(
-                    text = String.format("%.1f", currentScale),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-
-            Slider(
-                value = currentScale.toFloat(),
-                onValueChange = { newValue ->
-                    onScaleChanged(newValue.toDouble())
-                },
-                valueRange = org.taigidict.app.core.settings.AppSettingsConstants.MIN_READING_TEXT_SCALE.toFloat()
-                    ..org.taigidict.app.core.settings.AppSettingsConstants.MAX_READING_TEXT_SCALE.toFloat(),
-                steps = org.taigidict.app.core.settings.AppSettingsConstants.READING_TEXT_SCALE_DIVISIONS,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-    }
 }
 
