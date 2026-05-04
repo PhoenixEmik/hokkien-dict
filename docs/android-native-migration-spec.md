@@ -837,9 +837,9 @@ interface DictionarySearchService {
 - [x] 設定頁「詞典資料來源」到 rebuild 的整合流程（2026-05-04）
   - 需求來源：1.2、1.3、3.6、3.7
   - 已完成：rebuild 優先嘗試 local source package，失敗時 fallback bundled package
-- [ ] 初始化 phase 補齊
+- [x] 初始化 phase 補齊（2026-05-04）
   - 需求來源：2.3
-  - 目標：加入 `RestoringBundledSource`、`DownloadingSource` 並反映真實流程
+  - 已完成：加入 `RestoringBundledSource`、`DownloadingSource`，初始化改為 local import 優先並含 restore/download fallback
 - [ ] `databaseGeneration` 機制
   - 需求來源：2.3、5.2（InitializationViewModel）
   - 目標：rebuild 成功後 generation 遞增，供搜索/詳情 cache 失效使用
