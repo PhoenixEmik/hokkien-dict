@@ -846,9 +846,9 @@ interface DictionarySearchService {
 
 #### P1（第二優先，影響平台適配與使用體驗）
 
-- [ ] `Bookmarks` 大螢幕 adaptive grid
+- [x] `Bookmarks` 大螢幕 adaptive grid（2026-05-04）
   - 需求來源：3.5、4.9
-  - 目標：寬螢幕使用 grid；窄螢幕保持 list
+  - 已完成：寬螢幕使用 `LazyVerticalGrid(GridCells.Adaptive)`，窄螢幕保持 list
 - [ ] Reference article 結構化渲染
   - 需求來源：1.13、3.8、Phase 4
   - 目標：段落、清單、表格可讀；避免純文字長字串檢視

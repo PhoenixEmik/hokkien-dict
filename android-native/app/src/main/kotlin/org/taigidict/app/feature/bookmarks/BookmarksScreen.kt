@@ -2,6 +2,7 @@ package org.taigidict.app.feature.bookmarks
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -12,6 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.BookmarkBorder
@@ -41,6 +44,9 @@ import org.taigidict.app.feature.dictionary.DictionaryEntryDetailPane
 
 private val RootHorizontalPadding = 16.dp
 private val RootVerticalPadding = 16.dp
+private val BookmarksGridBreakpoint = 700.dp
+private val BookmarksGridMinCellWidth = 320.dp
+private val BookmarksGridSpacing = 12.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -116,16 +122,37 @@ fun BookmarksScreen(
                     }
 
                     else -> {
-                        LazyColumn(
-                            modifier = Modifier.weight(1f, fill = true),
-                            verticalArrangement = Arrangement.spacedBy(0.dp),
-                        ) {
-                            items(uiState.entries, key = { it.id }) { entry ->
-                                BookmarkEntryListItem(
-                                    entry = entry,
-                                    onClick = { viewModel.onEntrySelected(entry.id) },
-                                )
-                                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+                        BoxWithConstraints(modifier = Modifier.weight(1f, fill = true)) {
+                            if (maxWidth >= BookmarksGridBreakpoint) {
+                                LazyVerticalGrid(
+                                    columns = GridCells.Adaptive(minSize = BookmarksGridMinCellWidth),
+                                    modifier = Modifier.fillMaxSize(),
+                                    horizontalArrangement = Arrangement.spacedBy(BookmarksGridSpacing),
+                                    verticalArrangement = Arrangement.spacedBy(BookmarksGridSpacing),
+                                ) {
+                                    items(
+                                        count = uiState.entries.size,
+                                        key = { index -> uiState.entries[index].id },
+                                    ) { index ->
+                                        BookmarkEntryGridItem(
+                                            entry = uiState.entries[index],
+                                            onClick = { viewModel.onEntrySelected(uiState.entries[index].id) },
+                                        )
+                                    }
+                                }
+                            } else {
+                                LazyColumn(
+                                    modifier = Modifier.fillMaxSize(),
+                                    verticalArrangement = Arrangement.spacedBy(0.dp),
+                                ) {
+                                    items(uiState.entries, key = { it.id }) { entry ->
+                                        BookmarkEntryListItem(
+                                            entry = entry,
+                                            onClick = { viewModel.onEntrySelected(entry.id) },
+                                        )
+                                        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+                                    }
+                                }
                             }
                         }
                     }
@@ -200,4 +227,48 @@ private fun BookmarkEntryListItem(
             )
         },
     )
+}
+
+@Composable
+private fun BookmarkEntryGridItem(
+    entry: DictionaryEntry,
+    onClick: () -> Unit,
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+    ) {
+        ListItem(
+            headlineContent = {
+                DictionaryFallbackText(
+                    text = entry.hanji,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            },
+            supportingContent = {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    DictionaryFallbackText(
+                        text = entry.romanization,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    if (entry.briefSummary.isNotBlank()) {
+                        DictionaryFallbackText(
+                            text = entry.briefSummary,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            },
+            trailingContent = {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            },
+        )
+    }
 }
