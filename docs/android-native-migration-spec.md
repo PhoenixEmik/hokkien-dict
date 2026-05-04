@@ -831,7 +831,7 @@ interface DictionarySearchService {
 
 #### P0（先做，會影響功能語意完整性）
 
-- [ ] 平板 `Dictionary` list-detail 兩欄佈局
+- [x] 平板 `Dictionary` list-detail 兩欄佈局
   - 需求來源：3.3、4.9、5.4 Phase 2
   - 目標：同一畫面同時呈現結果列表與 detail pane，phone 維持 push detail
 - [x] 設定頁「詞典資料來源」到 rebuild 的整合流程（2026-05-04）
