@@ -63,6 +63,14 @@ enum class AppDocument(
         titleRes = R.string.settings_info_reference,
         assetPath = "docs/REFERENCE_LINKS.md",
     ),
+    TailoGuide(
+        titleRes = R.string.about_tailo_title,
+        assetPath = "docs/TAILO_GUIDE.md",
+    ),
+    HanjiGuide(
+        titleRes = R.string.about_hanji_title,
+        assetPath = "docs/HANJI_GUIDE.md",
+    ),
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

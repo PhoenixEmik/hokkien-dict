@@ -1,8 +1,5 @@
 package org.taigidict.app.feature.info
 
-import android.webkit.WebChromeClient
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -32,32 +29,26 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import org.taigidict.app.R
-
-private const val TailoGuideUrl = "https://sutian.moe.edu.tw/zh-hant/piantsip/tailo-phiautsu-suatbing/"
-private const val HanjiGuideUrl = "https://sutian.moe.edu.tw/zh-hant/piantsip/hanji-iongji-guantsik/"
 
 private val ReferenceHorizontalPadding = 16.dp
 private val ReferenceVerticalPadding = 16.dp
 
-private enum class ReferenceArticle(val titleRes: Int, val url: String) {
+private enum class ReferenceArticle(val titleRes: Int, val document: AppDocument) {
     Tailo(
         titleRes = R.string.about_tailo_title,
-        url = TailoGuideUrl,
+        document = AppDocument.TailoGuide,
     ),
     Hanji(
         titleRes = R.string.about_hanji_title,
-        url = HanjiGuideUrl,
+        document = AppDocument.HanjiGuide,
     ),
 }
 
@@ -72,11 +63,9 @@ fun ReferenceArticleScreen(
     val article = selectedArticle
     if (article != null) {
         BackHandler { selectedArticle = null }
-        ReferenceWebPageScreen(
-            title = stringResource(article.titleRes),
-            url = article.url,
+        AppDocumentViewer(
+            document = article.document,
             onBack = { selectedArticle = null },
-            modifier = modifier,
         )
         return
     }
@@ -164,69 +153,4 @@ private fun ReferenceNavRow(
             )
         },
     )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ReferenceWebPageScreen(
-    title: String,
-    url: String,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    var progress by remember { mutableIntStateOf(0) }
-
-    Scaffold(
-        modifier = modifier,
-        contentWindowInsets = WindowInsets.safeDrawing.only(
-            WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
-        ),
-        topBar = {
-            TopAppBar(
-                title = { Text(text = title) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = stringResource(R.string.settings_info_back),
-                        )
-                    }
-                },
-            )
-        },
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-        ) {
-            if (progress in 0..99) {
-                androidx.compose.material3.LinearProgressIndicator(
-                    progress = { progress / 100f },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-
-            AndroidView(
-                modifier = Modifier.fillMaxSize(),
-                factory = { context ->
-                    WebView(context).apply {
-                        webViewClient = WebViewClient()
-                        webChromeClient = object : WebChromeClient() {
-                            override fun onProgressChanged(view: WebView?, newProgress: Int) {
-                                progress = newProgress
-                            }
-                        }
-                        settings.loadsImagesAutomatically = true
-                        loadUrl(url)
-                    }
-                },
-                update = { webView ->
-                    if (webView.url != url) {
-                        webView.loadUrl(url)
-                    }
-                },
-            )
-        }
-    }
 }
