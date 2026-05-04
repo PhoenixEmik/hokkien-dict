@@ -849,9 +849,9 @@ interface DictionarySearchService {
 - [x] `Bookmarks` 大螢幕 adaptive grid（2026-05-04）
   - 需求來源：3.5、4.9
   - 已完成：寬螢幕使用 `LazyVerticalGrid(GridCells.Adaptive)`，窄螢幕保持 list
-- [ ] Reference article 結構化渲染
+- [x] Reference article 結構化渲染（2026-05-04）
   - 需求來源：1.13、3.8、Phase 4
-  - 目標：段落、清單、表格可讀；避免純文字長字串檢視
+  - 已完成：`AppDocumentViewer` 改為 markdown block 渲染（標題/段落/清單/表格），不再純文字整頁顯示
 - [ ] `LicenseSummaryScreen` / `ReferenceArticleScreen` 命名與職責對齊
   - 需求來源：5.1 藍圖
   - 目標：screen 名稱與實際 UI 職責一致，降低後續維護歧義
