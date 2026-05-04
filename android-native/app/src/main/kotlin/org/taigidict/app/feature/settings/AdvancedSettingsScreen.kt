@@ -1,10 +1,10 @@
 package org.taigidict.app.feature.settings
 
 import android.text.format.Formatter
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -21,20 +22,22 @@ import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Card
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -176,58 +179,42 @@ private fun MaintenanceActionsCard(
     onClear: () -> Unit,
 ) {
     Card {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            MaintenanceActionRow(
-                title = stringResource(R.string.settings_action_rebuild),
-                icon = Icons.Outlined.Refresh,
-                textColor = MaterialTheme.colorScheme.primary,
-                enabled = !uiState.isRunningMaintenance,
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            FilledTonalButton(
                 onClick = onRebuild,
-            )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
-            MaintenanceActionRow(
-                title = stringResource(R.string.settings_action_clear),
-                icon = Icons.Outlined.DeleteOutline,
-                textColor = MaterialTheme.colorScheme.error,
                 enabled = !uiState.isRunningMaintenance,
+                modifier = Modifier.weight(1f),
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Refresh,
+                    contentDescription = null,
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = stringResource(R.string.settings_action_rebuild))
+            }
+
+            OutlinedButton(
                 onClick = onClear,
-            )
+                enabled = !uiState.isRunningMaintenance,
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error,
+                ),
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.DeleteOutline,
+                    contentDescription = null,
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = stringResource(R.string.settings_action_clear))
+            }
         }
     }
-}
-
-@Composable
-private fun MaintenanceActionRow(
-    title: String,
-    icon: ImageVector,
-    textColor: Color,
-    enabled: Boolean,
-    onClick: () -> Unit,
-) {
-    val rowModifier = if (enabled) {
-        Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-    } else {
-        Modifier.fillMaxWidth()
-    }
-
-    ListItem(
-        modifier = rowModifier,
-        leadingContent = {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = textColor,
-            )
-        },
-        headlineContent = {
-            Text(
-                text = title,
-                color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        },
-    )
 }
 
 @Composable
@@ -294,10 +281,10 @@ private fun SettingsKeyValueRow(
         headlineContent = {
             Text(text = key)
         },
-        trailingContent = {
+        supportingContent = {
             Text(
                 text = value,
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         },
