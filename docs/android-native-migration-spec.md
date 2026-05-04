@@ -840,9 +840,9 @@ interface DictionarySearchService {
 - [x] 初始化 phase 補齊（2026-05-04）
   - 需求來源：2.3
   - 已完成：加入 `RestoringBundledSource`、`DownloadingSource`，初始化改為 local import 優先並含 restore/download fallback
-- [ ] `databaseGeneration` 機制
+- [x] `databaseGeneration` 機制（2026-05-04）
   - 需求來源：2.3、5.2（InitializationViewModel）
-  - 目標：rebuild 成功後 generation 遞增，供搜索/詳情 cache 失效使用
+  - 已完成：初始化重建成功時遞增 generation，並同步到 app state 的 `dictionaryDataVersion`
 
 #### P1（第二優先，影響平台適配與使用體驗）
 

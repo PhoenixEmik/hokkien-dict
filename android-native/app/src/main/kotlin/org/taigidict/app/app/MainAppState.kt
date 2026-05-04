@@ -26,6 +26,12 @@ class MainAppState(
     fun invalidateDictionaryData() {
         dictionaryDataVersion += 1
     }
+
+    fun applyDatabaseGeneration(generation: Int) {
+        if (generation > dictionaryDataVersion) {
+            dictionaryDataVersion = generation
+        }
+    }
 }
 
 @Composable

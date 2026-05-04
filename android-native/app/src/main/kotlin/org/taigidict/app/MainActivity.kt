@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity() {
 
         setContent {
             val uiState = initializationViewModel.uiState.collectAsStateWithLifecycle().value
+            val appState = rememberMainAppState(appContainer)
             val themePreference = appContainer.appSettingsStore.themePreference
                 .collectAsState(initial = AppThemePreference.System).value
             val languagePreference = appContainer.appSettingsStore.languagePreference
@@ -51,6 +52,10 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
+            LaunchedEffect(uiState.databaseGeneration) {
+                appState.applyDatabaseGeneration(uiState.databaseGeneration)
+            }
+
             val systemDark = isSystemInDarkTheme()
             val darkTheme = when (themePreference) {
                 AppThemePreference.Light -> false
@@ -63,7 +68,7 @@ class MainActivity : AppCompatActivity() {
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     if (uiState.isReady) {
-                        MainNavGraph(appState = rememberMainAppState(appContainer))
+                        MainNavGraph(appState = appState)
                     } else {
                         InitializationScreen(
                             uiState = uiState,

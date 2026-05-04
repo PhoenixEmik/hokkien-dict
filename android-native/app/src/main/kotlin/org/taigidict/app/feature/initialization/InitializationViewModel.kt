@@ -12,12 +12,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.taigidict.app.app.TaigiDictApplication
 import org.taigidict.app.data.importer.BundledDictionaryImporting
+import org.taigidict.app.data.importer.DictionaryImportResult
 import org.taigidict.app.data.source.DictionarySourceResourceManaging
 
 data class InitializationUiState(
     val phase: InitializationPhase = InitializationPhase.CheckingResources,
     val progress: Float? = null,
     val isReady: Boolean = false,
+    val databaseGeneration: Int = 0,
 )
 
 class InitializationViewModel(application: Application) : AndroidViewModel(application) {
@@ -28,6 +30,7 @@ class InitializationViewModel(application: Application) : AndroidViewModel(appli
     private val localImportService = appContainer.localDictionaryImportService
     private val sourceStore = appContainer.dictionarySourceResourceStore
     private var initializationJob: Job? = null
+    private var databaseGeneration = 0
 
     init {
         start()
@@ -46,14 +49,14 @@ class InitializationViewModel(application: Application) : AndroidViewModel(appli
                 isReady = false,
             )
 
-            val importSucceeded = withContext(Dispatchers.IO) {
+            val rebuildResult = withContext(Dispatchers.IO) {
                 runCatching {
                     // Try local source first (downloaded/restored dictionary package).
                     val importedFromLocal = runCatching {
                         importDatabase(localImportService, baseProgress = 0.20f, range = 0.55f)
-                    }.isSuccess
-                    if (importedFromLocal) {
-                        return@runCatching
+                    }.getOrNull()
+                    if (importedFromLocal != null) {
+                        return@runCatching importedFromLocal.imported
                     }
 
                     updateState(
@@ -65,9 +68,9 @@ class InitializationViewModel(application: Application) : AndroidViewModel(appli
 
                     val importedAfterRestore = runCatching {
                         importDatabase(localImportService, baseProgress = 0.35f, range = 0.45f)
-                    }.isSuccess
-                    if (importedAfterRestore) {
-                        return@runCatching
+                    }.getOrNull()
+                    if (importedAfterRestore != null) {
+                        return@runCatching importedAfterRestore.imported
                     }
 
                     updateState(
@@ -79,28 +82,36 @@ class InitializationViewModel(application: Application) : AndroidViewModel(appli
 
                     val importedAfterDownload = runCatching {
                         importDatabase(localImportService, baseProgress = 0.40f, range = 0.45f)
-                    }.isSuccess
-                    if (importedAfterDownload) {
-                        return@runCatching
+                    }.getOrNull()
+                    if (importedAfterDownload != null) {
+                        return@runCatching importedAfterDownload.imported
                     }
 
-                    importDatabase(bundledImportService, baseProgress = 0.45f, range = 0.45f)
-                }.isSuccess
+                    importDatabase(bundledImportService, baseProgress = 0.45f, range = 0.45f).imported
+                }
             }
 
-            _uiState.value = if (importSucceeded) {
-                InitializationUiState(
-                    phase = InitializationPhase.Ready,
-                    progress = 1f,
-                    isReady = true,
-                )
-            } else {
-                InitializationUiState(
-                    phase = InitializationPhase.Error,
-                    progress = null,
-                    isReady = false,
-                )
-            }
+            _uiState.value = rebuildResult.fold(
+                onSuccess = { rebuilt ->
+                    if (rebuilt) {
+                        databaseGeneration += 1
+                    }
+                    InitializationUiState(
+                        phase = InitializationPhase.Ready,
+                        progress = 1f,
+                        isReady = true,
+                        databaseGeneration = databaseGeneration,
+                    )
+                },
+                onFailure = {
+                    InitializationUiState(
+                        phase = InitializationPhase.Error,
+                        progress = null,
+                        isReady = false,
+                        databaseGeneration = databaseGeneration,
+                    )
+                },
+            )
         }
     }
 
@@ -108,8 +119,8 @@ class InitializationViewModel(application: Application) : AndroidViewModel(appli
         importService: BundledDictionaryImporting,
         baseProgress: Float,
         range: Float,
-    ) {
-        importService.ensureBundledDatabase { progress ->
+    ): DictionaryImportResult {
+        return importService.ensureBundledDatabase { progress ->
             updateState(
                 phase = InitializationPhase.RebuildingDatabase,
                 progress = baseProgress + (progress.fraction * range),
@@ -127,6 +138,7 @@ class InitializationViewModel(application: Application) : AndroidViewModel(appli
             phase = phase,
             progress = progress,
             isReady = isReady,
+            databaseGeneration = databaseGeneration,
         )
     }
 }
