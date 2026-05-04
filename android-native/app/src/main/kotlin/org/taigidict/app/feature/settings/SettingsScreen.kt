@@ -3,8 +3,10 @@ package org.taigidict.app.feature.settings
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
@@ -430,6 +432,7 @@ internal fun <T> PreferenceMenuRow(
 
                 ExposedDropdownMenu(
                     modifier = Modifier
+                        .width(IntrinsicSize.Max)
                         .exposedDropdownSize(matchTextFieldWidth = false),
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
