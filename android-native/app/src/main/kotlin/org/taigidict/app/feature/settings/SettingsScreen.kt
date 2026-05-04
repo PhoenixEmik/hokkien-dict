@@ -109,6 +109,8 @@ fun SettingsScreen(
         assetDirectory = assetDirectory,
         uiState = uiState,
         onBackToMain = { route = SettingsRoute.Main },
+        onBackFromLicenseInfo = { route = SettingsRoute.About },
+        onBackFromThirdPartyLicenses = { route = SettingsRoute.LicenseInfo },
         onOpenDocument = { selectedDocument = it },
         onOpenLicenseInfo = { route = SettingsRoute.LicenseInfo },
         onOpenThirdPartyLicenses = { route = SettingsRoute.ThirdPartyLicenses },
@@ -260,6 +262,8 @@ private fun renderRouteScreen(
     assetDirectory: String,
     uiState: SettingsUiState,
     onBackToMain: () -> Unit,
+    onBackFromLicenseInfo: () -> Unit,
+    onBackFromThirdPartyLicenses: () -> Unit,
     onOpenDocument: (AppDocument) -> Unit,
     onOpenLicenseInfo: () -> Unit,
     onOpenThirdPartyLicenses: () -> Unit,
@@ -280,7 +284,7 @@ private fun renderRouteScreen(
 
         SettingsRoute.LicenseInfo -> {
             LicenseSummaryScreen(
-                onBack = onBackToMain,
+                onBack = onBackFromLicenseInfo,
                 onOpenThirdPartyLicenses = onOpenThirdPartyLicenses,
                 modifier = modifier,
             )
@@ -289,7 +293,7 @@ private fun renderRouteScreen(
 
         SettingsRoute.ThirdPartyLicenses -> {
             ThirdPartyLicensesScreen(
-                onBack = onBackToMain,
+                onBack = onBackFromThirdPartyLicenses,
                 modifier = modifier,
             )
             true
