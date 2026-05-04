@@ -58,6 +58,7 @@ import org.taigidict.app.data.audio.DictionaryAudioArchiveType
 import org.taigidict.app.feature.info.AboutScreen
 import org.taigidict.app.feature.info.ReferenceScreen
 import org.taigidict.app.feature.info.LicenseInfoScreen
+import org.taigidict.app.feature.info.ThirdPartyLicensesScreen
 import org.taigidict.app.feature.info.AppDocumentViewer
 import org.taigidict.app.feature.info.AppDocument
 
@@ -68,6 +69,7 @@ private enum class SettingsRoute {
     Main,
     About,
     LicenseInfo,
+    ThirdPartyLicenses,
     Reference,
     Advanced,
 }
@@ -107,6 +109,7 @@ fun SettingsScreen(
         onBackToMain = { route = SettingsRoute.Main },
         onOpenDocument = { selectedDocument = it },
         onOpenLicenseInfo = { route = SettingsRoute.LicenseInfo },
+        onOpenThirdPartyLicenses = { route = SettingsRoute.ThirdPartyLicenses },
         onRebuild = { pendingAction = SettingsDangerousAction.RebuildDatabase },
         onClear = { pendingAction = SettingsDangerousAction.ClearDatabase },
         onSourceAction = { action ->
@@ -257,6 +260,7 @@ private fun renderRouteScreen(
     onBackToMain: () -> Unit,
     onOpenDocument: (AppDocument) -> Unit,
     onOpenLicenseInfo: () -> Unit,
+    onOpenThirdPartyLicenses: () -> Unit,
     onRebuild: () -> Unit,
     onClear: () -> Unit,
     onSourceAction: (DictionarySourceAction) -> Unit,
@@ -275,9 +279,15 @@ private fun renderRouteScreen(
         SettingsRoute.LicenseInfo -> {
             LicenseInfoScreen(
                 onBack = onBackToMain,
-                onOpenThirdPartyLicenses = {
-                    onOpenDocument(AppDocument.ThirdPartyLicenses)
-                },
+                onOpenThirdPartyLicenses = onOpenThirdPartyLicenses,
+                modifier = modifier,
+            )
+            true
+        }
+
+        SettingsRoute.ThirdPartyLicenses -> {
+            ThirdPartyLicensesScreen(
+                onBack = onBackToMain,
                 modifier = modifier,
             )
             true

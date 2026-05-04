@@ -16,6 +16,10 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.FileDownload
+import androidx.compose.material.icons.outlined.Pause
+import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -32,6 +36,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -297,7 +302,6 @@ private fun MaintenanceStatusCard(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun AudioArchiveResourceCard(
     type: DictionaryAudioArchiveType,
@@ -336,39 +340,56 @@ internal fun AudioArchiveResourceCard(
             snapshot.errorMessage ?: stringResource(R.string.unknown_error),
         )
     }
+    val actions = availableActions(snapshot)
 
     Card {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-            )
-            Text(
-                text = type.archiveFileName,
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            Text(
-                text = statusText,
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            snapshot.progress?.let { progress ->
-                if (snapshot.state == AudioArchiveDownloadState.Downloading || snapshot.state == AudioArchiveDownloadState.Paused) {
-                    LinearProgressIndicator(progress = { progress.coerceIn(0f, 1f) })
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(
+                        text = type.archiveFileName,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Text(
+                        text = statusText,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    actions.forEach { action ->
+                        IconButton(onClick = { onAction(action) }) {
+                            Icon(
+                                imageVector = action.icon(),
+                                contentDescription = action.label(),
+                            )
+                        }
+                    }
                 }
             }
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                availableActions(snapshot).forEach { action ->
-                    OutlinedButton(onClick = { onAction(action) }) {
-                        Text(text = action.label())
-                    }
+            snapshot.progress?.let { progress ->
+                if (snapshot.state == AudioArchiveDownloadState.Downloading || snapshot.state == AudioArchiveDownloadState.Paused) {
+                    LinearProgressIndicator(
+                        progress = { progress.coerceIn(0f, 1f) },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
             }
         }
@@ -382,6 +403,15 @@ private fun AudioArchiveAction.label(): String {
         AudioArchiveAction.Pause -> stringResource(R.string.settings_audio_action_pause)
         AudioArchiveAction.Resume -> stringResource(R.string.settings_audio_action_resume)
         AudioArchiveAction.Redownload -> stringResource(R.string.settings_audio_action_redownload)
+    }
+}
+
+private fun AudioArchiveAction.icon(): ImageVector {
+    return when (this) {
+        AudioArchiveAction.Download -> Icons.Outlined.FileDownload
+        AudioArchiveAction.Pause -> Icons.Outlined.Pause
+        AudioArchiveAction.Resume -> Icons.Outlined.PlayArrow
+        AudioArchiveAction.Redownload -> Icons.Outlined.Refresh
     }
 }
 

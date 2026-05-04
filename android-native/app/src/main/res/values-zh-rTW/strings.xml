@@ -137,6 +137,8 @@
     <string name="license_audio_value">CC BY-ND 3.0 TW</string>
     <string name="license_ministry_copyright">教育部著作權說明</string>
     <string name="license_third_party_title">套件授權</string>
+    <string name="third_party_core_section">核心套件</string>
+    <string name="third_party_android_section">Android 平台</string>
     <string name="settings_info_reference">參考資料</string>
     <string name="settings_info_back">返回設定</string>
     <string name="settings_info_loading">文件載入中…</string>

@@ -137,6 +137,8 @@
     <string name="license_audio_value">CC BY-ND 3.0 TW</string>
     <string name="license_ministry_copyright">MOE Copyright Notice</string>
     <string name="license_third_party_title">Third-Party Licenses</string>
+    <string name="third_party_core_section">Core Libraries</string>
+    <string name="third_party_android_section">Android Platform</string>
     <string name="settings_info_reference">Reference</string>
     <string name="settings_info_back">Back to settings</string>
     <string name="settings_info_loading">Loading document…</string>
