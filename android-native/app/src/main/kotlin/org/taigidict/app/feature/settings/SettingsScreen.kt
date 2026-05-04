@@ -57,6 +57,7 @@ import org.taigidict.app.data.audio.AudioArchiveDownloadSnapshot
 import org.taigidict.app.data.audio.DictionaryAudioArchiveType
 import org.taigidict.app.feature.info.AboutScreen
 import org.taigidict.app.feature.info.ReferenceScreen
+import org.taigidict.app.feature.info.LicenseInfoScreen
 import org.taigidict.app.feature.info.AppDocumentViewer
 import org.taigidict.app.feature.info.AppDocument
 
@@ -66,6 +67,7 @@ private val RootVerticalPadding = 16.dp
 private enum class SettingsRoute {
     Main,
     About,
+    LicenseInfo,
     Reference,
     Advanced,
 }
@@ -104,6 +106,7 @@ fun SettingsScreen(
         uiState = uiState,
         onBackToMain = { route = SettingsRoute.Main },
         onOpenDocument = { selectedDocument = it },
+        onOpenLicenseInfo = { route = SettingsRoute.LicenseInfo },
         onRebuild = { pendingAction = SettingsDangerousAction.RebuildDatabase },
         onClear = { pendingAction = SettingsDangerousAction.ClearDatabase },
         onSourceAction = { action ->
@@ -253,6 +256,7 @@ private fun renderRouteScreen(
     uiState: SettingsUiState,
     onBackToMain: () -> Unit,
     onOpenDocument: (AppDocument) -> Unit,
+    onOpenLicenseInfo: () -> Unit,
     onRebuild: () -> Unit,
     onClear: () -> Unit,
     onSourceAction: (DictionarySourceAction) -> Unit,
@@ -263,6 +267,18 @@ private fun renderRouteScreen(
             AboutScreen(
                 onBack = onBackToMain,
                 onOpenDocument = onOpenDocument,
+                onOpenLicenses = onOpenLicenseInfo,
+            )
+            true
+        }
+
+        SettingsRoute.LicenseInfo -> {
+            LicenseInfoScreen(
+                onBack = onBackToMain,
+                onOpenThirdPartyLicenses = {
+                    onOpenDocument(AppDocument.ThirdPartyLicenses)
+                },
+                modifier = modifier,
             )
             true
         }
@@ -404,8 +420,7 @@ internal fun <T> PreferenceMenuRow(
 
                 ExposedDropdownMenu(
                     modifier = Modifier
-                        .exposedDropdownSize(matchTextFieldWidth = false)
-                        .widthIn(min = 160.dp, max = 240.dp),
+                        .exposedDropdownSize(matchTextFieldWidth = false),
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
                 ) {

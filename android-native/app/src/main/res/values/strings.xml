@@ -128,7 +128,15 @@
     <string name="about_hanji_title">Hanji Guide</string>
     <string name="settings_info_privacy_policy">Privacy Policy</string>
     <string name="settings_info_data_license">Data License</string>
-    <string name="settings_info_open_source_license">Open Source License</string>
+    <string name="settings_info_open_source_license">License Information</string>
+    <string name="license_app_code_title">App Source Code</string>
+    <string name="license_app_code_value">MIT License</string>
+    <string name="license_data_title">Dictionary Data</string>
+    <string name="license_data_value">CC BY-ND 3.0 TW</string>
+    <string name="license_audio_title">Dictionary Audio</string>
+    <string name="license_audio_value">CC BY-ND 3.0 TW</string>
+    <string name="license_ministry_copyright">MOE Copyright Notice</string>
+    <string name="license_third_party_title">Third-Party Licenses</string>
     <string name="settings_info_reference">Reference</string>
     <string name="settings_info_back">Back to settings</string>
     <string name="settings_info_loading">Loading document…</string>

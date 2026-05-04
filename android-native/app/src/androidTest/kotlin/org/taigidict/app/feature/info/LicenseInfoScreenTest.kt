@@ -14,30 +14,28 @@ import org.junit.runner.RunWith
 import org.taigidict.app.R
 
 @RunWith(AndroidJUnit4::class)
-class AboutScreenTest {
+class LicenseInfoScreenTest {
 
     @get:Rule
     val composeRule = createAndroidComposeRule<ComponentActivity>()
 
     @Test
-    fun rendersAboutSectionsAndRows() {
+    fun rendersLicenseRowsAndThirdPartyEntry() {
         val context = ApplicationProvider.getApplicationContext<Context>()
 
         composeRule.setContent {
             MaterialTheme {
-                AboutScreen(
+                LicenseInfoScreen(
                     onBack = {},
-                    onOpenDocument = {},
-                    onOpenLicenses = {},
+                    onOpenThirdPartyLicenses = {},
                 )
             }
         }
 
-        composeRule.onNodeWithText(context.getString(R.string.about_title)).assertIsDisplayed()
-        composeRule.onNodeWithText(context.getString(R.string.about_app_section)).assertIsDisplayed()
-        composeRule.onNodeWithText(context.getString(R.string.about_version)).assertIsDisplayed()
-        composeRule.onNodeWithText(context.getString(R.string.about_author)).assertIsDisplayed()
-        composeRule.onNodeWithText(context.getString(R.string.about_project_section)).assertIsDisplayed()
-        composeRule.onNodeWithText(context.getString(R.string.settings_info_reference)).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.settings_info_open_source_license)).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.license_app_code_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.license_data_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.license_audio_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.license_third_party_title)).assertIsDisplayed()
     }
 }

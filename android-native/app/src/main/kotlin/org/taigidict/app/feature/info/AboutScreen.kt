@@ -51,6 +51,7 @@ private const val HanjiGuideUrl = "https://sutian.moe.edu.tw/zh-hant/piantsip/ha
 fun AboutScreen(
     onBack: () -> Unit,
     onOpenDocument: (AppDocument) -> Unit,
+    onOpenLicenses: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val uriHandler = LocalUriHandler.current
@@ -115,7 +116,7 @@ fun AboutScreen(
                     AboutNavRow(
                         icon = Icons.Outlined.Description,
                         title = stringResource(R.string.settings_info_open_source_license),
-                        onClick = { onOpenDocument(AppDocument.OpenSourceLicense) },
+                        onClick = onOpenLicenses,
                     )
                     AboutDivider()
                     AboutNavRow(

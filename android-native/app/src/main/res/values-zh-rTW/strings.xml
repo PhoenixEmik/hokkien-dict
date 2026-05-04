@@ -129,6 +129,14 @@
     <string name="settings_info_privacy_policy">隱私權政策</string>
     <string name="settings_info_data_license">資料授權</string>
     <string name="settings_info_open_source_license">授權資訊</string>
+    <string name="license_app_code_title">App 程式碼</string>
+    <string name="license_app_code_value">MIT 授權</string>
+    <string name="license_data_title">詞典資料</string>
+    <string name="license_data_value">CC BY-ND 3.0 TW</string>
+    <string name="license_audio_title">詞典音檔</string>
+    <string name="license_audio_value">CC BY-ND 3.0 TW</string>
+    <string name="license_ministry_copyright">教育部著作權說明</string>
+    <string name="license_third_party_title">套件授權</string>
     <string name="settings_info_reference">參考資料</string>
     <string name="settings_info_back">返回設定</string>
     <string name="settings_info_loading">文件載入中…</string>

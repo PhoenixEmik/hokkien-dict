@@ -128,7 +128,15 @@
     <string name="about_hanji_title">汉字用字原则</string>
     <string name="settings_info_privacy_policy">隐私政策</string>
     <string name="settings_info_data_license">数据授权</string>
-    <string name="settings_info_open_source_license">开源授权</string>
+    <string name="settings_info_open_source_license">授权信息</string>
+    <string name="license_app_code_title">App 程序码</string>
+    <string name="license_app_code_value">MIT 授权</string>
+    <string name="license_data_title">词典资料</string>
+    <string name="license_data_value">CC BY-ND 3.0 TW</string>
+    <string name="license_audio_title">词典音档</string>
+    <string name="license_audio_value">CC BY-ND 3.0 TW</string>
+    <string name="license_ministry_copyright">教育部著作权说明</string>
+    <string name="license_third_party_title">套件授权</string>
     <string name="settings_info_reference">参考资料</string>
     <string name="settings_info_back">返回设置</string>
     <string name="settings_info_loading">文档载入中…</string>
