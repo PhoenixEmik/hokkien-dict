@@ -395,6 +395,7 @@ internal fun <T> PreferenceMenuRow(
                     Text(
                         modifier = Modifier.widthIn(min = 72.dp),
                         text = value,
+                        style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.End,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

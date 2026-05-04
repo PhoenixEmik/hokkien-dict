@@ -199,6 +199,7 @@ private fun AboutValueRow(
         trailingContent = {
             Text(
                 text = value,
+                style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         },
@@ -225,6 +226,7 @@ private fun AboutLinkRow(
         trailingContent = {
             Text(
                 text = value,
+                style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.primary,
             )
         },
