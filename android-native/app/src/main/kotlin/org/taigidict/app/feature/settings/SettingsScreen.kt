@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Card
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -499,24 +500,21 @@ private fun <T> PreferenceSelectionDialog(
             Text(text = title)
         },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column {
                 options.forEach { option ->
                     val selected = option == selectedOption
                     ListItem(
                         modifier = Modifier.clickable {
                             onSelect(option)
                         },
+                        leadingContent = {
+                            RadioButton(
+                                selected = selected,
+                                onClick = { onSelect(option) },
+                            )
+                        },
                         headlineContent = {
                             Text(text = optionLabel(option))
-                        },
-                        trailingContent = {
-                            if (selected) {
-                                Text(
-                                    text = "✓",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.primary,
-                                )
-                            }
                         },
                     )
                 }
