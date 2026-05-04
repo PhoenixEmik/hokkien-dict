@@ -4,11 +4,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -18,13 +18,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Build
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material3.DropdownMenu
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Card
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -362,8 +365,9 @@ private fun DisplaySettingsCard(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun <T> PreferenceMenuRow(
+internal fun <T> PreferenceMenuRow(
     title: String,
     value: String,
     options: List<T>,
@@ -372,48 +376,57 @@ private fun <T> PreferenceMenuRow(
     onSelect: (T) -> Unit,
 ) {
     var expanded by androidx.compose.runtime.remember { mutableStateOf(false) }
-    Box {
-        ListItem(
-            modifier = Modifier.clickable { expanded = true },
-            headlineContent = { Text(text = title) },
-            trailingContent = {
+    ListItem(
+        modifier = Modifier.clickable { expanded = true },
+        headlineContent = { Text(text = title) },
+        trailingContent = {
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded },
+            ) {
                 Row(
+                    modifier = Modifier.menuAnchor(
+                        type = MenuAnchorType.PrimaryNotEditable,
+                        enabled = true,
+                    ),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
+                        modifier = Modifier.widthIn(min = 72.dp),
                         text = value,
+                        textAlign = TextAlign.End,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                 }
-            },
-        )
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-        ) {
-            options.forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(text = optionLabel(option)) },
-                    onClick = {
-                        onSelect(option)
-                        expanded = false
-                    },
-                    trailingIcon = if (option == selectedOption) ({
-                        Icon(
-                            imageVector = Icons.Outlined.Check,
-                            contentDescription = null,
+
+                ExposedDropdownMenu(
+                    modifier = Modifier
+                        .exposedDropdownSize(matchTextFieldWidth = false)
+                        .widthIn(min = 160.dp, max = 240.dp),
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                ) {
+                    options.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(text = optionLabel(option)) },
+                            onClick = {
+                                onSelect(option)
+                                expanded = false
+                            },
+                            trailingIcon = if (option == selectedOption) ({
+                                Icon(
+                                    imageVector = Icons.Outlined.Check,
+                                    contentDescription = null,
+                                )
+                            }) else null,
                         )
-                    }) else null,
-                )
+                    }
+                }
             }
-        }
-    }
+        },
+    )
 }
 
 @Composable

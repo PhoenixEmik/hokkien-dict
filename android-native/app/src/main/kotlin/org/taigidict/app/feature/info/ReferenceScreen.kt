@@ -14,7 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
-import androidx.compose.material.icons.outlined.MenuBook
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.TextFields
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -87,7 +87,7 @@ fun ReferenceScreen(
                 Card {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         ReferenceNavRow(
-                            icon = Icons.Outlined.MenuBook,
+                            icon = Icons.AutoMirrored.Outlined.MenuBook,
                             title = stringResource(R.string.about_tailo_title),
                             onClick = { uriHandler.openUri(TailoGuideUrl) },
                         )
