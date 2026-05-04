@@ -404,6 +404,16 @@ internal fun <T> PreferenceMenuRow(
     onSelect: (T) -> Unit,
 ) {
     var expanded by androidx.compose.runtime.remember { mutableStateOf(false) }
+    var pendingSelection by androidx.compose.runtime.remember { mutableStateOf<T?>(null) }
+
+    LaunchedEffect(expanded, pendingSelection) {
+        if (!expanded) {
+            val selection = pendingSelection ?: return@LaunchedEffect
+            pendingSelection = null
+            onSelect(selection)
+        }
+    }
+
     ListItem(
         modifier = Modifier.clickable { expanded = true },
         headlineContent = { Text(text = title) },
@@ -441,8 +451,8 @@ internal fun <T> PreferenceMenuRow(
                         DropdownMenuItem(
                             text = { Text(text = optionLabel(option)) },
                             onClick = {
-                                onSelect(option)
                                 expanded = false
+                                pendingSelection = option
                             },
                             trailingIcon = if (option == selectedOption) ({
                                 Icon(
