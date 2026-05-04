@@ -39,7 +39,8 @@ internal class OfflineDictionaryAudioPlayer(
         clipId: String,
         archiveType: DictionaryAudioArchiveType,
     ): DictionaryAudioPlaybackResult = withContext(ioDispatcher) {
-        if (clipId.isBlank()) {
+        val normalizedClipId = clipId.trim()
+        if (normalizedClipId.isEmpty()) {
             return@withContext DictionaryAudioPlaybackResult.Failed(
                 DictionaryAudioPlaybackResult.FailureReason.MissingClipId,
             )
@@ -52,10 +53,10 @@ internal class OfflineDictionaryAudioPlayer(
                     DictionaryAudioPlaybackResult.FailureReason.ArchiveNotDownloaded,
                 )
             val index = cachedIndexes[archiveType] ?: buildAndCacheIndex(archiveType, archiveFile)
-            val entry = index[clipId] ?: return@withContext DictionaryAudioPlaybackResult.Failed(
+            val entry = index[normalizedClipId] ?: return@withContext DictionaryAudioPlaybackResult.Failed(
                 DictionaryAudioPlaybackResult.FailureReason.AudioClipNotFound,
             )
-            val clipFile = storage.clipCacheFile(archiveType, clipId)
+            val clipFile = storage.clipCacheFile(archiveType, normalizedClipId)
             zipIndexer.materializeEntry(
                 archiveFile = archiveFile,
                 outputFile = clipFile,
@@ -63,7 +64,7 @@ internal class OfflineDictionaryAudioPlayer(
             )
             playbackController.play(
                 clipFile = clipFile,
-                clipKey = "${archiveType.storageKey}:$clipId",
+                clipKey = "${archiveType.storageKey}:$normalizedClipId",
             )
             DictionaryAudioPlaybackResult.Played
         } catch (
@@ -356,7 +357,7 @@ internal class StoredZipAudioIndexer {
         if (dotIndex <= slashIndex) {
             return ""
         }
-        return path.substring(slashIndex + 1, dotIndex)
+        return path.substring(slashIndex + 1, dotIndex).trim()
     }
 }
 

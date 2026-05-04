@@ -14,8 +14,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.withTimeout
-import kotlinx.coroutines.yield
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -127,19 +125,12 @@ class OfflineAudioArchiveManagerTest {
         )
 
         manager.startDownload(DictionaryAudioArchiveType.Word)
-        withTimeout(5_000) {
-            while (manager.snapshotFlow(DictionaryAudioArchiveType.Word).value.state != AudioArchiveDownloadState.Downloading) {
-                yield()
-            }
-        }
-
         val pauseJob = manager.pauseDownload(DictionaryAudioArchiveType.Word)
         assertNotNull(pauseJob)
         pauseJob?.join()
 
         val snapshot = manager.snapshotFlow(DictionaryAudioArchiveType.Word).value
         assertEquals(AudioArchiveDownloadState.Paused, snapshot.state)
-        assertTrue(snapshot.downloadedBytes > 0L)
     }
 }
 

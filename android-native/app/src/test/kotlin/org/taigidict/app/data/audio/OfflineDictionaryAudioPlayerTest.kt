@@ -68,6 +68,35 @@ class OfflineDictionaryAudioPlayerTest {
             result,
         )
     }
+
+    @Test
+    fun playEntryAudio_withWhitespaceInAudioId_trimsAndPlays() = runTest {
+        val rootDirectory = Files.createTempDirectory("offline-audio-trim").toFile()
+        val playbackController = RecordingAudioPlaybackController()
+        val player = OfflineDictionaryAudioPlayer(
+            filesDirectory = rootDirectory,
+            playbackController = playbackController,
+        )
+        val archiveFile = File(
+            File(File(rootDirectory, DictionaryAudioArchiveStorage.ROOT_DIRECTORY_NAME), "archives"),
+            "sutiau-mp3.zip",
+        )
+        val clipBytes = "fake-mp3-entry".toByteArray()
+
+        writeStoredZip(
+            archiveFile = archiveFile,
+            entries = mapOf(
+                "word/1(1).mp3" to "validation".toByteArray(),
+                "word/entry-1.mp3" to clipBytes,
+            ),
+        )
+
+        val result = player.playEntryAudio(sampleEntry(audioId = "  entry-1  "))
+
+        assertEquals(DictionaryAudioPlaybackResult.Played, result)
+        assertEquals("word:entry-1", playbackController.lastClipKey)
+        assertArrayEquals(clipBytes, playbackController.lastClipFile?.readBytes())
+    }
 }
 
 private class RecordingAudioPlaybackController : AudioPlaybackController {
