@@ -38,4 +38,13 @@ class DictionaryFallbackTextRangesTest {
 
         assertEquals(listOf(0..1), ranges)
     }
+
+    @Test
+    fun fallbackRanges_mixedHanjiAndTailo_marksOnlyFallbackSegments() {
+        val text = "辭典 o\u0358n"
+
+        val ranges = DictionaryFallbackTextRanges.fallbackRanges(text)
+
+        assertEquals(listOf(3..4), ranges)
+    }
 }

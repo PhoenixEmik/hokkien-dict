@@ -44,7 +44,6 @@ import org.taigidict.app.feature.dictionary.DictionaryEntryDetailPane
 
 private val RootHorizontalPadding = 16.dp
 private val RootVerticalPadding = 16.dp
-private val BookmarksGridBreakpoint = 700.dp
 private val BookmarksGridMinCellWidth = 320.dp
 private val BookmarksGridSpacing = 12.dp
 
@@ -123,7 +122,7 @@ fun BookmarksScreen(
 
                     else -> {
                         BoxWithConstraints(modifier = Modifier.weight(1f, fill = true)) {
-                            if (maxWidth >= BookmarksGridBreakpoint) {
+                            if (BookmarksAdaptiveLayoutPolicy.shouldUseGrid(maxWidth)) {
                                 LazyVerticalGrid(
                                     columns = GridCells.Adaptive(minSize = BookmarksGridMinCellWidth),
                                     modifier = Modifier.fillMaxSize(),

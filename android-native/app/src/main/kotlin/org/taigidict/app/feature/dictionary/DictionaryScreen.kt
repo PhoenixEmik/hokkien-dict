@@ -53,7 +53,6 @@ private val ScreenVerticalPadding = 16.dp
 private val TopContentPadding = 16.dp
 private val SectionSpacing = 16.dp
 private val ComponentSpacing = 8.dp
-private val TwoPaneMinWidth = 900.dp
 private val TwoPaneContentSpacing = 16.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,7 +72,7 @@ fun DictionaryScreen(
         uiState.entryDetailErrorMessage != null
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
-        val usesTwoPaneLayout = maxWidth >= TwoPaneMinWidth
+        val usesTwoPaneLayout = DictionaryAdaptiveLayoutPolicy.shouldUseTwoPane(maxWidth)
 
         if (showsEntryDetail && !usesTwoPaneLayout) {
             DictionaryEntryDetailPane(

@@ -863,7 +863,8 @@ interface DictionarySearchService {
   - 2026-05-04: `AndroidOpenCcChineseConversionService` 新增 version-gated migration（`OpenCcMigrationTracker`），僅在 app version 升級時一次性觸發 `clearDictDataFolder()`。
   - 需求來源：1.11
   - 目標：加入受控的一次性 `clearDictDataFolder()` 觸發策略（版本升級時）
-- [ ] 平板與混合字型相關 UI 測試補齊
+- [x] 平板與混合字型相關 UI 測試補齊
+  - 2026-05-04: 新增 `DictionaryAdaptiveLayoutPolicyTest`、`BookmarksAdaptiveLayoutPolicyTest`（覆蓋 list-detail / adaptive grid 斷點行為），並擴充 `DictionaryFallbackTextRangesTest` 驗證 mixed Hanji + Tailo fallback 範圍。
   - 需求來源：10 Testing Matrix
   - 目標：覆蓋 list-detail、adaptive grid、mixed Hanji + Tailo fallback
 
