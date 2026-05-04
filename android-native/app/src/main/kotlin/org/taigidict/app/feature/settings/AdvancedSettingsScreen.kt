@@ -33,10 +33,17 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.Modifier
@@ -86,11 +93,44 @@ internal fun AdvancedSettingsScreen(
     @Suppress("UNUSED_PARAMETER")
     onSourceAction: (DictionarySourceAction) -> Unit,
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    var lastShownStatus by remember { mutableStateOf<SettingsStatus?>(null) }
+    var lastShownError by remember { mutableStateOf<String?>(null) }
+
+    val statusMessage = when (uiState.status) {
+        SettingsStatus.DatabaseRebuilt -> stringResource(R.string.settings_status_rebuild_completed)
+        SettingsStatus.DatabaseCleared -> stringResource(R.string.settings_status_clear_completed)
+        null -> null
+    }
+    val errorMessageForSnackbar = uiState.errorMessage?.let {
+        stringResource(R.string.settings_dictionary_error, it)
+    }
+
+    LaunchedEffect(statusMessage, uiState.status) {
+        val currentStatus = uiState.status ?: return@LaunchedEffect
+        if (currentStatus == lastShownStatus || statusMessage == null) {
+            return@LaunchedEffect
+        }
+        snackbarHostState.showSnackbar(statusMessage)
+        lastShownStatus = currentStatus
+    }
+
+    LaunchedEffect(uiState.errorMessage, errorMessageForSnackbar) {
+        val error = uiState.errorMessage ?: return@LaunchedEffect
+        val errorMessage = errorMessageForSnackbar ?: return@LaunchedEffect
+        if (error == lastShownError) {
+            return@LaunchedEffect
+        }
+        snackbarHostState.showSnackbar(errorMessage)
+        lastShownError = error
+    }
+
     Scaffold(
         modifier = modifier,
         contentWindowInsets = WindowInsets.safeDrawing.only(
             WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
         ),
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -122,6 +162,7 @@ internal fun AdvancedSettingsScreen(
             item {
                 MaintenanceActionsCard(
                     uiState = uiState,
+                    runningAction = uiState.runningAction,
                     onRebuild = onRebuild,
                     onClear = onClear,
                 )
@@ -148,16 +189,6 @@ internal fun AdvancedSettingsScreen(
                 }
             }
 
-            if (uiState.isRunningMaintenance || uiState.status != null || uiState.errorMessage != null) {
-                item {
-                    MaintenanceStatusCard(
-                        isRunning = uiState.isRunningMaintenance,
-                        runningAction = uiState.runningAction,
-                        status = uiState.status,
-                        errorMessage = uiState.errorMessage,
-                    )
-                }
-            }
         }
     }
 }
@@ -175,43 +206,62 @@ private fun AdvancedSectionHeader(text: String) {
 @Composable
 private fun MaintenanceActionsCard(
     uiState: SettingsUiState,
+    runningAction: SettingsMaintenanceAction?,
     onRebuild: () -> Unit,
     onClear: () -> Unit,
 ) {
     Card {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            FilledTonalButton(
-                onClick = onRebuild,
-                enabled = !uiState.isRunningMaintenance,
-                modifier = Modifier.weight(1f),
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.Refresh,
-                    contentDescription = null,
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = stringResource(R.string.settings_action_rebuild))
+                FilledTonalButton(
+                    onClick = onRebuild,
+                    enabled = !uiState.isRunningMaintenance,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Refresh,
+                        contentDescription = null,
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = stringResource(R.string.settings_action_rebuild))
+                }
+
+                OutlinedButton(
+                    onClick = onClear,
+                    enabled = !uiState.isRunningMaintenance,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error,
+                    ),
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.DeleteOutline,
+                        contentDescription = null,
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = stringResource(R.string.settings_action_clear))
+                }
             }
 
-            OutlinedButton(
-                onClick = onClear,
-                enabled = !uiState.isRunningMaintenance,
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error,
-                ),
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.DeleteOutline,
-                    contentDescription = null,
+            if (uiState.isRunningMaintenance) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                Text(
+                    text = when (runningAction) {
+                        SettingsMaintenanceAction.Rebuild -> stringResource(R.string.settings_running_rebuild)
+                        SettingsMaintenanceAction.Clear -> stringResource(R.string.settings_running_clear)
+                        null -> stringResource(R.string.settings_running_rebuild)
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = stringResource(R.string.settings_action_clear))
             }
         }
     }
@@ -298,55 +348,6 @@ private fun formatTimestampForDisplay(raw: String, locale: Locale): String {
             .format(Date.from(instant))
     }.getOrElse {
         raw
-    }
-}
-
-@Composable
-private fun MaintenanceStatusCard(
-    isRunning: Boolean,
-    runningAction: SettingsMaintenanceAction?,
-    status: SettingsStatus?,
-    errorMessage: String?,
-) {
-    Card {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            if (isRunning) {
-                LinearProgressIndicator(
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Text(
-                    text = when (runningAction) {
-                        SettingsMaintenanceAction.Rebuild -> stringResource(R.string.settings_running_rebuild)
-                        SettingsMaintenanceAction.Clear -> stringResource(R.string.settings_running_clear)
-                        null -> stringResource(R.string.settings_running_rebuild)
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-
-            status?.let {
-                Text(
-                    text = when (it) {
-                        SettingsStatus.DatabaseRebuilt -> stringResource(R.string.settings_status_rebuild_completed)
-                        SettingsStatus.DatabaseCleared -> stringResource(R.string.settings_status_clear_completed)
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-
-            errorMessage?.let { error ->
-                Text(
-                    text = stringResource(R.string.settings_dictionary_error, error),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
-                )
-            }
-        }
     }
 }
 
