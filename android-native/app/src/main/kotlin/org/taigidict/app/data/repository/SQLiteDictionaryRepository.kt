@@ -7,13 +7,12 @@ import org.taigidict.app.domain.model.DictionaryBundle
 import org.taigidict.app.domain.model.DictionaryEntry
 import org.taigidict.app.domain.model.DictionaryExample
 import org.taigidict.app.domain.model.DictionarySense
-import org.taigidict.app.domain.search.DictionarySearchService
 import kotlinx.serialization.json.Json
 
 interface DictionaryRepositoryDataSource {
     fun loadBundle(): DictionaryBundle
 
-    fun search(rawQuery: String, limit: Int = DictionarySearchService.DEFAULT_LIMIT): List<DictionaryEntry>
+    fun search(rawQuery: String, limit: Int = DEFAULT_SEARCH_LIMIT): List<DictionaryEntry>
 
     fun entries(ids: List<Long>): List<DictionaryEntry>
 
@@ -51,19 +50,12 @@ class SQLiteDictionaryRepository(
             return emptyList()
         }
 
-        val candidateIds = searchCandidateIds(normalizedQuery, maxOf(limit, DictionarySearchService.DEFAULT_LIMIT) * 6)
-        if (candidateIds.isEmpty()) {
-            return emptyList()
-        }
-
-        val candidateEntries = fetchEntries(candidateIds)
-        val rankedIds = DictionarySearchService.searchEntryIds(
-            index = DictionarySearchService.buildSearchIndex(candidateEntries),
-            rawQuery = rawQuery,
-            limit = limit,
+        val orderedIds = searchOrderedIds(
+            rawQuery = rawQuery.trim(),
+            normalizedQuery = normalizedQuery,
+            limit = limit.coerceAtLeast(1),
         )
-        val entriesById = candidateEntries.associateBy { it.id }
-        return rankedIds.mapNotNull(entriesById::get)
+        return fetchEntries(orderedIds)
     }
 
     override fun entries(ids: List<Long>): List<DictionaryEntry> {
@@ -80,39 +72,85 @@ class SQLiteDictionaryRepository(
             return null
         }
 
-        val candidates = search(rawQuery = rawWord, limit = 12)
+        val candidates = fetchEntries(
+            searchOrderedIds(
+                rawQuery = rawWord.trim(),
+                normalizedQuery = normalizedWord,
+                limit = DEFAULT_SEARCH_LIMIT,
+            ),
+        )
         if (candidates.isEmpty()) {
             return null
         }
 
         return candidates.firstOrNull { candidate ->
-            matchesLinkedWord(candidate.hanji, normalizedWord)
-                || matchesLinkedWord(candidate.romanization, normalizedWord)
-                || candidate.variantChars.any { matchesLinkedWord(it, normalizedWord) }
-        } ?: candidates.first()
+            candidate.hanji.trim() == rawWord.trim()
+        } ?: candidates.firstOrNull { candidate ->
+            candidate.variantChars.any { matchesLinkedWord(it, normalizedWord) } ||
+                candidate.wordSynonyms.any { matchesLinkedWord(it, normalizedWord) } ||
+                candidate.wordAntonyms.any { matchesLinkedWord(it, normalizedWord) } ||
+                candidate.senses.any { sense ->
+                    sense.definitionSynonyms.any { matchesLinkedWord(it, normalizedWord) } ||
+                        sense.definitionAntonyms.any { matchesLinkedWord(it, normalizedWord) }
+                }
+        } ?: candidates.firstOrNull { candidate ->
+            matchesLinkedWord(candidate.romanization, normalizedWord)
+        }
     }
 
-    private fun searchCandidateIds(normalizedQuery: String, limit: Int): List<Long> {
+    private fun searchOrderedIds(
+        rawQuery: String,
+        normalizedQuery: String,
+        limit: Int,
+    ): List<Long> {
         val pattern = "%${escapeLike(normalizedQuery)}%"
+        val prefix = "${escapeLike(normalizedQuery)}%"
         return DictionaryDatabase.openReadOnly(databaseFile).use { database ->
             database.rawQuery(
                 """
-                SELECT DISTINCT e.id
+                SELECT e.id
                 FROM dictionary_entries e
-                LEFT JOIN dictionary_senses s ON s.entry_id = e.id
-                LEFT JOIN dictionary_examples x ON x.entry_id = e.id
-                     WHERE e.hokkien_search LIKE ? ESCAPE '\'
-                         OR e.mandarin_search LIKE ? ESCAPE '\'
-                         OR e.hanji LIKE ? ESCAPE '\'
-                         OR e.romanization LIKE ? ESCAPE '\'
-                         OR s.definition LIKE ? ESCAPE '\'
-                         OR x.hanji LIKE ? ESCAPE '\'
-                         OR x.romanization LIKE ? ESCAPE '\'
+                WHERE e.hanji LIKE ? ESCAPE '\'
+                   OR e.hokkien_search LIKE ? ESCAPE '\'
+                   OR e.mandarin_search LIKE ? ESCAPE '\'
+                   OR EXISTS (
+                     SELECT 1
+                     FROM dictionary_senses s
+                     WHERE s.entry_id = e.id
+                       AND s.definition LIKE ? ESCAPE '\'
+                   )
+                   OR EXISTS (
+                     SELECT 1
+                     FROM dictionary_examples x
+                     WHERE x.entry_id = e.id
+                       AND (
+                         x.hanji LIKE ? ESCAPE '\'
                          OR x.mandarin LIKE ? ESCAPE '\'
-                ORDER BY e.id
+                       )
+                   )
+                ORDER BY
+                  CASE
+                    WHEN e.hanji = ? THEN 0
+                    WHEN e.hokkien_search LIKE ? ESCAPE '\' THEN 1
+                    WHEN e.hanji LIKE ? ESCAPE '\' THEN 1
+                    ELSE 2
+                  END ASC,
+                  length(e.hokkien_search) ASC,
+                  e.id ASC
                 LIMIT ?
                 """.trimIndent(),
-                arrayOf(pattern, pattern, pattern, pattern, pattern, pattern, pattern, pattern, limit.toString()),
+                arrayOf(
+                    pattern,
+                    pattern,
+                    pattern,
+                    pattern,
+                    pattern,
+                    pattern,
+                    rawQuery,
+                    prefix,
+                    prefix,
+                    limit.toString(),
+                ),
             ).use { cursor ->
                 buildList {
                     val idIndex = cursor.getColumnIndexOrThrow("id")
@@ -307,6 +345,8 @@ private data class EntryRow(
     val hokkienSearch: String,
     val mandarinSearch: String,
 )
+
+private const val DEFAULT_SEARCH_LIMIT = 60
 
 sealed class SQLiteDictionaryRepositoryException(message: String) : Exception(message) {
     class MissingDatabase(file: File) :

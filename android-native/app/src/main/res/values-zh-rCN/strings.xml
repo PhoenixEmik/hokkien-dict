@@ -3,6 +3,12 @@
     <string name="app_name">台语辞典</string>
     <string name="initialization_title">载入中</string>
     <string name="initialization_body">正在初始化辞典资料</string>
+    <string name="initialization_phase_checking_resources">检查资源</string>
+    <string name="initialization_phase_restoring_bundled_source">还原内建来源</string>
+    <string name="initialization_phase_downloading_source">下载来源资料包</string>
+    <string name="initialization_phase_rebuilding_database">重建本机数据库</string>
+    <string name="initialization_phase_ready">完成</string>
+    <string name="initialization_phase_error">初始化失败</string>
     <string name="retry">重试</string>
     <string name="tab_dictionary">辞典</string>
     <string name="tab_bookmarks">书签</string>
@@ -34,6 +40,11 @@
     <string name="dictionary_detail_sense_title">义项 %1$d</string>
     <string name="dictionary_detail_synonyms">近义词</string>
     <string name="dictionary_detail_antonyms">反义词</string>
+    <string name="dictionary_detail_alternative_pronunciations">又念作</string>
+    <string name="dictionary_detail_contracted_pronunciations">合音念作</string>
+    <string name="dictionary_detail_colloquial_pronunciations">俗念作</string>
+    <string name="dictionary_detail_phonetic_differences">语音差异</string>
+    <string name="dictionary_detail_vocabulary_comparisons">词汇比较</string>
     <string name="dictionary_detail_examples">例句</string>
     <string name="dictionary_detail_add_bookmark">加入书签</string>
     <string name="dictionary_detail_remove_bookmark">移除书签</string>

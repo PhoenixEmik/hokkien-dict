@@ -301,7 +301,93 @@ private fun DictionaryEntryDetailContent(
                     }
                 }
             }
-        }
+            }
+
+            if (entry.variantChars.isNotEmpty()) {
+                item("variants-${entry.id}") {
+                    DictionaryDetailRelationshipSection(
+                        title = stringResource(R.string.dictionary_detail_variants),
+                        values = entry.variantChars,
+                        openableLinkedWords = openableLinkedWords,
+                        onOpenLinkedWord = onOpenLinkedWord,
+                        readingTextScale = readingTextScale,
+                    )
+                }
+            }
+
+            if (entry.wordSynonyms.isNotEmpty()) {
+                item("word-synonyms-${entry.id}") {
+                    DictionaryDetailRelationshipSection(
+                        title = stringResource(R.string.dictionary_detail_synonyms),
+                        values = entry.wordSynonyms,
+                        openableLinkedWords = openableLinkedWords,
+                        onOpenLinkedWord = onOpenLinkedWord,
+                        readingTextScale = readingTextScale,
+                    )
+                }
+            }
+
+            if (entry.wordAntonyms.isNotEmpty()) {
+                item("word-antonyms-${entry.id}") {
+                    DictionaryDetailRelationshipSection(
+                        title = stringResource(R.string.dictionary_detail_antonyms),
+                        values = entry.wordAntonyms,
+                        openableLinkedWords = openableLinkedWords,
+                        onOpenLinkedWord = onOpenLinkedWord,
+                        readingTextScale = readingTextScale,
+                    )
+                }
+            }
+
+            if (entry.alternativePronunciations.isNotEmpty()) {
+                item("alt-pronunciations-${entry.id}") {
+                    DictionaryDetailStaticSection(
+                        title = stringResource(R.string.dictionary_detail_alternative_pronunciations),
+                        values = entry.alternativePronunciations,
+                        readingTextScale = readingTextScale,
+                    )
+                }
+            }
+
+            if (entry.contractedPronunciations.isNotEmpty()) {
+                item("contracted-pronunciations-${entry.id}") {
+                    DictionaryDetailStaticSection(
+                        title = stringResource(R.string.dictionary_detail_contracted_pronunciations),
+                        values = entry.contractedPronunciations,
+                        readingTextScale = readingTextScale,
+                    )
+                }
+            }
+
+            if (entry.colloquialPronunciations.isNotEmpty()) {
+                item("colloquial-pronunciations-${entry.id}") {
+                    DictionaryDetailStaticSection(
+                        title = stringResource(R.string.dictionary_detail_colloquial_pronunciations),
+                        values = entry.colloquialPronunciations,
+                        readingTextScale = readingTextScale,
+                    )
+                }
+            }
+
+            if (entry.phoneticDifferences.isNotEmpty()) {
+                item("phonetic-differences-${entry.id}") {
+                    DictionaryDetailStaticSection(
+                        title = stringResource(R.string.dictionary_detail_phonetic_differences),
+                        values = entry.phoneticDifferences,
+                        readingTextScale = readingTextScale,
+                    )
+                }
+            }
+
+            if (entry.vocabularyComparisons.isNotEmpty()) {
+                item("vocabulary-comparisons-${entry.id}") {
+                    DictionaryDetailStaticSection(
+                        title = stringResource(R.string.dictionary_detail_vocabulary_comparisons),
+                        values = entry.vocabularyComparisons,
+                        readingTextScale = readingTextScale,
+                    )
+                }
+            }
 
             items(entry.senses.size, key = { index -> "sense-${entry.id}-$index" }) { index ->
                 DictionarySenseSection(
@@ -547,6 +633,47 @@ private fun DictionaryDetailRelationshipSection(
                 AssistChip(
                     onClick = { onOpenLinkedWord(value) },
                     enabled = openableLinkedWords.contains(value),
+                    label = {
+                        DictionaryFallbackText(
+                            text = value,
+                            style = scaledChipStyle,
+                        )
+                    },
+                    colors = AssistChipDefaults.assistChipColors(),
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun DictionaryDetailStaticSection(
+    title: String,
+    values: List<String>,
+    readingTextScale: Double,
+) {
+    val scaledLabelStyle = MaterialTheme.typography.labelLarge.copy(
+        fontSize = MaterialTheme.typography.labelLarge.fontSize * readingTextScale.toFloat(),
+    )
+    val scaledChipStyle = MaterialTheme.typography.bodySmall.copy(
+        fontSize = MaterialTheme.typography.bodySmall.fontSize * readingTextScale.toFloat(),
+    )
+
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(
+            text = title,
+            style = scaledLabelStyle,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            values.forEach { value ->
+                AssistChip(
+                    onClick = {},
+                    enabled = false,
                     label = {
                         DictionaryFallbackText(
                             text = value,

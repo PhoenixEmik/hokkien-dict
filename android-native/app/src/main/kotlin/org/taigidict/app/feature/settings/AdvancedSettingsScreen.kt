@@ -56,6 +56,7 @@ import org.taigidict.app.R
 import org.taigidict.app.data.audio.AudioArchiveDownloadSnapshot
 import org.taigidict.app.data.audio.AudioArchiveDownloadState
 import org.taigidict.app.data.audio.DictionaryAudioArchiveType
+import org.taigidict.app.data.source.DownloadSnapshot
 import org.taigidict.app.domain.model.DictionaryBundle
 
 private val AdvancedHorizontalPadding = 16.dp
@@ -79,15 +80,13 @@ internal enum class DictionarySourceAction {
 @Composable
 internal fun AdvancedSettingsScreen(
     uiState: SettingsUiState,
-    @Suppress("UNUSED_PARAMETER")
-    sourceSnapshot: org.taigidict.app.data.source.DownloadSnapshot,
+    sourceSnapshot: DownloadSnapshot,
     @Suppress("UNUSED_PARAMETER")
     assetDirectory: String,
     modifier: Modifier = Modifier,
     onBack: () -> Unit,
     onRebuild: () -> Unit,
     onClear: () -> Unit,
-    @Suppress("UNUSED_PARAMETER")
     onSourceAction: (DictionarySourceAction) -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -162,6 +161,17 @@ internal fun AdvancedSettingsScreen(
                     runningAction = uiState.runningAction,
                     onRebuild = onRebuild,
                     onClear = onClear,
+                )
+            }
+
+            item {
+                AdvancedSectionHeader(text = stringResource(R.string.settings_source_section))
+            }
+
+            item {
+                DictionarySourceResourceCard(
+                    snapshot = sourceSnapshot,
+                    onAction = onSourceAction,
                 )
             }
 
@@ -495,5 +505,114 @@ private fun DictionarySourceAction.label(): String {
         DictionarySourceAction.Download -> stringResource(R.string.settings_source_action_download)
         DictionarySourceAction.Pause -> stringResource(R.string.settings_source_action_pause)
         DictionarySourceAction.Resume -> stringResource(R.string.settings_source_action_resume)
+    }
+}
+
+@Composable
+internal fun DictionarySourceResourceCard(
+    snapshot: DownloadSnapshot,
+    onAction: (DictionarySourceAction) -> Unit,
+) {
+    val context = LocalContext.current
+    val statusText = when (snapshot.state) {
+        DownloadSnapshot.State.Idle -> stringResource(R.string.source_status_idle)
+        DownloadSnapshot.State.Downloading -> stringResource(R.string.source_status_downloading)
+        DownloadSnapshot.State.Paused -> stringResource(R.string.source_status_paused)
+        DownloadSnapshot.State.Completed -> stringResource(R.string.source_status_completed)
+        DownloadSnapshot.State.Failed -> stringResource(R.string.source_status_failed)
+    }
+    val sizeText = buildList {
+        if (snapshot.downloadedBytes > 0) {
+            add(Formatter.formatFileSize(context, snapshot.downloadedBytes))
+        }
+        snapshot.totalBytes
+            ?.takeIf { it > 0 && it != snapshot.downloadedBytes }
+            ?.let { add(Formatter.formatFileSize(context, it)) }
+    }.joinToString(separator = " / ")
+    val actions = availableSourceActions(snapshot)
+
+    Card {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.settings_dictionary_source_title),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(
+                        text = statusText,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    if (sizeText.isNotBlank()) {
+                        Text(
+                            text = sizeText,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    actions.forEach { action ->
+                        IconButton(onClick = { onAction(action) }) {
+                            Icon(
+                                imageVector = action.icon(),
+                                contentDescription = action.label(),
+                            )
+                        }
+                    }
+                }
+            }
+            snapshot.progress?.let { progress ->
+                if (snapshot.state == DownloadSnapshot.State.Downloading || snapshot.state == DownloadSnapshot.State.Paused) {
+                    LinearProgressIndicator(
+                        progress = { progress.toFloat().coerceIn(0f, 1f) },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun DictionarySourceAction.icon(): ImageVector {
+    return when (this) {
+        DictionarySourceAction.Restore -> Icons.Outlined.Refresh
+        DictionarySourceAction.Download -> Icons.Outlined.FileDownload
+        DictionarySourceAction.Pause -> Icons.Outlined.Pause
+        DictionarySourceAction.Resume -> Icons.Outlined.PlayArrow
+    }
+}
+
+private fun availableSourceActions(snapshot: DownloadSnapshot): List<DictionarySourceAction> {
+    return when (snapshot.state) {
+        DownloadSnapshot.State.Idle -> listOf(
+            DictionarySourceAction.Restore,
+            DictionarySourceAction.Download,
+        )
+        DownloadSnapshot.State.Downloading -> listOf(DictionarySourceAction.Pause)
+        DownloadSnapshot.State.Paused -> listOf(
+            DictionarySourceAction.Resume,
+            DictionarySourceAction.Restore,
+        )
+        DownloadSnapshot.State.Completed -> listOf(
+            DictionarySourceAction.Download,
+            DictionarySourceAction.Restore,
+        )
+        DownloadSnapshot.State.Failed -> listOf(
+            DictionarySourceAction.Download,
+            DictionarySourceAction.Restore,
+        )
     }
 }

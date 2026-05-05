@@ -204,6 +204,30 @@ fun SettingsScreen(
             }
 
             item {
+                SectionHeader(text = stringResource(R.string.settings_source_section))
+            }
+
+            item {
+                DictionarySourceResourceCard(
+                    snapshot = uiState.sourceSnapshot,
+                    onAction = { action ->
+                        when (action) {
+                            DictionarySourceAction.Restore -> {
+                                pendingAction = SettingsDangerousAction.RestoreDictionarySource
+                            }
+
+                            DictionarySourceAction.Download -> {
+                                pendingAction = SettingsDangerousAction.DownloadDictionarySource
+                            }
+
+                            DictionarySourceAction.Pause -> viewModel.pauseDictionarySourceDownload()
+                            DictionarySourceAction.Resume -> viewModel.resumeDictionarySourceDownload()
+                        }
+                    },
+                )
+            }
+
+            item {
                 SectionHeader(text = stringResource(R.string.settings_offline_audio_title))
             }
 
@@ -600,4 +624,3 @@ private fun AppLanguagePreference.displayLabel(): String = when (this) {
     AppLanguagePreference.SimplifiedChinese -> stringResource(R.string.settings_language_simplified_chinese)
     AppLanguagePreference.English -> stringResource(R.string.settings_language_english)
 }
-

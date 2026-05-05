@@ -3,6 +3,12 @@
     <string name="app_name">台語辭典</string>
     <string name="initialization_title">Preparing Offline Dictionary</string>
     <string name="initialization_body">Preparing offline dictionary resources. This only takes a moment.</string>
+    <string name="initialization_phase_checking_resources">Checking resources</string>
+    <string name="initialization_phase_restoring_bundled_source">Restoring bundled source</string>
+    <string name="initialization_phase_downloading_source">Downloading source package</string>
+    <string name="initialization_phase_rebuilding_database">Rebuilding local database</string>
+    <string name="initialization_phase_ready">Ready</string>
+    <string name="initialization_phase_error">Initialization failed</string>
     <string name="retry">Retry</string>
     <string name="tab_dictionary">Dictionary</string>
     <string name="tab_bookmarks">Bookmarks</string>
@@ -34,6 +40,11 @@
     <string name="dictionary_detail_sense_title">Sense %1$d</string>
     <string name="dictionary_detail_synonyms">Synonyms</string>
     <string name="dictionary_detail_antonyms">Antonyms</string>
+    <string name="dictionary_detail_alternative_pronunciations">Alternative pronunciations</string>
+    <string name="dictionary_detail_contracted_pronunciations">Contracted pronunciations</string>
+    <string name="dictionary_detail_colloquial_pronunciations">Colloquial pronunciations</string>
+    <string name="dictionary_detail_phonetic_differences">Phonetic differences</string>
+    <string name="dictionary_detail_vocabulary_comparisons">Vocabulary comparisons</string>
     <string name="dictionary_detail_examples">Examples</string>
     <string name="dictionary_detail_add_bookmark">Add bookmark</string>
     <string name="dictionary_detail_remove_bookmark">Remove bookmark</string>
