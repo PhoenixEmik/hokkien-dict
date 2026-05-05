@@ -4,6 +4,9 @@ import android.media.MediaPlayer
 import java.io.File
 import java.io.IOException
 import java.io.RandomAccessFile
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -20,6 +23,8 @@ internal class OfflineDictionaryAudioPlayer(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : DictionaryAudioPlayer {
     private val cachedIndexes = mutableMapOf<DictionaryAudioArchiveType, Map<String, StoredZipEntryLocation>>()
+    private val _playbackState = MutableStateFlow<DictionaryAudioPlaybackState>(DictionaryAudioPlaybackState.Idle)
+    override val playbackState: StateFlow<DictionaryAudioPlaybackState> = _playbackState.asStateFlow()
 
     override suspend fun playEntryAudio(entry: DictionaryEntry): DictionaryAudioPlaybackResult {
         return playClip(
@@ -41,10 +46,14 @@ internal class OfflineDictionaryAudioPlayer(
     ): DictionaryAudioPlaybackResult = withContext(ioDispatcher) {
         val normalizedClipId = clipId.trim()
         if (normalizedClipId.isEmpty()) {
+            _playbackState.value = DictionaryAudioPlaybackState.Idle
             return@withContext DictionaryAudioPlaybackResult.Failed(
                 DictionaryAudioPlaybackResult.FailureReason.MissingClipId,
             )
         }
+
+        val clipKey = "${archiveType.storageKey}:$normalizedClipId"
+        _playbackState.value = DictionaryAudioPlaybackState.Loading(clipKey)
 
         try {
             storage.ensureDirectories()
@@ -62,10 +71,23 @@ internal class OfflineDictionaryAudioPlayer(
                 outputFile = clipFile,
                 entry = entry,
             )
-            playbackController.play(
+            when (
+                playbackController.play(
                 clipFile = clipFile,
-                clipKey = "${archiveType.storageKey}:$normalizedClipId",
+                clipKey = clipKey,
+                onPlaybackCompleted = {
+                    _playbackState.value = DictionaryAudioPlaybackState.Idle
+                },
             )
+            ) {
+                AudioPlaybackTransition.Started -> {
+                    _playbackState.value = DictionaryAudioPlaybackState.Playing(clipKey)
+                }
+
+                AudioPlaybackTransition.Stopped -> {
+                    _playbackState.value = DictionaryAudioPlaybackState.Idle
+                }
+            }
             DictionaryAudioPlaybackResult.Played
         } catch (
             error: IOException,
@@ -107,6 +129,7 @@ internal class OfflineDictionaryAudioPlayer(
     }
 
     private fun unavailableResult(): DictionaryAudioPlaybackResult {
+        _playbackState.value = DictionaryAudioPlaybackState.Idle
         return DictionaryAudioPlaybackResult.Failed(
             DictionaryAudioPlaybackResult.FailureReason.AudioNotAvailable,
         )
@@ -187,7 +210,11 @@ internal class DictionaryAudioArchiveStorage(
 }
 
 internal interface AudioPlaybackController {
-    fun play(clipFile: File, clipKey: String)
+    fun play(
+        clipFile: File,
+        clipKey: String,
+        onPlaybackCompleted: () -> Unit,
+    ): AudioPlaybackTransition
 }
 
 internal class MediaPlayerAudioPlaybackController : AudioPlaybackController {
@@ -195,10 +222,14 @@ internal class MediaPlayerAudioPlaybackController : AudioPlaybackController {
     private var activeClipKey: String? = null
 
     @Synchronized
-    override fun play(clipFile: File, clipKey: String) {
+    override fun play(
+        clipFile: File,
+        clipKey: String,
+        onPlaybackCompleted: () -> Unit,
+    ): AudioPlaybackTransition {
         if (activeClipKey == clipKey) {
             releaseActivePlayerLocked()
-            return
+            return AudioPlaybackTransition.Stopped
         }
 
         releaseActivePlayerLocked()
@@ -211,6 +242,7 @@ internal class MediaPlayerAudioPlaybackController : AudioPlaybackController {
                         completedPlayer.release()
                         mediaPlayer = null
                         activeClipKey = null
+                        onPlaybackCompleted()
                     }
                 }
             }
@@ -218,6 +250,7 @@ internal class MediaPlayerAudioPlaybackController : AudioPlaybackController {
             nextPlayer.start()
             mediaPlayer = nextPlayer
             activeClipKey = clipKey
+            return AudioPlaybackTransition.Started
         } catch (error: Exception) {
             nextPlayer.release()
             throw error
@@ -232,6 +265,11 @@ internal class MediaPlayerAudioPlaybackController : AudioPlaybackController {
         mediaPlayer = null
         activeClipKey = null
     }
+}
+
+internal enum class AudioPlaybackTransition {
+    Started,
+    Stopped,
 }
 
 internal class StoredZipAudioIndexer {

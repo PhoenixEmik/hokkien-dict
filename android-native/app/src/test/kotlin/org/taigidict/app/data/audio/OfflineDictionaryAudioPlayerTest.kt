@@ -41,6 +41,10 @@ class OfflineDictionaryAudioPlayerTest {
         val result = player.playEntryAudio(sampleEntry(audioId = "entry-1"))
 
         assertEquals(DictionaryAudioPlaybackResult.Played, result)
+        assertEquals(
+            DictionaryAudioPlaybackState.Playing("word:entry-1"),
+            player.playbackState.value,
+        )
         assertEquals("word:entry-1", playbackController.lastClipKey)
         assertTrue(playbackController.lastClipFile?.exists() == true)
         assertArrayEquals(clipBytes, playbackController.lastClipFile?.readBytes())
@@ -94,18 +98,98 @@ class OfflineDictionaryAudioPlayerTest {
         val result = player.playEntryAudio(sampleEntry(audioId = "  entry-1  "))
 
         assertEquals(DictionaryAudioPlaybackResult.Played, result)
+        assertEquals(
+            DictionaryAudioPlaybackState.Playing("word:entry-1"),
+            player.playbackState.value,
+        )
         assertEquals("word:entry-1", playbackController.lastClipKey)
         assertArrayEquals(clipBytes, playbackController.lastClipFile?.readBytes())
+    }
+
+    @Test
+    fun playEntryAudio_sameClipAgain_stopsPlaybackAndResetsState() = runTest {
+        val rootDirectory = Files.createTempDirectory("offline-audio-toggle").toFile()
+        val playbackController = RecordingAudioPlaybackController()
+        val player = OfflineDictionaryAudioPlayer(
+            filesDirectory = rootDirectory,
+            playbackController = playbackController,
+        )
+        val archiveFile = File(
+            File(File(rootDirectory, DictionaryAudioArchiveStorage.ROOT_DIRECTORY_NAME), "archives"),
+            "sutiau-mp3.zip",
+        )
+
+        writeStoredZip(
+            archiveFile = archiveFile,
+            entries = mapOf(
+                "word/1(1).mp3" to "validation".toByteArray(),
+                "word/entry-1.mp3" to "fake-mp3-entry".toByteArray(),
+            ),
+        )
+
+        player.playEntryAudio(sampleEntry(audioId = "entry-1"))
+        assertEquals(DictionaryAudioPlaybackState.Playing("word:entry-1"), player.playbackState.value)
+
+        player.playEntryAudio(sampleEntry(audioId = "entry-1"))
+
+        assertEquals(DictionaryAudioPlaybackState.Idle, player.playbackState.value)
+    }
+
+    @Test
+    fun playbackCompletion_resetsStateToIdle() = runTest {
+        val rootDirectory = Files.createTempDirectory("offline-audio-complete").toFile()
+        val playbackController = RecordingAudioPlaybackController()
+        val player = OfflineDictionaryAudioPlayer(
+            filesDirectory = rootDirectory,
+            playbackController = playbackController,
+        )
+        val archiveFile = File(
+            File(File(rootDirectory, DictionaryAudioArchiveStorage.ROOT_DIRECTORY_NAME), "archives"),
+            "sutiau-mp3.zip",
+        )
+
+        writeStoredZip(
+            archiveFile = archiveFile,
+            entries = mapOf(
+                "word/1(1).mp3" to "validation".toByteArray(),
+                "word/entry-1.mp3" to "fake-mp3-entry".toByteArray(),
+            ),
+        )
+
+        player.playEntryAudio(sampleEntry(audioId = "entry-1"))
+        playbackController.completePlayback()
+
+        assertEquals(DictionaryAudioPlaybackState.Idle, player.playbackState.value)
     }
 }
 
 private class RecordingAudioPlaybackController : AudioPlaybackController {
     var lastClipFile: File? = null
     var lastClipKey: String? = null
+    private var activeClipKey: String? = null
+    private var onPlaybackCompleted: (() -> Unit)? = null
 
-    override fun play(clipFile: File, clipKey: String) {
+    override fun play(
+        clipFile: File,
+        clipKey: String,
+        onPlaybackCompleted: () -> Unit,
+    ): AudioPlaybackTransition {
+        if (activeClipKey == clipKey) {
+            activeClipKey = null
+            this.onPlaybackCompleted = null
+            return AudioPlaybackTransition.Stopped
+        }
         lastClipFile = clipFile
         lastClipKey = clipKey
+        activeClipKey = clipKey
+        this.onPlaybackCompleted = onPlaybackCompleted
+        return AudioPlaybackTransition.Started
+    }
+
+    fun completePlayback() {
+        activeClipKey = null
+        onPlaybackCompleted?.invoke()
+        onPlaybackCompleted = null
     }
 }
 

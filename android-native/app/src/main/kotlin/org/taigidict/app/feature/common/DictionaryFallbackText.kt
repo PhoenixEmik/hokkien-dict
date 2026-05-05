@@ -103,9 +103,48 @@ internal object DictionaryFallbackTextRanges {
     private const val CJK_EXTENSION_H_END = 0x323AF
 }
 
+internal data class DictionaryTextLink(
+    val start: Int,
+    val end: Int,
+    val value: String,
+)
+
 private val TauhuOoFontFamily = FontFamily(
     Font(R.font.tauhuoo_20_05_regular, FontWeight.Normal),
 )
+
+internal const val DICTIONARY_LINK_ANNOTATION_TAG = "dictionary_link"
+
+internal fun buildDictionaryAnnotatedString(
+    text: String,
+    links: List<DictionaryTextLink> = emptyList(),
+    linkStyle: SpanStyle? = null,
+): AnnotatedString {
+    val builder = AnnotatedString.Builder(text)
+    DictionaryFallbackTextRanges.fallbackRanges(text).forEach { range ->
+        builder.addStyle(
+            style = SpanStyle(fontFamily = TauhuOoFontFamily),
+            start = range.first,
+            end = range.last + 1,
+        )
+    }
+    links.forEach { link ->
+        builder.addStringAnnotation(
+            tag = DICTIONARY_LINK_ANNOTATION_TAG,
+            annotation = link.value,
+            start = link.start,
+            end = link.end,
+        )
+        if (linkStyle != null) {
+            builder.addStyle(
+                style = linkStyle,
+                start = link.start,
+                end = link.end,
+            )
+        }
+    }
+    return builder.toAnnotatedString()
+}
 
 @Composable
 fun DictionaryFallbackText(
@@ -115,12 +154,7 @@ fun DictionaryFallbackText(
     color: Color = Color.Unspecified,
 ) {
     val renderedText = remember(text) {
-        val ranges = DictionaryFallbackTextRanges.fallbackRanges(text)
-        if (ranges.isEmpty()) {
-            AnnotatedString(text)
-        } else {
-            buildAnnotatedString(text, ranges)
-        }
+        buildDictionaryAnnotatedString(text)
     }
 
     Text(
@@ -129,19 +163,4 @@ fun DictionaryFallbackText(
         style = style,
         color = color,
     )
-}
-
-private fun buildAnnotatedString(
-    text: String,
-    ranges: List<IntRange>,
-): AnnotatedString {
-    val builder = AnnotatedString.Builder(text)
-    ranges.forEach { range ->
-        builder.addStyle(
-            style = SpanStyle(fontFamily = TauhuOoFontFamily),
-            start = range.first,
-            end = range.last + 1,
-        )
-    }
-    return builder.toAnnotatedString()
 }

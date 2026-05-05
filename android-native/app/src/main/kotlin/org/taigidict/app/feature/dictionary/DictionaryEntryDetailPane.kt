@@ -2,7 +2,9 @@ package org.taigidict.app.feature.dictionary
 
 import android.app.Activity
 import android.content.Intent
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -19,11 +21,13 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.VolumeUp
 import androidx.compose.material.icons.outlined.Bookmark
 import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,17 +46,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.taigidict.app.R
 import org.taigidict.app.app.TaigiDictApplication
+import org.taigidict.app.data.audio.DictionaryAudioPlaybackState
 import org.taigidict.app.data.audio.DictionaryAudioPlaybackResult
 import org.taigidict.app.domain.model.DictionaryEntry
 import org.taigidict.app.domain.model.DictionaryExample
 import org.taigidict.app.domain.model.DictionarySense
+import org.taigidict.app.feature.common.DICTIONARY_LINK_ANNOTATION_TAG
 import org.taigidict.app.feature.common.DictionaryFallbackText
+import org.taigidict.app.feature.common.buildDictionaryAnnotatedString
 
 private val DetailHorizontalPadding = 16.dp
 private val DetailVerticalPadding = 12.dp
@@ -75,6 +85,7 @@ fun DictionaryEntryDetailPane(
     val audioPlayer = appContainer.dictionaryAudioPlayer
     val readingTextScale = appContainer.appSettingsStore.readingTextScale
         .collectAsState(initial = 1.0).value
+    val playbackState = audioPlayer.playbackState.collectAsState(initial = DictionaryAudioPlaybackState.Idle).value
     val scope = rememberCoroutineScope()
     var audioMessage by remember(entry?.id) { mutableStateOf<String?>(null) }
 
@@ -105,6 +116,7 @@ fun DictionaryEntryDetailPane(
             audioMessage = audioMessage,
             entry = entry,
             openableLinkedWords = openableLinkedWords,
+            playbackState = playbackState,
             isBookmarked = isBookmarked,
             readingTextScale = readingTextScale,
             onBack = onBack,
@@ -200,6 +212,7 @@ private fun DictionaryEntryDetailContent(
     audioMessage: String?,
     entry: DictionaryEntry,
     openableLinkedWords: Set<String>,
+    playbackState: DictionaryAudioPlaybackState,
     isBookmarked: Boolean,
     readingTextScale: Double,
     onBack: () -> Unit,
@@ -216,6 +229,12 @@ private fun DictionaryEntryDetailContent(
     val scaledTitleStyle = MaterialTheme.typography.titleLarge.copy(
         fontSize = MaterialTheme.typography.titleMedium.fontSize * readingTextScale.toFloat(),
     )
+    val entryAudioUiState = remember(playbackState, entry.audioId) {
+        resolveAudioUiState(
+            playbackState = playbackState,
+            clipKey = clipKeyForWord(entry.audioId),
+        )
+    }
 
     Scaffold(
         modifier = modifier,
@@ -270,15 +289,12 @@ private fun DictionaryEntryDetailContent(
                             }
                         }
 
-                        if (entry.audioId.isNotBlank()) {
-                            IconButton(onClick = onPlayEntryAudio) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Outlined.VolumeUp,
-                                    contentDescription = stringResource(R.string.dictionary_play_word_audio),
-                                    tint = MaterialTheme.colorScheme.primary,
-                                )
-                            }
-                        }
+                        AudioActionButton(
+                            uiState = entryAudioUiState,
+                            enabled = entry.audioId.isNotBlank(),
+                            contentDescription = stringResource(R.string.dictionary_play_word_audio),
+                            onClick = onPlayEntryAudio,
+                        )
                     }
 
                     val metadataLine = listOf(entry.type, entry.category)
@@ -395,6 +411,7 @@ private fun DictionaryEntryDetailContent(
                     sense = entry.senses[index],
                     readingTextScale = readingTextScale,
                     openableLinkedWords = openableLinkedWords,
+                    playbackState = playbackState,
                     onPlayExampleAudio = onPlayExampleAudio,
                     onOpenLinkedWord = onOpenLinkedWord,
                 )
@@ -458,6 +475,7 @@ private fun DictionarySenseSection(
     sense: DictionarySense,
     readingTextScale: Double,
     openableLinkedWords: Set<String>,
+    playbackState: DictionaryAudioPlaybackState,
     onPlayExampleAudio: (DictionaryExample) -> Unit,
     onOpenLinkedWord: (String) -> Unit,
 ) {
@@ -494,9 +512,11 @@ private fun DictionarySenseSection(
                 )
             }
 
-            DictionaryFallbackText(
+            LinkedDefinitionText(
                 text = sense.definition,
                 style = scaledBodyStyle,
+                openableLinkedWords = openableLinkedWords,
+                onOpenLinkedWord = onOpenLinkedWord,
             )
 
             if (sense.definitionSynonyms.isNotEmpty()) {
@@ -529,6 +549,7 @@ private fun DictionarySenseSection(
                 sense.examples.forEach { example ->
                     DictionaryExampleBlock(
                         example = example,
+                        playbackState = playbackState,
                         onPlayExampleAudio = onPlayExampleAudio,
                         readingTextScale = readingTextScale,
                     )
@@ -541,6 +562,7 @@ private fun DictionarySenseSection(
 @Composable
 private fun DictionaryExampleBlock(
     example: DictionaryExample,
+    playbackState: DictionaryAudioPlaybackState,
     onPlayExampleAudio: (DictionaryExample) -> Unit,
     readingTextScale: Double,
 ) {
@@ -553,6 +575,13 @@ private fun DictionaryExampleBlock(
     val scaledBodySmallStyle = MaterialTheme.typography.bodySmall.copy(
         fontSize = MaterialTheme.typography.bodySmall.fontSize * readingTextScale.toFloat(),
     )
+
+    val audioUiState = remember(playbackState, example.audioId) {
+        resolveAudioUiState(
+            playbackState = playbackState,
+            clipKey = clipKeyForSentence(example.audioId),
+        )
+    }
 
     Card(
         shape = RoundedCornerShape(12.dp),
@@ -590,15 +619,12 @@ private fun DictionaryExampleBlock(
                     )
                 }
             }
-            if (example.audioId.isNotBlank()) {
-                IconButton(onClick = { onPlayExampleAudio(example) }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.VolumeUp,
-                        contentDescription = stringResource(R.string.dictionary_play_example_audio),
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                }
-            }
+            AudioActionButton(
+                uiState = audioUiState,
+                enabled = example.audioId.isNotBlank(),
+                contentDescription = stringResource(R.string.dictionary_play_example_audio),
+                onClick = { onPlayExampleAudio(example) },
+            )
         }
     }
 }
@@ -719,3 +745,108 @@ private fun audioResultMessage(
         }
     }
 }
+
+@Composable
+private fun LinkedDefinitionText(
+    text: String,
+    style: TextStyle,
+    openableLinkedWords: Set<String>,
+    onOpenLinkedWord: (String) -> Unit,
+) {
+    val linkStyle = SpanStyle(
+        color = MaterialTheme.colorScheme.primary,
+        textDecoration = TextDecoration.Underline,
+    )
+    val annotatedText = remember(text, openableLinkedWords, linkStyle) {
+        val links = DictionaryLinkedWordMatcher.findLinks(text, openableLinkedWords)
+        buildDictionaryAnnotatedString(
+            text = text,
+            links = links,
+            linkStyle = linkStyle,
+        )
+    }
+
+    ClickableText(
+        text = annotatedText,
+        style = style.copy(color = MaterialTheme.colorScheme.onSurface),
+        onClick = { offset ->
+            annotatedText
+                .getStringAnnotations(
+                    tag = DICTIONARY_LINK_ANNOTATION_TAG,
+                    start = offset,
+                    end = offset,
+                )
+                .firstOrNull()
+                ?.let { annotation -> onOpenLinkedWord(annotation.item) }
+        },
+    )
+}
+
+@Composable
+private fun AudioActionButton(
+    uiState: DictionaryAudioUiState,
+    enabled: Boolean,
+    contentDescription: String,
+    onClick: () -> Unit,
+) {
+    if (!enabled) {
+        return
+    }
+
+    when (uiState) {
+        DictionaryAudioUiState.Loading -> {
+            Box(
+                modifier = Modifier.size(48.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                )
+            }
+        }
+
+        DictionaryAudioUiState.Playing -> {
+            IconButton(onClick = onClick) {
+                Icon(
+                    imageVector = Icons.Outlined.Pause,
+                    contentDescription = contentDescription,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
+        }
+
+        DictionaryAudioUiState.Idle -> {
+            IconButton(onClick = onClick) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.VolumeUp,
+                    contentDescription = contentDescription,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
+        }
+    }
+}
+
+private enum class DictionaryAudioUiState {
+    Idle,
+    Loading,
+    Playing,
+}
+
+private fun resolveAudioUiState(
+    playbackState: DictionaryAudioPlaybackState,
+    clipKey: String,
+): DictionaryAudioUiState {
+    return when (playbackState) {
+        DictionaryAudioPlaybackState.Idle -> DictionaryAudioUiState.Idle
+        is DictionaryAudioPlaybackState.Loading ->
+            if (playbackState.clipKey == clipKey) DictionaryAudioUiState.Loading else DictionaryAudioUiState.Idle
+        is DictionaryAudioPlaybackState.Playing ->
+            if (playbackState.clipKey == clipKey) DictionaryAudioUiState.Playing else DictionaryAudioUiState.Idle
+    }
+}
+
+private fun clipKeyForWord(audioId: String): String = "word:${audioId.trim()}"
+
+private fun clipKeyForSentence(audioId: String): String = "sentence:${audioId.trim()}"
