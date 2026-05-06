@@ -2,6 +2,7 @@ package org.taigidict.app.app
 
 import android.content.Context
 import java.io.File
+import org.taigidict.app.BuildConfig
 import org.taigidict.app.core.constants.AppConstants
 import org.taigidict.app.core.settings.AppSettingsStoring
 import org.taigidict.app.core.settings.DataStoreAppSettingsStore
@@ -15,7 +16,9 @@ import org.taigidict.app.data.importer.DictionaryImportService
 import org.taigidict.app.data.importer.DictionaryJsonlReader
 import org.taigidict.app.data.importer.LocalDictionaryPackageLoader
 import org.taigidict.app.data.importer.DictionaryPackageLoader
-import org.taigidict.app.data.repository.SQLiteDictionaryRepository
+import org.taigidict.app.data.repository.DictionaryRepositoryBackend
+import org.taigidict.app.data.repository.DictionaryRepositoryDataSource
+import org.taigidict.app.data.repository.DictionaryRepositoryFactory
 import org.taigidict.app.data.search.SearchHistoryStore
 import org.taigidict.app.data.source.DictionarySourceResourceStore
 
@@ -51,8 +54,14 @@ class AppContainer(context: Context) {
             jsonlReader = DictionaryJsonlReader(),
         )
     }
-    val dictionaryRepository: SQLiteDictionaryRepository by lazy {
-        SQLiteDictionaryRepository(databaseFile = dictionaryDatabaseFile)
+    internal val dictionaryRepositoryBackend: DictionaryRepositoryBackend =
+        DictionaryRepositoryBackend.parse(BuildConfig.DICTIONARY_REPOSITORY_BACKEND)
+    val dictionaryRepository: DictionaryRepositoryDataSource by lazy {
+        DictionaryRepositoryFactory.create(
+            context = appContext,
+            databaseFile = dictionaryDatabaseFile,
+            backend = dictionaryRepositoryBackend,
+        )
     }
     val bookmarkStore: BookmarkStore by lazy {
         BookmarkStore(context = appContext)
