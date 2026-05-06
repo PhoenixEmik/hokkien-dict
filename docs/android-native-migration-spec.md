@@ -17,17 +17,30 @@
 - `docs/ios-native-migration-spec.md`
 - `docs/ios-native-implementation-plan.md`
 
-## 實作狀態註記（2026-05-02）
+## 實作狀態註記（2026-05-06）
 
-目前 `android-native/` 尚未建立可開發的 Android app 專案骨架，也尚未有等價於 iOS native 的產品實作。因此本文件不是既有 Android 程式碼的摘要，而是供 Android native 開發啟動時使用的約束文件。
+目前 `android-native/` 已有可開發的 Android app 專案與主要產品流程，這份文件不再只是開工前藍圖，也需要被視為「既有實作 + 剩餘規格差距」的對照文件。
+
+截至 2026-05-06，已經存在的 Android native 能力包含：
+
+- initialization gate、bundled source restore、remote source download、local package validation 與 SQLite rebuild。
+- dictionary search、detail、linked definitions、bookmarks、recent searches、settings、reference content。
+- 離線音訊下載 / 播放、clip-level playback state，以及大螢幕 adaptive layout / `NavigationRail`。
+- `Preferences DataStore` 已用於 app settings、bookmarks 與 search history，並保留舊偏好設定 migration。
+
+截至目前仍與文件藍圖有落差的地方：
+
+- database layer 仍是 custom SQLite import / repository，尚未改成 `Room`。
+- 少數持久層仍未完成 `DataStore` 收斂，例如 `OpenCcMigrationTracker`。
+- instrumentation / UI tests 尚未建立，現階段驗證仍以 unit tests 為主。
 
 本文件的角色如下：
 
-- 固定產品行為，避免 Android 版在開發初期自行漂移。
-- 把 Flutter 與 iOS native 已確認的邏輯轉成 Android 可執行的規格。
+- 固定產品行為，避免 Android 版在後續迭代中自行漂移。
+- 把 Flutter 與 iOS native 已確認的邏輯，持續對照到 Android 既有實作與剩餘缺口。
 - 明確排除錯誤方向，例如把此工作理解為 Kotlin Multiplatform 或 Kotlin/Native。
 
-閱讀本文件時，應將第 1～4 章視為「不可隨意更改的行為契約」，第 5 章視為 Android 專案藍圖。
+閱讀本文件時，應將第 1～4 章視為「不可隨意更改的行為契約」，第 5 章視為 Android 專案藍圖與尚未完全實現的架構目標。
 
 ## 1. 核心業務邏輯 (Core Business Logic)
 

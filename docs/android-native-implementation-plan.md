@@ -3,15 +3,23 @@
 本文是 `android-native-migration-spec.md` 的執行版補充。
 前者描述 Flutter 既有行為、iOS native 已確認的產品策略與 Android 遷移邊界；本文描述 Kotlin / Compose 重寫時的檔案邊界、資料庫對照、型別骨架與實作拆分。
 
-## 實作狀態註記（2026-05-02）
+## 實作狀態註記（2026-05-06）
 
-目前 `android-native/` 尚未建立實際 app 專案。本計畫因此不是對現狀的盤點，而是 Android native 開工前的落地設計文件。
+`android-native/` 已經不是空白專案，而是可開發、可測試的 Kotlin / Compose app。初始化 gate、dictionary / bookmarks / settings 三大主區、SQLite 匯入與查詢、離線音訊下載播放、字詞 detail、adaptive navigation，以及 bundled / local dictionary source 維護都已有實作。
 
-此文件的目標：
+目前已完成的主要項目：
 
-- 讓 Android 實作能直接對齊既有產品邏輯。
-- 避免在資料層、搜尋邏輯與離線資源策略上重做決策。
-- 把第一版的技術選型固定在可收斂的範圍內。
+- 建立 Android app shell、主導航與大螢幕 `NavigationRail` / adaptive layout。
+- 建立初始化流程，會檢查 dictionary package、必要時 restore / download source，並重建本機 `dictionary.sqlite`。
+- 建立 custom SQLite import / repository / search flow，包含 spec 對齊的排序與 linked-entry resolution。
+- 建立 dictionary detail、definition 內可點詞、音訊播放狀態、bookmarks、recent searches 與 reference/settings 畫面。
+- 將 app settings、bookmarks、search history 遷移到 `Preferences DataStore`，並保留舊 `SharedPreferences` migration。
+
+截至目前仍與原始藍圖有差異的地方：
+
+- 執行中的資料庫層仍是自管 SQLite（`DictionaryDatabase` / `SQLiteDictionaryRepository`），尚未切到 `Room`。
+- 少數小型持久層仍待收尾，例如 `OpenCcMigrationTracker` 仍使用 `SharedPreferences`。
+- 本文件後續章節仍可作為架構與型別對照參考，但不應再被解讀為「Android native 尚未開工」。
 
 ## 1. Implementation Principles
 
