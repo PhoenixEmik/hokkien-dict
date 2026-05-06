@@ -22,8 +22,8 @@ internal class AndroidOpenCcChineseConversionService(
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val engine: OpenCcEngine = NativeOpenCcEngine,
     private val appVersionCode: Int = BuildConfig.VERSION_CODE,
-    private val migrationTracker: OpenCcMigrationTracker = SharedPreferencesOpenCcMigrationTracker(
-        appContext.applicationContext.getSharedPreferences("opencc_migrations", Context.MODE_PRIVATE),
+    private val migrationTracker: OpenCcMigrationTracker = DataStoreOpenCcMigrationTracker(
+        context = appContext.applicationContext,
     ),
 ) : ChineseConversionService {
     private val context = appContext.applicationContext
