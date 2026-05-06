@@ -215,15 +215,15 @@ private class FakeAppSettingsStore : org.taigidict.app.core.settings.AppSettings
     override val languagePreference: kotlinx.coroutines.flow.Flow<org.taigidict.app.core.settings.AppLanguagePreference>
         get() = _languagePreference
 
-    override fun setThemePreference(preference: org.taigidict.app.core.settings.AppThemePreference) {
+    override suspend fun setThemePreference(preference: org.taigidict.app.core.settings.AppThemePreference) {
         _themePreference.value = preference
     }
 
-    override fun setLanguagePreference(preference: org.taigidict.app.core.settings.AppLanguagePreference) {
+    override suspend fun setLanguagePreference(preference: org.taigidict.app.core.settings.AppLanguagePreference) {
         _languagePreference.value = preference
     }
 
-    override fun setReadingTextScale(value: Double) {
+    override suspend fun setReadingTextScale(value: Double) {
         _readingTextScale.value = org.taigidict.app.core.settings.AppSettingsConstants.snapReadingTextScale(value)
     }
 }

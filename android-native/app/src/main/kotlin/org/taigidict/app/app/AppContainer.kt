@@ -4,7 +4,7 @@ import android.content.Context
 import java.io.File
 import org.taigidict.app.core.constants.AppConstants
 import org.taigidict.app.core.settings.AppSettingsStoring
-import org.taigidict.app.core.settings.SharedPreferencesAppSettingsStore
+import org.taigidict.app.core.settings.DataStoreAppSettingsStore
 import org.taigidict.app.data.audio.DictionaryAudioPlayer
 import org.taigidict.app.data.audio.OfflineAudioArchiveManager
 import org.taigidict.app.data.audio.OfflineDictionaryAudioPlayer
@@ -70,9 +70,7 @@ class AppContainer(context: Context) {
         AndroidOpenCcChineseConversionService(appContext = appContext)
     }
     val appSettingsStore: AppSettingsStoring by lazy {
-        SharedPreferencesAppSettingsStore(
-            prefs = appContext.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
-        )
+        DataStoreAppSettingsStore(context = appContext)
     }
     val dictionarySourceResourceStore: DictionarySourceResourceStore by lazy {
         DictionarySourceResourceStore(

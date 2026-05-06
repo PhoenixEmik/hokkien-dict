@@ -29,6 +29,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -36,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 import org.taigidict.app.R
 import org.taigidict.app.app.TaigiDictApplication
 import org.taigidict.app.domain.model.DictionaryEntry
@@ -57,6 +59,7 @@ fun BookmarksScreen(
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
     val appContainer = (LocalContext.current.applicationContext as TaigiDictApplication).appContainer
     val bookmarkedIds by appContainer.bookmarkStore.bookmarkedIds.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
     val showsEntryDetail = uiState.isLoadingEntryDetail || uiState.selectedEntry != null || uiState.entryDetailErrorMessage != null
 
     if (showsEntryDetail) {
@@ -68,7 +71,9 @@ fun BookmarksScreen(
             isBookmarked = uiState.selectedEntry?.id in bookmarkedIds,
             onToggleBookmark = {
                 uiState.selectedEntry?.let { entry ->
-                    appContainer.bookmarkStore.toggleBookmark(entry.id)
+                    scope.launch {
+                        appContainer.bookmarkStore.toggleBookmark(entry.id)
+                    }
                 }
             },
             onBack = viewModel::onEntryDetailDismissed,

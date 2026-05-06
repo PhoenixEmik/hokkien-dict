@@ -1,27 +1,62 @@
 package org.taigidict.app.data.bookmarks
 
 import android.content.Context
+import androidx.datastore.preferences.SharedPreferencesMigration
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStoreFile
+import java.io.IOException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 class BookmarkStore(
     context: Context,
     preferencesName: String = DEFAULT_PREFERENCES_NAME,
     storageKey: String = DEFAULT_STORAGE_KEY,
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
 ) {
-    private val preferences = context.applicationContext.getSharedPreferences(preferencesName, Context.MODE_PRIVATE)
-    private val _bookmarkedIds = MutableStateFlow(readIds(storageKey))
+    private val storagePreferenceKey = stringPreferencesKey(storageKey)
+    private val dataStore = PreferenceDataStoreFactory.create(
+        migrations = listOf(SharedPreferencesMigration(context, preferencesName)),
+        scope = scope,
+        produceFile = {
+            context.applicationContext.preferencesDataStoreFile(preferencesName)
+        },
+    )
 
+    private val _bookmarkedIds = MutableStateFlow(emptyList<Long>())
     val bookmarkedIds: StateFlow<List<Long>> = _bookmarkedIds.asStateFlow()
 
-    private val storageKey = storageKey
-
-    fun isBookmarked(entryId: Long): Boolean {
-        return _bookmarkedIds.value.contains(entryId)
+    init {
+        scope.launch {
+            dataStore.data
+                .recoverPreferences()
+                .map { preferences ->
+                    readIds(preferences[storagePreferenceKey].orEmpty())
+                }
+                .collect { ids ->
+                    _bookmarkedIds.value = ids
+                }
+        }
     }
 
-    fun toggleBookmark(entryId: Long): Boolean {
+    fun isBookmarked(entryId: Long): Boolean {
+        return bookmarkedIds.value.contains(entryId)
+    }
+
+    suspend fun toggleBookmark(entryId: Long): Boolean {
         val updatedIds = _bookmarkedIds.value.toMutableList().apply {
             if (contains(entryId)) {
                 remove(entryId)
@@ -30,22 +65,38 @@ class BookmarkStore(
                 add(0, entryId)
             }
         }
-        writeIds(updatedIds)
+        dataStore.edit { preferences ->
+            preferences[storagePreferenceKey] = serializeIds(updatedIds)
+        }
+        _bookmarkedIds.value = updatedIds
         return updatedIds.contains(entryId)
     }
 
-    fun removeBookmark(entryId: Long): Boolean {
-        if (!_bookmarkedIds.value.contains(entryId)) {
+    suspend fun removeBookmark(entryId: Long): Boolean {
+        val existingIds = _bookmarkedIds.value
+        if (!existingIds.contains(entryId)) {
             return false
         }
 
-        val updatedIds = _bookmarkedIds.value.filterNot { it == entryId }
-        writeIds(updatedIds)
+        val updatedIds = existingIds.filterNot { it == entryId }
+        dataStore.edit { preferences ->
+            preferences[storagePreferenceKey] = serializeIds(updatedIds)
+        }
+        _bookmarkedIds.value = updatedIds
         return true
     }
 
-    private fun readIds(key: String): List<Long> {
-        val rawValue = preferences.getString(key, null).orEmpty()
+    private fun Flow<Preferences>.recoverPreferences(): Flow<Preferences> {
+        return catch { error ->
+            if (error is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw error
+            }
+        }
+    }
+
+    private fun readIds(rawValue: String): List<Long> {
         if (rawValue.isBlank()) {
             return emptyList()
         }
@@ -55,11 +106,8 @@ class BookmarkStore(
             .distinct()
     }
 
-    private fun writeIds(ids: List<Long>) {
-        preferences.edit()
-            .putString(storageKey, ids.joinToString(separator = ","))
-            .apply()
-        _bookmarkedIds.value = ids
+    private fun serializeIds(ids: List<Long>): String {
+        return ids.joinToString(separator = ",")
     }
 
     companion object {

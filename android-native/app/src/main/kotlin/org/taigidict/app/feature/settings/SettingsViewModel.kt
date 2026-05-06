@@ -108,15 +108,21 @@ class SettingsViewModel(
     }
 
     fun setThemePreference(preference: AppThemePreference) {
-        settingsStore.setThemePreference(preference)
+        viewModelScope.launch {
+            settingsStore.setThemePreference(preference)
+        }
     }
 
     fun setLanguagePreference(preference: AppLanguagePreference) {
-        settingsStore.setLanguagePreference(preference)
+        viewModelScope.launch {
+            settingsStore.setLanguagePreference(preference)
+        }
     }
 
     fun setReadingTextScale(value: Double) {
-        settingsStore.setReadingTextScale(value)
+        viewModelScope.launch {
+            settingsStore.setReadingTextScale(value)
+        }
     }
 
     fun restoreDictionarySource() {

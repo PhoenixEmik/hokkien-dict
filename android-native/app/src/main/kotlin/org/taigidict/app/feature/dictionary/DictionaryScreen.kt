@@ -36,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
@@ -44,6 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 import org.taigidict.app.R
 import org.taigidict.app.app.TaigiDictApplication
 import org.taigidict.app.feature.common.DictionaryFallbackText
@@ -67,6 +69,7 @@ fun DictionaryScreen(
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
     val appContainer = (LocalContext.current.applicationContext as TaigiDictApplication).appContainer
     val bookmarkedIds = appContainer.bookmarkStore.bookmarkedIds.collectAsStateWithLifecycle().value
+    val scope = rememberCoroutineScope()
     val showsEntryDetail = uiState.isLoadingEntryDetail ||
         uiState.selectedEntry != null ||
         uiState.entryDetailErrorMessage != null
@@ -83,7 +86,9 @@ fun DictionaryScreen(
                 isBookmarked = uiState.selectedEntry?.id in bookmarkedIds,
                 onToggleBookmark = {
                     uiState.selectedEntry?.let { entry ->
-                        appContainer.bookmarkStore.toggleBookmark(entry.id)
+                        scope.launch {
+                            appContainer.bookmarkStore.toggleBookmark(entry.id)
+                        }
                     }
                 },
                 onBack = viewModel::onEntryDetailDismissed,
@@ -277,7 +282,9 @@ fun DictionaryScreen(
                                     isBookmarked = uiState.selectedEntry?.id in bookmarkedIds,
                                     onToggleBookmark = {
                                         uiState.selectedEntry?.let { entry ->
-                                            appContainer.bookmarkStore.toggleBookmark(entry.id)
+                                            scope.launch {
+                                                appContainer.bookmarkStore.toggleBookmark(entry.id)
+                                            }
                                         }
                                     },
                                     onBack = viewModel::onEntryDetailDismissed,
@@ -462,4 +469,3 @@ private fun RecentSearchHistoryCard(
         }
     }
 }
-

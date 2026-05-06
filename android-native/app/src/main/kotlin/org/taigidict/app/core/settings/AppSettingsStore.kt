@@ -1,9 +1,22 @@
 package org.taigidict.app.core.settings
 
-import android.content.SharedPreferences
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.SharedPreferencesMigration
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStoreFile
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import java.io.IOException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 
 object AppSettingsConstants {
     const val MIN_READING_TEXT_SCALE = 0.9
@@ -25,57 +38,86 @@ interface AppSettingsStoring {
     val themePreference: Flow<AppThemePreference>
     val languagePreference: Flow<AppLanguagePreference>
     val readingTextScale: Flow<Double>
-    fun setThemePreference(preference: AppThemePreference)
-    fun setLanguagePreference(preference: AppLanguagePreference)
-    fun setReadingTextScale(value: Double)
+    suspend fun setThemePreference(preference: AppThemePreference)
+    suspend fun setLanguagePreference(preference: AppLanguagePreference)
+    suspend fun setReadingTextScale(value: Double)
 }
 
-class SharedPreferencesAppSettingsStore(
-    private val prefs: SharedPreferences,
+class DataStoreAppSettingsStore(
+    context: Context,
+    storeName: String = DEFAULT_STORE_NAME,
+    sharedPreferencesName: String = storeName,
+    scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
 ) : AppSettingsStoring {
 
-    private val _themePreference = MutableStateFlow(loadTheme())
-    override val themePreference: Flow<AppThemePreference> = _themePreference.asStateFlow()
+    private val dataStore: DataStore<Preferences> = PreferenceDataStoreFactory.create(
+        migrations = listOf(
+            SharedPreferencesMigration(context, sharedPreferencesName),
+        ),
+        scope = scope,
+        produceFile = {
+            context.applicationContext.preferencesDataStoreFile(storeName)
+        },
+    )
 
-    private val _languagePreference = MutableStateFlow(loadLanguage())
-    override val languagePreference: Flow<AppLanguagePreference> = _languagePreference.asStateFlow()
+    override val themePreference: Flow<AppThemePreference> = dataStore.data
+        .recoverPreferences()
+        .map { preferences ->
+            preferences[KEY_THEME]
+                ?.let { name -> AppThemePreference.entries.firstOrNull { it.name == name } }
+                ?: AppThemePreference.System
+        }
 
-    private val _readingTextScale = MutableStateFlow(loadReadingTextScale())
-    override val readingTextScale: Flow<Double> = _readingTextScale.asStateFlow()
+    override val languagePreference: Flow<AppLanguagePreference> = dataStore.data
+        .recoverPreferences()
+        .map { preferences ->
+            preferences[KEY_LANGUAGE]
+                ?.let { name -> AppLanguagePreference.entries.firstOrNull { it.name == name } }
+                ?: AppLanguagePreference.System
+        }
 
-    override fun setThemePreference(preference: AppThemePreference) {
-        prefs.edit().putString(KEY_THEME, preference.name).apply()
-        _themePreference.value = preference
+    override val readingTextScale: Flow<Double> = dataStore.data
+        .recoverPreferences()
+        .map { preferences ->
+            AppSettingsConstants.snapReadingTextScale(
+                preferences[KEY_READING_TEXT_SCALE]?.toDouble()
+                    ?: AppSettingsConstants.DEFAULT_READING_TEXT_SCALE,
+            )
+        }
+
+    override suspend fun setThemePreference(preference: AppThemePreference) {
+        dataStore.edit { preferences ->
+            preferences[KEY_THEME] = preference.name
+        }
     }
 
-    override fun setLanguagePreference(preference: AppLanguagePreference) {
-        prefs.edit().putString(KEY_LANGUAGE, preference.name).apply()
-        _languagePreference.value = preference
+    override suspend fun setLanguagePreference(preference: AppLanguagePreference) {
+        dataStore.edit { preferences ->
+            preferences[KEY_LANGUAGE] = preference.name
+        }
     }
 
-    override fun setReadingTextScale(value: Double) {
+    override suspend fun setReadingTextScale(value: Double) {
         val snapped = AppSettingsConstants.snapReadingTextScale(value)
-        prefs.edit().putFloat(KEY_READING_TEXT_SCALE, snapped.toFloat()).apply()
-        _readingTextScale.value = snapped
+        dataStore.edit { preferences ->
+            preferences[KEY_READING_TEXT_SCALE] = snapped.toFloat()
+        }
     }
 
-    private fun loadTheme(): AppThemePreference {
-        val name = prefs.getString(KEY_THEME, AppThemePreference.System.name)
-        return AppThemePreference.entries.firstOrNull { it.name == name } ?: AppThemePreference.System
+    private fun Flow<Preferences>.recoverPreferences(): Flow<Preferences> {
+        return catch { error ->
+            if (error is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw error
+            }
+        }
     }
 
-    private fun loadLanguage(): AppLanguagePreference {
-        val name = prefs.getString(KEY_LANGUAGE, AppLanguagePreference.System.name)
-        return AppLanguagePreference.entries.firstOrNull { it.name == name } ?: AppLanguagePreference.System
-    }
-
-    private fun loadReadingTextScale(): Double {
-        return prefs.getFloat(KEY_READING_TEXT_SCALE, AppSettingsConstants.DEFAULT_READING_TEXT_SCALE.toFloat()).toDouble()
-    }
-
-    companion object {
-        private const val KEY_THEME = "theme_preference"
-        private const val KEY_LANGUAGE = "language_preference"
-        private const val KEY_READING_TEXT_SCALE = "reading_text_scale"
+    private companion object {
+        const val DEFAULT_STORE_NAME = "app_settings"
+        val KEY_THEME = stringPreferencesKey("theme_preference")
+        val KEY_LANGUAGE = stringPreferencesKey("language_preference")
+        val KEY_READING_TEXT_SCALE = floatPreferencesKey("reading_text_scale")
     }
 }

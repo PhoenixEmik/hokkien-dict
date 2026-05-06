@@ -171,7 +171,9 @@ class BookmarksViewModel(
     }
 
     fun removeBookmark(entryId: Long) {
-        bookmarkStore.removeBookmark(entryId)
+        viewModelScope.launch {
+            bookmarkStore.removeBookmark(entryId)
+        }
     }
 
     private fun observeBookmarks() {

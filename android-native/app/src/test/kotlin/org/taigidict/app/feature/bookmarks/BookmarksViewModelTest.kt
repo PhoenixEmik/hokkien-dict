@@ -3,6 +3,7 @@ package org.taigidict.app.feature.bookmarks
 import android.app.Application
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -55,10 +56,9 @@ class BookmarksViewModelTest {
         val repository = FakeBookmarksRepository(
             entryById = mapOf(first.id to first, second.id to second),
         )
-        val bookmarkStore = createBookmarkStore().apply {
-            toggleBookmark(first.id)
-            toggleBookmark(second.id)
-        }
+        val bookmarkStore = createBookmarkStore(backgroundScope)
+        bookmarkStore.toggleBookmark(first.id)
+        bookmarkStore.toggleBookmark(second.id)
 
         val viewModel = createViewModel(repository, bookmarkStore)
         advanceUntilIdle()
@@ -81,9 +81,8 @@ class BookmarksViewModelTest {
             entryById = mapOf(source.id to source, linked.id to linked),
             linkedEntriesByWord = mapOf("字典" to linked),
         )
-        val bookmarkStore = createBookmarkStore().apply {
-            toggleBookmark(source.id)
-        }
+        val bookmarkStore = createBookmarkStore(backgroundScope)
+        bookmarkStore.toggleBookmark(source.id)
 
         val viewModel = createViewModel(repository, bookmarkStore)
         advanceUntilIdle()
@@ -105,12 +104,10 @@ class BookmarksViewModelTest {
         val repository = FakeBookmarksRepository(
             entryById = mapOf(entry.id to entry),
         )
-        val bookmarkStore = createBookmarkStore().apply {
-            toggleBookmark(entry.id)
-        }
-        val settingsStore = FakeBookmarksSettingsStore().apply {
-            setLanguagePreference(AppLanguagePreference.SimplifiedChinese)
-        }
+        val bookmarkStore = createBookmarkStore(backgroundScope)
+        bookmarkStore.toggleBookmark(entry.id)
+        val settingsStore = FakeBookmarksSettingsStore()
+        settingsStore.setLanguagePreference(AppLanguagePreference.SimplifiedChinese)
         val conversionService = FakeBookmarksChineseConversionService(
             translatedMap = mapOf("辭典" to "词典", "一種工具書。" to "一种工具书。"),
         )
@@ -127,11 +124,12 @@ class BookmarksViewModelTest {
         assertEquals("一种工具书。", viewModel.uiState.value.entries.first().senses.first().definition)
     }
 
-    private fun createBookmarkStore(): BookmarkStore {
+    private fun createBookmarkStore(scope: CoroutineScope): BookmarkStore {
         val context = ApplicationProvider.getApplicationContext<Context>()
         return BookmarkStore(
             context = context,
             preferencesName = "bookmarks-viewmodel-test-${UUID.randomUUID()}",
+            scope = scope,
         )
     }
 
@@ -162,15 +160,15 @@ private class FakeBookmarksSettingsStore : AppSettingsStoring {
     override val languagePreference: kotlinx.coroutines.flow.StateFlow<AppLanguagePreference> = _languagePreference
     override val readingTextScale: kotlinx.coroutines.flow.StateFlow<Double> = _readingTextScale
 
-    override fun setThemePreference(preference: AppThemePreference) {
+    override suspend fun setThemePreference(preference: AppThemePreference) {
         _themePreference.value = preference
     }
 
-    override fun setLanguagePreference(preference: AppLanguagePreference) {
+    override suspend fun setLanguagePreference(preference: AppLanguagePreference) {
         _languagePreference.value = preference
     }
 
-    override fun setReadingTextScale(value: Double) {
+    override suspend fun setReadingTextScale(value: Double) {
         _readingTextScale.value = AppSettingsConstants.snapReadingTextScale(value)
     }
 }

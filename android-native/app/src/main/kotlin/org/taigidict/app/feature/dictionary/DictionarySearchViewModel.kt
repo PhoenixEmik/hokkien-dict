@@ -87,7 +87,9 @@ class DictionarySearchViewModel(
     }
 
     fun onClearRecentSearches() {
-        searchHistoryStore.clear()
+        viewModelScope.launch {
+            searchHistoryStore.clear()
+        }
     }
 
     fun onQueryChange(query: String) {
@@ -293,7 +295,9 @@ class DictionarySearchViewModel(
             return
         }
 
-        searchHistoryStore.addQuery(state.query)
+        viewModelScope.launch {
+            searchHistoryStore.addQuery(state.query)
+        }
     }
 
     private suspend fun translateEntryForDisplay(entry: DictionaryEntry): DictionaryEntry {

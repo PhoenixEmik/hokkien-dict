@@ -390,15 +390,15 @@ private class FakeDictionarySettingsStore : AppSettingsStoring {
     override val languagePreference: StateFlow<AppLanguagePreference> = _languagePreference
     override val readingTextScale: StateFlow<Double> = _readingTextScale
 
-    override fun setThemePreference(preference: AppThemePreference) {
+    override suspend fun setThemePreference(preference: AppThemePreference) {
         _themePreference.value = preference
     }
 
-    override fun setLanguagePreference(preference: AppLanguagePreference) {
+    override suspend fun setLanguagePreference(preference: AppLanguagePreference) {
         _languagePreference.value = preference
     }
 
-    override fun setReadingTextScale(value: Double) {
+    override suspend fun setReadingTextScale(value: Double) {
         _readingTextScale.value = AppSettingsConstants.snapReadingTextScale(value)
     }
 }
@@ -428,7 +428,7 @@ private class FakeSearchHistoryStore(
 
     override val recentQueries: StateFlow<List<String>> = queries.asStateFlow()
 
-    override fun addQuery(query: String) {
+    override suspend fun addQuery(query: String) {
         val normalized = query.trim()
         if (normalized.isBlank()) {
             return
@@ -439,7 +439,7 @@ private class FakeSearchHistoryStore(
         }
     }
 
-    override fun clear() {
+    override suspend fun clear() {
         queries.value = emptyList()
     }
 }
