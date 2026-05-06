@@ -21,11 +21,25 @@ abstract class DictionaryRoomDatabase : RoomDatabase() {
 
     companion object {
         fun open(context: Context, databaseFile: File): DictionaryRoomDatabase {
-            return Room.databaseBuilder(
+            val appDatabaseFile = context.applicationContext.getDatabasePath(databaseFile.name)
+            val databaseName = if (databaseFile.absolutePath == appDatabaseFile.absolutePath) {
+                databaseFile.name
+            } else {
+                "${databaseFile.nameWithoutExtension}-${databaseFile.absolutePath.hashCode()}.sqlite"
+            }
+            val builder = Room.databaseBuilder(
                 context.applicationContext,
                 DictionaryRoomDatabase::class.java,
-                databaseFile.name,
-            ).build()
+                databaseName,
+            )
+
+            if (databaseFile.absolutePath != appDatabaseFile.absolutePath) {
+                builder.createFromFile(databaseFile)
+            }
+
+            return builder
+                .allowMainThreadQueries()
+                .build()
         }
     }
 }

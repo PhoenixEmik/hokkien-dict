@@ -7,7 +7,7 @@ object DictionaryDatabase {
     private val schemaStatements = listOf(
         """
         CREATE TABLE dictionary_entries (
-            id INTEGER PRIMARY KEY,
+            id INTEGER NOT NULL PRIMARY KEY,
             type TEXT NOT NULL,
             hanji TEXT NOT NULL,
             romanization TEXT NOT NULL,
@@ -39,7 +39,7 @@ object DictionaryDatabase {
         """.trimIndent(),
         """
         CREATE TABLE dictionary_examples (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
             entry_id INTEGER NOT NULL,
             sense_id INTEGER NOT NULL,
             example_order INTEGER NOT NULL,
@@ -51,7 +51,7 @@ object DictionaryDatabase {
         """.trimIndent(),
         """
         CREATE TABLE dictionary_metadata (
-            key TEXT PRIMARY KEY,
+            key TEXT NOT NULL PRIMARY KEY,
             value TEXT NOT NULL
         )
         """.trimIndent(),
