@@ -12,11 +12,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.taigidict.app.data.importer.DictionaryManifest
 import org.taigidict.app.data.importer.DictionaryJsonlReader
+import org.taigidict.app.data.importer.LocalDictionaryPackageLoader
 
 data class DownloadSnapshot(
     val state: State = State.Idle,
@@ -65,125 +67,125 @@ class DictionarySourceResourceStore(
 
     private val json = Json { ignoreUnknownKeys = true }
     private val jsonlReader = DictionaryJsonlReader()
-
-    override suspend fun refresh(): Result<Unit> = runCatching {
-        val newSnapshot = if (localSourceExists()) {
-            val size = localSourceSize()
-            DownloadSnapshot(
-                state = DownloadSnapshot.State.Completed,
-                downloadedBytes = size,
-                totalBytes = size,
-            )
-        } else {
-            DownloadSnapshot(state = DownloadSnapshot.State.Idle)
-        }
-        _snapshot.value = newSnapshot
+    private val localPackageLoader by lazy {
+        LocalDictionaryPackageLoader(
+            sourceDirectory = localSourceDirectory,
+            jsonlReader = jsonlReader,
+            json = json,
+        )
     }
 
-    override suspend fun restoreBundledSource(): Result<Unit> = runCatching {
-        _snapshot.value = DownloadSnapshot(
-            state = DownloadSnapshot.State.Downloading,
-            downloadedBytes = 0,
-            totalBytes = null,
-        )
-
-        try {
-            localSourceDirectory.mkdirs()
-
-            // Read bundled manifest
-            val manifestBytes = assetManager.open(bundledManifestAssetPath).use { it.readBytes() }
-            val manifest = json.decodeFromString<DictionaryManifest>(
-                manifestBytes.toString(Charsets.UTF_8)
-            )
-
-            // Read bundled entries
-            val entriesBytes = assetManager.open(bundledEntriesAssetPath).use { it.readBytes() }
-
-            // Write to local directory
-            val localManifestFile = File(localSourceDirectory, "dictionary_manifest.json")
-            localManifestFile.writeBytes(manifestBytes)
-
-            val localEntriesFile = File(localSourceDirectory, manifest.entriesFileName)
-            localEntriesFile.writeBytes(entriesBytes)
-
-            val totalSize = manifestBytes.size.toLong() + entriesBytes.size.toLong()
-            _snapshot.value = DownloadSnapshot(
-                state = DownloadSnapshot.State.Completed,
-                downloadedBytes = totalSize,
-                totalBytes = totalSize,
-            )
-        } catch (error: Exception) {
-            _snapshot.value = DownloadSnapshot(
-                state = DownloadSnapshot.State.Failed,
-                downloadedBytes = _snapshot.value.downloadedBytes,
-                totalBytes = _snapshot.value.totalBytes,
-            )
-            throw error
+    override suspend fun refresh(): Result<Unit> = withContext(ioDispatcher) {
+        runCatching {
+            val newSnapshot = if (hasValidLocalSource()) {
+                val size = localSourceSize()
+                DownloadSnapshot(
+                    state = DownloadSnapshot.State.Completed,
+                    downloadedBytes = size,
+                    totalBytes = size,
+                )
+            } else {
+                clearLocalSourceFiles()
+                DownloadSnapshot(state = DownloadSnapshot.State.Idle)
+            }
+            _snapshot.value = newSnapshot
         }
     }
 
-    override suspend fun downloadSource(): Result<Unit> = runCatching {
-        _snapshot.value = DownloadSnapshot(
-            state = DownloadSnapshot.State.Downloading,
-            downloadedBytes = _snapshot.value.downloadedBytes,
-            totalBytes = null,
-        )
-
-        try {
-            localSourceDirectory.mkdirs()
-
-            // Download manifest
-            val manifestUrl = "$remoteBaseUrl/dictionary_manifest.json"
-            val manifestBytes = downloadFile(manifestUrl)
-            val manifest = json.decodeFromString<DictionaryManifest>(
-                manifestBytes.toString(Charsets.UTF_8)
+    override suspend fun restoreBundledSource(): Result<Unit> = withContext(ioDispatcher) {
+        runCatching {
+            _snapshot.value = DownloadSnapshot(
+                state = DownloadSnapshot.State.Downloading,
+                downloadedBytes = 0,
+                totalBytes = null,
             )
 
-            val tempEntriesFile = File(localSourceDirectory, "${manifest.entriesFileName}.download")
-            val localEntriesFile = File(localSourceDirectory, manifest.entriesFileName)
-            val resumeBytes = if (tempEntriesFile.exists()) tempEntriesFile.length() else 0L
+            try {
+                localSourceDirectory.mkdirs()
+                clearLocalSourceFiles()
 
-            // Download entries with resume support
-            val entriesUrl = "$remoteBaseUrl/${manifest.entriesFileName}"
-            val entriesSize = downloadEntriesFile(
-                urlString = entriesUrl,
-                targetTempFile = tempEntriesFile,
-                resumeBytes = resumeBytes,
-                baseDownloadedBytes = manifestBytes.size.toLong(),
-            )
+                val manifestBytes = assetManager.open(bundledManifestAssetPath).use { it.readBytes() }
+                val manifest = json.decodeFromString<DictionaryManifest>(
+                    manifestBytes.toString(Charsets.UTF_8)
+                )
+                val entriesBytes = assetManager.open(bundledEntriesAssetPath).use { it.readBytes() }
 
-            // Write to local directory
-            val localManifestFile = File(localSourceDirectory, "dictionary_manifest.json")
-            localManifestFile.writeBytes(manifestBytes)
+                val localManifestFile = File(localSourceDirectory, "dictionary_manifest.json")
+                localManifestFile.writeBytes(manifestBytes)
 
-            if (localEntriesFile.exists()) {
-                localEntriesFile.delete()
+                val localEntriesFile = File(localSourceDirectory, manifest.entriesFileName)
+                localEntriesFile.writeBytes(entriesBytes)
+
+                publishCompletedSnapshotFromValidatedLocalSource()
+            } catch (error: Exception) {
+                clearLocalSourceFiles()
+                _snapshot.value = DownloadSnapshot(
+                    state = DownloadSnapshot.State.Failed,
+                    downloadedBytes = _snapshot.value.downloadedBytes,
+                    totalBytes = _snapshot.value.totalBytes,
+                )
+                throw error
             }
-            if (!tempEntriesFile.renameTo(localEntriesFile)) {
-                throw IOException("Failed to move downloaded dictionary entries into place.")
-            }
+        }
+    }
 
-            val totalSize = manifestBytes.size.toLong() + entriesSize
+    override suspend fun downloadSource(): Result<Unit> = withContext(ioDispatcher) {
+        runCatching {
             _snapshot.value = DownloadSnapshot(
-                state = DownloadSnapshot.State.Completed,
-                downloadedBytes = totalSize,
-                totalBytes = totalSize,
-            )
-        } catch (error: CancellationException) {
-            val pausedBytes = localSourceSizeIncludingTemp()
-            _snapshot.value = DownloadSnapshot(
-                state = DownloadSnapshot.State.Paused,
-                downloadedBytes = pausedBytes,
-                totalBytes = _snapshot.value.totalBytes,
-            )
-            throw error
-        } catch (error: Exception) {
-            _snapshot.value = DownloadSnapshot(
-                state = DownloadSnapshot.State.Failed,
+                state = DownloadSnapshot.State.Downloading,
                 downloadedBytes = _snapshot.value.downloadedBytes,
-                totalBytes = _snapshot.value.totalBytes,
+                totalBytes = null,
             )
-            throw error
+
+            try {
+                localSourceDirectory.mkdirs()
+
+                val manifestUrl = "$remoteBaseUrl/dictionary_manifest.json"
+                val manifestBytes = downloadFile(manifestUrl)
+                val manifest = json.decodeFromString<DictionaryManifest>(
+                    manifestBytes.toString(Charsets.UTF_8)
+                )
+
+                val tempEntriesFile = File(localSourceDirectory, "${manifest.entriesFileName}.download")
+                val localEntriesFile = File(localSourceDirectory, manifest.entriesFileName)
+                val resumeBytes = if (tempEntriesFile.exists()) tempEntriesFile.length() else 0L
+
+                val entriesUrl = "$remoteBaseUrl/${manifest.entriesFileName}"
+                downloadEntriesFile(
+                    urlString = entriesUrl,
+                    targetTempFile = tempEntriesFile,
+                    resumeBytes = resumeBytes,
+                    baseDownloadedBytes = manifestBytes.size.toLong(),
+                )
+
+                val localManifestFile = File(localSourceDirectory, "dictionary_manifest.json")
+                localManifestFile.writeBytes(manifestBytes)
+
+                if (localEntriesFile.exists()) {
+                    localEntriesFile.delete()
+                }
+                if (!tempEntriesFile.renameTo(localEntriesFile)) {
+                    throw IOException("Failed to move downloaded dictionary entries into place.")
+                }
+
+                publishCompletedSnapshotFromValidatedLocalSource()
+            } catch (error: CancellationException) {
+                val pausedBytes = localSourceSizeIncludingTemp()
+                _snapshot.value = DownloadSnapshot(
+                    state = DownloadSnapshot.State.Paused,
+                    downloadedBytes = pausedBytes,
+                    totalBytes = _snapshot.value.totalBytes,
+                )
+                throw error
+            } catch (error: Exception) {
+                clearLocalSourceFiles()
+                _snapshot.value = DownloadSnapshot(
+                    state = DownloadSnapshot.State.Failed,
+                    downloadedBytes = _snapshot.value.downloadedBytes,
+                    totalBytes = _snapshot.value.totalBytes,
+                )
+                throw error
+            }
         }
     }
 
@@ -273,20 +275,10 @@ class DictionarySourceResourceStore(
         }
     }
 
-    private fun localSourceExists(): Boolean {
-        val manifestFile = File(localSourceDirectory, "dictionary_manifest.json")
-        if (!manifestFile.exists()) return false
-
-        val manifest = try {
-            json.decodeFromString<DictionaryManifest>(
-                manifestFile.readBytes().toString(Charsets.UTF_8)
-            )
-        } catch (e: Exception) {
-            return false
-        }
-
-        val entriesFile = File(localSourceDirectory, manifest.entriesFileName)
-        return entriesFile.exists()
+    private fun hasValidLocalSource(): Boolean {
+        return runCatching {
+            localPackageLoader.validateBundledPackage()
+        }.isSuccess
     }
 
     private fun localSourceSize(): Long {
@@ -316,5 +308,26 @@ class DictionarySourceResourceStore(
             ?.sumOf { it.length() }
             ?: 0L
         return committed + tempSize
+    }
+
+    private fun publishCompletedSnapshotFromValidatedLocalSource() {
+        localPackageLoader.validateBundledPackage()
+
+        val totalSize = localSourceSize()
+        _snapshot.value = DownloadSnapshot(
+            state = DownloadSnapshot.State.Completed,
+            downloadedBytes = totalSize,
+            totalBytes = totalSize,
+        )
+    }
+
+    private fun clearLocalSourceFiles() {
+        localSourceDirectory.listFiles()?.forEach { file ->
+            if (file.isDirectory) {
+                file.deleteRecursively()
+            } else {
+                file.delete()
+            }
+        }
     }
 }
