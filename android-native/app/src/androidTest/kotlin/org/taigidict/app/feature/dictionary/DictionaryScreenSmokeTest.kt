@@ -3,8 +3,10 @@ package org.taigidict.app.feature.dictionary
 import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.core.app.ApplicationProvider
@@ -97,6 +99,13 @@ class DictionaryScreenSmokeTest {
         composeRule.onNodeWithText(entry.hanji).assertIsDisplayed()
         composeRule.onNodeWithText("字典").assertIsDisplayed()
         composeRule.onNodeWithText(entry.senses.first().examples.first().hanji).assertIsDisplayed()
+        composeRule.onAllNodesWithText(
+            context.getString(R.string.dictionary_detail_sense_title, 1),
+        ).assertCountEquals(0)
+        composeRule.onNodeWithText(
+            context.getString(R.string.dictionary_detail_vocabulary_comparisons),
+        ).assertIsDisplayed()
+        composeRule.onNodeWithText("工作／職業：工課（khang-khuè）").assertIsDisplayed()
         composeRule.onNodeWithContentDescription(
             context.getString(R.string.dictionary_play_word_audio),
         ).assertIsDisplayed()
@@ -123,7 +132,7 @@ private fun sampleDictionaryEntry(): DictionaryEntry {
         contractedPronunciations = emptyList(),
         colloquialPronunciations = emptyList(),
         phoneticDifferences = emptyList(),
-        vocabularyComparisons = emptyList(),
+        vocabularyComparisons = listOf("工作／職業：工課（khang-khuè）"),
         aliasTargetEntryId = null,
         senses = listOf(
             DictionarySense(

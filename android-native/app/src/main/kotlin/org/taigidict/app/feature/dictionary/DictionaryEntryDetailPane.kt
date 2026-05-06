@@ -28,6 +28,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -393,19 +394,8 @@ private fun DictionaryEntryDetailContent(
                 }
             }
 
-            if (entry.vocabularyComparisons.isNotEmpty()) {
-                item("vocabulary-comparisons-${entry.id}") {
-                    DictionaryDetailStaticSection(
-                        title = stringResource(R.string.dictionary_detail_vocabulary_comparisons),
-                        values = entry.vocabularyComparisons,
-                        readingTextScale = readingTextScale,
-                    )
-                }
-            }
-
             items(entry.senses.size, key = { index -> "sense-${entry.id}-$index" }) { index ->
                 DictionarySenseSection(
-                    index = index,
                     sense = entry.senses[index],
                     readingTextScale = readingTextScale,
                     openableLinkedWords = openableLinkedWords,
@@ -413,6 +403,16 @@ private fun DictionaryEntryDetailContent(
                     onPlayExampleAudio = onPlayExampleAudio,
                     onOpenLinkedWord = onOpenLinkedWord,
                 )
+            }
+
+            if (entry.vocabularyComparisons.isNotEmpty()) {
+                item("vocabulary-comparisons-${entry.id}") {
+                    DictionaryComparisonSection(
+                        title = stringResource(R.string.dictionary_detail_vocabulary_comparisons),
+                        values = entry.vocabularyComparisons,
+                        readingTextScale = readingTextScale,
+                    )
+                }
             }
         }
     }
@@ -469,7 +469,6 @@ private fun DetailTopBar(
 
 @Composable
 private fun DictionarySenseSection(
-    index: Int,
     sense: DictionarySense,
     readingTextScale: Double,
     openableLinkedWords: Set<String>,
@@ -479,9 +478,6 @@ private fun DictionarySenseSection(
 ) {
     val scaledTitleStyle = MaterialTheme.typography.titleLarge.copy(
         fontSize = MaterialTheme.typography.titleMedium.fontSize * readingTextScale.toFloat(),
-    )
-    val scaledLabelStyle = MaterialTheme.typography.titleMedium.copy(
-        fontSize = MaterialTheme.typography.labelLarge.fontSize * readingTextScale.toFloat(),
     )
     val scaledBodyStyle = MaterialTheme.typography.bodyLarge.copy(
         fontSize = MaterialTheme.typography.bodyLarge.fontSize * readingTextScale.toFloat(),
@@ -497,15 +493,10 @@ private fun DictionarySenseSection(
                 .padding(horizontal = 20.dp, vertical = 18.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(
-                text = stringResource(R.string.dictionary_detail_sense_title, index + 1),
-                style = scaledTitleStyle,
-            )
-
             if (sense.partOfSpeech.isNotBlank()) {
                 DictionaryFallbackText(
                     text = sense.partOfSpeech,
-                    style = scaledLabelStyle,
+                    style = scaledTitleStyle,
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
@@ -551,6 +542,48 @@ private fun DictionarySenseSection(
                         onPlayExampleAudio = onPlayExampleAudio,
                         readingTextScale = readingTextScale,
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DictionaryComparisonSection(
+    title: String,
+    values: List<String>,
+    readingTextScale: Double,
+) {
+    val scaledLabelStyle = MaterialTheme.typography.labelLarge.copy(
+        fontSize = MaterialTheme.typography.labelLarge.fontSize * readingTextScale.toFloat(),
+    )
+    val scaledBodyStyle = MaterialTheme.typography.bodyMedium.copy(
+        fontSize = MaterialTheme.typography.bodyMedium.fontSize * readingTextScale.toFloat(),
+    )
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(16.dp),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = title,
+                style = scaledLabelStyle,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            values.forEachIndexed { index, value ->
+                DictionaryFallbackText(
+                    text = value,
+                    style = scaledBodyStyle,
+                )
+                if (index < values.lastIndex) {
+                    HorizontalDivider(thickness = 0.5.dp)
                 }
             }
         }
