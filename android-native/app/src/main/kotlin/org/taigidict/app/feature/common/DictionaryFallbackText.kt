@@ -6,8 +6,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.LinkInteractionListener
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -119,6 +122,7 @@ internal fun buildDictionaryAnnotatedString(
     text: String,
     links: List<DictionaryTextLink> = emptyList(),
     linkStyle: SpanStyle? = null,
+    onClickLink: ((String) -> Unit)? = null,
 ): AnnotatedString {
     val builder = AnnotatedString.Builder(text)
     DictionaryFallbackTextRanges.fallbackRanges(text).forEach { range ->
@@ -129,18 +133,32 @@ internal fun buildDictionaryAnnotatedString(
         )
     }
     links.forEach { link ->
-        builder.addStringAnnotation(
-            tag = DICTIONARY_LINK_ANNOTATION_TAG,
-            annotation = link.value,
-            start = link.start,
-            end = link.end,
-        )
-        if (linkStyle != null) {
-            builder.addStyle(
-                style = linkStyle,
+        if (onClickLink != null) {
+            builder.addLink(
+                clickable = LinkAnnotation.Clickable(
+                    tag = DICTIONARY_LINK_ANNOTATION_TAG,
+                    styles = linkStyle?.let(::TextLinkStyles),
+                    linkInteractionListener = LinkInteractionListener {
+                        onClickLink(link.value)
+                    },
+                ),
                 start = link.start,
                 end = link.end,
             )
+        } else {
+            builder.addStringAnnotation(
+                tag = DICTIONARY_LINK_ANNOTATION_TAG,
+                annotation = link.value,
+                start = link.start,
+                end = link.end,
+            )
+            if (linkStyle != null) {
+                builder.addStyle(
+                    style = linkStyle,
+                    start = link.start,
+                    end = link.end,
+                )
+            }
         }
     }
     return builder.toAnnotatedString()

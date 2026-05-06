@@ -2,7 +2,6 @@ package org.taigidict.app.feature.dictionary
 
 import android.app.Activity
 import android.content.Intent
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -60,7 +59,6 @@ import org.taigidict.app.data.audio.DictionaryAudioPlaybackResult
 import org.taigidict.app.domain.model.DictionaryEntry
 import org.taigidict.app.domain.model.DictionaryExample
 import org.taigidict.app.domain.model.DictionarySense
-import org.taigidict.app.feature.common.DICTIONARY_LINK_ANNOTATION_TAG
 import org.taigidict.app.feature.common.DictionaryFallbackText
 import org.taigidict.app.feature.common.buildDictionaryAnnotatedString
 
@@ -757,28 +755,19 @@ private fun LinkedDefinitionText(
         color = MaterialTheme.colorScheme.primary,
         textDecoration = TextDecoration.Underline,
     )
-    val annotatedText = remember(text, openableLinkedWords, linkStyle) {
+    val annotatedText = remember(text, openableLinkedWords, linkStyle, onOpenLinkedWord) {
         val links = DictionaryLinkedWordMatcher.findLinks(text, openableLinkedWords)
         buildDictionaryAnnotatedString(
             text = text,
             links = links,
             linkStyle = linkStyle,
+            onClickLink = onOpenLinkedWord,
         )
     }
 
-    ClickableText(
+    Text(
         text = annotatedText,
         style = style.copy(color = MaterialTheme.colorScheme.onSurface),
-        onClick = { offset ->
-            annotatedText
-                .getStringAnnotations(
-                    tag = DICTIONARY_LINK_ANNOTATION_TAG,
-                    start = offset,
-                    end = offset,
-                )
-                .firstOrNull()
-                ?.let { annotation -> onOpenLinkedWord(annotation.item) }
-        },
     )
 }
 
