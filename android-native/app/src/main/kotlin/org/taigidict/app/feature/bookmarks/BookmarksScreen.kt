@@ -166,7 +166,7 @@ fun BookmarksScreen(
 }
 
 @Composable
-private fun BookmarksEmptyCard() {
+internal fun BookmarksEmptyCard() {
     Card {
         Column(
             modifier = Modifier
@@ -193,7 +193,7 @@ private fun BookmarksEmptyCard() {
 }
 
 @Composable
-private fun BookmarkEntryListItem(
+internal fun BookmarkEntryListItem(
     entry: DictionaryEntry,
     onClick: () -> Unit,
 ) {
@@ -234,7 +234,7 @@ private fun BookmarkEntryListItem(
 }
 
 @Composable
-private fun BookmarkEntryGridItem(
+internal fun BookmarkEntryGridItem(
     entry: DictionaryEntry,
     onClick: () -> Unit,
 ) {

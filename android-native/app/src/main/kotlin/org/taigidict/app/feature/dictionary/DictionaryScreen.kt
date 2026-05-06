@@ -223,54 +223,11 @@ fun DictionaryScreen(
                                     style = MaterialTheme.typography.titleMedium,
                                     modifier = Modifier.padding(bottom = ComponentSpacing),
                                 )
-                                LazyColumn(
+                                DictionaryResultList(
+                                    results = uiState.results,
+                                    onEntrySelected = viewModel::onEntrySelected,
                                     modifier = Modifier.fillMaxSize(),
-                                    verticalArrangement = Arrangement.spacedBy(0.dp),
-                                ) {
-                                    items(
-                                        uiState.results,
-                                        key = { it.id },
-                                    ) { entry ->
-                                        ListItem(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .clickable { viewModel.onEntrySelected(entry.id) },
-                                            headlineContent = {
-                                                DictionaryFallbackText(
-                                                    text = entry.hanji,
-                                                    style = MaterialTheme.typography.titleMedium,
-                                                )
-                                            },
-                                            supportingContent = {
-                                                Column(verticalArrangement = Arrangement.spacedBy(ComponentSpacing / 2)) {
-                                                    DictionaryFallbackText(
-                                                        text = entry.romanization,
-                                                        style = MaterialTheme.typography.bodyMedium,
-                                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    )
-                                                    if (entry.briefSummary.isNotBlank()) {
-                                                        DictionaryFallbackText(
-                                                            text = entry.briefSummary,
-                                                            style = MaterialTheme.typography.bodySmall,
-                                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                        )
-                                                    }
-                                                }
-                                            },
-                                            trailingContent = {
-                                                Icon(
-                                                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                                                    contentDescription = null,
-                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                )
-                                            },
-                                        )
-                                        HorizontalDivider(
-                                            modifier = Modifier.padding(horizontal = 16.dp),
-                                            thickness = 0.5.dp,
-                                        )
-                                    }
-                                }
+                                )
                             }
 
                             if (showsEntryDetail) {
@@ -310,54 +267,11 @@ fun DictionaryScreen(
                                 style = MaterialTheme.typography.titleMedium,
                                 modifier = Modifier.padding(bottom = ComponentSpacing),
                             )
-                            LazyColumn(
+                            DictionaryResultList(
+                                results = uiState.results,
+                                onEntrySelected = viewModel::onEntrySelected,
                                 modifier = Modifier.weight(1f, fill = true),
-                                verticalArrangement = Arrangement.spacedBy(0.dp),
-                            ) {
-                                items(
-                                    uiState.results,
-                                    key = { it.id },
-                                ) { entry ->
-                                    ListItem(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable { viewModel.onEntrySelected(entry.id) },
-                                        headlineContent = {
-                                            DictionaryFallbackText(
-                                                text = entry.hanji,
-                                                style = MaterialTheme.typography.titleMedium,
-                                            )
-                                        },
-                                        supportingContent = {
-                                            Column(verticalArrangement = Arrangement.spacedBy(ComponentSpacing / 2)) {
-                                                DictionaryFallbackText(
-                                                    text = entry.romanization,
-                                                    style = MaterialTheme.typography.bodyMedium,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                )
-                                                if (entry.briefSummary.isNotBlank()) {
-                                                    DictionaryFallbackText(
-                                                        text = entry.briefSummary,
-                                                        style = MaterialTheme.typography.bodySmall,
-                                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    )
-                                                }
-                                            }
-                                        },
-                                        trailingContent = {
-                                            Icon(
-                                                imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            )
-                                        },
-                                    )
-                                    HorizontalDivider(
-                                        modifier = Modifier.padding(horizontal = 16.dp),
-                                        thickness = 0.5.dp,
-                                    )
-                                }
-                            }
+                            )
                         }
                     }
 
@@ -374,6 +288,62 @@ fun DictionaryScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+internal fun DictionaryResultList(
+    results: List<org.taigidict.app.domain.model.DictionaryEntry>,
+    onEntrySelected: (Long) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyColumn(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(0.dp),
+    ) {
+        items(
+            results,
+            key = { it.id },
+        ) { entry ->
+            ListItem(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onEntrySelected(entry.id) },
+                headlineContent = {
+                    DictionaryFallbackText(
+                        text = entry.hanji,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                },
+                supportingContent = {
+                    Column(verticalArrangement = Arrangement.spacedBy(ComponentSpacing / 2)) {
+                        DictionaryFallbackText(
+                            text = entry.romanization,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        if (entry.briefSummary.isNotBlank()) {
+                            DictionaryFallbackText(
+                                text = entry.briefSummary,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                },
+                trailingContent = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                },
+            )
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                thickness = 0.5.dp,
+            )
         }
     }
 }
@@ -407,7 +377,7 @@ private fun TwoPaneDetailPlaceholder(
 }
 
 @Composable
-private fun DictionaryHomeEmptyCard() {
+internal fun DictionaryHomeEmptyCard() {
     Card {
         Column(
             modifier = Modifier
@@ -436,7 +406,7 @@ private fun DictionaryHomeEmptyCard() {
 }
 
 @Composable
-private fun RecentSearchHistoryCard(
+internal fun RecentSearchHistoryCard(
     recentSearches: List<String>,
     onRecentSearchSelected: (String) -> Unit,
 ) {

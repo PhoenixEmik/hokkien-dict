@@ -1,0 +1,145 @@
+package org.taigidict.app.feature.dictionary
+
+import android.content.Context
+import androidx.activity.ComponentActivity
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.taigidict.app.R
+import org.taigidict.app.domain.model.DictionaryEntry
+import org.taigidict.app.domain.model.DictionaryExample
+import org.taigidict.app.domain.model.DictionarySense
+
+@RunWith(AndroidJUnit4::class)
+class DictionaryScreenSmokeTest {
+
+    @get:Rule
+    val composeRule = createAndroidComposeRule<ComponentActivity>()
+
+    @Test
+    fun homeEmptyCard_rendersPrompt() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+
+        composeRule.setContent {
+            MaterialTheme {
+                DictionaryHomeEmptyCard()
+            }
+        }
+
+        composeRule.onNodeWithText(
+            context.getString(R.string.dictionary_empty_state_title),
+        ).assertIsDisplayed()
+        composeRule.onNodeWithText(
+            context.getString(R.string.dictionary_empty_state_body),
+        ).assertIsDisplayed()
+    }
+
+    @Test
+    fun recentSearchHistoryCard_rendersQueries() {
+        composeRule.setContent {
+            MaterialTheme {
+                RecentSearchHistoryCard(
+                    recentSearches = listOf("辭典", "字典"),
+                    onRecentSearchSelected = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("辭典").assertIsDisplayed()
+        composeRule.onNodeWithText("字典").assertIsDisplayed()
+    }
+
+    @Test
+    fun resultList_rendersEntrySummary() {
+        val entry = sampleDictionaryEntry()
+
+        composeRule.setContent {
+            MaterialTheme {
+                DictionaryResultList(
+                    results = listOf(entry),
+                    onEntrySelected = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithText(entry.hanji).assertIsDisplayed()
+        composeRule.onNodeWithText(entry.romanization).assertIsDisplayed()
+        composeRule.onNodeWithText(entry.briefSummary).assertIsDisplayed()
+    }
+
+    @Test
+    fun detailPane_rendersLinkedWordAndAudioActions() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val entry = sampleDictionaryEntry()
+
+        composeRule.setContent {
+            MaterialTheme {
+                DictionaryEntryDetailPane(
+                    isLoading = false,
+                    entry = entry,
+                    openableLinkedWords = setOf("字典"),
+                    errorMessage = null,
+                    isBookmarked = false,
+                    onToggleBookmark = {},
+                    onBack = {},
+                    onOpenLinkedWord = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithText(entry.hanji).assertIsDisplayed()
+        composeRule.onNodeWithText("字典").assertIsDisplayed()
+        composeRule.onNodeWithText(entry.senses.first().examples.first().hanji).assertIsDisplayed()
+        composeRule.onNodeWithContentDescription(
+            context.getString(R.string.dictionary_play_word_audio),
+        ).assertIsDisplayed()
+        composeRule.onNodeWithContentDescription(
+            context.getString(R.string.dictionary_play_example_audio),
+        ).assertIsDisplayed()
+    }
+}
+
+private fun sampleDictionaryEntry(): DictionaryEntry {
+    return DictionaryEntry(
+        id = 1,
+        type = "名詞",
+        hanji = "辭典",
+        romanization = "sû-tián",
+        category = "主詞目",
+        audioId = "word-1",
+        hokkienSearch = "sutian",
+        mandarinSearch = "辭典",
+        variantChars = listOf("字典"),
+        wordSynonyms = listOf("字典"),
+        wordAntonyms = emptyList(),
+        alternativePronunciations = emptyList(),
+        contractedPronunciations = emptyList(),
+        colloquialPronunciations = emptyList(),
+        phoneticDifferences = emptyList(),
+        vocabularyComparisons = emptyList(),
+        aliasTargetEntryId = null,
+        senses = listOf(
+            DictionarySense(
+                partOfSpeech = "名詞",
+                definition = "一種工具書。",
+                definitionSynonyms = emptyList(),
+                definitionAntonyms = emptyList(),
+                examples = listOf(
+                    DictionaryExample(
+                        hanji = "一本辭典",
+                        romanization = "tsi̍t pún sû-tián",
+                        mandarin = "一本辭典",
+                        audioId = "sentence-1",
+                    ),
+                ),
+            ),
+        ),
+    )
+}
