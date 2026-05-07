@@ -51,15 +51,11 @@ class InitializationViewModelTest {
 
         val viewModel = InitializationViewModel(application)
 
-        waitUntil(timeoutMillis = 1_000) {
-            viewModel.uiState.value.isReady
-        }
+        assertTrue(viewModel.uiState.value.isReady)
+        assertEquals(InitializationPhase.Ready, viewModel.uiState.value.phase)
         waitUntil(timeoutMillis = 1_000) {
             importer.ensureCalls > 0
         }
-
-        assertTrue(viewModel.uiState.value.isReady)
-        assertEquals(InitializationPhase.Ready, viewModel.uiState.value.phase)
 
         importer.release()
     }

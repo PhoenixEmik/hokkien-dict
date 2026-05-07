@@ -27,14 +27,14 @@ data class InitializationUiState(
 )
 
 class InitializationViewModel(application: Application) : AndroidViewModel(application) {
-    private val _uiState = MutableStateFlow(InitializationUiState())
-    val uiState: StateFlow<InitializationUiState> = _uiState.asStateFlow()
     private val appContainer = (application as TaigiDictApplication).appContainer
     private val bundledImportService = appContainer.dictionaryImportService
     private val localImportService = appContainer.localDictionaryImportService
     private val sourceStore = appContainer.dictionarySourceResourceStore
-    private var initializationJob: Job? = null
     private var databaseGeneration = 0
+    private val _uiState = MutableStateFlow(initialUiState())
+    val uiState: StateFlow<InitializationUiState> = _uiState.asStateFlow()
+    private var initializationJob: Job? = null
 
     init {
         start()
@@ -46,6 +46,16 @@ class InitializationViewModel(application: Application) : AndroidViewModel(appli
 
     private fun start() {
         initializationJob?.cancel()
+        if (hasUsableExistingDatabase()) {
+            publishReadyState()
+            initializationJob = viewModelScope.launch {
+                withContext(Dispatchers.IO) {
+                    refreshDatabaseInBackgroundIfNeeded()
+                }
+            }
+            return
+        }
+
         initializationJob = viewModelScope.launch {
             updateState(
                 phase = InitializationPhase.CheckingResources,
@@ -55,17 +65,6 @@ class InitializationViewModel(application: Application) : AndroidViewModel(appli
                 isReady = false,
                 errorMessage = null,
             )
-
-            val hasUsableExistingDatabase = withContext(Dispatchers.IO) {
-                hasUsableExistingDatabase()
-            }
-            if (hasUsableExistingDatabase) {
-                publishReadyState()
-                withContext(Dispatchers.IO) {
-                    refreshDatabaseInBackgroundIfNeeded()
-                }
-                return@launch
-            }
 
             val rebuildResult = withContext(Dispatchers.IO) {
                 runCatching {
@@ -95,8 +94,26 @@ class InitializationViewModel(application: Application) : AndroidViewModel(appli
         }
     }
 
+    private fun initialUiState(): InitializationUiState {
+        return if (hasUsableExistingDatabase()) {
+            readyUiState()
+        } else {
+            InitializationUiState(
+                phase = InitializationPhase.CheckingResources,
+                progress = 0.10f,
+                processedEntries = null,
+                totalEntries = null,
+                isReady = false,
+                databaseGeneration = databaseGeneration,
+                errorMessage = null,
+            )
+        }
+    }
+
     private fun hasUsableExistingDatabase(): Boolean {
-        val metadata = DictionaryDatabase.readMetadata(appContainer.dictionaryDatabaseFile) ?: return false
+        val metadata = runCatching {
+            DictionaryDatabase.readMetadata(appContainer.dictionaryDatabaseFile)
+        }.getOrNull() ?: return false
         val entryCount = metadata["entry_count"]?.toIntOrNull() ?: return false
         val senseCount = metadata["sense_count"]?.toIntOrNull() ?: return false
         val exampleCount = metadata["example_count"]?.toIntOrNull() ?: return false
