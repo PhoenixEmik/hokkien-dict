@@ -219,6 +219,29 @@ class DictionarySearchViewModelTest {
     }
 
     @Test
+    fun init_doesNotMarkRecentSearchesLoadedBeforeHistoryStoreFinishesLoading() = runTest(dispatcher) {
+        val repository = FakeDictionaryRepository(
+            bundle = DictionaryBundle(1, 1, 0, "/tmp/dictionary.sqlite"),
+        )
+        val historyStore = FakeSearchHistoryStore(
+            initialQueries = emptyList(),
+            initiallyLoaded = false,
+        )
+
+        val viewModel = createViewModel(repository, historyStore)
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.hasLoadedRecentSearches)
+        assertTrue(viewModel.uiState.value.recentSearches.isEmpty())
+
+        historyStore.publishLoadedQueries(listOf("辭典"))
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.hasLoadedRecentSearches)
+        assertEquals(listOf("辭典"), viewModel.uiState.value.recentSearches)
+    }
+
+    @Test
     fun onQueryChange_usesConvertedQueryForSimplifiedChinese() = runTest(dispatcher) {
         val repository = FakeDictionaryRepository(
             bundle = DictionaryBundle(1, 1, 0, "/tmp/dictionary.sqlite"),
@@ -423,10 +446,13 @@ private class FakeChineseConversionService(
 
 private class FakeSearchHistoryStore(
     initialQueries: List<String> = emptyList(),
+    initiallyLoaded: Boolean = true,
 ) : SearchHistoryStoring {
     private val queries = MutableStateFlow(initialQueries)
+    private val loaded = MutableStateFlow(initiallyLoaded)
 
     override val recentQueries: StateFlow<List<String>> = queries.asStateFlow()
+    override val hasLoaded: StateFlow<Boolean> = loaded.asStateFlow()
 
     override suspend fun addQuery(query: String) {
         val normalized = query.trim()
@@ -437,10 +463,17 @@ private class FakeSearchHistoryStore(
         queries.value = listOf(normalized) + queries.value.filterNot {
             it.equals(normalized, ignoreCase = true)
         }
+        loaded.value = true
     }
 
     override suspend fun clear() {
         queries.value = emptyList()
+        loaded.value = true
+    }
+
+    fun publishLoadedQueries(values: List<String>) {
+        queries.value = values
+        loaded.value = true
     }
 }
 

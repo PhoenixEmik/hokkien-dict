@@ -7,6 +7,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -26,11 +27,14 @@ class SearchHistoryStoreTest {
             scope = backgroundScope,
         )
 
+        assertFalse(store.hasLoaded.value)
+
         store.addQuery("辭典")
         store.addQuery("字典")
         store.addQuery("辭典")
         advanceUntilIdle()
 
+        assertTrue(store.hasLoaded.value)
         assertEquals(listOf("辭典", "字典"), store.recentQueries.value)
     }
 

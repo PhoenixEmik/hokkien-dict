@@ -274,8 +274,14 @@ class DictionarySearchViewModel(
                 _uiState.update {
                     it.copy(
                         recentSearches = queries,
-                        hasLoadedRecentSearches = true,
                     )
+                }
+            }
+        }
+        viewModelScope.launch {
+            searchHistoryStore.hasLoaded.collectLatest { hasLoaded ->
+                _uiState.update {
+                    it.copy(hasLoadedRecentSearches = hasLoaded)
                 }
             }
         }

@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 
 interface SearchHistoryStoring {
     val recentQueries: StateFlow<List<String>>
+    val hasLoaded: StateFlow<Boolean>
 
     suspend fun addQuery(query: String)
 
@@ -47,6 +48,8 @@ class SearchHistoryStore(
 
     private val _recentQueries = MutableStateFlow(emptyList<String>())
     override val recentQueries: StateFlow<List<String>> = _recentQueries.asStateFlow()
+    private val _hasLoaded = MutableStateFlow(false)
+    override val hasLoaded: StateFlow<Boolean> = _hasLoaded.asStateFlow()
 
     init {
         scope.launch {
@@ -57,6 +60,7 @@ class SearchHistoryStore(
                 }
                 .collect { queries ->
                     _recentQueries.value = queries
+                    _hasLoaded.value = true
                 }
         }
     }
@@ -80,6 +84,7 @@ class SearchHistoryStore(
             preferences[storagePreferenceKey] = serializeQueries(updated)
         }
         _recentQueries.value = updated
+        _hasLoaded.value = true
     }
 
     override suspend fun clear() {
@@ -87,6 +92,7 @@ class SearchHistoryStore(
             preferences[storagePreferenceKey] = ""
         }
         _recentQueries.value = emptyList()
+        _hasLoaded.value = true
     }
 
     private fun Flow<Preferences>.recoverPreferences(): Flow<Preferences> {
