@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -270,20 +271,18 @@ class DictionarySearchViewModel(
 
     private fun observeSearchHistory() {
         viewModelScope.launch {
-            searchHistoryStore.recentQueries.collectLatest { queries ->
+            searchHistoryStore.recentQueries
+                .combine(searchHistoryStore.hasLoaded) { queries, hasLoaded ->
+                    queries to hasLoaded
+                }
+                .collectLatest { (queries, hasLoaded) ->
                 _uiState.update {
                     it.copy(
                         recentSearches = queries,
+                        hasLoadedRecentSearches = hasLoaded,
                     )
                 }
-            }
-        }
-        viewModelScope.launch {
-            searchHistoryStore.hasLoaded.collectLatest { hasLoaded ->
-                _uiState.update {
-                    it.copy(hasLoadedRecentSearches = hasLoaded)
                 }
-            }
         }
     }
 

@@ -200,31 +200,36 @@ fun DictionaryScreen(
                         )
                     }
 
-                    uiState.query.isBlank() && uiState.recentSearches.isNotEmpty() -> {
-                        Row(
+                    uiState.query.isBlank() -> {
+                        Column(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
+                            verticalArrangement = Arrangement.spacedBy(SectionSpacing),
                         ) {
-                            Text(
-                                text = stringResource(R.string.dictionary_recent_searches_title),
-                                style = MaterialTheme.typography.titleLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            TextButton(onClick = viewModel::onClearRecentSearches) {
-                                Text(text = stringResource(R.string.dictionary_recent_searches_clear))
+                            DictionaryHomeEmptyCard()
+
+                            if (uiState.recentSearches.isNotEmpty()) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.dictionary_recent_searches_title),
+                                        style = MaterialTheme.typography.titleLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    TextButton(onClick = viewModel::onClearRecentSearches) {
+                                        Text(text = stringResource(R.string.dictionary_recent_searches_clear))
+                                    }
+                                }
+
+                                RecentSearchHistoryCard(
+                                    recentSearches = uiState.recentSearches,
+                                    onRecentSearchSelected = viewModel::onRecentSearchSelected,
+                                )
                             }
                         }
-
-                        RecentSearchHistoryCard(
-                            recentSearches = uiState.recentSearches,
-                            onRecentSearchSelected = viewModel::onRecentSearchSelected,
-                        )
                     }
-
-                    uiState.query.isBlank() &&
-                        uiState.hasLoadedRecentSearches &&
-                        uiState.recentSearches.isEmpty() -> DictionaryHomeEmptyCard()
 
                     uiState.isSearching -> SearchLoadingPlaceholder(
                         modifier = Modifier.fillMaxSize(),
