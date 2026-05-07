@@ -2,14 +2,22 @@ package org.taigidict.app.feature.dictionary
 
 import android.app.Activity
 import android.content.Intent
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -45,6 +53,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -89,14 +98,10 @@ fun DictionaryEntryDetailPane(
     var audioMessage by remember(entry?.id) { mutableStateOf<String?>(null) }
 
     when {
-        isLoading -> DetailStatusScreen(
+        isLoading -> DetailLoadingScreen(
             title = entry?.hanji.orEmpty(),
-            message = stringResource(R.string.dictionary_detail_loading),
             onBack = onBack,
-            onShareEntry = {},
-            onToggleBookmark = {},
             isBookmarked = isBookmarked,
-            showActions = false,
             modifier = modifier,
         )
 
@@ -159,6 +164,156 @@ fun DictionaryEntryDetailPane(
 }
 
 @Composable
+private fun DetailLoadingScreen(
+    title: String,
+    onBack: () -> Unit,
+    isBookmarked: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val transition = rememberInfiniteTransition(label = "dictionary-detail-loading")
+    val pulseAlpha by transition.animateFloat(
+        initialValue = 0.45f,
+        targetValue = 0.95f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 900),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "dictionary-detail-loading-alpha",
+    )
+
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            DetailTopBar(
+                title = title,
+                onBack = onBack,
+                onShareEntry = {},
+                onToggleBookmark = {},
+                isBookmarked = isBookmarked,
+                showActions = false,
+            )
+        },
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = DetailHorizontalPadding, vertical = DetailVerticalPadding)
+                .testTag("dictionary-detail-loading"),
+            verticalArrangement = Arrangement.spacedBy(DetailSectionSpacing),
+        ) {
+            item("header") {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                    shape = RoundedCornerShape(16.dp),
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 18.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        DetailSkeletonLine(
+                            widthFraction = 0.48f,
+                            height = 34.dp,
+                            alpha = pulseAlpha,
+                        )
+                        DetailSkeletonLine(
+                            widthFraction = 0.24f,
+                            height = 22.dp,
+                            alpha = pulseAlpha,
+                        )
+                        DetailSkeletonLine(
+                            widthFraction = 0.36f,
+                            height = 18.dp,
+                            alpha = pulseAlpha,
+                        )
+                    }
+                }
+            }
+
+            items(2, key = { index -> "sense-loading-$index" }) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(16.dp),
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 18.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        DetailSkeletonLine(
+                            widthFraction = 0.18f,
+                            height = 20.dp,
+                            alpha = pulseAlpha,
+                        )
+                        DetailSkeletonLine(
+                            widthFraction = 0.92f,
+                            height = 18.dp,
+                            alpha = pulseAlpha,
+                        )
+                        DetailSkeletonLine(
+                            widthFraction = 0.76f,
+                            height = 18.dp,
+                            alpha = pulseAlpha,
+                        )
+                        DetailSkeletonLine(
+                            widthFraction = 0.28f,
+                            height = 16.dp,
+                            alpha = pulseAlpha,
+                        )
+                        Card(
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                            ),
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalAlignment = Alignment.Top,
+                            ) {
+                                Column(
+                                    modifier = Modifier.weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                                ) {
+                                    DetailSkeletonLine(
+                                        widthFraction = 0.58f,
+                                        height = 18.dp,
+                                        alpha = pulseAlpha,
+                                    )
+                                    DetailSkeletonLine(
+                                        widthFraction = 0.72f,
+                                        height = 16.dp,
+                                        alpha = pulseAlpha,
+                                    )
+                                    DetailSkeletonLine(
+                                        widthFraction = 0.44f,
+                                        height = 14.dp,
+                                        alpha = pulseAlpha,
+                                    )
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .background(
+                                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = pulseAlpha),
+                                            shape = RoundedCornerShape(10.dp),
+                                        ),
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun DetailStatusScreen(
     title: String,
     message: String,
@@ -204,6 +359,24 @@ private fun DetailStatusScreen(
             }
         }
     }
+}
+
+@Composable
+private fun DetailSkeletonLine(
+    widthFraction: Float,
+    height: androidx.compose.ui.unit.Dp,
+    alpha: Float,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth(widthFraction.coerceIn(0f, 1f))
+            .height(height)
+            .background(
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = alpha),
+                shape = RoundedCornerShape(999.dp),
+            ),
+    )
 }
 
 @Composable
