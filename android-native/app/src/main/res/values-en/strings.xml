@@ -16,7 +16,7 @@
     <string name="dictionary_placeholder_title">Dictionary</string>
     <string name="dictionary_placeholder_body">Search Taiwanese Hanji, romanization, or Mandarin meaning</string>
     <string name="dictionary_search_label">Search</string>
-    <string name="dictionary_search_placeholder">Search Taiwanese Hanji, romanization, or Mandarin meaning</string>
+    <string name="dictionary_search_placeholder">Search Hanji, romanization, or Mandarin</string>
     <string name="dictionary_home_hint">Search Taiwanese Hanji, romanization, or Mandarin meaning</string>
     <string name="dictionary_empty_state_title">Start searching</string>
     <string name="dictionary_empty_state_body">Type Hanji, romanization, or Mandarin meaning to see entries.</string>

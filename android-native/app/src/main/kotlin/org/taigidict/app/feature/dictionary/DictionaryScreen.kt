@@ -50,6 +50,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -134,7 +135,11 @@ fun DictionaryScreen(
                             expanded = false,
                             onExpandedChange = {},
                             placeholder = {
-                                Text(text = stringResource(R.string.dictionary_search_placeholder))
+                                Text(
+                                    text = stringResource(R.string.dictionary_search_placeholder),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
                             },
                             leadingIcon = {
                                 Icon(
