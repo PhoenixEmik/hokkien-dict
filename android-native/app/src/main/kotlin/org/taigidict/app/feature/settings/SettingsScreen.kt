@@ -116,20 +116,6 @@ fun SettingsScreen(
         onOpenThirdPartyLicenses = { route = SettingsRoute.ThirdPartyLicenses },
         onRebuild = { pendingAction = SettingsDangerousAction.RebuildDatabase },
         onClear = { pendingAction = SettingsDangerousAction.ClearDatabase },
-        onSourceAction = { action ->
-            when (action) {
-                DictionarySourceAction.Restore -> {
-                    pendingAction = SettingsDangerousAction.RestoreDictionarySource
-                }
-
-                DictionarySourceAction.Download -> {
-                    pendingAction = SettingsDangerousAction.DownloadDictionarySource
-                }
-
-                DictionarySourceAction.Pause -> viewModel.pauseDictionarySourceDownload()
-                DictionarySourceAction.Resume -> viewModel.resumeDictionarySourceDownload()
-            }
-        },
     )
     ConfirmDangerousActionDialog(
         pendingAction = pendingAction,
@@ -138,8 +124,6 @@ fun SettingsScreen(
             when (action) {
                 SettingsDangerousAction.RebuildDatabase -> viewModel.rebuildDatabase()
                 SettingsDangerousAction.ClearDatabase -> viewModel.clearDatabase()
-                SettingsDangerousAction.RestoreDictionarySource -> viewModel.restoreDictionarySource()
-                SettingsDangerousAction.DownloadDictionarySource -> viewModel.downloadDictionarySource()
                 SettingsDangerousAction.RedownloadWordArchive -> {
                     audioArchiveManager.restartDownload(DictionaryAudioArchiveType.Word)
                 }
@@ -200,30 +184,6 @@ fun SettingsScreen(
                     onOpenAdvancedSettings = { route = SettingsRoute.Advanced },
                     onOpenAbout = { route = SettingsRoute.About },
                     onOpenReference = { route = SettingsRoute.Reference },
-                )
-            }
-
-            item {
-                SectionHeader(text = stringResource(R.string.settings_source_section))
-            }
-
-            item {
-                DictionarySourceResourceCard(
-                    snapshot = uiState.sourceSnapshot,
-                    onAction = { action ->
-                        when (action) {
-                            DictionarySourceAction.Restore -> {
-                                pendingAction = SettingsDangerousAction.RestoreDictionarySource
-                            }
-
-                            DictionarySourceAction.Download -> {
-                                pendingAction = SettingsDangerousAction.DownloadDictionarySource
-                            }
-
-                            DictionarySourceAction.Pause -> viewModel.pauseDictionarySourceDownload()
-                            DictionarySourceAction.Resume -> viewModel.resumeDictionarySourceDownload()
-                        }
-                    },
                 )
             }
 
@@ -303,7 +263,6 @@ private fun renderRouteScreen(
     onOpenThirdPartyLicenses: () -> Unit,
     onRebuild: () -> Unit,
     onClear: () -> Unit,
-    onSourceAction: (DictionarySourceAction) -> Unit,
 ): Boolean {
     return when (route) {
         SettingsRoute.Main -> false
@@ -344,13 +303,11 @@ private fun renderRouteScreen(
         SettingsRoute.Advanced -> {
             AdvancedSettingsScreen(
                 uiState = uiState,
-                sourceSnapshot = uiState.sourceSnapshot,
                 assetDirectory = assetDirectory,
                 modifier = modifier,
                 onBack = onBackToMain,
                 onRebuild = onRebuild,
                 onClear = onClear,
-                onSourceAction = onSourceAction,
             )
             true
         }
@@ -586,8 +543,6 @@ private fun InfoAndMaintenanceCard(
 private enum class SettingsDangerousAction {
     RebuildDatabase,
     ClearDatabase,
-    RestoreDictionarySource,
-    DownloadDictionarySource,
     RedownloadWordArchive,
     RedownloadSentenceArchive,
 }
@@ -599,10 +554,6 @@ private fun SettingsDangerousAction.message(): String {
             stringResource(R.string.settings_confirm_rebuild_database)
         SettingsDangerousAction.ClearDatabase ->
             stringResource(R.string.settings_confirm_clear_database)
-        SettingsDangerousAction.RestoreDictionarySource ->
-            stringResource(R.string.settings_confirm_restore_source)
-        SettingsDangerousAction.DownloadDictionarySource ->
-            stringResource(R.string.settings_confirm_download_source)
         SettingsDangerousAction.RedownloadWordArchive ->
             stringResource(R.string.settings_confirm_redownload_word_audio)
         SettingsDangerousAction.RedownloadSentenceArchive ->

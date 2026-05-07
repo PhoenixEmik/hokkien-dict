@@ -32,6 +32,9 @@
     <string name="dictionary_example_count_label">Examples: %1$d</string>
     <string name="dictionary_bundle_error">Failed to load local dictionary bundle: %1$s</string>
     <string name="dictionary_no_results">No results found.</string>
+    <string name="dictionary_no_results_title">No results found</string>
+    <string name="dictionary_no_results_body">No entry matches “%1$s” right now. Clear the search or try one of your recent searches.</string>
+    <string name="dictionary_no_results_clear_query">Clear search</string>
     <string name="dictionary_search_error">Failed to search dictionary: %1$s</string>
     <string name="dictionary_detail_back">Back to results</string>
     <string name="dictionary_detail_loading">Loading entry detail…</string>

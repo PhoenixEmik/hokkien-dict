@@ -557,16 +557,6 @@ private fun DictionaryEntryDetailContent(
                 }
             }
 
-            if (entry.phoneticDifferences.isNotEmpty()) {
-                item("phonetic-differences-${entry.id}") {
-                    DictionaryDetailStaticSection(
-                        title = stringResource(R.string.dictionary_detail_phonetic_differences),
-                        values = entry.phoneticDifferences,
-                        readingTextScale = readingTextScale,
-                    )
-                }
-            }
-
             items(entry.senses.size, key = { index -> "sense-${entry.id}-$index" }) { index ->
                 DictionarySenseSection(
                     sense = entry.senses[index],
@@ -580,9 +570,19 @@ private fun DictionaryEntryDetailContent(
 
             if (entry.vocabularyComparisons.isNotEmpty()) {
                 item("vocabulary-comparisons-${entry.id}") {
-                    DictionaryComparisonSection(
+                    DictionaryDetailListSection(
                         title = stringResource(R.string.dictionary_detail_vocabulary_comparisons),
                         values = entry.vocabularyComparisons,
+                        readingTextScale = readingTextScale,
+                    )
+                }
+            }
+
+            if (entry.phoneticDifferences.isNotEmpty()) {
+                item("phonetic-differences-${entry.id}") {
+                    DictionaryDetailListSection(
+                        title = stringResource(R.string.dictionary_detail_phonetic_differences),
+                        values = entry.phoneticDifferences,
                         readingTextScale = readingTextScale,
                     )
                 }
@@ -722,7 +722,7 @@ private fun DictionarySenseSection(
 }
 
 @Composable
-private fun DictionaryComparisonSection(
+private fun DictionaryDetailListSection(
     title: String,
     values: List<String>,
     readingTextScale: Double,

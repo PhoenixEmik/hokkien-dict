@@ -32,6 +32,9 @@
     <string name="dictionary_example_count_label">例句數：%1$d</string>
     <string name="dictionary_bundle_error">讀取本地辭典資料庫失敗：%1$s</string>
     <string name="dictionary_no_results">查無結果。</string>
+    <string name="dictionary_no_results_title">查無結果</string>
+    <string name="dictionary_no_results_body">「%1$s」目前找不到對應詞條。你可以清除搜尋，或改點最近搜尋再試一次。</string>
+    <string name="dictionary_no_results_clear_query">清除搜尋</string>
     <string name="dictionary_search_error">搜尋辭典失敗：%1$s</string>
     <string name="dictionary_detail_back">返回搜尋結果</string>
     <string name="dictionary_detail_loading">正在載入詞條詳情…</string>

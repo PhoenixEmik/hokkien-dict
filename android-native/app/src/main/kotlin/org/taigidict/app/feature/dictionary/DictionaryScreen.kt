@@ -186,11 +186,14 @@ fun DictionaryScreen(
                         color = MaterialTheme.colorScheme.error,
                     )
 
-                    uiState.query.isNotBlank() && uiState.results.isEmpty() && !uiState.isSearching -> Text(
-                        text = stringResource(R.string.dictionary_no_results),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    uiState.query.isNotBlank() && uiState.results.isEmpty() && !uiState.isSearching -> {
+                        DictionaryNoResultsState(
+                            query = uiState.query,
+                            recentSearches = uiState.recentSearches,
+                            onClearQuery = { viewModel.onQueryChange("") },
+                            onRecentSearchSelected = viewModel::onRecentSearchSelected,
+                        )
+                    }
 
                     uiState.query.isBlank() && uiState.recentSearches.isNotEmpty() -> {
                         Row(
@@ -323,6 +326,79 @@ internal fun SearchLoadingPlaceholder(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 thickness = 0.5.dp,
             )
+        }
+    }
+}
+
+@Composable
+internal fun DictionaryNoResultsState(
+    query: String,
+    recentSearches: List<String>,
+    onClearQuery: () -> Unit,
+    onRecentSearchSelected: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyColumn(
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("dictionary-no-results"),
+        verticalArrangement = Arrangement.spacedBy(SectionSpacing),
+    ) {
+        item("no-results-card") {
+            Card {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 20.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceVariant,
+                                shape = MaterialTheme.shapes.medium,
+                            ),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Search,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+
+                    Text(
+                        text = stringResource(R.string.dictionary_no_results_title),
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                    Text(
+                        text = stringResource(R.string.dictionary_no_results_body, query),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+
+                    TextButton(onClick = onClearQuery) {
+                        Text(text = stringResource(R.string.dictionary_no_results_clear_query))
+                    }
+                }
+            }
+        }
+
+        if (recentSearches.isNotEmpty()) {
+            item("recent-searches-title") {
+                Text(
+                    text = stringResource(R.string.dictionary_recent_searches_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            item("recent-searches-card") {
+                RecentSearchHistoryCard(
+                    recentSearches = recentSearches,
+                    onRecentSearchSelected = onRecentSearchSelected,
+                )
+            }
         }
     }
 }

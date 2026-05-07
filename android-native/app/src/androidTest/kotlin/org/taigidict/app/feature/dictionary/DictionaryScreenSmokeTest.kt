@@ -94,6 +94,34 @@ class DictionaryScreenSmokeTest {
     }
 
     @Test
+    fun noResultsState_rendersCardAndRecentSearches() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+
+        composeRule.setContent {
+            MaterialTheme {
+                DictionaryNoResultsState(
+                    query = "不存在",
+                    recentSearches = listOf("辭典", "字典"),
+                    onClearQuery = {},
+                    onRecentSearchSelected = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("dictionary-no-results").assertIsDisplayed()
+        composeRule.onNodeWithText(
+            context.getString(R.string.dictionary_no_results_title),
+        ).assertIsDisplayed()
+        composeRule.onNodeWithText(
+            context.getString(R.string.dictionary_no_results_clear_query),
+        ).assertIsDisplayed()
+        composeRule.onNodeWithText(
+            context.getString(R.string.dictionary_recent_searches_title),
+        ).assertIsDisplayed()
+        composeRule.onNodeWithText("辭典").assertIsDisplayed()
+    }
+
+    @Test
     fun detailPane_rendersLinkedWordAndAudioActions() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val entry = sampleDictionaryEntry()
@@ -123,6 +151,10 @@ class DictionaryScreenSmokeTest {
             context.getString(R.string.dictionary_detail_vocabulary_comparisons),
         ).assertIsDisplayed()
         composeRule.onNodeWithText("工作／職業：工課（khang-khuè）").assertIsDisplayed()
+        composeRule.onNodeWithText(
+            context.getString(R.string.dictionary_detail_phonetic_differences),
+        ).assertIsDisplayed()
+        composeRule.onAllNodesWithText("泉州腔偏 khang-khue，漳州腔偏 khang-khe").assertCountEquals(1)
         composeRule.onNodeWithContentDescription(
             context.getString(R.string.dictionary_play_word_audio),
         ).assertIsDisplayed()
@@ -173,7 +205,7 @@ private fun sampleDictionaryEntry(): DictionaryEntry {
         alternativePronunciations = emptyList(),
         contractedPronunciations = emptyList(),
         colloquialPronunciations = emptyList(),
-        phoneticDifferences = emptyList(),
+        phoneticDifferences = listOf("泉州腔偏 khang-khue，漳州腔偏 khang-khe"),
         vocabularyComparisons = listOf("工作／職業：工課（khang-khuè）"),
         aliasTargetEntryId = null,
         senses = listOf(

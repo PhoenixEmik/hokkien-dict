@@ -12,7 +12,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.taigidict.app.R
-import org.taigidict.app.data.source.DownloadSnapshot
 import org.taigidict.app.domain.model.DictionaryBundle
 
 @RunWith(AndroidJUnit4::class)
@@ -39,16 +38,10 @@ class AdvancedSettingsScreenTest {
                         builtAt = "2026-04-30 10:12",
                         sourceModifiedAt = "2026-04-30 10:08",
                     ),
-                    sourceSnapshot = DownloadSnapshot(
-                        state = DownloadSnapshot.State.Completed,
-                        downloadedBytes = 1024,
-                        totalBytes = 1024,
-                    ),
                     assetDirectory = "assets/data",
                     onBack = {},
                     onRebuild = {},
                     onClear = {},
-                    onSourceAction = {},
                 )
             }
         }
@@ -57,35 +50,5 @@ class AdvancedSettingsScreenTest {
         composeRule.onNodeWithText(context.getString(R.string.settings_dictionary_title)).assertIsDisplayed()
         composeRule.onNodeWithText(context.getString(R.string.settings_action_rebuild)).assertIsDisplayed()
         composeRule.onNodeWithText(context.getString(R.string.settings_action_clear)).assertIsDisplayed()
-        composeRule.onNodeWithText(context.getString(R.string.source_status_completed)).assertIsDisplayed()
-        composeRule.onNodeWithText(context.getString(R.string.settings_source_action_download)).assertIsDisplayed()
-        composeRule.onNodeWithText(context.getString(R.string.settings_source_action_restore)).assertIsDisplayed()
-    }
-
-    @Test
-    fun rendersDownloadProgressForActiveSourceTransfer() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-
-        composeRule.setContent {
-            MaterialTheme {
-                AdvancedSettingsScreen(
-                    uiState = SettingsUiState(),
-                    sourceSnapshot = DownloadSnapshot(
-                        state = DownloadSnapshot.State.Downloading,
-                        downloadedBytes = 512,
-                        totalBytes = 1024,
-                    ),
-                    assetDirectory = "assets/data",
-                    onBack = {},
-                    onRebuild = {},
-                    onClear = {},
-                    onSourceAction = {},
-                )
-            }
-        }
-
-        composeRule.onNodeWithText(context.getString(R.string.source_status_downloading)).assertIsDisplayed()
-        composeRule.onNodeWithText("50%").assertIsDisplayed()
-        composeRule.onNodeWithText(context.getString(R.string.settings_source_action_pause)).assertIsDisplayed()
     }
 }
