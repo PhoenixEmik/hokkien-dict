@@ -196,76 +196,72 @@ private fun MaintenanceActionsCard(
     onRebuild: () -> Unit,
     onClear: () -> Unit,
 ) {
-    Card {
-        Column(
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        ListItem(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            ListItem(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(enabled = !uiState.isRunningMaintenance, onClick = onRebuild),
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Outlined.Refresh,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                },
-                headlineContent = {
-                    Text(text = stringResource(R.string.settings_action_rebuild))
-                },
-                trailingContent = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                },
-            )
-
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
-
-            ListItem(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(enabled = !uiState.isRunningMaintenance, onClick = onClear),
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Outlined.DeleteOutline,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error,
-                    )
-                },
-                headlineContent = {
-                    Text(
-                        text = stringResource(R.string.settings_action_clear),
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                },
-                trailingContent = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                },
-            )
-
-            if (uiState.isRunningMaintenance) {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                Text(
-                    text = when (runningAction) {
-                        SettingsMaintenanceAction.Rebuild -> stringResource(R.string.settings_running_rebuild)
-                        SettingsMaintenanceAction.Clear -> stringResource(R.string.settings_running_clear)
-                        null -> stringResource(R.string.settings_running_rebuild)
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                .clickable(enabled = !uiState.isRunningMaintenance, onClick = onRebuild),
+            leadingContent = {
+                Icon(
+                    imageVector = Icons.Outlined.Refresh,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
                 )
-            }
+            },
+            headlineContent = {
+                Text(text = stringResource(R.string.settings_action_rebuild))
+            },
+            trailingContent = {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            },
+        )
+
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+
+        ListItem(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(enabled = !uiState.isRunningMaintenance, onClick = onClear),
+            leadingContent = {
+                Icon(
+                    imageVector = Icons.Outlined.DeleteOutline,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                )
+            },
+            headlineContent = {
+                Text(
+                    text = stringResource(R.string.settings_action_clear),
+                    color = MaterialTheme.colorScheme.error,
+                )
+            },
+            trailingContent = {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            },
+        )
+
+        if (uiState.isRunningMaintenance) {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            Text(
+                text = when (runningAction) {
+                    SettingsMaintenanceAction.Rebuild -> stringResource(R.string.settings_running_rebuild)
+                    SettingsMaintenanceAction.Clear -> stringResource(R.string.settings_running_clear)
+                    null -> stringResource(R.string.settings_running_rebuild)
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
