@@ -21,6 +21,16 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "DICTIONARY_REPOSITORY_BACKEND", "\"sqlite\"")
+        }
+
+        create("roomDebug") {
+            initWith(getByName("debug"))
+            buildConfigField("String", "DICTIONARY_REPOSITORY_BACKEND", "\"room\"")
+            matchingFallbacks += listOf("debug")
+        }
+
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -105,4 +115,10 @@ dependencies {
 
 kapt {
     correctErrorTypes = true
+}
+
+tasks.register("verifyRoomDebug") {
+    group = "verification"
+    description = "Builds and runs unit tests for the Room-backed debug variant."
+    dependsOn("assembleRoomDebug", "testRoomDebugUnitTest")
 }
