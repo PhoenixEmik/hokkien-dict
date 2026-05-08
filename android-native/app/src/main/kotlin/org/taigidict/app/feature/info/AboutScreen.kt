@@ -18,7 +18,8 @@ import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Link
-import androidx.compose.material.icons.outlined.TextFields
+import androidx.compose.material.icons.outlined.Policy
+import androidx.compose.material.icons.outlined.Spellcheck
 import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -121,7 +122,7 @@ fun AboutScreen(
                     )
                     AboutDivider()
                     AboutNavRow(
-                        icon = Icons.Outlined.Link,
+                        icon = Icons.Outlined.Policy,
                         title = stringResource(R.string.settings_info_privacy_policy),
                         onClick = { onOpenDocument(AppDocument.PrivacyPolicy) },
                     )
@@ -146,7 +147,7 @@ fun AboutScreen(
                     )
                     AboutDivider()
                     AboutNavRow(
-                        icon = Icons.Outlined.TextFields,
+                        icon = Icons.Outlined.Spellcheck,
                         title = stringResource(R.string.about_hanji_title),
                         onClick = { uriHandler.openUri(HanjiGuideUrl) },
                     )
