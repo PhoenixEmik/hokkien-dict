@@ -335,56 +335,47 @@ private fun DisplaySettingsCard(
     onSelectTheme: (AppThemePreference) -> Unit,
     onScaleChanged: (Double) -> Unit,
 ) {
-    Card {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            PreferenceMenuRow(
-                title = stringResource(R.string.settings_language_title),
-                value = selectedLanguage.displayLabel(),
-                options = AppLanguagePreference.entries,
-                selectedOption = selectedLanguage,
-                optionLabel = { it.displayLabel() },
-                onSelect = onSelectLanguage,
-            )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
-            PreferenceMenuRow(
-                title = stringResource(R.string.settings_theme_title),
-                value = selectedTheme.displayLabel(),
-                options = AppThemePreference.entries,
-                selectedOption = selectedTheme,
-                optionLabel = { it.displayLabel() },
-                onSelect = onSelectTheme,
-            )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = stringResource(R.string.settings_text_scale_title),
-                    )
-                    Text(
-                        text = String.format("%.2fx", currentScale),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-
-                Slider(
-                    value = currentScale.toFloat(),
-                    onValueChange = { onScaleChanged(it.toDouble()) },
-                    valueRange = org.taigidict.app.core.settings.AppSettingsConstants.MIN_READING_TEXT_SCALE.toFloat()
-                        ..org.taigidict.app.core.settings.AppSettingsConstants.MAX_READING_TEXT_SCALE.toFloat(),
-                    steps = org.taigidict.app.core.settings.AppSettingsConstants.READING_TEXT_SCALE_DIVISIONS,
-                    modifier = Modifier.fillMaxWidth(),
+    Column(modifier = Modifier.fillMaxWidth()) {
+        PreferenceMenuRow(
+            title = stringResource(R.string.settings_language_title),
+            value = selectedLanguage.displayLabel(),
+            options = AppLanguagePreference.entries,
+            selectedOption = selectedLanguage,
+            optionLabel = { it.displayLabel() },
+            onSelect = onSelectLanguage,
+        )
+        HorizontalDivider(thickness = 0.5.dp)
+        PreferenceMenuRow(
+            title = stringResource(R.string.settings_theme_title),
+            value = selectedTheme.displayLabel(),
+            options = AppThemePreference.entries,
+            selectedOption = selectedTheme,
+            optionLabel = { it.displayLabel() },
+            onSelect = onSelectTheme,
+        )
+        HorizontalDivider(thickness = 0.5.dp)
+        ListItem(
+            headlineContent = {
+                Text(text = stringResource(R.string.settings_text_scale_title))
+            },
+            trailingContent = {
+                Text(
+                    text = String.format("%.2fx", currentScale),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-            }
-        }
+            },
+        )
+        Slider(
+            value = currentScale.toFloat(),
+            onValueChange = { onScaleChanged(it.toDouble()) },
+            valueRange = org.taigidict.app.core.settings.AppSettingsConstants.MIN_READING_TEXT_SCALE.toFloat()
+                ..org.taigidict.app.core.settings.AppSettingsConstants.MAX_READING_TEXT_SCALE.toFloat(),
+            steps = org.taigidict.app.core.settings.AppSettingsConstants.READING_TEXT_SCALE_DIVISIONS,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 12.dp),
+        )
     }
 }
 

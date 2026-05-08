@@ -466,7 +466,7 @@ private fun AudioArchiveAction.icon(): ImageVector {
 private fun availableActions(snapshot: AudioArchiveDownloadSnapshot): List<AudioArchiveAction> {
     return when (snapshot.state) {
         AudioArchiveDownloadState.Idle -> listOf(AudioArchiveAction.Download)
-        AudioArchiveDownloadState.Downloading -> listOf(AudioArchiveAction.Pause, AudioArchiveAction.Redownload)
+        AudioArchiveDownloadState.Downloading -> listOf(AudioArchiveAction.Pause)
         AudioArchiveDownloadState.Paused -> listOf(AudioArchiveAction.Resume, AudioArchiveAction.Redownload)
         AudioArchiveDownloadState.Completed -> listOf(AudioArchiveAction.Redownload)
         AudioArchiveDownloadState.Failed -> listOf(AudioArchiveAction.Redownload)
