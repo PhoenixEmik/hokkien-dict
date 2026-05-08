@@ -16,6 +16,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.taigidict.app.app.TaigiDictApplication
 import org.taigidict.app.app.rememberMainAppState
 import org.taigidict.app.core.settings.AppLanguagePreference
+import org.taigidict.app.core.settings.AppSettingsConstants
 import org.taigidict.app.core.settings.AppThemePreference
 import org.taigidict.app.feature.initialization.InitializationScreen
 import org.taigidict.app.feature.initialization.InitializationViewModel
@@ -37,6 +38,8 @@ class MainActivity : AppCompatActivity() {
                 .collectAsState(initial = AppThemePreference.System).value
             val languagePreference = appContainer.appSettingsStore.languagePreference
                 .collectAsState(initial = null).value
+            val readingTextScale = appContainer.appSettingsStore.readingTextScale
+                .collectAsState(initial = AppSettingsConstants.DEFAULT_READING_TEXT_SCALE).value
 
             LaunchedEffect(languagePreference) {
                 val preference = languagePreference ?: return@LaunchedEffect
@@ -63,7 +66,10 @@ class MainActivity : AppCompatActivity() {
                 AppThemePreference.System -> systemDark
             }
 
-            TaigiDictTheme(darkTheme = darkTheme) {
+            TaigiDictTheme(
+                darkTheme = darkTheme,
+                readingTextScale = readingTextScale.toFloat(),
+            ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                 ) {

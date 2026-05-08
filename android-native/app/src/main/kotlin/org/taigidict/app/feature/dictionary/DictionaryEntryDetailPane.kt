@@ -91,8 +91,6 @@ fun DictionaryEntryDetailPane(
     val context = LocalContext.current
     val appContainer = (context.applicationContext as TaigiDictApplication).appContainer
     val audioPlayer = appContainer.dictionaryAudioPlayer
-    val readingTextScale = appContainer.appSettingsStore.readingTextScale
-        .collectAsState(initial = 1.0).value
     val playbackState = audioPlayer.playbackState.collectAsState(initial = DictionaryAudioPlaybackState.Idle).value
     val scope = rememberCoroutineScope()
     var audioMessage by remember(entry?.id) { mutableStateOf<String?>(null) }
@@ -122,7 +120,7 @@ fun DictionaryEntryDetailPane(
             openableLinkedWords = openableLinkedWords,
             playbackState = playbackState,
             isBookmarked = isBookmarked,
-            readingTextScale = readingTextScale,
+            readingTextScale = 1.0,
             onBack = onBack,
             onToggleBookmark = onToggleBookmark,
             onShareEntry = {

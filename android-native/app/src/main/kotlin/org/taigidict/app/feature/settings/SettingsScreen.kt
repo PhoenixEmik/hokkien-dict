@@ -360,7 +360,8 @@ private fun DisplaySettingsCard(
             },
             trailingContent = {
                 Text(
-                    text = String.format("%.2fx", currentScale),
+                    text = String.format("%.1fx", currentScale),
+                    style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             },
@@ -370,7 +371,7 @@ private fun DisplaySettingsCard(
             onValueChange = { onScaleChanged(it.toDouble()) },
             valueRange = org.taigidict.app.core.settings.AppSettingsConstants.MIN_READING_TEXT_SCALE.toFloat()
                 ..org.taigidict.app.core.settings.AppSettingsConstants.MAX_READING_TEXT_SCALE.toFloat(),
-            steps = org.taigidict.app.core.settings.AppSettingsConstants.READING_TEXT_SCALE_DIVISIONS,
+            steps = org.taigidict.app.core.settings.AppSettingsConstants.READING_TEXT_SCALE_STEPS,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)

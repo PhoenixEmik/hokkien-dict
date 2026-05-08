@@ -55,4 +55,11 @@ class DataStoreAppSettingsStoreTest {
 
         assertEquals(1.2, store.readingTextScale.first(), 0.0)
     }
+
+    @Test
+    fun snapReadingTextScale_roundsFloatingPointNoiseToCleanTenth() {
+        assertEquals(1.3, AppSettingsConstants.snapReadingTextScale(1.2999999), 0.0)
+        assertEquals(1.3, AppSettingsConstants.snapReadingTextScale(1.29), 0.0)
+        assertEquals(1.4, AppSettingsConstants.snapReadingTextScale(1.41), 0.0)
+    }
 }

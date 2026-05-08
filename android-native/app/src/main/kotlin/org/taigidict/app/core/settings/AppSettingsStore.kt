@@ -19,18 +19,20 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 
 object AppSettingsConstants {
-    const val MIN_READING_TEXT_SCALE = 0.9
-    const val MAX_READING_TEXT_SCALE = 1.4
+    private const val MIN_READING_TEXT_SCALE_TENTHS = 9
+    private const val MAX_READING_TEXT_SCALE_TENTHS = 14
+
+    const val MIN_READING_TEXT_SCALE = MIN_READING_TEXT_SCALE_TENTHS / 10.0
+    const val MAX_READING_TEXT_SCALE = MAX_READING_TEXT_SCALE_TENTHS / 10.0
     const val DEFAULT_READING_TEXT_SCALE = 1.0
-    const val READING_TEXT_SCALE_DIVISIONS = 5
+    const val READING_TEXT_SCALE_STEP = 0.1
+    const val READING_TEXT_SCALE_STEPS = MAX_READING_TEXT_SCALE_TENTHS - MIN_READING_TEXT_SCALE_TENTHS - 1
 
     fun snapReadingTextScale(value: Double): Double {
-        val step = (MAX_READING_TEXT_SCALE - MIN_READING_TEXT_SCALE) / READING_TEXT_SCALE_DIVISIONS
-        val clamped = value.coerceIn(MIN_READING_TEXT_SCALE, MAX_READING_TEXT_SCALE)
-        val normalized = (clamped - MIN_READING_TEXT_SCALE) / step
-        val rounded = kotlin.math.round(normalized)
-        val snapped = MIN_READING_TEXT_SCALE + rounded * step
-        return ((snapped * 100).toLong()) / 100.0
+        val snappedTenths = kotlin.math.round(value * 10.0)
+            .toInt()
+            .coerceIn(MIN_READING_TEXT_SCALE_TENTHS, MAX_READING_TEXT_SCALE_TENTHS)
+        return snappedTenths / 10.0
     }
 }
 
