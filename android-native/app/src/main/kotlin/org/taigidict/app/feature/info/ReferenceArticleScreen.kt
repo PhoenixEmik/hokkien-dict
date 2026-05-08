@@ -15,8 +15,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
-import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.TextFields
+import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -103,7 +103,7 @@ fun ReferenceArticleScreen(
                 Card {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         ReferenceNavRow(
-                            icon = Icons.AutoMirrored.Outlined.MenuBook,
+                            icon = Icons.Outlined.Translate,
                             title = stringResource(R.string.about_tailo_title),
                             onClick = { selectedArticle = ReferenceArticle.Tailo },
                         )
