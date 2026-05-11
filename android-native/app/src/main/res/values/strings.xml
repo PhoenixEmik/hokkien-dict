@@ -67,6 +67,10 @@
     <string name="bookmarks_load_error">Failed to load bookmarks: %1$s</string>
     <string name="bookmarks_remove_action">Remove bookmark</string>
     <string name="bookmarks_removed_message">Bookmark removed</string>
+    <string name="bookmarks_removed_count_message">%1$d bookmarks removed</string>
+    <string name="bookmarks_selected_count">%1$d selected</string>
+    <string name="bookmarks_clear_selection">Clear selection</string>
+    <string name="bookmarks_delete_selected">Delete selected bookmarks</string>
     <string name="settings_title">Settings</string>
     <string name="settings_overview_body">Manage appearance, language, reading text size, and offline resources.</string>
     <string name="settings_display_section">Display</string>

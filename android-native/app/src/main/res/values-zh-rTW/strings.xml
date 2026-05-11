@@ -67,6 +67,10 @@
     <string name="bookmarks_load_error">載入書籤失敗：%1$s</string>
     <string name="bookmarks_remove_action">移除書籤</string>
     <string name="bookmarks_removed_message">已移除書籤</string>
+    <string name="bookmarks_removed_count_message">已移除 %1$d 個書籤</string>
+    <string name="bookmarks_selected_count">已選取 %1$d 項</string>
+    <string name="bookmarks_clear_selection">清除選取</string>
+    <string name="bookmarks_delete_selected">刪除選取的書籤</string>
     <string name="settings_title">設定</string>
     <string name="settings_overview_body">管理外觀、語言、閱讀字級與離線資源。</string>
     <string name="settings_display_section">顯示</string>

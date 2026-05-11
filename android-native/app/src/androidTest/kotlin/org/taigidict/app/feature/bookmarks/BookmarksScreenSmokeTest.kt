@@ -8,10 +8,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.swipeLeft
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
@@ -55,7 +55,6 @@ class BookmarksScreenSmokeTest {
                 BookmarkEntryListItem(
                     entry = entry,
                     onClick = {},
-                    onRemove = {},
                 )
             }
         }
@@ -66,26 +65,32 @@ class BookmarksScreenSmokeTest {
     }
 
     @Test
-    fun entryListItem_swipeLeftRemovesBookmark() {
+    fun entryListItem_longClickShowsSelectionCheckbox() {
         val entry = sampleBookmarkedEntry()
-        var removedEntryId by mutableStateOf<Long?>(null)
+        var isSelectionMode by mutableStateOf(false)
+        var isSelected by mutableStateOf(false)
 
         composeRule.setContent {
             MaterialTheme {
                 BookmarkEntryListItem(
                     entry = entry,
                     onClick = {},
-                    onRemove = { removedEntryId = entry.id },
+                    onLongClick = {
+                        isSelectionMode = true
+                        isSelected = true
+                    },
+                    onToggleSelected = { isSelected = !isSelected },
+                    isSelectionMode = isSelectionMode,
+                    isSelected = isSelected,
                 )
             }
         }
 
         composeRule.onNodeWithTag("bookmark-list-item-${entry.id}")
-            .performTouchInput { swipeLeft() }
+            .performTouchInput { longClick() }
 
-        composeRule.runOnIdle {
-            org.junit.Assert.assertEquals(entry.id, removedEntryId)
-        }
+        composeRule.onNodeWithTag("bookmark-selection-checkbox-${entry.id}")
+            .assertIsDisplayed()
     }
 }
 

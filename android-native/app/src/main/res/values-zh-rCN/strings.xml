@@ -67,6 +67,10 @@
     <string name="bookmarks_load_error">载入书签失败：%1$s</string>
     <string name="bookmarks_remove_action">移除书签</string>
     <string name="bookmarks_removed_message">已移除书签</string>
+    <string name="bookmarks_removed_count_message">已移除 %1$d 个书签</string>
+    <string name="bookmarks_selected_count">已选择 %1$d 项</string>
+    <string name="bookmarks_clear_selection">清除选择</string>
+    <string name="bookmarks_delete_selected">删除选择的书签</string>
     <string name="settings_title">设置</string>
     <string name="settings_overview_body">管理外观、语言、阅读字级与离线资源。</string>
     <string name="settings_display_section">显示</string>

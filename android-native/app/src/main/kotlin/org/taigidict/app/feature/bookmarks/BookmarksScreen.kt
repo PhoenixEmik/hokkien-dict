@@ -1,8 +1,7 @@
 package org.taigidict.app.feature.bookmarks
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -13,32 +12,35 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxDefaults
-import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -73,6 +75,17 @@ fun BookmarksScreen(
     val bookmarkRemovedMessage = stringResource(R.string.bookmarks_removed_message)
     val undoAction = stringResource(R.string.undo)
     val showsEntryDetail = uiState.isLoadingEntryDetail || uiState.selectedEntry != null || uiState.entryDetailErrorMessage != null
+    var selectedBookmarkIds by remember { mutableStateOf(emptySet<Long>()) }
+    val isSelectionMode = selectedBookmarkIds.isNotEmpty()
+
+    BackHandler(enabled = isSelectionMode) {
+        selectedBookmarkIds = emptySet()
+    }
+
+    LaunchedEffect(uiState.entries) {
+        val visibleEntryIds = uiState.entries.mapTo(mutableSetOf()) { it.id }
+        selectedBookmarkIds = selectedBookmarkIds.intersect(visibleEntryIds)
+    }
 
     if (showsEntryDetail) {
         DictionaryEntryDetailPane(
@@ -101,6 +114,72 @@ fun BookmarksScreen(
             WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
         ),
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        topBar = {
+            if (isSelectionMode) {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = stringResource(
+                                R.string.bookmarks_selected_count,
+                                selectedBookmarkIds.size,
+                            ),
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { selectedBookmarkIds = emptySet() }) {
+                            Icon(
+                                imageVector = Icons.Outlined.Close,
+                                contentDescription = stringResource(R.string.bookmarks_clear_selection),
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(
+                            onClick = {
+                                val removedEntries = uiState.entries.mapIndexedNotNull { index, entry ->
+                                    if (entry.id in selectedBookmarkIds) {
+                                        entry.id to index
+                                    } else {
+                                        null
+                                    }
+                                }
+                                if (removedEntries.isEmpty()) {
+                                    selectedBookmarkIds = emptySet()
+                                    return@IconButton
+                                }
+
+                                viewModel.removeBookmarks(removedEntries.map { it.first })
+                                selectedBookmarkIds = emptySet()
+
+                                scope.launch {
+                                    val message = if (removedEntries.size == 1) {
+                                        bookmarkRemovedMessage
+                                    } else {
+                                        context.resources.getString(
+                                            R.string.bookmarks_removed_count_message,
+                                            removedEntries.size,
+                                        )
+                                    }
+                                    val result = snackbarHostState.showSnackbar(
+                                        message = message,
+                                        actionLabel = undoAction,
+                                        withDismissAction = true,
+                                    )
+                                    if (result == SnackbarResult.ActionPerformed) {
+                                        viewModel.restoreBookmarks(removedEntries)
+                                    }
+                                }
+                            },
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Delete,
+                                contentDescription = stringResource(R.string.bookmarks_delete_selected),
+                            )
+                        }
+                    },
+                )
+            }
+        },
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -139,35 +218,39 @@ fun BookmarksScreen(
                 }
 
                 else -> {
-                    Surface(
+                    LazyColumn(
                         modifier = Modifier.weight(1f, fill = true),
-                        shape = MaterialTheme.shapes.large,
-                        color = MaterialTheme.colorScheme.surfaceContainer,
+                        verticalArrangement = Arrangement.spacedBy(0.dp),
                     ) {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(0.dp),
-                        ) {
-                            itemsIndexed(uiState.entries, key = { _, entry -> entry.id }) { index, entry ->
-                                BookmarkEntryListItem(
-                                    entry = entry,
-                                    onClick = { viewModel.onEntrySelected(entry.id) },
-                                    onRemove = {
-                                        viewModel.removeBookmark(entry.id)
-                                        scope.launch {
-                                            val result = snackbarHostState.showSnackbar(
-                                                message = bookmarkRemovedMessage,
-                                                actionLabel = undoAction,
-                                                withDismissAction = true,
-                                            )
-                                            if (result == SnackbarResult.ActionPerformed) {
-                                                viewModel.addBookmark(entry.id, index)
-                                            }
+                        item {
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = MaterialTheme.shapes.large,
+                                color = MaterialTheme.colorScheme.surfaceContainer,
+                            ) {
+                                Column {
+                                    uiState.entries.forEachIndexed { index, entry ->
+                                        val isSelected = entry.id in selectedBookmarkIds
+                                        BookmarkEntryListItem(
+                                            entry = entry,
+                                            isSelectionMode = isSelectionMode,
+                                            isSelected = isSelected,
+                                            onClick = { viewModel.onEntrySelected(entry.id) },
+                                            onLongClick = {
+                                                selectedBookmarkIds = selectedBookmarkIds + entry.id
+                                            },
+                                            onToggleSelected = {
+                                                selectedBookmarkIds = if (isSelected) {
+                                                    selectedBookmarkIds - entry.id
+                                                } else {
+                                                    selectedBookmarkIds + entry.id
+                                                }
+                                            },
+                                        )
+                                        if (index < uiState.entries.lastIndex) {
+                                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                                         }
-                                    },
-                                )
-                                if (index < uiState.entries.lastIndex) {
-                                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                                    }
                                 }
                             }
                         }
@@ -210,87 +293,75 @@ internal fun BookmarksEmptyCard() {
 internal fun BookmarkEntryListItem(
     entry: DictionaryEntry,
     onClick: () -> Unit,
-    onRemove: () -> Unit,
+    onLongClick: () -> Unit = {},
+    onToggleSelected: () -> Unit = {},
+    isSelectionMode: Boolean = false,
+    isSelected: Boolean = false,
 ) {
-    val dismissState = rememberSwipeToDismissBoxState(
-        positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold,
-        confirmValueChange = { value ->
-            when (value) {
-                SwipeToDismissBoxValue.EndToStart -> {
-                    onRemove()
-                    true
-                }
-                SwipeToDismissBoxValue.StartToEnd,
-                SwipeToDismissBoxValue.Settled -> false
-            }
-        },
-    )
-
-    SwipeToDismissBox(
-        state = dismissState,
-        enableDismissFromStartToEnd = false,
-        backgroundContent = {
-            val swipeValue = dismissState.dismissDirection ?: SwipeToDismissBoxValue.Settled
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        if (swipeValue == SwipeToDismissBoxValue.EndToStart) {
-                            MaterialTheme.colorScheme.errorContainer
-                        } else {
-                            MaterialTheme.colorScheme.surface
-                        },
-                    )
-                    .testTag("bookmark-swipe-actions-background-${entry.id}"),
-            ) {
-                if (swipeValue == SwipeToDismissBoxValue.EndToStart) {
-                    Icon(
-                        imageVector = Icons.Outlined.Delete,
-                        contentDescription = stringResource(R.string.dictionary_detail_remove_bookmark),
-                        tint = MaterialTheme.colorScheme.onErrorContainer,
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .padding(end = 24.dp),
-                    )
-                }
-            }
-        },
-        content = {
-            ListItem(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onClick)
-                    .testTag("bookmark-list-item-${entry.id}"),
-                headlineContent = {
-                    DictionaryFallbackText(
-                        text = entry.hanji,
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                },
-                supportingContent = {
-                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        DictionaryFallbackText(
-                            text = entry.romanization,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        if (entry.briefSummary.isNotBlank()) {
-                            DictionaryFallbackText(
-                                text = entry.briefSummary,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
+    ListItem(
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = {
+                    if (isSelectionMode) {
+                        onToggleSelected()
+                    } else {
+                        onClick()
                     }
                 },
-                trailingContent = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                },
+                onLongClick = onLongClick,
             )
+            .testTag("bookmark-list-item-${entry.id}"),
+        colors = ListItemDefaults.colors(
+            containerColor = if (isSelected) {
+                MaterialTheme.colorScheme.secondaryContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceContainer
+            },
+        ),
+        leadingContent = if (isSelectionMode) {
+            {
+                Checkbox(
+                    checked = isSelected,
+                    onCheckedChange = { onToggleSelected() },
+                    modifier = Modifier.testTag("bookmark-selection-checkbox-${entry.id}"),
+                )
+            }
+        } else {
+            null
+        },
+        headlineContent = {
+            DictionaryFallbackText(
+                text = entry.hanji,
+                style = MaterialTheme.typography.titleMedium,
+            )
+        },
+        supportingContent = {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                DictionaryFallbackText(
+                    text = entry.romanization,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (entry.briefSummary.isNotBlank()) {
+                    DictionaryFallbackText(
+                        text = entry.briefSummary,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        },
+        trailingContent = if (isSelectionMode) {
+            null
+        } else {
+            {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         },
     )
 }

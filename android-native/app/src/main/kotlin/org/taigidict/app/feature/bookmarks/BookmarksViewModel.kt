@@ -176,9 +176,25 @@ class BookmarksViewModel(
         }
     }
 
+    fun removeBookmarks(entryIds: Collection<Long>) {
+        viewModelScope.launch {
+            entryIds.forEach { entryId ->
+                bookmarkStore.removeBookmark(entryId)
+            }
+        }
+    }
+
     fun addBookmark(entryId: Long, index: Int = 0) {
         viewModelScope.launch {
             bookmarkStore.addBookmark(entryId, index)
+        }
+    }
+
+    fun restoreBookmarks(entries: List<Pair<Long, Int>>) {
+        viewModelScope.launch {
+            entries.sortedBy { it.second }.forEach { (entryId, index) ->
+                bookmarkStore.addBookmark(entryId, index)
+            }
         }
     }
 
