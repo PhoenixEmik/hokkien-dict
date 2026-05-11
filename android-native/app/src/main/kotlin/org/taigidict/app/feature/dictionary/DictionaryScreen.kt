@@ -1,10 +1,5 @@
 package org.taigidict.app.feature.dictionary
 
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,7 +12,6 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -30,6 +24,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -42,8 +37,6 @@ import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
@@ -310,33 +303,19 @@ fun DictionaryScreen(
 internal fun SearchLoadingPlaceholder(
     modifier: Modifier = Modifier,
 ) {
-    val transition = rememberInfiniteTransition(label = "dictionary-search-loading")
-    val pulseAlpha by transition.animateFloat(
-        initialValue = 0.45f,
-        targetValue = 0.95f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 900),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "dictionary-search-loading-alpha",
-    )
-
-    LazyColumn(
-        modifier = modifier.testTag("dictionary-search-loading"),
-        verticalArrangement = Arrangement.spacedBy(0.dp),
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("dictionary-search-loading"),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
     ) {
-        items(4, key = { index -> "search-loading-$index" }) { index ->
-            SearchLoadingRow(
-                headlineWidthFraction = if (index % 2 == 0) 0.34f else 0.26f,
-                romanizationWidthFraction = if (index % 2 == 0) 0.42f else 0.36f,
-                summaryWidthFraction = if (index % 2 == 0) 0.72f else 0.58f,
-                alpha = pulseAlpha,
-            )
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                thickness = 0.5.dp,
-            )
-        }
+        CircularProgressIndicator()
+        Text(
+            text = stringResource(R.string.dictionary_searching),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -411,70 +390,6 @@ internal fun DictionaryNoResultsState(
             }
         }
     }
-}
-
-@Composable
-private fun SearchLoadingRow(
-    headlineWidthFraction: Float,
-    romanizationWidthFraction: Float,
-    summaryWidthFraction: Float,
-    alpha: Float,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            SearchLoadingLine(
-                widthFraction = headlineWidthFraction,
-                height = 22.dp,
-                alpha = alpha,
-            )
-            SearchLoadingLine(
-                widthFraction = romanizationWidthFraction,
-                height = 16.dp,
-                alpha = alpha,
-            )
-            SearchLoadingLine(
-                widthFraction = summaryWidthFraction,
-                height = 14.dp,
-                alpha = alpha,
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .size(18.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = alpha),
-                    shape = MaterialTheme.shapes.small,
-                ),
-        )
-    }
-}
-
-@Composable
-private fun SearchLoadingLine(
-    widthFraction: Float,
-    height: androidx.compose.ui.unit.Dp,
-    alpha: Float,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth(widthFraction.coerceIn(0f, 1f))
-            .height(height)
-            .background(
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = alpha),
-                shape = MaterialTheme.shapes.extraLarge,
-            ),
-    )
 }
 
 @Composable

@@ -2,27 +2,18 @@ package org.taigidict.app.feature.dictionary
 
 import android.app.Activity
 import android.content.Intent
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.VolumeUp
@@ -33,7 +24,6 @@ import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -168,17 +158,6 @@ private fun DetailLoadingScreen(
     isBookmarked: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val transition = rememberInfiniteTransition(label = "dictionary-detail-loading")
-    val pulseAlpha by transition.animateFloat(
-        initialValue = 0.45f,
-        targetValue = 0.95f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 900),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "dictionary-detail-loading-alpha",
-    )
-
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -192,121 +171,21 @@ private fun DetailLoadingScreen(
             )
         },
     ) { innerPadding ->
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(horizontal = DetailHorizontalPadding, vertical = DetailVerticalPadding)
                 .testTag("dictionary-detail-loading"),
-            verticalArrangement = Arrangement.spacedBy(DetailSectionSpacing),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
         ) {
-            item("header") {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-                    shape = RoundedCornerShape(16.dp),
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 18.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        DetailSkeletonLine(
-                            widthFraction = 0.48f,
-                            height = 34.dp,
-                            alpha = pulseAlpha,
-                        )
-                        DetailSkeletonLine(
-                            widthFraction = 0.24f,
-                            height = 22.dp,
-                            alpha = pulseAlpha,
-                        )
-                        DetailSkeletonLine(
-                            widthFraction = 0.36f,
-                            height = 18.dp,
-                            alpha = pulseAlpha,
-                        )
-                    }
-                }
-            }
-
-            items(2, key = { index -> "sense-loading-$index" }) {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    shape = RoundedCornerShape(16.dp),
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 18.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        DetailSkeletonLine(
-                            widthFraction = 0.18f,
-                            height = 20.dp,
-                            alpha = pulseAlpha,
-                        )
-                        DetailSkeletonLine(
-                            widthFraction = 0.92f,
-                            height = 18.dp,
-                            alpha = pulseAlpha,
-                        )
-                        DetailSkeletonLine(
-                            widthFraction = 0.76f,
-                            height = 18.dp,
-                            alpha = pulseAlpha,
-                        )
-                        DetailSkeletonLine(
-                            widthFraction = 0.28f,
-                            height = 16.dp,
-                            alpha = pulseAlpha,
-                        )
-                        Card(
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                            ),
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 14.dp, vertical = 12.dp),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                verticalAlignment = Alignment.Top,
-                            ) {
-                                Column(
-                                    modifier = Modifier.weight(1f),
-                                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                                ) {
-                                    DetailSkeletonLine(
-                                        widthFraction = 0.58f,
-                                        height = 18.dp,
-                                        alpha = pulseAlpha,
-                                    )
-                                    DetailSkeletonLine(
-                                        widthFraction = 0.72f,
-                                        height = 16.dp,
-                                        alpha = pulseAlpha,
-                                    )
-                                    DetailSkeletonLine(
-                                        widthFraction = 0.44f,
-                                        height = 14.dp,
-                                        alpha = pulseAlpha,
-                                    )
-                                }
-                                Box(
-                                    modifier = Modifier
-                                        .size(20.dp)
-                                        .background(
-                                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = pulseAlpha),
-                                            shape = RoundedCornerShape(10.dp),
-                                        ),
-                                )
-                            }
-                        }
-                    }
-                }
-            }
+            CircularProgressIndicator()
+            Text(
+                text = stringResource(R.string.dictionary_detail_loading),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
@@ -342,10 +221,7 @@ private fun DetailStatusScreen(
                 .padding(horizontal = DetailHorizontalPadding, vertical = DetailVerticalPadding),
             verticalArrangement = Arrangement.spacedBy(DetailSectionSpacing),
         ) {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                shape = RoundedCornerShape(16.dp),
-            ) {
+            Card {
                 Text(
                     text = message,
                     style = MaterialTheme.typography.bodyMedium,
@@ -357,24 +233,6 @@ private fun DetailStatusScreen(
             }
         }
     }
-}
-
-@Composable
-private fun DetailSkeletonLine(
-    widthFraction: Float,
-    height: androidx.compose.ui.unit.Dp,
-    alpha: Float,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth(widthFraction.coerceIn(0f, 1f))
-            .height(height)
-            .background(
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = alpha),
-                shape = RoundedCornerShape(999.dp),
-            ),
-    )
 }
 
 @Composable
@@ -427,66 +285,63 @@ private fun DictionaryEntryDetailContent(
             verticalArrangement = Arrangement.spacedBy(DetailSectionSpacing),
         ) {
             item {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-                shape = RoundedCornerShape(16.dp),
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 18.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Top,
+                Card {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 18.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.Top,
                         ) {
-                            DictionaryFallbackText(
-                                text = entry.hanji,
-                                style = scaledHeadlineStyle,
-                            )
-                            if (entry.romanization.isNotBlank()) {
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(6.dp),
+                            ) {
                                 DictionaryFallbackText(
-                                    text = entry.romanization,
-                                    style = scaledTitleStyle,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    text = entry.hanji,
+                                    style = scaledHeadlineStyle,
                                 )
+                                if (entry.romanization.isNotBlank()) {
+                                    DictionaryFallbackText(
+                                        text = entry.romanization,
+                                        style = scaledTitleStyle,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
                             }
+
+                            AudioActionButton(
+                                uiState = entryAudioUiState,
+                                enabled = entry.audioId.isNotBlank(),
+                                contentDescription = stringResource(R.string.dictionary_play_word_audio),
+                                onClick = onPlayEntryAudio,
+                            )
                         }
 
-                        AudioActionButton(
-                            uiState = entryAudioUiState,
-                            enabled = entry.audioId.isNotBlank(),
-                            contentDescription = stringResource(R.string.dictionary_play_word_audio),
-                            onClick = onPlayEntryAudio,
-                        )
-                    }
+                        val metadataLine = listOf(entry.type, entry.category)
+                            .filter { it.isNotBlank() }
+                            .joinToString(separator = " · ")
+                        if (metadataLine.isNotBlank()) {
+                            DictionaryFallbackText(
+                                text = metadataLine,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
 
-                    val metadataLine = listOf(entry.type, entry.category)
-                        .filter { it.isNotBlank() }
-                        .joinToString(separator = " · ")
-                    if (metadataLine.isNotBlank()) {
-                        DictionaryFallbackText(
-                            text = metadataLine,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-
-                    if (audioMessage != null) {
-                        Text(
-                            text = audioMessage,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
+                        if (audioMessage != null) {
+                            Text(
+                                text = audioMessage,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
                     }
                 }
-            }
             }
 
             if (entry.variantChars.isNotEmpty()) {
@@ -654,10 +509,7 @@ private fun DictionarySenseSection(
         fontSize = MaterialTheme.typography.bodyLarge.fontSize * readingTextScale.toFloat(),
     )
 
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(16.dp),
-    ) {
+    Card {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -732,10 +584,7 @@ private fun DictionaryDetailListSection(
         fontSize = MaterialTheme.typography.bodyMedium.fontSize * readingTextScale.toFloat(),
     )
 
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(16.dp),
-    ) {
+    Card {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -785,10 +634,7 @@ private fun DictionaryExampleBlock(
         )
     }
 
-    Card(
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-    ) {
+    Card {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

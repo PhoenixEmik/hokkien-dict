@@ -72,6 +72,18 @@ class BookmarkStore(
         return updatedIds.contains(entryId)
     }
 
+    suspend fun addBookmark(entryId: Long, index: Int = 0): Boolean {
+        val updatedIds = _bookmarkedIds.value.toMutableList().apply {
+            remove(entryId)
+            add(index.coerceIn(0, size), entryId)
+        }
+        dataStore.edit { preferences ->
+            preferences[storagePreferenceKey] = serializeIds(updatedIds)
+        }
+        _bookmarkedIds.value = updatedIds
+        return true
+    }
+
     suspend fun removeBookmark(entryId: Long): Boolean {
         val existingIds = _bookmarkedIds.value
         if (!existingIds.contains(entryId)) {

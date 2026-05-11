@@ -10,6 +10,7 @@
     <string name="initialization_phase_ready">完成</string>
     <string name="initialization_phase_error">初始化失敗</string>
     <string name="retry">重試</string>
+    <string name="undo">復原</string>
     <string name="tab_dictionary">辭典</string>
     <string name="tab_bookmarks">書籤</string>
     <string name="tab_settings">設定</string>
@@ -65,6 +66,7 @@
     <string name="bookmarks_empty_body">從詞條詳情加入書籤後，就會顯示在這裡。</string>
     <string name="bookmarks_load_error">載入書籤失敗：%1$s</string>
     <string name="bookmarks_remove_action">移除書籤</string>
+    <string name="bookmarks_removed_message">已移除書籤</string>
     <string name="settings_title">設定</string>
     <string name="settings_overview_body">管理外觀、語言、閱讀字級與離線資源。</string>
     <string name="settings_display_section">顯示</string>

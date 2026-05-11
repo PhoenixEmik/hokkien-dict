@@ -10,9 +10,9 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeLeft
-import androidx.compose.ui.test.swipeRight
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
@@ -92,7 +92,7 @@ class BookmarksScreenSmokeTest {
     }
 
     @Test
-    fun entryListItem_swipeRightSharesBookmark() {
+    fun entryListItem_shareButtonSharesBookmark() {
         val entry = sampleBookmarkedEntry()
         var sharedEntryId by mutableStateOf<Long?>(null)
 
@@ -107,8 +107,8 @@ class BookmarksScreenSmokeTest {
             }
         }
 
-        composeRule.onNodeWithTag("bookmark-list-item-${entry.id}")
-            .performTouchInput { swipeRight() }
+        composeRule.onNodeWithTag("bookmark-share-action-${entry.id}")
+            .performClick()
 
         composeRule.runOnIdle {
             org.junit.Assert.assertEquals(entry.id, sharedEntryId)

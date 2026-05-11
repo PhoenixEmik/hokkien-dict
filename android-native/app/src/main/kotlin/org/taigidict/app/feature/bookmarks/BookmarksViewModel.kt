@@ -176,6 +176,12 @@ class BookmarksViewModel(
         }
     }
 
+    fun addBookmark(entryId: Long, index: Int = 0) {
+        viewModelScope.launch {
+            bookmarkStore.addBookmark(entryId, index)
+        }
+    }
+
     private fun observeBookmarks() {
         viewModelScope.launch {
             bookmarkStore.bookmarkedIds.collectLatest { bookmarkedIds ->

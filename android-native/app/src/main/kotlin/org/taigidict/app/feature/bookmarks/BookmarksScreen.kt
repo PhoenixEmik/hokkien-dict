@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
@@ -19,6 +18,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
@@ -31,15 +31,21 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,7 +67,6 @@ private val RootHorizontalPadding = 16.dp
 private val RootVerticalPadding = 16.dp
 private val BookmarksGridMinCellWidth = 320.dp
 private val BookmarksGridSpacing = 12.dp
-private const val BookmarkSwipeRemoveThresholdFraction = 0.65f
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,6 +80,9 @@ fun BookmarksScreen(
     val appContainer = (context.applicationContext as TaigiDictApplication).appContainer
     val bookmarkedIds by appContainer.bookmarkStore.bookmarkedIds.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val bookmarkRemovedMessage = stringResource(R.string.bookmarks_removed_message)
+    val undoAction = stringResource(R.string.undo)
     val showsEntryDetail = uiState.isLoadingEntryDetail || uiState.selectedEntry != null || uiState.entryDetailErrorMessage != null
 
     if (showsEntryDetail) {
@@ -103,6 +111,7 @@ fun BookmarksScreen(
         contentWindowInsets = WindowInsets.safeDrawing.only(
             WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
         ),
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -164,11 +173,23 @@ fun BookmarksScreen(
                                     modifier = Modifier.fillMaxSize(),
                                     verticalArrangement = Arrangement.spacedBy(0.dp),
                                 ) {
-                                    items(uiState.entries, key = { it.id }) { entry ->
+                                    itemsIndexed(uiState.entries, key = { _, entry -> entry.id }) { index, entry ->
                                         BookmarkEntryListItem(
                                             entry = entry,
                                             onClick = { viewModel.onEntrySelected(entry.id) },
-                                            onRemove = { viewModel.removeBookmark(entry.id) },
+                                            onRemove = {
+                                                viewModel.removeBookmark(entry.id)
+                                                scope.launch {
+                                                    val result = snackbarHostState.showSnackbar(
+                                                        message = bookmarkRemovedMessage,
+                                                        actionLabel = undoAction,
+                                                        withDismissAction = true,
+                                                    )
+                                                    if (result == SnackbarResult.ActionPerformed) {
+                                                        viewModel.addBookmark(entry.id, index)
+                                                    }
+                                                }
+                                            },
                                             onShare = {
                                                 shareBookmarkedEntry(
                                                     context = context,
@@ -225,19 +246,14 @@ internal fun BookmarkEntryListItem(
     onShare: () -> Unit,
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
-        positionalThreshold = { totalDistance ->
-            totalDistance * BookmarkSwipeRemoveThresholdFraction
-        },
+        positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold,
         confirmValueChange = { value ->
             when (value) {
-                SwipeToDismissBoxValue.StartToEnd -> {
-                    onShare()
-                    false
-                }
                 SwipeToDismissBoxValue.EndToStart -> {
                     onRemove()
                     true
                 }
+                SwipeToDismissBoxValue.StartToEnd,
                 SwipeToDismissBoxValue.Settled -> false
             }
         },
@@ -245,44 +261,29 @@ internal fun BookmarkEntryListItem(
 
     SwipeToDismissBox(
         state = dismissState,
+        enableDismissFromStartToEnd = false,
         backgroundContent = {
+            val swipeValue = dismissState.dismissDirection ?: SwipeToDismissBoxValue.Settled
             Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    .background(
+                        if (swipeValue == SwipeToDismissBoxValue.EndToStart) {
+                            MaterialTheme.colorScheme.errorContainer
+                        } else {
+                            MaterialTheme.colorScheme.surface
+                        },
+                    )
                     .testTag("bookmark-swipe-actions-background-${entry.id}"),
             ) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .fillMaxHeight()
-                        .fillMaxWidth(0.35f)
-                        .background(MaterialTheme.colorScheme.primaryContainer),
-                    contentAlignment = Alignment.CenterStart,
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Share,
-                        contentDescription = stringResource(R.string.dictionary_share_action),
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .padding(start = 20.dp)
-                            .size(22.dp),
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .fillMaxHeight()
-                        .fillMaxWidth(0.35f)
-                        .background(MaterialTheme.colorScheme.errorContainer),
-                    contentAlignment = Alignment.CenterEnd,
-                ) {
+                if (swipeValue == SwipeToDismissBoxValue.EndToStart) {
                     Icon(
                         imageVector = Icons.Outlined.Delete,
                         contentDescription = stringResource(R.string.dictionary_detail_remove_bookmark),
-                        tint = MaterialTheme.colorScheme.error,
+                        tint = MaterialTheme.colorScheme.onErrorContainer,
                         modifier = Modifier
-                            .padding(end = 20.dp)
-                            .size(22.dp),
+                            .align(Alignment.CenterEnd)
+                            .padding(end = 24.dp),
                     )
                 }
             }
@@ -316,11 +317,15 @@ internal fun BookmarkEntryListItem(
                     }
                 },
                 trailingContent = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    IconButton(
+                        onClick = onShare,
+                        modifier = Modifier.testTag("bookmark-share-action-${entry.id}"),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Share,
+                            contentDescription = stringResource(R.string.dictionary_share_action),
+                        )
+                    }
                 },
             )
         },
