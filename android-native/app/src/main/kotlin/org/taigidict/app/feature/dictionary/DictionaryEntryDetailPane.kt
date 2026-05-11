@@ -23,6 +23,7 @@ import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -64,6 +65,8 @@ import org.taigidict.app.feature.common.buildDictionaryAnnotatedString
 private val DetailHorizontalPadding = 16.dp
 private val DetailVerticalPadding = 12.dp
 private val DetailSectionSpacing = 16.dp
+private val DetailCardHorizontalPadding = 20.dp
+private val DetailCardVerticalPadding = 18.dp
 
 @Composable
 fun DictionaryEntryDetailPane(
@@ -284,11 +287,18 @@ private fun DictionaryEntryDetailContent(
             verticalArrangement = Arrangement.spacedBy(DetailSectionSpacing),
         ) {
             item {
-                Card {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                    ),
+                ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 18.dp),
+                            .padding(
+                                horizontal = DetailCardHorizontalPadding,
+                                vertical = DetailCardVerticalPadding,
+                            ),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         Row(
@@ -508,62 +518,89 @@ private fun DictionarySenseSection(
         fontSize = MaterialTheme.typography.bodyLarge.fontSize * readingTextScale.toFloat(),
     )
 
-    Card {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        ),
+    ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 18.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            if (sense.partOfSpeech.isNotBlank()) {
-                DictionaryFallbackText(
-                    text = sense.partOfSpeech,
-                    style = scaledTitleStyle,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        horizontal = DetailCardHorizontalPadding,
+                        vertical = DetailCardVerticalPadding,
+                    ),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                if (sense.partOfSpeech.isNotBlank()) {
+                    DictionaryFallbackText(
+                        text = sense.partOfSpeech,
+                        style = scaledTitleStyle,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
 
-            LinkedDefinitionText(
-                text = sense.definition,
-                style = scaledBodyStyle,
-                openableLinkedWords = openableLinkedWords,
-                onOpenLinkedWord = onOpenLinkedWord,
-            )
-
-            if (sense.definitionSynonyms.isNotEmpty()) {
-                DictionaryDetailRelationshipSection(
-                    title = stringResource(R.string.dictionary_detail_synonyms),
-                    values = sense.definitionSynonyms,
+                LinkedDefinitionText(
+                    text = sense.definition,
+                    style = scaledBodyStyle,
                     openableLinkedWords = openableLinkedWords,
                     onOpenLinkedWord = onOpenLinkedWord,
-                    readingTextScale = readingTextScale,
                 )
-            }
 
-            if (sense.definitionAntonyms.isNotEmpty()) {
-                DictionaryDetailRelationshipSection(
-                    title = stringResource(R.string.dictionary_detail_antonyms),
-                    values = sense.definitionAntonyms,
-                    openableLinkedWords = openableLinkedWords,
-                    onOpenLinkedWord = onOpenLinkedWord,
-                    readingTextScale = readingTextScale,
-                )
+                if (sense.definitionSynonyms.isNotEmpty()) {
+                    DictionaryDetailRelationshipSection(
+                        title = stringResource(R.string.dictionary_detail_synonyms),
+                        values = sense.definitionSynonyms,
+                        openableLinkedWords = openableLinkedWords,
+                        onOpenLinkedWord = onOpenLinkedWord,
+                        readingTextScale = readingTextScale,
+                    )
+                }
+
+                if (sense.definitionAntonyms.isNotEmpty()) {
+                    DictionaryDetailRelationshipSection(
+                        title = stringResource(R.string.dictionary_detail_antonyms),
+                        values = sense.definitionAntonyms,
+                        openableLinkedWords = openableLinkedWords,
+                        onOpenLinkedWord = onOpenLinkedWord,
+                        readingTextScale = readingTextScale,
+                    )
+                }
             }
 
             if (sense.examples.isNotEmpty()) {
-                Text(
-                    text = stringResource(R.string.dictionary_detail_examples),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                HorizontalDivider()
 
-                sense.examples.forEach { example ->
-                    DictionaryExampleBlock(
-                        example = example,
-                        playbackState = playbackState,
-                        onPlayExampleAudio = onPlayExampleAudio,
-                        readingTextScale = readingTextScale,
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            horizontal = DetailCardHorizontalPadding,
+                            vertical = 14.dp,
+                        ),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.dictionary_detail_examples),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 4.dp),
                     )
+
+                    sense.examples.forEachIndexed { index, example ->
+                        DictionaryExampleBlock(
+                            example = example,
+                            playbackState = playbackState,
+                            onPlayExampleAudio = onPlayExampleAudio,
+                            readingTextScale = readingTextScale,
+                        )
+                        if (index < sense.examples.lastIndex) {
+                            HorizontalDivider()
+                        }
+                    }
                 }
             }
         }
@@ -633,46 +670,44 @@ private fun DictionaryExampleBlock(
         )
     }
 
-    Card {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.Top,
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.Top,
+    ) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                if (example.hanji.isNotBlank()) {
-                    DictionaryFallbackText(
-                        text = example.hanji,
-                        style = scaledBodyLargeStyle,
-                    )
-                }
-                if (example.romanization.isNotBlank()) {
-                    DictionaryFallbackText(
-                        text = example.romanization,
-                        style = scaledBodyMediumStyle,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                if (example.mandarin.isNotBlank()) {
-                    DictionaryFallbackText(
-                        text = example.mandarin,
-                        style = scaledBodySmallStyle,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+            if (example.hanji.isNotBlank()) {
+                DictionaryFallbackText(
+                    text = example.hanji,
+                    style = scaledBodyLargeStyle,
+                )
             }
-            AudioActionButton(
-                uiState = audioUiState,
-                enabled = example.audioId.isNotBlank(),
-                contentDescription = stringResource(R.string.dictionary_play_example_audio),
-                onClick = { onPlayExampleAudio(example) },
-            )
+            if (example.romanization.isNotBlank()) {
+                DictionaryFallbackText(
+                    text = example.romanization,
+                    style = scaledBodyMediumStyle,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (example.mandarin.isNotBlank()) {
+                DictionaryFallbackText(
+                    text = example.mandarin,
+                    style = scaledBodySmallStyle,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
+        AudioActionButton(
+            uiState = audioUiState,
+            enabled = example.audioId.isNotBlank(),
+            contentDescription = stringResource(R.string.dictionary_play_example_audio),
+            onClick = { onPlayExampleAudio(example) },
+        )
     }
 }
 

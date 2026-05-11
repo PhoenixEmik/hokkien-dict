@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Close
@@ -32,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -391,47 +391,54 @@ internal fun DictionaryResultList(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(0.dp),
     ) {
-        items(
-            results,
-            key = { it.id },
-        ) { entry ->
-            ListItem(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onEntrySelected(entry.id) },
-                headlineContent = {
-                    DictionaryFallbackText(
-                        text = entry.hanji,
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                },
-                supportingContent = {
-                    Column(verticalArrangement = Arrangement.spacedBy(ComponentSpacing / 2)) {
-                        DictionaryFallbackText(
-                            text = entry.romanization,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        item {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.large,
+                color = MaterialTheme.colorScheme.surfaceContainer,
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    results.forEachIndexed { index, entry ->
+                        ListItem(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onEntrySelected(entry.id) },
+                            headlineContent = {
+                                DictionaryFallbackText(
+                                    text = entry.hanji,
+                                    style = MaterialTheme.typography.titleMedium,
+                                )
+                            },
+                            supportingContent = {
+                                Column(verticalArrangement = Arrangement.spacedBy(ComponentSpacing / 2)) {
+                                    DictionaryFallbackText(
+                                        text = entry.romanization,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    if (entry.briefSummary.isNotBlank()) {
+                                        DictionaryFallbackText(
+                                            text = entry.briefSummary,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                }
+                            },
+                            trailingContent = {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            },
                         )
-                        if (entry.briefSummary.isNotBlank()) {
-                            DictionaryFallbackText(
-                                text = entry.briefSummary,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
+                        if (index < results.lastIndex) {
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                         }
                     }
-                },
-                trailingContent = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                },
-            )
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 16.dp),
-            )
+                }
+            }
         }
     }
 }
