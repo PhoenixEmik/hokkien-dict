@@ -1,7 +1,5 @@
 package org.taigidict.app.feature.bookmarks
 
-import android.app.Activity
-import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -25,13 +23,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -61,7 +57,6 @@ import org.taigidict.app.app.TaigiDictApplication
 import org.taigidict.app.domain.model.DictionaryEntry
 import org.taigidict.app.feature.common.DictionaryFallbackText
 import org.taigidict.app.feature.dictionary.DictionaryEntryDetailPane
-import org.taigidict.app.feature.dictionary.DictionaryShareFormatter
 
 private val RootHorizontalPadding = 16.dp
 private val RootVerticalPadding = 16.dp
@@ -128,7 +123,7 @@ fun BookmarksScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            CircularProgressIndicator(strokeWidth = 2.dp)
+                            CircularProgressIndicator()
                             Text(
                                 text = stringResource(R.string.bookmarks_loading),
                                 style = MaterialTheme.typography.bodyMedium,
@@ -190,16 +185,8 @@ fun BookmarksScreen(
                                                     }
                                                 }
                                             },
-                                            onShare = {
-                                                shareBookmarkedEntry(
-                                                    context = context,
-                                                    entry = entry,
-                                                    fallbackTitle = context.getString(R.string.dictionary_share_title_fallback),
-                                                    footer = context.getString(R.string.dictionary_share_footer),
-                                                )
-                                            },
                                         )
-                                        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+                                        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                                     }
                                 }
                             }
@@ -243,7 +230,6 @@ internal fun BookmarkEntryListItem(
     entry: DictionaryEntry,
     onClick: () -> Unit,
     onRemove: () -> Unit,
-    onShare: () -> Unit,
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
         positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold,
@@ -317,15 +303,11 @@ internal fun BookmarkEntryListItem(
                     }
                 },
                 trailingContent = {
-                    IconButton(
-                        onClick = onShare,
-                        modifier = Modifier.testTag("bookmark-share-action-${entry.id}"),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Share,
-                            contentDescription = stringResource(R.string.dictionary_share_action),
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 },
             )
         },
@@ -338,9 +320,8 @@ internal fun BookmarkEntryGridItem(
     onClick: () -> Unit,
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
     ) {
         ListItem(
             headlineContent = {
@@ -374,31 +355,4 @@ internal fun BookmarkEntryGridItem(
             },
         )
     }
-}
-
-private fun shareBookmarkedEntry(
-    context: android.content.Context,
-    entry: DictionaryEntry,
-    fallbackTitle: String,
-    footer: String,
-) {
-    val title = DictionaryShareFormatter.buildShareTitle(
-        entry = entry,
-        fallbackTitle = fallbackTitle,
-    )
-    val text = DictionaryShareFormatter.buildShareText(
-        entry = entry,
-        fallbackHanji = fallbackTitle,
-        footer = footer,
-    )
-    val shareIntent = Intent(Intent.ACTION_SEND)
-        .setType("text/plain")
-        .putExtra(Intent.EXTRA_SUBJECT, title)
-        .putExtra(Intent.EXTRA_TITLE, title)
-        .putExtra(Intent.EXTRA_TEXT, text)
-    val chooserIntent = Intent.createChooser(shareIntent, title)
-    if (context !is Activity) {
-        chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    }
-    context.startActivity(chooserIntent)
 }
