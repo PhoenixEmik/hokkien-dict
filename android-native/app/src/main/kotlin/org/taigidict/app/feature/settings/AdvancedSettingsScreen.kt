@@ -4,7 +4,6 @@ import android.text.format.Formatter
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
@@ -223,7 +222,7 @@ private fun MaintenanceActionsCard(
             },
         )
 
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
 
         ListItem(
             modifier = Modifier
@@ -279,12 +278,12 @@ private fun DictionarySummaryCard(
                 key = stringResource(R.string.settings_entry_count_label),
                 value = numberFormatter.format(bundle.entryCount),
             )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
             SettingsKeyValueRow(
                 key = stringResource(R.string.settings_sense_count_label),
                 value = numberFormatter.format(bundle.senseCount),
             )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
             SettingsKeyValueRow(
                 key = stringResource(R.string.settings_example_count_label),
                 value = numberFormatter.format(bundle.exampleCount),
@@ -310,7 +309,7 @@ private fun DictionaryMetadataCard(
             }
             sourceModifiedAt?.let {
                 if (builtAt != null) {
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 }
                 SettingsKeyValueRow(
                     key = stringResource(R.string.settings_time_source_updated_label),
@@ -391,37 +390,23 @@ internal fun AudioArchiveResourceCard(
     val actions = availableActions(snapshot)
 
     Card {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
+        ListItem(
+            headlineContent = {
+                Text(text = title)
+            },
+            supportingContent = {
                 Column(
-                    modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Text(
-                        text = type.archiveFileName,
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
+                    Text(text = type.archiveFileName)
                     Text(
                         text = statusText,
-                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
+            },
+            trailingContent = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     actions.forEach { action ->
                         IconButton(onClick = { onAction(action) }) {
                             Icon(
@@ -431,14 +416,17 @@ internal fun AudioArchiveResourceCard(
                         }
                     }
                 }
-            }
-            snapshot.progress?.let { progress ->
-                if (snapshot.state == AudioArchiveDownloadState.Downloading || snapshot.state == AudioArchiveDownloadState.Paused) {
-                    LinearProgressIndicator(
-                        progress = { progress.coerceIn(0f, 1f) },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
+            },
+        )
+        snapshot.progress?.let { progress ->
+            if (snapshot.state == AudioArchiveDownloadState.Downloading || snapshot.state == AudioArchiveDownloadState.Paused) {
+                LinearProgressIndicator(
+                    progress = { progress.coerceIn(0f, 1f) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 12.dp),
+                )
             }
         }
     }
