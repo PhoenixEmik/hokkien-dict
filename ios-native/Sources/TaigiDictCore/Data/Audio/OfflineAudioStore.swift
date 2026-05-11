@@ -9,6 +9,7 @@ public actor OfflineAudioStore: OfflineAudioManaging {
     private var snapshots: [AudioArchiveType: DownloadSnapshot] = [:]
     private var indexes: [AudioArchiveType: [String: String]] = [:]
     private var completedValidationFailures: [AudioArchiveType: DownloadSnapshot] = [:]
+    private var pendingIndexValidations = Set<AudioArchiveType>()
 
     public init(
         downloadService: any ResumableDownloading = ResumableDownloadService(),
@@ -85,8 +86,10 @@ public actor OfflineAudioStore: OfflineAudioManaging {
     }
 
     private func refreshSnapshot(_ type: AudioArchiveType) async {
-        snapshots[type] = await downloadService.snapshot(for: type.rawValue)
-        if snapshots[type]?.state != .completed {
+        let snapshot = await downloadService.snapshot(for: type.rawValue)
+        snapshots[type] = snapshot
+
+        if snapshot.state != .completed && !hasLocalArchive(for: type) {
             completedValidationFailures[type] = nil
         }
     }
@@ -97,8 +100,18 @@ public actor OfflineAudioStore: OfflineAudioManaging {
         if snapshots[type]?.state == .idle,
            let localCompletedSnapshot = localArchiveSnapshot(for: type) {
             snapshots[type] = localCompletedSnapshot
+            if let failure = completedValidationFailures[type] {
+                snapshots[type] = failure
+                return
+            }
+            scheduleIndexValidation(for: type)
+            return
         }
 
+        validateCompletedArchiveIfNeeded(for: type)
+    }
+
+    private func validateCompletedArchiveIfNeeded(for type: AudioArchiveType) {
         guard case .completed = snapshots[type]?.state else {
             return
         }
@@ -135,6 +148,29 @@ public actor OfflineAudioStore: OfflineAudioManaging {
         }
     }
 
+    private func scheduleIndexValidation(for type: AudioArchiveType) {
+        guard
+            indexes[type] == nil,
+            completedValidationFailures[type] == nil,
+            !pendingIndexValidations.contains(type)
+        else {
+            return
+        }
+
+        pendingIndexValidations.insert(type)
+        Task {
+            await validateIndexIfNeeded(for: type)
+        }
+    }
+
+    private func validateIndexIfNeeded(for type: AudioArchiveType) async {
+        defer {
+            pendingIndexValidations.remove(type)
+        }
+
+        validateCompletedArchiveIfNeeded(for: type)
+    }
+
     private func localArchiveSnapshot(for type: AudioArchiveType) -> DownloadSnapshot? {
         let archiveURL = storage.archiveURL(for: type)
         guard
@@ -146,6 +182,10 @@ public actor OfflineAudioStore: OfflineAudioManaging {
         }
 
         return DownloadSnapshot(state: .completed, downloadedBytes: bytes, totalBytes: bytes)
+    }
+
+    private func hasLocalArchive(for type: AudioArchiveType) -> Bool {
+        localArchiveSnapshot(for: type) != nil
     }
 
     private func ensureIndex(for type: AudioArchiveType) throws -> [String: String] {

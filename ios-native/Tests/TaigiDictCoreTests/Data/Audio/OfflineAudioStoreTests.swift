@@ -111,6 +111,37 @@ final class OfflineAudioStoreTests: XCTestCase {
         XCTAssertGreaterThan(snapshot.downloadedBytes, 0)
         XCTAssertEqual(snapshot.downloadedBytes, snapshot.totalBytes)
     }
+
+    func testSnapshotReturnsExistingArchiveBeforeIndexValidationFinishes() async throws {
+        let storage = TestAudioStorage()
+        let archiveURL = storage.archiveURL(for: .word)
+        try FileManager.default.createDirectory(
+            at: archiveURL.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        try Data("archive".utf8).write(to: archiveURL)
+
+        let downloader = TestDownloader(snapshots: [
+            "word": DownloadSnapshot(state: .idle),
+        ])
+        let indexer = BlockingIndexer(index: ["1(1)": "word/1(1).mp3"])
+        let store = OfflineAudioStore(
+            downloadService: downloader,
+            storage: storage,
+            zipIndexer: indexer
+        )
+
+        let returned = expectation(description: "snapshot returned before index validation completes")
+        let snapshotTask = Task {
+            let snapshot = await store.snapshot(for: .word)
+            XCTAssertEqual(snapshot.state, .completed)
+            returned.fulfill()
+        }
+
+        await fulfillment(of: [returned], timeout: 0.2)
+        indexer.release()
+        await snapshotTask.value
+    }
 }
 
 private actor SequencedDownloader: ResumableDownloading {
@@ -190,6 +221,26 @@ private struct TestIndexer: AudioZipIndexing {
         try FileManager.default.createDirectory(at: parent, withIntermediateDirectories: true)
         try Data("clip-\(clipID)".utf8).write(to: clipURL)
     }
+}
+
+private final class BlockingIndexer: AudioZipIndexing, @unchecked Sendable {
+    private let semaphore = DispatchSemaphore(value: 0)
+    private let index: [String: String]
+
+    init(index: [String: String]) {
+        self.index = index
+    }
+
+    func buildIndex(for archiveURL: URL) throws -> [String: String] {
+        semaphore.wait()
+        return index
+    }
+
+    func release() {
+        semaphore.signal()
+    }
+
+    func materializeClip(clipID: String, from archiveURL: URL, index: [String: String], to clipURL: URL) throws {}
 }
 
 private actor TestPlaybackController: AudioPlaybackControlling {
