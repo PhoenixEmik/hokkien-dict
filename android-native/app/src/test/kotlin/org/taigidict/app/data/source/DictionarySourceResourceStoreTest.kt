@@ -1,0 +1,92 @@
+package org.taigidict.app.data.source
+
+import android.app.Application
+import androidx.test.core.app.ApplicationProvider
+import java.io.File
+import java.nio.file.Files
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestDispatcher
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import org.taigidict.app.core.constants.AppConstants
+
+@OptIn(ExperimentalCoroutinesApi::class)
+@RunWith(RobolectricTestRunner::class)
+@Config(manifest = Config.NONE, sdk = [34])
+class DictionarySourceResourceStoreTest {
+    @Test
+    fun restoreBundledSource_writesValidatedPackageAndPublishesCompletedSnapshot() = runTest {
+        val localSourceDirectory = Files.createTempDirectory("dictionary-source-restore").toFile()
+        val store = createStore(localSourceDirectory, StandardTestDispatcher(testScheduler))
+
+        val result = store.restoreBundledSource()
+
+        assertTrue(result.isSuccess)
+        val manifestFile = File(localSourceDirectory, "dictionary_manifest.json")
+        val entriesFile = File(localSourceDirectory, "dictionary_entries.jsonl")
+        assertTrue(manifestFile.exists())
+        assertTrue(entriesFile.exists())
+        assertEquals(DownloadSnapshot.State.Completed, store.snapshot.value.state)
+        assertEquals(
+            manifestFile.length() + entriesFile.length(),
+            store.snapshot.value.downloadedBytes,
+        )
+    }
+
+    @Test
+    fun refresh_withChecksumMismatch_deletesInvalidPackageAndPublishesIdleSnapshot() = runTest {
+        val localSourceDirectory = Files.createTempDirectory("dictionary-source-invalid").toFile()
+        File(localSourceDirectory, "dictionary_manifest.json").writeText(
+            """
+            {
+              "schemaVersion": 1,
+              "builtAt": "2026-05-06T00:00:00Z",
+              "source": "test",
+              "sourceModifiedAt": "2026-05-01T00:00:00Z",
+              "entryCount": 1,
+              "senseCount": 1,
+              "exampleCount": 0,
+              "entriesFileName": "dictionary_entries.jsonl",
+              "checksumSHA256": "deadbeef"
+            }
+            """.trimIndent()
+        )
+        File(localSourceDirectory, "dictionary_entries.jsonl").writeText(
+            """
+            {"id":1,"type":"main","hanji":"試驗","romanization":"tshi3-giam7","category":"名詞","audio":"","hokkienSearch":"tshigiam","mandarinSearch":"試驗","senses":[{"partOfSpeech":"名詞","definition":"試驗","examples":[]}]}
+            """.trimIndent()
+        )
+        File(localSourceDirectory, "dictionary_entries.jsonl.download").writeText("partial")
+
+        val store = createStore(localSourceDirectory, StandardTestDispatcher(testScheduler))
+
+        val result = store.refresh()
+
+        assertTrue(result.isSuccess)
+        assertEquals(DownloadSnapshot.State.Idle, store.snapshot.value.state)
+        assertFalse(File(localSourceDirectory, "dictionary_manifest.json").exists())
+        assertFalse(File(localSourceDirectory, "dictionary_entries.jsonl").exists())
+        assertFalse(File(localSourceDirectory, "dictionary_entries.jsonl.download").exists())
+    }
+
+    private fun createStore(
+        localSourceDirectory: File,
+        dispatcher: TestDispatcher,
+    ): DictionarySourceResourceStore {
+        val application = ApplicationProvider.getApplicationContext<Application>()
+        return DictionarySourceResourceStore(
+            assetManager = application.assets,
+            bundledManifestAssetPath = AppConstants.BUNDLED_DICTIONARY_MANIFEST_ASSET_PATH,
+            bundledEntriesAssetPath = AppConstants.BUNDLED_DICTIONARY_ENTRIES_ASSET_PATH,
+            localSourceDirectory = localSourceDirectory,
+            ioDispatcher = dispatcher,
+        )
+    }
+}

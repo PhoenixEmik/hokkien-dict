@@ -6,7 +6,7 @@ The repository root is `Hokkien/`.
 
 Existing app/reference sources:
 - Flutter app: inspect the existing Flutter source in this repository.
-- iOS native app: inspect `swift-native/` and use it as the newer product/reference implementation when behavior differs from Flutter.
+- iOS native app: inspect `ios-native/` and use it as the newer product/reference implementation when behavior differs from Flutter.
 - The Android native app should live under `android-native/`.
 
 ## Primary goal

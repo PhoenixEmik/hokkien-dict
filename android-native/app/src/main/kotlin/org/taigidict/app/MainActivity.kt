@@ -1,0 +1,88 @@
+package org.taigidict.app
+
+import android.os.Bundle
+import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.core.os.LocaleListCompat
+import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.taigidict.app.app.TaigiDictApplication
+import org.taigidict.app.app.rememberMainAppState
+import org.taigidict.app.core.settings.AppLanguagePreference
+import org.taigidict.app.core.settings.AppSettingsConstants
+import org.taigidict.app.core.settings.AppThemePreference
+import org.taigidict.app.feature.initialization.InitializationScreen
+import org.taigidict.app.feature.initialization.InitializationViewModel
+import org.taigidict.app.navigation.MainNavGraph
+import org.taigidict.app.ui.theme.TaigiDictTheme
+
+class MainActivity : AppCompatActivity() {
+    private val initializationViewModel: InitializationViewModel by viewModels()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val appContainer = (application as TaigiDictApplication).appContainer
+
+        setContent {
+            val uiState = initializationViewModel.uiState.collectAsStateWithLifecycle().value
+            val appState = rememberMainAppState(appContainer)
+            val themePreference = appContainer.appSettingsStore.themePreference
+                .collectAsState(initial = AppThemePreference.System).value
+            val languagePreference = appContainer.appSettingsStore.languagePreference
+                .collectAsState(initial = null).value
+            val readingTextScale = appContainer.appSettingsStore.readingTextScale
+                .collectAsState(initial = AppSettingsConstants.DEFAULT_READING_TEXT_SCALE).value
+
+            LaunchedEffect(languagePreference) {
+                val preference = languagePreference ?: return@LaunchedEffect
+                val targetLocales = when (preference) {
+                    AppLanguagePreference.System -> LocaleListCompat.getEmptyLocaleList()
+                    AppLanguagePreference.TraditionalChinese -> LocaleListCompat.forLanguageTags("zh-TW")
+                    AppLanguagePreference.SimplifiedChinese -> LocaleListCompat.forLanguageTags("zh-CN")
+                    AppLanguagePreference.English -> LocaleListCompat.forLanguageTags("en")
+                }
+                val currentLocales = AppCompatDelegate.getApplicationLocales()
+                if (currentLocales != targetLocales) {
+                    AppCompatDelegate.setApplicationLocales(targetLocales)
+                }
+            }
+
+            LaunchedEffect(uiState.databaseGeneration) {
+                appState.applyDatabaseGeneration(uiState.databaseGeneration)
+            }
+
+            val systemDark = isSystemInDarkTheme()
+            val darkTheme = when (themePreference) {
+                AppThemePreference.Light -> false
+                AppThemePreference.Dark -> true
+                AppThemePreference.System -> systemDark
+            }
+
+            TaigiDictTheme(
+                darkTheme = darkTheme,
+                readingTextScale = readingTextScale.toFloat(),
+            ) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    if (uiState.isReady) {
+                        MainNavGraph(appState = appState)
+                    } else {
+                        InitializationScreen(
+                            uiState = uiState,
+                            onRetry = initializationViewModel::retry,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
