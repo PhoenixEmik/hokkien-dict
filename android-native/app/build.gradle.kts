@@ -14,8 +14,8 @@ android {
         applicationId = "org.taigidict.app"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 3
+        versionName = "1.3.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "DICTIONARY_REPOSITORY_BACKEND", "\"sqlite\"")
     }
