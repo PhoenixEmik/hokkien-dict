@@ -35,11 +35,17 @@ private enum ReferenceArticleRepository {
             "en"
         }
 
-        guard let url = Bundle.module.url(
-            forResource: "\(kind.rawValue)_\(localeCode)",
+        let resourceName = "\(kind.rawValue)_\(localeCode)"
+        let url = Bundle.module.url(
+            forResource: resourceName,
             withExtension: "json",
             subdirectory: "ReferenceArticles"
-        ) else {
+        ) ?? Bundle.module.url(
+            forResource: resourceName,
+            withExtension: "json"
+        )
+
+        guard let url else {
             throw CocoaError(.fileNoSuchFile)
         }
 
