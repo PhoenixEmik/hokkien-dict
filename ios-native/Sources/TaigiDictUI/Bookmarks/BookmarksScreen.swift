@@ -25,9 +25,50 @@ public struct BookmarksScreen: View {
     public var body: some View {
         let appLocale = AppLocalizer.appLocale(from: locale)
         NavigationStack {
-            content(appLocale: appLocale)
+            List {
+                if viewModel.isLoading {
+                    Section {
+                        HStack {
+                            ProgressView()
+                            Text(AppLocalizer.text(.bookmarksLoading, locale: appLocale))
+                        }
+                    }
+                } else if let errorMessage = viewModel.errorMessage {
+                    Section {
+                        ContentUnavailableView(
+                            AppLocalizer.text(.loadingFailedTitle, locale: appLocale),
+                            systemImage: "exclamationmark.triangle",
+                            description: Text(errorMessage)
+                        )
+                    }
+                } else if viewModel.entries.isEmpty {
+                    Section {
+                        ContentUnavailableView(
+                            AppLocalizer.text(.bookmarksEmptyTitle, locale: appLocale),
+                            systemImage: "bookmark",
+                            description: Text(AppLocalizer.text(.bookmarksEmptyDescription, locale: appLocale))
+                        )
+                    }
+                } else {
+                    Section(AppLocalizer.text(.bookmarksSectionSaved, locale: appLocale)) {
+                        ForEach(viewModel.entries) { entry in
+                            Button {
+                                viewModel.detailEntry = entry
+                            } label: {
+                                DictionaryEntryRowView(entry: entry)
+                            }
+                            .foregroundStyle(.primary)
+                        }
+                        .onDelete { offsets in
+                            Task {
+                                await viewModel.removeBookmarks(at: offsets)
+                            }
+                        }
+                    }
+                }
+            }
             .navigationTitle(AppLocalizer.text(.bookmarksTitle, locale: appLocale))
-            .navigationDestination(for: DictionaryEntry.self) { entry in
+            .navigationDestination(item: $viewModel.detailEntry) { entry in
                 DictionaryDetailView(
                     entry: entry,
                     library: library,
@@ -42,59 +83,5 @@ public struct BookmarksScreen: View {
         .task {
             await viewModel.load()
         }
-    }
-
-    @ViewBuilder
-    private func content(appLocale: AppLocale) -> some View {
-        if viewModel.isLoading {
-            placeholderContainer {
-                HStack(spacing: 12) {
-                    ProgressView()
-                    Text(AppLocalizer.text(.bookmarksLoading, locale: appLocale))
-                        .foregroundStyle(.secondary)
-                }
-            }
-        } else if let errorMessage = viewModel.errorMessage {
-            placeholderContainer {
-                ContentUnavailableView(
-                    AppLocalizer.text(.loadingFailedTitle, locale: appLocale),
-                    systemImage: "exclamationmark.triangle",
-                    description: Text(errorMessage)
-                )
-            }
-        } else if viewModel.entries.isEmpty {
-            placeholderContainer {
-                ContentUnavailableView(
-                    AppLocalizer.text(.bookmarksEmptyTitle, locale: appLocale),
-                    systemImage: "bookmark",
-                    description: Text(AppLocalizer.text(.bookmarksEmptyDescription, locale: appLocale))
-                )
-            }
-        } else {
-            List {
-                ForEach(viewModel.entries) { entry in
-                    NavigationLink(value: entry) {
-                        DictionaryEntryRowView(entry: entry)
-                            .padding(.vertical, 4)
-                    }
-                }
-                .onDelete { offsets in
-                    Task {
-                        await viewModel.removeBookmarks(at: offsets)
-                    }
-                }
-            }
-            #if os(iOS)
-            .listStyle(.plain)
-            #endif
-        }
-    }
-
-    private func placeholderContainer<Content: View>(
-        @ViewBuilder content: () -> Content
-    ) -> some View {
-        content()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding()
     }
 }

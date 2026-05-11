@@ -8,6 +8,7 @@ public final class BookmarksViewModel {
     public private(set) var isLoading = false
     public private(set) var entries: [DictionaryEntry] = []
     public private(set) var errorMessage: String?
+    public var detailEntry: DictionaryEntry?
 
     private let library: DictionaryLibrary
     private let bookmarkStore: any BookmarksStoreProtocol
