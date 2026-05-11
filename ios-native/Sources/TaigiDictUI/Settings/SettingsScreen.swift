@@ -116,6 +116,7 @@ public struct SettingsScreen: View {
                         title: wordAudioTitle,
                         locale: appLocale,
                         snapshot: viewModel.snapshot(for: .word),
+                        isSnapshotLoading: !viewModel.hasLoadedAudioSnapshots,
                         isRunningAction: viewModel.isAudioActionRunning(for: .word)
                     ) { action in
                         handleAudioAction(action, for: .word, title: wordAudioTitle)
@@ -125,6 +126,7 @@ public struct SettingsScreen: View {
                         title: sentenceAudioTitle,
                         locale: appLocale,
                         snapshot: viewModel.snapshot(for: .sentence),
+                        isSnapshotLoading: !viewModel.hasLoadedAudioSnapshots,
                         isRunningAction: viewModel.isAudioActionRunning(for: .sentence)
                     ) { action in
                         handleAudioAction(action, for: .sentence, title: sentenceAudioTitle)
@@ -248,6 +250,7 @@ private struct AudioArchiveResourceRow: View {
     let title: String
     let locale: AppLocale
     let snapshot: DownloadSnapshot
+    let isSnapshotLoading: Bool
     let isRunningAction: Bool
     let runAction: (SettingsViewModel.AudioResourceAction) -> Void
 
@@ -263,7 +266,7 @@ private struct AudioArchiveResourceRow: View {
 
                 Spacer()
 
-                if isRunningAction {
+                if isSnapshotLoading || isRunningAction {
                     ProgressView()
                         .controlSize(.small)
                 }
@@ -285,7 +288,7 @@ private struct AudioArchiveResourceRow: View {
                     }
                     .fixedSize(horizontal: true, vertical: true)
                 }
-                .disabled(isRunningAction || availableActions.isEmpty)
+                .disabled(isSnapshotLoading || isRunningAction || availableActions.isEmpty)
             }
 
             if let progress = snapshot.progress {
@@ -296,16 +299,20 @@ private struct AudioArchiveResourceRow: View {
     }
 
     private var availableActions: [SettingsViewModel.AudioResourceAction] {
-        AudioResourcePresentation.actions(for: snapshot)
+        AudioResourcePresentation.actions(for: snapshot, isLoading: isSnapshotLoading)
     }
 
     private var snapshotDescription: String {
-        AudioResourcePresentation.description(for: snapshot, locale: locale)
+        AudioResourcePresentation.description(for: snapshot, locale: locale, isLoading: isSnapshotLoading)
     }
 }
 
 enum AudioResourcePresentation {
-    static func actions(for snapshot: DownloadSnapshot) -> [SettingsViewModel.AudioResourceAction] {
+    static func actions(for snapshot: DownloadSnapshot, isLoading: Bool = false) -> [SettingsViewModel.AudioResourceAction] {
+        guard !isLoading else {
+            return []
+        }
+
         switch snapshot.state {
         case .idle:
             return [.start]
@@ -320,7 +327,11 @@ enum AudioResourcePresentation {
         }
     }
 
-    static func description(for snapshot: DownloadSnapshot, locale: AppLocale) -> String {
+    static func description(for snapshot: DownloadSnapshot, locale: AppLocale, isLoading: Bool = false) -> String {
+        guard !isLoading else {
+            return AppLocalizer.text(.audioStatusChecking, locale: locale)
+        }
+
         let downloaded = ByteCountFormatter.string(fromByteCount: snapshot.downloadedBytes, countStyle: .file)
         let total = snapshot.totalBytes.map { ByteCountFormatter.string(fromByteCount: $0, countStyle: .file) } ?? "--"
 

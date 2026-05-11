@@ -795,19 +795,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This will redownload %@ and replace the current offline audio resource."
+            "value" : "This replaces %@."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "这会重新下载「%@」并取代目前的离线音讯资源。"
+            "value" : "将取代「%@」。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "這會重新下載「%@」並取代目前的離線音訊資源。"
+            "value" : "將取代「%@」。"
           }
         }
       }
@@ -818,19 +818,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Redownload audio resource?"
+            "value" : "Redownload audio?"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "重新下载音讯资源？"
+            "value" : "重下载音讯？"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "重新下載音訊資源？"
+            "value" : "重下載音訊？"
           }
         }
       }
@@ -1015,6 +1015,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已完成"
+          }
+        }
+      }
+    },
+    "audioStatusChecking" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "检查中"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檢查中"
           }
         }
       }

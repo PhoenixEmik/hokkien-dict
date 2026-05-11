@@ -5,6 +5,10 @@ import TaigiDictCore
 final class SettingsScreenAudioResourcePresentationTests: XCTestCase {
     func testActionMappingPerDownloadState() {
         XCTAssertEqual(
+            AudioResourcePresentation.actions(for: DownloadSnapshot(state: .idle), isLoading: true),
+            []
+        )
+        XCTAssertEqual(
             AudioResourcePresentation.actions(for: DownloadSnapshot(state: .idle)),
             [.start]
         )
@@ -27,6 +31,15 @@ final class SettingsScreenAudioResourcePresentationTests: XCTestCase {
     }
 
     func testDescriptionPerDownloadState() {
+        XCTAssertEqual(
+            AudioResourcePresentation.description(
+                for: DownloadSnapshot(state: .idle),
+                locale: .traditionalChinese,
+                isLoading: true
+            ),
+            "檢查中"
+        )
+
         XCTAssertEqual(
             AudioResourcePresentation.description(for: DownloadSnapshot(state: .idle), locale: .traditionalChinese),
             "尚未下載"

@@ -156,8 +156,11 @@ final class SettingsViewModelTests: XCTestCase {
             offlineAudioStore: audioStore
         )
 
+        XCTAssertFalse(viewModel.hasLoadedAudioSnapshots)
+
         await viewModel.loadCapabilities()
 
+        XCTAssertTrue(viewModel.hasLoadedAudioSnapshots)
         XCTAssertEqual(viewModel.wordAudioSnapshot.state, .completed)
         XCTAssertEqual(viewModel.sentenceAudioSnapshot.state, .paused)
     }

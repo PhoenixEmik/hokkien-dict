@@ -25,6 +25,7 @@ public final class SettingsViewModel {
     public private(set) var isDictionarySourceActionRunning = false
     public private(set) var wordAudioSnapshot = DownloadSnapshot()
     public private(set) var sentenceAudioSnapshot = DownloadSnapshot()
+    public private(set) var hasLoadedAudioSnapshots = false
     public private(set) var activeAudioActions = Set<AudioArchiveType>()
 
     private let library: DictionaryLibrary
@@ -131,11 +132,13 @@ public final class SettingsViewModel {
         guard let offlineAudioStore else {
             wordAudioSnapshot = DownloadSnapshot()
             sentenceAudioSnapshot = DownloadSnapshot()
+            hasLoadedAudioSnapshots = true
             return
         }
 
         wordAudioSnapshot = await offlineAudioStore.snapshot(for: .word)
         sentenceAudioSnapshot = await offlineAudioStore.snapshot(for: .sentence)
+        hasLoadedAudioSnapshots = true
     }
 
     public func runDictionarySourceAction(_ action: DictionarySourceAction) async {
