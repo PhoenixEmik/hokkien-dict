@@ -333,48 +333,50 @@ private fun DisplaySettingsCard(
     onSelectTheme: (AppThemePreference) -> Unit,
     onScaleChanged: (Double) -> Unit,
 ) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        PreferenceMenuRow(
-            title = stringResource(R.string.settings_language_title),
-            value = selectedLanguage.displayLabel(),
-            options = AppLanguagePreference.entries,
-            selectedOption = selectedLanguage,
-            optionLabel = { it.displayLabel() },
-            onSelect = onSelectLanguage,
-        )
-        HorizontalDivider()
-        PreferenceMenuRow(
-            title = stringResource(R.string.settings_theme_title),
-            value = selectedTheme.displayLabel(),
-            options = AppThemePreference.entries,
-            selectedOption = selectedTheme,
-            optionLabel = { it.displayLabel() },
-            onSelect = onSelectTheme,
-        )
-        HorizontalDivider()
-        ListItem(
-            headlineContent = {
-                Text(text = stringResource(R.string.settings_text_scale_title))
-            },
-            trailingContent = {
-                Text(
-                    text = String.format("%.1fx", currentScale),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            },
-        )
-        Slider(
-            value = currentScale.toFloat(),
-            onValueChange = { onScaleChanged(it.toDouble()) },
-            valueRange = org.taigidict.app.core.settings.AppSettingsConstants.MIN_READING_TEXT_SCALE.toFloat()
-                ..org.taigidict.app.core.settings.AppSettingsConstants.MAX_READING_TEXT_SCALE.toFloat(),
-            steps = org.taigidict.app.core.settings.AppSettingsConstants.READING_TEXT_SCALE_STEPS,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 12.dp),
-        )
+    Card {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            PreferenceMenuRow(
+                title = stringResource(R.string.settings_language_title),
+                value = selectedLanguage.displayLabel(),
+                options = AppLanguagePreference.entries,
+                selectedOption = selectedLanguage,
+                optionLabel = { it.displayLabel() },
+                onSelect = onSelectLanguage,
+            )
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+            PreferenceMenuRow(
+                title = stringResource(R.string.settings_theme_title),
+                value = selectedTheme.displayLabel(),
+                options = AppThemePreference.entries,
+                selectedOption = selectedTheme,
+                optionLabel = { it.displayLabel() },
+                onSelect = onSelectTheme,
+            )
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+            ListItem(
+                headlineContent = {
+                    Text(text = stringResource(R.string.settings_text_scale_title))
+                },
+                trailingContent = {
+                    Text(
+                        text = String.format("%.1fx", currentScale),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                },
+            )
+            Slider(
+                value = currentScale.toFloat(),
+                onValueChange = { onScaleChanged(it.toDouble()) },
+                valueRange = org.taigidict.app.core.settings.AppSettingsConstants.MIN_READING_TEXT_SCALE.toFloat()
+                    ..org.taigidict.app.core.settings.AppSettingsConstants.MAX_READING_TEXT_SCALE.toFloat(),
+                steps = org.taigidict.app.core.settings.AppSettingsConstants.READING_TEXT_SCALE_STEPS,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 12.dp),
+            )
+        }
     }
 }
 

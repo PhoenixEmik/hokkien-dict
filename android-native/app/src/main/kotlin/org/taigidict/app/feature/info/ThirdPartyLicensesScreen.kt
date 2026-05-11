@@ -2,7 +2,10 @@ package org.taigidict.app.feature.info
 
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -11,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Android
 import androidx.compose.material.icons.outlined.ShoppingBag
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -32,6 +36,9 @@ private val CoreEntries = listOf(
     ThirdPartyEntry("android-opencc", "Apache 2.0"),
     ThirdPartyEntry("SQLite", "Public Domain"),
 )
+
+private val ThirdPartyHorizontalPadding = 16.dp
+private val ThirdPartyVerticalPadding = 16.dp
 
 private val AndroidEntries = listOf(
     ThirdPartyEntry("Jetpack Compose", "Apache 2.0"),
@@ -67,28 +74,30 @@ fun ThirdPartyLicensesScreen(
         },
     ) { innerPadding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = innerPadding,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = ThirdPartyHorizontalPadding)
+                .padding(top = ThirdPartyVerticalPadding, bottom = ThirdPartyVerticalPadding),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item {
                 SectionLabel(text = stringResource(R.string.third_party_core_section))
             }
-            items(CoreEntries.size) { index ->
-                val entry = CoreEntries[index]
-                ThirdPartyRow(entry = entry, icon = Icons.Outlined.ShoppingBag)
-                if (index < CoreEntries.lastIndex) {
-                    HorizontalDivider()
-                }
+            item {
+                ThirdPartySectionCard(
+                    entries = CoreEntries,
+                    icon = Icons.Outlined.ShoppingBag,
+                )
             }
             item {
                 SectionLabel(text = stringResource(R.string.third_party_android_section))
             }
-            items(AndroidEntries.size) { index ->
-                val entry = AndroidEntries[index]
-                ThirdPartyRow(entry = entry, icon = Icons.Outlined.Android)
-                if (index < AndroidEntries.lastIndex) {
-                    HorizontalDivider()
-                }
+            item {
+                ThirdPartySectionCard(
+                    entries = AndroidEntries,
+                    icon = Icons.Outlined.Android,
+                )
             }
         }
     }
@@ -100,8 +109,25 @@ private fun SectionLabel(text: String) {
         text = text,
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(start = 16.dp, top = 24.dp, end = 16.dp, bottom = 8.dp),
+        modifier = Modifier.padding(horizontal = 2.dp),
     )
+}
+
+@Composable
+private fun ThirdPartySectionCard(
+    entries: List<ThirdPartyEntry>,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+) {
+    Card {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            entries.forEachIndexed { index, entry ->
+                ThirdPartyRow(entry = entry, icon = icon)
+                if (index < entries.lastIndex) {
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                }
+            }
+        }
+    }
 }
 
 @Composable
