@@ -13,14 +13,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.outlined.TextSnippet
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.ImportContacts
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.Policy
-import androidx.compose.material.icons.outlined.Spellcheck
-import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -141,13 +141,13 @@ fun AboutScreen(
                     )
                     AboutDivider()
                     AboutNavRow(
-                        icon = Icons.Outlined.Translate,
+                        icon = Icons.Outlined.ImportContacts,
                         title = stringResource(R.string.about_tailo_title),
                         onClick = { uriHandler.openUri(TailoGuideUrl) },
                     )
                     AboutDivider()
                     AboutNavRow(
-                        icon = Icons.Outlined.Spellcheck,
+                        icon = Icons.AutoMirrored.Outlined.TextSnippet,
                         title = stringResource(R.string.about_hanji_title),
                         onClick = { uriHandler.openUri(HanjiGuideUrl) },
                     )

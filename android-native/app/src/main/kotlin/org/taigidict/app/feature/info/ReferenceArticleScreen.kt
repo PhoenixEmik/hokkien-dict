@@ -15,8 +15,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
-import androidx.compose.material.icons.outlined.Spellcheck
-import androidx.compose.material.icons.outlined.Translate
+import androidx.compose.material.icons.automirrored.outlined.TextSnippet
+import androidx.compose.material.icons.outlined.ImportContacts
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -103,7 +103,7 @@ fun ReferenceArticleScreen(
                 Card {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         ReferenceNavRow(
-                            icon = Icons.Outlined.Translate,
+                            icon = Icons.Outlined.ImportContacts,
                             title = stringResource(R.string.about_tailo_title),
                             onClick = { selectedArticle = ReferenceArticle.Tailo },
                         )
@@ -112,7 +112,7 @@ fun ReferenceArticleScreen(
                             thickness = 0.5.dp,
                         )
                         ReferenceNavRow(
-                            icon = Icons.Outlined.Spellcheck,
+                            icon = Icons.AutoMirrored.Outlined.TextSnippet,
                             title = stringResource(R.string.about_hanji_title),
                             onClick = { selectedArticle = ReferenceArticle.Hanji },
                         )

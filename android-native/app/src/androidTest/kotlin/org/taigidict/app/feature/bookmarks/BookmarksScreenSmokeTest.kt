@@ -3,9 +3,15 @@ package org.taigidict.app.feature.bookmarks
 import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeLeft
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
@@ -49,6 +55,7 @@ class BookmarksScreenSmokeTest {
                 BookmarkEntryListItem(
                     entry = entry,
                     onClick = {},
+                    onRemove = {},
                 )
             }
         }
@@ -56,6 +63,29 @@ class BookmarksScreenSmokeTest {
         composeRule.onNodeWithText(entry.hanji).assertIsDisplayed()
         composeRule.onNodeWithText(entry.romanization).assertIsDisplayed()
         composeRule.onNodeWithText(entry.briefSummary).assertIsDisplayed()
+    }
+
+    @Test
+    fun entryListItem_swipeLeftRemovesBookmark() {
+        val entry = sampleBookmarkedEntry()
+        var removedEntryId by mutableStateOf<Long?>(null)
+
+        composeRule.setContent {
+            MaterialTheme {
+                BookmarkEntryListItem(
+                    entry = entry,
+                    onClick = {},
+                    onRemove = { removedEntryId = entry.id },
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("bookmark-list-item-${entry.id}")
+            .performTouchInput { swipeLeft() }
+
+        composeRule.runOnIdle {
+            org.junit.Assert.assertEquals(entry.id, removedEntryId)
+        }
     }
 }
 
