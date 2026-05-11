@@ -107,9 +107,7 @@ fun ReferenceArticleScreen(
                             title = stringResource(R.string.about_tailo_title),
                             onClick = { selectedArticle = ReferenceArticle.Tailo },
                         )
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                        )
+                        HorizontalDivider()
                         ReferenceNavRow(
                             icon = Icons.AutoMirrored.Outlined.TextSnippet,
                             title = stringResource(R.string.about_hanji_title),

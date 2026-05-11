@@ -434,7 +434,7 @@ internal fun DictionaryResultList(
                             },
                         )
                         if (index < results.lastIndex) {
-                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                            HorizontalDivider()
                         }
                     }
                 }
@@ -528,7 +528,7 @@ internal fun RecentSearchHistoryCard(
                     },
                 )
                 if (index < recentSearches.take(8).lastIndex) {
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                    HorizontalDivider()
                 }
             }
         }

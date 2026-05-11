@@ -248,7 +248,7 @@ fun BookmarksScreen(
                                             },
                                         )
                                         if (index < uiState.entries.lastIndex) {
-                                            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                                            HorizontalDivider()
                                         }
                                     }
                                 }

@@ -136,9 +136,7 @@ fun LicenseSummaryScreen(
 
 @Composable
 private fun LicenseDivider() {
-    HorizontalDivider(
-        modifier = Modifier.padding(horizontal = 16.dp),
-    )
+    HorizontalDivider()
 }
 
 @Composable

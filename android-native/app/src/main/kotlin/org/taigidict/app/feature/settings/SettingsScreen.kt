@@ -343,7 +343,7 @@ private fun DisplaySettingsCard(
                 optionLabel = { it.displayLabel() },
                 onSelect = onSelectLanguage,
             )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider()
             PreferenceMenuRow(
                 title = stringResource(R.string.settings_theme_title),
                 value = selectedTheme.displayLabel(),
@@ -352,7 +352,7 @@ private fun DisplaySettingsCard(
                 optionLabel = { it.displayLabel() },
                 onSelect = onSelectTheme,
             )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider()
             ListItem(
                 headlineContent = {
                     Text(text = stringResource(R.string.settings_text_scale_title))
@@ -468,7 +468,7 @@ private fun InfoAndMaintenanceCard(
                     )
                 },
             )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider()
             ListItem(
                 modifier = Modifier.clickable(onClick = onOpenAbout),
                 leadingContent = {
@@ -489,7 +489,7 @@ private fun InfoAndMaintenanceCard(
                     )
                 },
             )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider()
             ListItem(
                 modifier = Modifier.clickable(onClick = onOpenReference),
                 leadingContent = {

@@ -178,9 +178,7 @@ private fun AboutSectionCard(content: @Composable () -> Unit) {
 
 @Composable
 private fun AboutDivider() {
-    HorizontalDivider(
-        modifier = Modifier.padding(horizontal = 16.dp),
-    )
+    HorizontalDivider()
 }
 
 @Composable

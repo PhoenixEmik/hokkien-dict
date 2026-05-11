@@ -220,7 +220,7 @@ private fun MaintenanceActionsCard(
                 },
             )
 
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider()
 
             ListItem(
                 modifier = Modifier
@@ -278,12 +278,12 @@ private fun DictionarySummaryCard(
                 key = stringResource(R.string.settings_entry_count_label),
                 value = numberFormatter.format(bundle.entryCount),
             )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider()
             SettingsKeyValueRow(
                 key = stringResource(R.string.settings_sense_count_label),
                 value = numberFormatter.format(bundle.senseCount),
             )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider()
             SettingsKeyValueRow(
                 key = stringResource(R.string.settings_example_count_label),
                 value = numberFormatter.format(bundle.exampleCount),
@@ -309,7 +309,7 @@ private fun DictionaryMetadataCard(
             }
             sourceModifiedAt?.let {
                 if (builtAt != null) {
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                    HorizontalDivider()
                 }
                 SettingsKeyValueRow(
                     key = stringResource(R.string.settings_time_source_updated_label),

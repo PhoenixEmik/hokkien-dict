@@ -123,7 +123,7 @@ private fun ThirdPartySectionCard(
             entries.forEachIndexed { index, entry ->
                 ThirdPartyRow(entry = entry, icon = icon)
                 if (index < entries.lastIndex) {
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                    HorizontalDivider()
                 }
             }
         }
