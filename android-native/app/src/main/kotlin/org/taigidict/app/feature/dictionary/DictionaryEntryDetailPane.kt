@@ -602,7 +602,7 @@ private fun DictionaryDetailListSection(
                     style = scaledBodyStyle,
                 )
                 if (index < values.lastIndex) {
-                    HorizontalDivider(thickness = 0.5.dp)
+                    HorizontalDivider()
                 }
             }
         }

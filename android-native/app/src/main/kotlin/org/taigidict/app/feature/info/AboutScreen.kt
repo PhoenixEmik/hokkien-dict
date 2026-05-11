@@ -180,7 +180,6 @@ private fun AboutSectionCard(content: @Composable () -> Unit) {
 private fun AboutDivider() {
     HorizontalDivider(
         modifier = Modifier.padding(horizontal = 16.dp),
-        thickness = 0.5.dp,
     )
 }
 

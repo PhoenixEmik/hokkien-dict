@@ -205,11 +205,11 @@ private fun MarkdownTable(table: MarkdownBlock.Table) {
                 cells = table.headers,
                 isHeader = true,
             )
-            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), thickness = 0.5.dp)
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
             table.rows.forEachIndexed { index, row ->
                 MarkdownTableRow(cells = row, isHeader = false)
                 if (index < table.rows.lastIndex) {
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), thickness = 0.5.dp)
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                 }
             }
         }

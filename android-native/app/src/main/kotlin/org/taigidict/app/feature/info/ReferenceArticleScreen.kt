@@ -109,7 +109,6 @@ fun ReferenceArticleScreen(
                         )
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = 16.dp),
-                            thickness = 0.5.dp,
                         )
                         ReferenceNavRow(
                             icon = Icons.AutoMirrored.Outlined.TextSnippet,

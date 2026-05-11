@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -15,7 +16,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -77,7 +77,7 @@ fun ThirdPartyLicensesScreen(
                 val entry = CoreEntries[index]
                 ThirdPartyRow(entry = entry, icon = Icons.Outlined.ShoppingBag)
                 if (index < CoreEntries.lastIndex) {
-                    HorizontalDivider(thickness = 0.5.dp)
+                    HorizontalDivider()
                 }
             }
             item {
@@ -87,7 +87,7 @@ fun ThirdPartyLicensesScreen(
                 val entry = AndroidEntries[index]
                 ThirdPartyRow(entry = entry, icon = Icons.Outlined.Android)
                 if (index < AndroidEntries.lastIndex) {
-                    HorizontalDivider(thickness = 0.5.dp)
+                    HorizontalDivider()
                 }
             }
         }
@@ -96,17 +96,11 @@ fun ThirdPartyLicensesScreen(
 
 @Composable
 private fun SectionLabel(text: String) {
-    ListItem(
-        headlineContent = {
-            Text(
-                text = text,
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
-            )
-        },
-        colors = ListItemDefaults.colors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-        ),
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(start = 16.dp, top = 24.dp, end = 16.dp, bottom = 8.dp),
     )
 }
 
