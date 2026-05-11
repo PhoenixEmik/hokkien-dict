@@ -223,10 +223,14 @@ struct DictionaryDetailView: View {
                 linkedEntry = nil
                 return
             }
+            await refreshBookmarkState(entryID: sourceEntry.id)
+            guard !Task.isCancelled else {
+                return
+            }
             await viewModel.prepare(entry: sourceEntry, locale: appLocale)
-            await refreshBookmarkState()
-        }
-        .task(id: viewModel.entry?.id) {
+            guard !Task.isCancelled else {
+                return
+            }
             await refreshBookmarkState()
         }
         .alert(
@@ -276,7 +280,19 @@ struct DictionaryDetailView: View {
             return
         }
 
-        let bookmarked = await bookmarkStore.isBookmarked(entry.id)
+        await refreshBookmarkState(entryID: entry.id)
+    }
+
+    private func refreshBookmarkState(entryID: Int64) async {
+        guard let bookmarkStore else {
+            isBookmarked = false
+            return
+        }
+
+        let bookmarked = await bookmarkStore.isBookmarked(entryID)
+        guard !Task.isCancelled else {
+            return
+        }
         isBookmarked = bookmarked
     }
 }
