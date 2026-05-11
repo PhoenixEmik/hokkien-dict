@@ -56,11 +56,6 @@ public struct BookmarksScreen: View {
                                 DictionaryEntryRowView(entry: entry)
                             }
                             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                ShareLink(item: WordDetailViewModel.shareText(for: entry)) {
-                                    Label(AppLocalizer.text(.share, locale: appLocale), systemImage: "square.and.arrow.up")
-                                }
-                                .tint(.blue)
-
                                 Button(role: .destructive) {
                                     Task {
                                         await viewModel.removeBookmark(entryID: entry.id)
@@ -68,6 +63,11 @@ public struct BookmarksScreen: View {
                                 } label: {
                                     Label(AppLocalizer.text(.commonDelete, locale: appLocale), systemImage: "trash")
                                 }
+
+                                ShareLink(item: WordDetailViewModel.shareText(for: entry)) {
+                                    Label(AppLocalizer.text(.share, locale: appLocale), systemImage: "square.and.arrow.up")
+                                }
+                                .tint(.blue)
                             }
                         }
                     }
