@@ -12,6 +12,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeLeft
+import androidx.compose.ui.test.swipeRight
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
@@ -56,6 +57,7 @@ class BookmarksScreenSmokeTest {
                     entry = entry,
                     onClick = {},
                     onRemove = {},
+                    onShare = {},
                 )
             }
         }
@@ -76,6 +78,7 @@ class BookmarksScreenSmokeTest {
                     entry = entry,
                     onClick = {},
                     onRemove = { removedEntryId = entry.id },
+                    onShare = {},
                 )
             }
         }
@@ -85,6 +88,30 @@ class BookmarksScreenSmokeTest {
 
         composeRule.runOnIdle {
             org.junit.Assert.assertEquals(entry.id, removedEntryId)
+        }
+    }
+
+    @Test
+    fun entryListItem_swipeRightSharesBookmark() {
+        val entry = sampleBookmarkedEntry()
+        var sharedEntryId by mutableStateOf<Long?>(null)
+
+        composeRule.setContent {
+            MaterialTheme {
+                BookmarkEntryListItem(
+                    entry = entry,
+                    onClick = {},
+                    onRemove = {},
+                    onShare = { sharedEntryId = entry.id },
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("bookmark-list-item-${entry.id}")
+            .performTouchInput { swipeRight() }
+
+        composeRule.runOnIdle {
+            org.junit.Assert.assertEquals(entry.id, sharedEntryId)
         }
     }
 }

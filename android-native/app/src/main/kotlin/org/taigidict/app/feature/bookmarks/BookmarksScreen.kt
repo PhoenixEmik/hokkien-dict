@@ -1,5 +1,8 @@
 package org.taigidict.app.feature.bookmarks
 
+import android.app.Activity
+import android.content.Intent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
@@ -7,6 +10,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
@@ -21,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -50,11 +55,13 @@ import org.taigidict.app.app.TaigiDictApplication
 import org.taigidict.app.domain.model.DictionaryEntry
 import org.taigidict.app.feature.common.DictionaryFallbackText
 import org.taigidict.app.feature.dictionary.DictionaryEntryDetailPane
+import org.taigidict.app.feature.dictionary.DictionaryShareFormatter
 
 private val RootHorizontalPadding = 16.dp
 private val RootVerticalPadding = 16.dp
 private val BookmarksGridMinCellWidth = 320.dp
 private val BookmarksGridSpacing = 12.dp
+private const val BookmarkSwipeRemoveThresholdFraction = 0.65f
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,7 +71,8 @@ fun BookmarksScreen(
     viewModel: BookmarksViewModel = viewModel(key = "bookmarks-$dataVersion"),
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
-    val appContainer = (LocalContext.current.applicationContext as TaigiDictApplication).appContainer
+    val context = LocalContext.current
+    val appContainer = (context.applicationContext as TaigiDictApplication).appContainer
     val bookmarkedIds by appContainer.bookmarkStore.bookmarkedIds.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val showsEntryDetail = uiState.isLoadingEntryDetail || uiState.selectedEntry != null || uiState.entryDetailErrorMessage != null
@@ -161,6 +169,14 @@ fun BookmarksScreen(
                                             entry = entry,
                                             onClick = { viewModel.onEntrySelected(entry.id) },
                                             onRemove = { viewModel.removeBookmark(entry.id) },
+                                            onShare = {
+                                                shareBookmarkedEntry(
+                                                    context = context,
+                                                    entry = entry,
+                                                    fallbackTitle = context.getString(R.string.dictionary_share_title_fallback),
+                                                    footer = context.getString(R.string.dictionary_share_footer),
+                                                )
+                                            },
                                         )
                                         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp)
                                     }
@@ -206,35 +222,69 @@ internal fun BookmarkEntryListItem(
     entry: DictionaryEntry,
     onClick: () -> Unit,
     onRemove: () -> Unit,
+    onShare: () -> Unit,
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
+        positionalThreshold = { totalDistance ->
+            totalDistance * BookmarkSwipeRemoveThresholdFraction
+        },
         confirmValueChange = { value ->
-            if (value == SwipeToDismissBoxValue.EndToStart) {
-                onRemove()
-                true
-            } else {
-                false
+            when (value) {
+                SwipeToDismissBoxValue.StartToEnd -> {
+                    onShare()
+                    false
+                }
+                SwipeToDismissBoxValue.EndToStart -> {
+                    onRemove()
+                    true
+                }
+                SwipeToDismissBoxValue.Settled -> false
             }
         },
     )
 
     SwipeToDismissBox(
         state = dismissState,
-        enableDismissFromStartToEnd = false,
         backgroundContent = {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 20.dp)
-                    .testTag("bookmark-swipe-remove-background-${entry.id}"),
-                contentAlignment = Alignment.CenterEnd,
+                    .testTag("bookmark-swipe-actions-background-${entry.id}"),
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.Delete,
-                    contentDescription = stringResource(R.string.dictionary_detail_remove_bookmark),
-                    tint = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.size(22.dp),
-                )
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .fillMaxHeight()
+                        .fillMaxWidth(0.35f)
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.CenterStart,
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Share,
+                        contentDescription = stringResource(R.string.dictionary_share_action),
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .padding(start = 20.dp)
+                            .size(22.dp),
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .fillMaxHeight()
+                        .fillMaxWidth(0.35f)
+                        .background(MaterialTheme.colorScheme.errorContainer),
+                    contentAlignment = Alignment.CenterEnd,
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Delete,
+                        contentDescription = stringResource(R.string.dictionary_detail_remove_bookmark),
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier
+                            .padding(end = 20.dp)
+                            .size(22.dp),
+                    )
+                }
             }
         },
         content = {
@@ -319,4 +369,31 @@ internal fun BookmarkEntryGridItem(
             },
         )
     }
+}
+
+private fun shareBookmarkedEntry(
+    context: android.content.Context,
+    entry: DictionaryEntry,
+    fallbackTitle: String,
+    footer: String,
+) {
+    val title = DictionaryShareFormatter.buildShareTitle(
+        entry = entry,
+        fallbackTitle = fallbackTitle,
+    )
+    val text = DictionaryShareFormatter.buildShareText(
+        entry = entry,
+        fallbackHanji = fallbackTitle,
+        footer = footer,
+    )
+    val shareIntent = Intent(Intent.ACTION_SEND)
+        .setType("text/plain")
+        .putExtra(Intent.EXTRA_SUBJECT, title)
+        .putExtra(Intent.EXTRA_TITLE, title)
+        .putExtra(Intent.EXTRA_TEXT, text)
+    val chooserIntent = Intent.createChooser(shareIntent, title)
+    if (context !is Activity) {
+        chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    context.startActivity(chooserIntent)
 }
