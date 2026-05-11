@@ -58,10 +58,18 @@ public struct BookmarksScreen: View {
                                 DictionaryEntryRowView(entry: entry)
                             }
                             .foregroundStyle(.primary)
-                        }
-                        .onDelete { offsets in
-                            Task {
-                                await viewModel.removeBookmarks(at: offsets)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                ShareLink(item: WordDetailViewModel.shareText(for: entry)) {
+                                    Label(AppLocalizer.text(.share, locale: appLocale), systemImage: "square.and.arrow.up")
+                                }
+
+                                Button(role: .destructive) {
+                                    Task {
+                                        await viewModel.removeBookmark(entryID: entry.id)
+                                    }
+                                } label: {
+                                    Label(AppLocalizer.text(.commonDelete, locale: appLocale), systemImage: "trash")
+                                }
                             }
                         }
                     }

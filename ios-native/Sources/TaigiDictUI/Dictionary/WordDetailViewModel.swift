@@ -79,6 +79,10 @@ public final class WordDetailViewModel {
             return ""
         }
 
+        return Self.shareText(for: entry)
+    }
+
+    public static func shareText(for entry: DictionaryEntry) -> String {
         var lines = [
             entry.hanji,
             entry.romanization,
