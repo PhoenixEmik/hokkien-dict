@@ -52,12 +52,9 @@ public struct BookmarksScreen: View {
                 } else {
                     Section(AppLocalizer.text(.bookmarksSectionSaved, locale: appLocale)) {
                         ForEach(viewModel.entries) { entry in
-                            Button {
-                                viewModel.detailEntry = entry
-                            } label: {
+                            NavigationLink(value: entry) {
                                 DictionaryEntryRowView(entry: entry)
                             }
-                            .foregroundStyle(.primary)
                             .swipeActions(edge: .leading, allowsFullSwipe: false) {
                                 ShareLink(item: WordDetailViewModel.shareText(for: entry)) {
                                     Label(AppLocalizer.text(.share, locale: appLocale), systemImage: "square.and.arrow.up")
@@ -78,7 +75,7 @@ public struct BookmarksScreen: View {
                 }
             }
             .navigationTitle(AppLocalizer.text(.bookmarksTitle, locale: appLocale))
-            .navigationDestination(item: $viewModel.detailEntry) { entry in
+            .navigationDestination(for: DictionaryEntry.self) { entry in
                 DictionaryDetailView(
                     entry: entry,
                     library: library,
