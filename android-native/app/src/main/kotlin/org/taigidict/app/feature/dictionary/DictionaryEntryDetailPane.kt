@@ -620,11 +620,18 @@ private fun DictionaryDetailListSection(
         fontSize = MaterialTheme.typography.bodyMedium.fontSize * readingTextScale.toFloat(),
     )
 
-    Card {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        ),
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 18.dp),
+                .padding(
+                    horizontal = DetailCardHorizontalPadding,
+                    vertical = DetailCardVerticalPadding,
+                ),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
