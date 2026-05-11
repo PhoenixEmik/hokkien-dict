@@ -94,6 +94,8 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case audioActionPause
     case audioActionResume
     case audioActionRestart
+    case audioRestartConfirmTitle
+    case audioRestartConfirmBody
 
     case localeTraditionalChinese
     case localeSimplifiedChinese

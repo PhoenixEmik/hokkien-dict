@@ -4,6 +4,7 @@ import TaigiDictCore
 public struct SettingsScreen: View {
     @EnvironmentObject private var appLanguageManager: AppLanguageManager
     @State private var viewModel: SettingsViewModel
+    @State private var pendingAudioRestart: PendingAudioRestart?
     @Environment(\.locale) private var locale
     private let onMaintenanceCompleted: () -> Void
     private let onSettingsChanged: (AppSettingsSnapshot) -> Void
@@ -32,6 +33,8 @@ public struct SettingsScreen: View {
 
     public var body: some View {
         let appLocale = AppLocalizer.appLocale(from: locale)
+        let wordAudioTitle = AppLocalizer.text(.settingsWordAudio, locale: appLocale)
+        let sentenceAudioTitle = AppLocalizer.text(.settingsSentenceAudio, locale: appLocale)
         NavigationStack {
             Form {
                 Section(AppLocalizer.text(.settingsDisplayLanguageSection, locale: appLocale)) {
@@ -110,25 +113,21 @@ public struct SettingsScreen: View {
 
                 Section(AppLocalizer.text(.settingsOfflineAudioSection, locale: appLocale)) {
                     AudioArchiveResourceRow(
-                        title: AppLocalizer.text(.settingsWordAudio, locale: appLocale),
+                        title: wordAudioTitle,
                         locale: appLocale,
                         snapshot: viewModel.snapshot(for: .word),
                         isRunningAction: viewModel.isAudioActionRunning(for: .word)
                     ) { action in
-                        Task {
-                            await viewModel.runAudioAction(action, for: .word)
-                        }
+                        handleAudioAction(action, for: .word, title: wordAudioTitle)
                     }
 
                     AudioArchiveResourceRow(
-                        title: AppLocalizer.text(.settingsSentenceAudio, locale: appLocale),
+                        title: sentenceAudioTitle,
                         locale: appLocale,
                         snapshot: viewModel.snapshot(for: .sentence),
                         isRunningAction: viewModel.isAudioActionRunning(for: .sentence)
                     ) { action in
-                        Task {
-                            await viewModel.runAudioAction(action, for: .sentence)
-                        }
+                        handleAudioAction(action, for: .sentence, title: sentenceAudioTitle)
                     }
                 }
             }
@@ -169,7 +168,65 @@ public struct SettingsScreen: View {
         } message: {
             Text(AppLocalizer.text(.settingsClearConfirmBody, locale: appLocale))
         }
+        .confirmationDialog(
+            AppLocalizer.text(.audioRestartConfirmTitle, locale: appLocale),
+            isPresented: Binding(
+                get: { pendingAudioRestart != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        pendingAudioRestart = nil
+                    }
+                }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button(AppLocalizer.text(.audioActionRestart, locale: appLocale)) {
+                confirmPendingAudioRestart()
+            }
+            Button(AppLocalizer.text(.commonCancel, locale: appLocale), role: .cancel) {
+                pendingAudioRestart = nil
+            }
+        } message: {
+            Text(
+                AppLocalizer.formattedText(
+                    .audioRestartConfirmBody,
+                    locale: appLocale,
+                    pendingAudioRestart?.title ?? ""
+                )
+            )
+        }
     }
+
+    private func handleAudioAction(
+        _ action: SettingsViewModel.AudioResourceAction,
+        for type: AudioArchiveType,
+        title: String
+    ) {
+        switch action {
+        case .restart:
+            pendingAudioRestart = PendingAudioRestart(archiveType: type, title: title)
+        case .start, .pause, .resume:
+            Task {
+                await viewModel.runAudioAction(action, for: type)
+            }
+        }
+    }
+
+    private func confirmPendingAudioRestart() {
+        guard let restart = pendingAudioRestart else {
+            return
+        }
+
+        pendingAudioRestart = nil
+        Task {
+            await viewModel.runAudioAction(.restart, for: restart.archiveType)
+        }
+    }
+}
+
+private struct PendingAudioRestart {
+    let archiveType: AudioArchiveType
+    let title: String
 }
 
 private extension AppLanguage {

@@ -789,6 +789,52 @@
         }
       }
     },
+    "audioRestartConfirmBody" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This will redownload %@ and replace the current offline audio resource."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这会重新下载「%@」并取代目前的离线音讯资源。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這會重新下載「%@」並取代目前的離線音訊資源。"
+          }
+        }
+      }
+    },
+    "audioRestartConfirmTitle" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redownload audio resource?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新下载音讯资源？"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新下載音訊資源？"
+          }
+        }
+      }
+    },
     "audioNotInitialized" : {
       "extractionState" : "stale",
       "localizations" : {
