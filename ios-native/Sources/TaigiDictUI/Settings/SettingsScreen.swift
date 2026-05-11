@@ -218,7 +218,15 @@ private struct AudioArchiveResourceRow: View {
                         }
                     }
                 } label: {
-                    Label(AppLocalizer.text(.settingsActionsMenu, locale: locale), systemImage: "ellipsis.circle")
+                    HStack(spacing: 6) {
+                        Image(systemName: "ellipsis.circle")
+                            .font(.system(size: 22))
+                            .frame(width: 24, height: 24)
+                            .accessibilityHidden(true)
+
+                        Text(AppLocalizer.text(.settingsActionsMenu, locale: locale))
+                    }
+                    .fixedSize(horizontal: true, vertical: true)
                 }
                 .disabled(isRunningAction || availableActions.isEmpty)
             }
