@@ -22,7 +22,6 @@ import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -382,7 +381,7 @@ private fun DictionaryEntryDetailContent(
 
             if (entry.alternativePronunciations.isNotEmpty()) {
                 item("alt-pronunciations-${entry.id}") {
-                    DictionaryDetailStaticSection(
+                    DictionaryDetailListSection(
                         title = stringResource(R.string.dictionary_detail_alternative_pronunciations),
                         values = entry.alternativePronunciations,
                         readingTextScale = readingTextScale,
@@ -392,7 +391,7 @@ private fun DictionaryEntryDetailContent(
 
             if (entry.contractedPronunciations.isNotEmpty()) {
                 item("contracted-pronunciations-${entry.id}") {
-                    DictionaryDetailStaticSection(
+                    DictionaryDetailListSection(
                         title = stringResource(R.string.dictionary_detail_contracted_pronunciations),
                         values = entry.contractedPronunciations,
                         readingTextScale = readingTextScale,
@@ -402,7 +401,7 @@ private fun DictionaryEntryDetailContent(
 
             if (entry.colloquialPronunciations.isNotEmpty()) {
                 item("colloquial-pronunciations-${entry.id}") {
-                    DictionaryDetailStaticSection(
+                    DictionaryDetailListSection(
                         title = stringResource(R.string.dictionary_detail_colloquial_pronunciations),
                         values = entry.colloquialPronunciations,
                         readingTextScale = readingTextScale,
@@ -713,48 +712,6 @@ private fun DictionaryDetailRelationshipSection(
                             style = scaledChipStyle,
                         )
                     },
-                    colors = AssistChipDefaults.assistChipColors(),
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun DictionaryDetailStaticSection(
-    title: String,
-    values: List<String>,
-    readingTextScale: Double,
-) {
-    val scaledLabelStyle = MaterialTheme.typography.labelLarge.copy(
-        fontSize = MaterialTheme.typography.labelLarge.fontSize * readingTextScale.toFloat(),
-    )
-    val scaledChipStyle = MaterialTheme.typography.bodySmall.copy(
-        fontSize = MaterialTheme.typography.bodySmall.fontSize * readingTextScale.toFloat(),
-    )
-
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(
-            text = title,
-            style = scaledLabelStyle,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            values.forEach { value ->
-                AssistChip(
-                    onClick = {},
-                    enabled = false,
-                    label = {
-                        DictionaryFallbackText(
-                            text = value,
-                            style = scaledChipStyle,
-                        )
-                    },
-                    colors = AssistChipDefaults.assistChipColors(),
                 )
             }
         }
