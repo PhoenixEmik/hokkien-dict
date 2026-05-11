@@ -27,7 +27,7 @@ public struct BookmarksScreen: View {
         NavigationStack {
             content(appLocale: appLocale)
             .navigationTitle(AppLocalizer.text(.bookmarksTitle, locale: appLocale))
-            .navigationDestination(item: $viewModel.detailEntry) { entry in
+            .navigationDestination(for: DictionaryEntry.self) { entry in
                 DictionaryDetailView(
                     entry: entry,
                     library: library,
@@ -73,12 +73,10 @@ public struct BookmarksScreen: View {
         } else {
             List {
                 ForEach(viewModel.entries) { entry in
-                    Button {
-                        viewModel.detailEntry = entry
-                    } label: {
+                    NavigationLink(value: entry) {
                         DictionaryEntryRowView(entry: entry)
+                            .padding(.vertical, 4)
                     }
-                    .foregroundStyle(.primary)
                 }
                 .onDelete { offsets in
                     Task {
