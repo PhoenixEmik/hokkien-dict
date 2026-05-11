@@ -289,19 +289,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "1.3.0"
+            "value" : "1.3.2"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "1.3.0"
+            "value" : "1.3.2"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "1.3.0"
+            "value" : "1.3.2"
           }
         }
       }
