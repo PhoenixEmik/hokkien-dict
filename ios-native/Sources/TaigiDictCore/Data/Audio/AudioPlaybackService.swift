@@ -22,9 +22,13 @@ public actor AudioPlaybackService: NSObject, AudioPlaybackControlling {
             return
         }
 
+        try configureAudioSessionIfNeeded()
+
         let nextPlayer = try AVAudioPlayer(contentsOf: clipURL)
         nextPlayer.prepareToPlay()
-        nextPlayer.play()
+        guard nextPlayer.play() else {
+            throw AudioPlaybackError.unableToStartPlayback
+        }
 
         player = nextPlayer
         activeClipID = clipID
@@ -41,4 +45,16 @@ public actor AudioPlaybackService: NSObject, AudioPlaybackControlling {
         }
         return nil
     }
+
+    private func configureAudioSessionIfNeeded() throws {
+#if os(iOS) || os(tvOS) || os(watchOS)
+        let session = AVAudioSession.sharedInstance()
+        try session.setCategory(.playback, mode: .spokenAudio, options: [])
+        try session.setActive(true)
+#endif
+    }
+}
+
+public enum AudioPlaybackError: Error, Equatable {
+    case unableToStartPlayback
 }
