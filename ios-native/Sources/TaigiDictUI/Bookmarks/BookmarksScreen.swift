@@ -55,13 +55,12 @@ public struct BookmarksScreen: View {
                             NavigationLink(value: entry) {
                                 DictionaryEntryRowView(entry: entry)
                             }
-                            .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                 ShareLink(item: WordDetailViewModel.shareText(for: entry)) {
                                     Label(AppLocalizer.text(.share, locale: appLocale), systemImage: "square.and.arrow.up")
                                 }
                                 .tint(.blue)
-                            }
-                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+
                                 Button(role: .destructive) {
                                     Task {
                                         await viewModel.removeBookmark(entryID: entry.id)
