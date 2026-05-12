@@ -80,6 +80,7 @@ fun DictionaryEntryDetailPane(
     onToggleBookmark: () -> Unit,
     onBack: () -> Unit,
     onOpenLinkedWord: (String) -> Unit,
+    showTopBar: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -94,6 +95,7 @@ fun DictionaryEntryDetailPane(
             title = entry?.hanji.orEmpty(),
             onBack = onBack,
             isBookmarked = isBookmarked,
+            showTopBar = showTopBar,
             modifier = modifier,
         )
 
@@ -105,6 +107,7 @@ fun DictionaryEntryDetailPane(
             onToggleBookmark = {},
             isBookmarked = isBookmarked,
             showActions = false,
+            showTopBar = showTopBar,
             modifier = modifier,
         )
 
@@ -151,6 +154,7 @@ fun DictionaryEntryDetailPane(
                         }
                     },
                     onOpenLinkedWord = onOpenLinkedWord,
+                    showTopBar = showTopBar,
                     modifier = Modifier.fillMaxSize(),
                 )
                 if (isLoading) {
@@ -199,20 +203,25 @@ private fun DetailLoadingScreen(
     title: String,
     onBack: () -> Unit,
     isBookmarked: Boolean,
+    showTopBar: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
         modifier = modifier,
         containerColor = appPageContainerColor(),
-        topBar = {
-            DetailTopBar(
-                title = title,
-                onBack = onBack,
-                onShareEntry = {},
-                onToggleBookmark = {},
-                isBookmarked = isBookmarked,
-                showActions = false,
-            )
+        topBar = if (showTopBar) {
+            {
+                DetailTopBar(
+                    title = title,
+                    onBack = onBack,
+                    onShareEntry = {},
+                    onToggleBookmark = {},
+                    isBookmarked = isBookmarked,
+                    showActions = false,
+                )
+            }
+        } else {
+            {}
         },
     ) { innerPadding ->
         Column(
@@ -243,20 +252,25 @@ private fun DetailStatusScreen(
     onToggleBookmark: () -> Unit,
     isBookmarked: Boolean,
     showActions: Boolean,
+    showTopBar: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
         modifier = modifier,
         containerColor = appPageContainerColor(),
-        topBar = {
-            DetailTopBar(
-                title = title,
-                onBack = onBack,
-                onShareEntry = onShareEntry,
-                onToggleBookmark = onToggleBookmark,
-                isBookmarked = isBookmarked,
-                showActions = showActions,
-            )
+        topBar = if (showTopBar) {
+            {
+                DetailTopBar(
+                    title = title,
+                    onBack = onBack,
+                    onShareEntry = onShareEntry,
+                    onToggleBookmark = onToggleBookmark,
+                    isBookmarked = isBookmarked,
+                    showActions = showActions,
+                )
+            }
+        } else {
+            {}
         },
     ) { innerPadding ->
         Column(
@@ -294,6 +308,7 @@ private fun DictionaryEntryDetailContent(
     onPlayEntryAudio: () -> Unit,
     onPlayExampleAudio: (DictionaryExample) -> Unit,
     onOpenLinkedWord: (String) -> Unit,
+    showTopBar: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val scaledHeadlineStyle = MaterialTheme.typography.headlineLarge.copy(
@@ -312,15 +327,19 @@ private fun DictionaryEntryDetailContent(
     Scaffold(
         modifier = modifier,
         containerColor = appPageContainerColor(),
-        topBar = {
-            DetailTopBar(
-                title = entry.hanji,
-                onBack = onBack,
-                onShareEntry = onShareEntry,
-                onToggleBookmark = onToggleBookmark,
-                isBookmarked = isBookmarked,
-                showActions = true,
-            )
+        topBar = if (showTopBar) {
+            {
+                DetailTopBar(
+                    title = entry.hanji,
+                    onBack = onBack,
+                    onShareEntry = onShareEntry,
+                    onToggleBookmark = onToggleBookmark,
+                    isBookmarked = isBookmarked,
+                    showActions = true,
+                )
+            }
+        } else {
+            {}
         },
     ) { innerPadding ->
         LazyColumn(

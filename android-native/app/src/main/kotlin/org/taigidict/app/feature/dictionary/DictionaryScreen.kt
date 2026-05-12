@@ -103,6 +103,7 @@ fun DictionaryScreen(
                 },
                 onBack = viewModel::onEntryDetailDismissed,
                 onOpenLinkedWord = viewModel::onLinkedWordSelected,
+                                showTopBar = false,
                 modifier = Modifier.fillMaxSize(),
             )
             return@BoxWithConstraints
