@@ -1,14 +1,18 @@
 package org.taigidict.app.data.source
 
 import android.content.res.AssetManager
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -61,6 +65,11 @@ class DictionarySourceResourceStore(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : DictionarySourceResourceManaging {
 
+    companion object {
+        private const val CONNECTION_TIMEOUT_MS = 15_000
+        private const val READ_TIMEOUT_MS = 15_000
+    }
+
     private val _snapshot = MutableStateFlow(DownloadSnapshot())
     override val snapshot: StateFlow<DownloadSnapshot> = _snapshot.asStateFlow()
 
@@ -74,6 +83,13 @@ class DictionarySourceResourceStore(
         localSourceDirectory.parentFile,
         "${localSourceDirectory.name}.backup",
     )
+    private val activeNetworkLock = Any()
+
+    @Volatile
+    private var activeConnection: HttpURLConnection? = null
+
+    @Volatile
+    private var activeInputStream: InputStream? = null
 
     override suspend fun refresh(): Result<Unit> = withContext(ioDispatcher) {
         runCatching {
@@ -193,13 +209,16 @@ class DictionarySourceResourceStore(
         }
     }
 
-    override suspend fun pauseDownload(): Result<Unit> = runCatching {
-        val pausedBytes = localSourceSizeIncludingTemp(stagingSourceDirectory)
-        _snapshot.value = DownloadSnapshot(
-            state = DownloadSnapshot.State.Paused,
-            downloadedBytes = pausedBytes,
-            totalBytes = _snapshot.value.totalBytes,
-        )
+    override suspend fun pauseDownload(): Result<Unit> = withContext(ioDispatcher) {
+        runCatching {
+            cancelActiveNetworkRequests()
+            val pausedBytes = localSourceSizeIncludingTemp(stagingSourceDirectory)
+            _snapshot.value = DownloadSnapshot(
+                state = DownloadSnapshot.State.Paused,
+                downloadedBytes = pausedBytes,
+                totalBytes = _snapshot.value.totalBytes,
+            )
+        }
     }
 
     override suspend fun resumeDownload(): Result<Unit> {
@@ -233,27 +252,45 @@ class DictionarySourceResourceStore(
         File(stagingSourceDirectory, "dictionary_manifest.json").writeBytes(manifestBytes)
     }
 
-    private fun downloadFile(urlString: String): ByteArray {
-        val connection = URL(urlString).openConnection() as HttpURLConnection
+    private suspend fun downloadFile(urlString: String): ByteArray {
+        val connection = openManagedConnection(urlString)
         return try {
             connection.requestMethod = "GET"
             if (connection.responseCode == 200) {
-                connection.inputStream.use { it.readBytes() }
+                connection.inputStream.use { input ->
+                    registerActiveInputStream(input)
+                    try {
+                        val output = ByteArrayOutputStream()
+                        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                        val coroutineContext = currentCoroutineContext()
+                        while (true) {
+                            coroutineContext.ensureActive()
+                            val read = input.read(buffer)
+                            if (read <= 0) {
+                                break
+                            }
+                            output.write(buffer, 0, read)
+                        }
+                        output.toByteArray()
+                    } finally {
+                        clearActiveInputStream(input)
+                    }
+                }
             } else {
                 throw Exception("HTTP ${connection.responseCode}: ${connection.responseMessage}")
             }
         } finally {
-            connection.disconnect()
+            clearActiveConnection(connection)
         }
     }
 
-    private fun downloadEntriesFile(
+    private suspend fun downloadEntriesFile(
         urlString: String,
         targetTempFile: File,
         resumeBytes: Long,
         baseDownloadedBytes: Long,
     ): Long {
-        val connection = (URL(urlString).openConnection() as HttpURLConnection).apply {
+        val connection = openManagedConnection(urlString).apply {
             requestMethod = "GET"
             if (resumeBytes > 0) {
                 setRequestProperty("Range", "bytes=$resumeBytes-")
@@ -281,28 +318,77 @@ class DictionarySourceResourceStore(
             }
 
             connection.inputStream.use { input ->
-                FileOutputStream(targetTempFile, canAppend).buffered().use { output ->
-                    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-                    var downloaded = startingBytes
-                    while (true) {
-                        val read = input.read(buffer)
-                        if (read <= 0) {
-                            break
+                registerActiveInputStream(input)
+                try {
+                    FileOutputStream(targetTempFile, canAppend).buffered().use { output ->
+                        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                        var downloaded = startingBytes
+                        val coroutineContext = currentCoroutineContext()
+                        while (true) {
+                            coroutineContext.ensureActive()
+                            val read = input.read(buffer)
+                            if (read <= 0) {
+                                break
+                            }
+                            output.write(buffer, 0, read)
+                            downloaded += read.toLong()
+                            _snapshot.value = DownloadSnapshot(
+                                state = DownloadSnapshot.State.Downloading,
+                                downloadedBytes = baseDownloadedBytes + downloaded,
+                                totalBytes = totalBytes,
+                            )
                         }
-                        output.write(buffer, 0, read)
-                        downloaded += read.toLong()
-                        _snapshot.value = DownloadSnapshot(
-                            state = DownloadSnapshot.State.Downloading,
-                            downloadedBytes = baseDownloadedBytes + downloaded,
-                            totalBytes = totalBytes,
-                        )
                     }
+                } finally {
+                    clearActiveInputStream(input)
                 }
             }
 
             return targetTempFile.length()
         } finally {
+            clearActiveConnection(connection)
+        }
+    }
+
+    private fun openManagedConnection(urlString: String): HttpURLConnection {
+        return (URL(urlString).openConnection() as HttpURLConnection).apply {
+            connectTimeout = CONNECTION_TIMEOUT_MS
+            readTimeout = READ_TIMEOUT_MS
+            synchronized(activeNetworkLock) {
+                activeConnection = this
+            }
+        }
+    }
+
+    private fun registerActiveInputStream(inputStream: InputStream) {
+        synchronized(activeNetworkLock) {
+            activeInputStream = inputStream
+        }
+    }
+
+    private fun clearActiveInputStream(inputStream: InputStream) {
+        synchronized(activeNetworkLock) {
+            if (activeInputStream === inputStream) {
+                activeInputStream = null
+            }
+        }
+    }
+
+    private fun clearActiveConnection(connection: HttpURLConnection) {
+        synchronized(activeNetworkLock) {
+            if (activeConnection === connection) {
+                activeConnection = null
+            }
             connection.disconnect()
+        }
+    }
+
+    private fun cancelActiveNetworkRequests() {
+        synchronized(activeNetworkLock) {
+            runCatching { activeInputStream?.close() }
+            activeInputStream = null
+            activeConnection?.disconnect()
+            activeConnection = null
         }
     }
 
