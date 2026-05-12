@@ -22,7 +22,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/PhoenixEmik/SwiftyOpenCC.git",
-            revision: "b5f23fe4b62dd09c11f40ada67d1632a6151c26f"
+            exact: "1.3.1"
         ),
         .package(
             url: "https://github.com/groue/GRDB.swift.git",
