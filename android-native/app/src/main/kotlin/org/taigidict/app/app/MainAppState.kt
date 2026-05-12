@@ -24,11 +24,13 @@ class MainAppState(
     }
 
     fun invalidateDictionaryData() {
+        appContainer.resetDictionaryRepository()
         dictionaryDataVersion += 1
     }
 
     fun applyDatabaseGeneration(generation: Int) {
         if (generation > dictionaryDataVersion) {
+            appContainer.resetDictionaryRepository()
             dictionaryDataVersion = generation
         }
     }

@@ -34,6 +34,8 @@ abstract class DictionaryRoomDatabase : RoomDatabase() {
             )
 
             if (databaseFile.absolutePath != appDatabaseFile.absolutePath) {
+                // Re-opening with a replaced source file should not keep stale copied DB content.
+                context.applicationContext.deleteDatabase(databaseName)
                 builder.createFromFile(databaseFile)
             }
 

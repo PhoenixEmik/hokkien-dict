@@ -76,12 +76,32 @@ class AppContainer(
     internal val dictionaryRepositoryBackend: DictionaryRepositoryBackend =
         overrides.dictionaryRepositoryBackend
             ?: DictionaryRepositoryBackend.parse(BuildConfig.DICTIONARY_REPOSITORY_BACKEND)
-    val dictionaryRepository: DictionaryRepositoryDataSource by lazy {
-        DictionaryRepositoryFactory.create(
-            context = appContext,
-            databaseFile = dictionaryDatabaseFile,
-            backend = dictionaryRepositoryBackend,
-        )
+    private val dictionaryRepositoryLock = Any()
+    private var cachedDictionaryRepository: DictionaryRepositoryDataSource? = null
+
+    val dictionaryRepository: DictionaryRepositoryDataSource
+        get() = synchronized(dictionaryRepositoryLock) {
+            cachedDictionaryRepository ?: DictionaryRepositoryFactory.create(
+                context = appContext,
+                databaseFile = dictionaryDatabaseFile,
+                backend = dictionaryRepositoryBackend,
+            ).also { created ->
+                cachedDictionaryRepository = created
+            }
+        }
+
+    fun resetDictionaryRepository() {
+        val repositoryToClose = synchronized(dictionaryRepositoryLock) {
+            val previous = cachedDictionaryRepository
+            cachedDictionaryRepository = null
+            previous
+        }
+
+        if (repositoryToClose is AutoCloseable) {
+            runCatching {
+                repositoryToClose.close()
+            }
+        }
     }
     val bookmarkStore: BookmarkStore by lazy {
         overrides.bookmarkStore ?: BookmarkStore(context = appContext)

@@ -120,5 +120,5 @@ kapt {
 tasks.register("verifyRoomDebug") {
     group = "verification"
     description = "Builds and runs unit tests for the Room-backed debug variant."
-    dependsOn("assembleRoomDebug", "testRoomDebugUnitTest")
+    dependsOn("assembleRoomDebug", "testDebugUnitTest")
 }
