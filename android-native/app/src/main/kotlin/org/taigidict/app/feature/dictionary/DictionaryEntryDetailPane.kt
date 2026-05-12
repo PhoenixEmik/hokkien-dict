@@ -27,6 +27,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -89,7 +90,7 @@ fun DictionaryEntryDetailPane(
     var audioMessage by remember(entry?.id) { mutableStateOf<String?>(null) }
 
     when {
-        isLoading -> DetailLoadingScreen(
+        isLoading && entry == null -> DetailLoadingScreen(
             title = entry?.hanji.orEmpty(),
             onBack = onBack,
             isBookmarked = isBookmarked,
@@ -107,50 +108,89 @@ fun DictionaryEntryDetailPane(
             modifier = modifier,
         )
 
-        entry != null -> DictionaryEntryDetailContent(
-            audioMessage = audioMessage,
-            entry = entry,
-            openableLinkedWords = openableLinkedWords,
-            playbackState = playbackState,
-            isBookmarked = isBookmarked,
-            readingTextScale = 1.0,
-            onBack = onBack,
-            onToggleBookmark = onToggleBookmark,
-            onShareEntry = {
-                shareEntry(
-                    context = context,
-                    title = DictionaryShareFormatter.buildShareTitle(
-                        entry = entry,
-                        fallbackTitle = context.getString(R.string.dictionary_share_title_fallback),
-                    ),
-                    text = DictionaryShareFormatter.buildShareText(
-                        entry = entry,
-                        fallbackHanji = context.getString(R.string.dictionary_share_title_fallback),
-                        footer = context.getString(R.string.dictionary_share_footer),
-                    ),
+        entry != null -> Box(modifier = modifier.fillMaxSize()) {
+                DictionaryEntryDetailContent(
+                    audioMessage = audioMessage,
+                    entry = entry,
+                    openableLinkedWords = openableLinkedWords,
+                    playbackState = playbackState,
+                    isBookmarked = isBookmarked,
+                    readingTextScale = 1.0,
+                    onBack = onBack,
+                    onToggleBookmark = onToggleBookmark,
+                    onShareEntry = {
+                        shareEntry(
+                            context = context,
+                            title = DictionaryShareFormatter.buildShareTitle(
+                                entry = entry,
+                                fallbackTitle = context.getString(R.string.dictionary_share_title_fallback),
+                            ),
+                            text = DictionaryShareFormatter.buildShareText(
+                                entry = entry,
+                                fallbackHanji = context.getString(R.string.dictionary_share_title_fallback),
+                                footer = context.getString(R.string.dictionary_share_footer),
+                            ),
+                        )
+                    },
+                    onPlayEntryAudio = {
+                        scope.launch {
+                            audioMessage = audioResultMessage(
+                                result = audioPlayer.playEntryAudio(entry),
+                                missingClipMessage = context.getString(R.string.dictionary_audio_missing_clip),
+                                unavailableMessage = context.getString(R.string.dictionary_audio_unavailable),
+                            )
+                        }
+                    },
+                    onPlayExampleAudio = { example ->
+                        scope.launch {
+                            audioMessage = audioResultMessage(
+                                result = audioPlayer.playExampleAudio(example),
+                                missingClipMessage = context.getString(R.string.dictionary_audio_missing_clip),
+                                unavailableMessage = context.getString(R.string.dictionary_audio_unavailable),
+                            )
+                        }
+                    },
+                    onOpenLinkedWord = onOpenLinkedWord,
+                    modifier = Modifier.fillMaxSize(),
                 )
-            },
-            onPlayEntryAudio = {
-                scope.launch {
-                    audioMessage = audioResultMessage(
-                        result = audioPlayer.playEntryAudio(entry),
-                        missingClipMessage = context.getString(R.string.dictionary_audio_missing_clip),
-                        unavailableMessage = context.getString(R.string.dictionary_audio_unavailable),
-                    )
+                if (isLoading) {
+                    DetailLoadingOverlay()
                 }
-            },
-            onPlayExampleAudio = { example ->
-                scope.launch {
-                    audioMessage = audioResultMessage(
-                        result = audioPlayer.playExampleAudio(example),
-                        missingClipMessage = context.getString(R.string.dictionary_audio_missing_clip),
-                        unavailableMessage = context.getString(R.string.dictionary_audio_unavailable),
-                    )
-                }
-            },
-            onOpenLinkedWord = onOpenLinkedWord,
-            modifier = modifier,
-        )
+            }
+    }
+}
+
+@Composable
+private fun DetailLoadingOverlay() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag("dictionary-detail-loading-overlay"),
+        contentAlignment = Alignment.TopCenter,
+    ) {
+        Surface(
+            modifier = Modifier.padding(top = 12.dp),
+            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
+            tonalElevation = 4.dp,
+            shadowElevation = 2.dp,
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp),
+                    strokeWidth = 2.dp,
+                )
+                Text(
+                    text = stringResource(R.string.dictionary_detail_loading),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
     }
 }
 

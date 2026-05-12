@@ -187,6 +187,29 @@ class DictionaryScreenSmokeTest {
             context.getString(R.string.dictionary_detail_loading),
         ).assertCountEquals(0)
     }
+
+    @Test
+    fun detailPane_loadingWithExistingEntry_keepsContentVisible() {
+        val entry = sampleDictionaryEntry()
+
+        composeRule.setContent {
+            MaterialTheme {
+                DictionaryEntryDetailPane(
+                    isLoading = true,
+                    entry = entry,
+                    openableLinkedWords = setOf("字典"),
+                    errorMessage = null,
+                    isBookmarked = false,
+                    onToggleBookmark = {},
+                    onBack = {},
+                    onOpenLinkedWord = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithText(entry.hanji).assertIsDisplayed()
+        composeRule.onNodeWithTag("dictionary-detail-loading-overlay").assertIsDisplayed()
+    }
 }
 
 private fun sampleDictionaryEntry(): DictionaryEntry {

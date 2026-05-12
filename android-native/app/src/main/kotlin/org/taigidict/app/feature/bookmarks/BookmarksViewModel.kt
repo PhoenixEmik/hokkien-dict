@@ -75,16 +75,15 @@ class BookmarksViewModel(
             return
         }
 
+        _uiState.update {
+            it.copy(
+                isLoadingEntryDetail = true,
+                selectedEntry = sourceEntry,
+                openableLinkedWords = emptySet(),
+                entryDetailErrorMessage = null,
+            )
+        }
         viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    isLoadingEntryDetail = true,
-                    selectedEntry = null,
-                    openableLinkedWords = emptySet(),
-                    entryDetailErrorMessage = null,
-                )
-            }
-
             val result = withContext(ioDispatcher) {
                 runCatching {
                     val prepared = detailController.prepareEntryDetail(sourceEntry)
@@ -111,14 +110,13 @@ class BookmarksViewModel(
     fun onLinkedWordSelected(word: String) {
         val currentEntry = _uiState.value.selectedEntry ?: return
 
+        _uiState.update {
+            it.copy(
+                isLoadingEntryDetail = true,
+                entryDetailErrorMessage = null,
+            )
+        }
         viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    isLoadingEntryDetail = true,
-                    entryDetailErrorMessage = null,
-                )
-            }
-
             val result = withContext(ioDispatcher) {
                 runCatching {
                     val convertedWord = chineseConversionService.normalizeSearchInput(

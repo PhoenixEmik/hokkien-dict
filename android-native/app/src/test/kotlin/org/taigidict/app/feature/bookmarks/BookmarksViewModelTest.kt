@@ -3,17 +3,22 @@ package org.taigidict.app.feature.bookmarks
 import android.app.Application
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import java.util.UUID
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -31,7 +36,6 @@ import org.taigidict.app.domain.model.DictionaryBundle
 import org.taigidict.app.domain.model.DictionaryEntry
 import org.taigidict.app.domain.model.DictionaryExample
 import org.taigidict.app.domain.model.DictionarySense
-import java.util.UUID
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -99,6 +103,39 @@ class BookmarksViewModelTest {
     }
 
     @Test
+    fun onEntrySelected_keepsBookmarkVisibleWhileDetailLoads() = runTest(dispatcher) {
+        val source = sampleEntry(
+            id = 20,
+            hanji = "辭典",
+            romanization = "sû-tián",
+            wordSynonyms = listOf("字典"),
+        )
+        val repository = BlockingBookmarksRepository(
+            entryById = mapOf(source.id to source),
+            linkedEntriesByWord = mapOf("字典" to source),
+        )
+        val bookmarkStore = createBookmarkStore(backgroundScope)
+        bookmarkStore.toggleBookmark(source.id)
+
+        val viewModel = createViewModel(
+            repository = repository,
+            bookmarkStore = bookmarkStore,
+            ioDispatcher = Dispatchers.Default,
+        )
+        advanceUntilIdle()
+
+        viewModel.onEntrySelected(source.id)
+        runCurrent()
+
+        val loadingState = viewModel.uiState.value
+        assertTrue(loadingState.isLoadingEntryDetail)
+        assertEquals(source, loadingState.selectedEntry)
+
+        repository.release()
+        advanceUntilIdle()
+    }
+
+    @Test
     fun simplifiedChinese_translatesBookmarkDisplayFields() = runTest(dispatcher) {
         val entry = sampleEntry(id = 20, hanji = "辭典", romanization = "sû-tián")
         val repository = FakeBookmarksRepository(
@@ -138,6 +175,7 @@ class BookmarksViewModelTest {
         bookmarkStore: BookmarkStore,
         settingsStore: AppSettingsStoring = FakeBookmarksSettingsStore(),
         conversionService: ChineseConversionService = FakeBookmarksChineseConversionService(),
+        ioDispatcher: kotlinx.coroutines.CoroutineDispatcher = dispatcher,
     ): BookmarksViewModel {
         val application = ApplicationProvider.getApplicationContext<Application>()
         return BookmarksViewModel(
@@ -146,7 +184,7 @@ class BookmarksViewModelTest {
             settingsStore = settingsStore,
             chineseConversionService = conversionService,
             bookmarkStore = bookmarkStore,
-            ioDispatcher = dispatcher,
+            ioDispatcher = ioDispatcher,
         )
     }
 }
@@ -207,6 +245,32 @@ private class FakeBookmarksRepository(
 
     override fun findLinkedEntry(rawWord: String): DictionaryEntry? {
         return linkedEntriesByWord[rawWord]
+    }
+}
+
+private class BlockingBookmarksRepository(
+    private val entryById: Map<Long, DictionaryEntry>,
+    private val linkedEntriesByWord: Map<String, DictionaryEntry>,
+) : DictionaryRepositoryDataSource {
+    private val releaseLatch = CountDownLatch(1)
+
+    override fun loadBundle(): DictionaryBundle {
+        return DictionaryBundle(0, 0, 0, "/tmp/dictionary.sqlite")
+    }
+
+    override fun search(rawQuery: String, limit: Int): List<DictionaryEntry> = emptyList()
+
+    override fun entries(ids: List<Long>): List<DictionaryEntry> = ids.mapNotNull(entryById::get)
+
+    override fun entry(id: Long): DictionaryEntry? = entryById[id]
+
+    override fun findLinkedEntry(rawWord: String): DictionaryEntry? {
+        releaseLatch.await(5, TimeUnit.SECONDS)
+        return linkedEntriesByWord[rawWord]
+    }
+
+    fun release() {
+        releaseLatch.countDown()
     }
 }
 

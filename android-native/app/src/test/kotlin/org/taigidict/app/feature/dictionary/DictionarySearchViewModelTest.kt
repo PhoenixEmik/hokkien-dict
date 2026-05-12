@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -300,6 +301,29 @@ class DictionarySearchViewModelTest {
     }
 
     @Test
+    fun onEntrySelected_keepsResultVisibleWhileDetailLoads() = runTest(dispatcher) {
+        val entry = sampleEntry(id = 7, hanji = "辭典", romanization = "sû-tián")
+        val repository = FakeDictionaryRepository(
+            bundle = DictionaryBundle(1, 1, 0, "/tmp/dictionary.sqlite"),
+            searchResults = listOf(entry),
+            entryById = mapOf(entry.id to entry),
+        )
+
+        val viewModel = createViewModel(repository = repository)
+        advanceUntilIdle()
+        viewModel.onQueryChange("辭典")
+        advanceUntilIdle()
+
+        viewModel.onEntrySelected(entry.id)
+
+        val loadingState = viewModel.uiState.value
+        assertTrue(loadingState.isLoadingEntryDetail)
+        assertEquals(entry, loadingState.selectedEntry)
+
+        advanceUntilIdle()
+    }
+
+    @Test
     fun onEntrySelected_resolvesAliasChainBeforeShowingDetail() = runTest(dispatcher) {
         val primaryEntry = sampleEntry(id = 8, hanji = "字典", romanization = "jī-tián")
         val aliasEntry = sampleEntry(
@@ -391,6 +415,7 @@ class DictionarySearchViewModelTest {
         searchHistoryStore: SearchHistoryStoring = FakeSearchHistoryStore(),
         settingsStore: AppSettingsStoring = FakeDictionarySettingsStore(),
         conversionService: ChineseConversionService = FakeChineseConversionService(),
+        ioDispatcher: kotlinx.coroutines.CoroutineDispatcher = dispatcher,
     ): DictionarySearchViewModel {
         val application = ApplicationProvider.getApplicationContext<Application>()
         return DictionarySearchViewModel(
@@ -399,7 +424,7 @@ class DictionarySearchViewModelTest {
             settingsStore = settingsStore,
             chineseConversionService = conversionService,
             searchHistoryStore = searchHistoryStore,
-            ioDispatcher = dispatcher,
+            ioDispatcher = ioDispatcher,
         )
     }
 }

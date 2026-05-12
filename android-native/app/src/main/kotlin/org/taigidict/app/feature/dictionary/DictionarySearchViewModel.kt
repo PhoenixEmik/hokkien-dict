@@ -148,17 +148,17 @@ class DictionarySearchViewModel(
 
     fun onEntrySelected(entryId: Long) {
         persistCurrentQueryIfNeeded()
+        val sourceEntry = _uiState.value.results.firstOrNull { it.id == entryId }
         entryDetailJob?.cancel()
+        _uiState.update {
+            it.copy(
+                isLoadingEntryDetail = true,
+                selectedEntry = sourceEntry ?: it.selectedEntry,
+                openableLinkedWords = emptySet(),
+                entryDetailErrorMessage = null,
+            )
+        }
         entryDetailJob = viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    isLoadingEntryDetail = true,
-                    selectedEntry = null,
-                    openableLinkedWords = emptySet(),
-                    entryDetailErrorMessage = null,
-                )
-            }
-
             val result = withContext(ioDispatcher) {
                 runCatching {
                     val entry = repository.entry(entryId)
@@ -191,14 +191,13 @@ class DictionarySearchViewModel(
         }
 
         entryDetailJob?.cancel()
+        _uiState.update {
+            it.copy(
+                isLoadingEntryDetail = true,
+                entryDetailErrorMessage = null,
+            )
+        }
         entryDetailJob = viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    isLoadingEntryDetail = true,
-                    entryDetailErrorMessage = null,
-                )
-            }
-
             val result = withContext(ioDispatcher) {
                 runCatching {
                     val convertedWord = chineseConversionService.normalizeSearchInput(
