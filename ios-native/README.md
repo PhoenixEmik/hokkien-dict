@@ -1,37 +1,124 @@
-# Taigi Dict Native Swift
+# Taigi Dict iOS Native
 
-This directory contains the native Swift / SwiftUI rewrite of Taigi Dict.
+This directory contains the native Swift / SwiftUI version of Taigi Dict.
 
-The production iOS app target lives in `TaigiDictNative.xcodeproj`, with shared
-Core and UI code provided by the local Swift package.
+The app is built as a small Xcode application target on top of a local Swift
+package:
 
-## Xcode
+- `TaigiDictCore`: dictionary loading, search, bookmarks, offline audio,
+  preferences, and OpenCC-backed conversion.
+- `TaigiDictUI`: SwiftUI screens for dictionary search, detail, bookmarks,
+  settings, licenses, and reference articles.
+- `NativeApp`: the production app entry point and asset catalog.
 
-Open `TaigiDictNative.xcworkspace`, select the `TaigiDictNative` scheme, choose
-an iOS simulator, then build and run.
+## Current App Scope
 
-## Boundaries
+The iOS native app currently includes:
 
-- Flutter source remains at the repository root during migration.
-- Native Swift source lives under `ios-native/`.
-- Dictionary source data is not parsed from `kautian.ods` by the app.
-- ODS conversion must happen before runtime and produce JSONL/CSV or SQLite.
-- Simplified/traditional conversion must go through SwiftyOpenCC behind
-  `ChineseConversionService`.
+- dictionary search with native `NavigationStack` / `NavigationSplitView`
+- entry detail pages with linked references, bookmarks, share, and audio actions
+- bookmarks with native swipe actions
+- settings for interface language, theme, reading text size, and offline audio
+- bundled reference articles and license/about screens
+- simplified/traditional conversion through `SwiftyOpenCC`
 
-## Package
+## Requirements
+
+- Xcode 17 or newer
+- iOS 17 simulator or device target
+- macOS 14 or newer for local development
+
+## Build And Run
+
+Open the workspace, not just the project:
+
+```bash
+open TaigiDictNative.xcworkspace
+```
+
+Then select the `TaigiDictNative` scheme and run on an iPhone or iPad simulator.
+
+Command-line build:
+
+```bash
+xcodebuild \
+  -workspace TaigiDictNative.xcworkspace \
+  -scheme TaigiDictNative \
+  -destination 'platform=iOS Simulator,name=iPhone 17' \
+  build
+```
+
+## Package Layout
 
 ```text
 ios-native/
   TaigiDictNative.xcworkspace
   TaigiDictNative.xcodeproj
   Package.swift
-  Sources/TaigiDictCore/
-  Sources/TaigiDictUI/
   NativeApp/
-  Tests/TaigiDictCoreTests/
-  Tests/TaigiDictUITests/
+  Sources/
+    TaigiDictCore/
+    TaigiDictUI/
+  Tests/
+  Scripts/
+  docs/
 ```
 
-The package exposes `TaigiDictCore` and `TaigiDictUI` for the native app target
-and tests.
+Notable source areas:
+
+- `Sources/TaigiDictCore/Conversion`
+  OpenCC-backed text conversion services
+- `Sources/TaigiDictCore/Data`
+  dictionary import/loading, storage, bookmarks, and offline audio
+- `Sources/TaigiDictUI/Dictionary`
+  search, result rows, and detail screens
+- `Sources/TaigiDictUI/Settings`
+  settings, advanced maintenance, and offline audio management
+- `Sources/TaigiDictUI/Info`
+  about, licenses, and reference article screens
+
+## Dependencies
+
+Current package dependencies:
+
+- `SwiftyOpenCC` `1.3.1`
+- `GRDB.swift` `7.10.0`
+- `ZIPFoundation` `0.9.20`
+
+## Data Boundaries
+
+- Flutter source still lives at the repository root during migration.
+- Native Swift code lives under `ios-native/`.
+- The app does not parse `kautian.ods` at runtime.
+- Dictionary source material must be converted before runtime into app-readable
+  packaged resources.
+- The production app loads bundled dictionary resources and can also use
+  installed resources from Application Support.
+
+The native app entry point is `NativeApp/TaigiDictNativeApp.swift`.
+
+## Testing
+
+Command-line package tests:
+
+```bash
+swift test
+```
+
+Xcode build verification:
+
+```bash
+xcodebuild \
+  -workspace TaigiDictNative.xcworkspace \
+  -scheme TaigiDictNative \
+  -destination 'platform=iOS Simulator,name=iPhone 17' \
+  build
+```
+
+## Notes
+
+- Use `TaigiDictNative.xcworkspace` so SwiftPM dependencies resolve correctly.
+- Chinese conversion should go through the abstraction in
+  `ChineseConversionService`, not direct package calls from UI code.
+- The app is intentionally using native SwiftUI components rather than a
+  Flutter-style UI port.
