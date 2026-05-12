@@ -5,6 +5,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import org.taigidict.app.navigation.MainDestination
 
@@ -37,11 +38,24 @@ class MainAppState(
 }
 
 @Composable
-fun rememberMainAppState(appContainer: AppContainer): MainAppState {
+fun rememberMainAppState(
+    appContainer: AppContainer,
+    initialDestination: MainDestination = MainDestination.Dictionary,
+): MainAppState {
     return remember(appContainer) {
         MainAppState(
             appContainer = appContainer,
-            initialDestination = MainDestination.Dictionary,
+            initialDestination = initialDestination,
         )
     }
+}
+
+@Composable
+fun rememberSaveableMainDestination(): MainDestination {
+    val savedDestinationName = rememberSaveable {
+        mutableStateOf(MainDestination.Dictionary.name)
+    }
+
+    return MainDestination.entries.firstOrNull { it.name == savedDestinationName.value }
+        ?: MainDestination.Dictionary
 }
