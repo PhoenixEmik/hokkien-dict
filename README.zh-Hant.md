@@ -8,16 +8,17 @@
 
 這個專案以教育部辭典資料為核心，提供台語 / 華語離線辭典體驗。
 
-目前這個 repository 同時包含兩條實作線：
+目前這個 repository 同時包含多條實作線：
 
 - 根目錄 Flutter app，主要負責 Android 與既有跨平台程式碼
 - `ios-native/` 內的原生 Swift / SwiftUI app，作為目前 iOS 的主要開發目標
+- `android-native/` 內的原生 Kotlin / Jetpack Compose app，作為目前 Android 的主要開發目標
 
 兩個 app 都圍繞同一組產品能力：離線查詢、可下載音檔、書籤、本地化介面，以及台羅 / 漢字參考資料。
 
 ## 目前狀態
 
-- Android：由根目錄 Flutter 專案維護
+- Android：由 `android-native/` 原生重寫維護；Flutter Android app 保留作為舊版與行為參考
 - iOS：由 `ios-native/` 與 `TaigiDictNative.xcworkspace` 維護
 - 舊版 Flutter iOS host：仍保留在 `ios/`，但已不是主要 iOS app 目標
 
@@ -83,6 +84,13 @@ Flutter / Android 實作：
 - `spreadsheet_decoder`：解析 `kautian.ods`
 - `sqflite`：本機 SQLite 詞典資料庫
 
+原生 Android 實作：
+
+- Kotlin 與 Jetpack Compose / Material 3
+- AndroidX ViewModel、Kotlin coroutines、Flow / StateFlow
+- Room：本機 SQLite 資料存取
+- `android-opencc`：以 OpenCC 進行繁簡轉換
+
 原生 iOS 實作：
 
 - SwiftUI
@@ -95,6 +103,7 @@ Flutter / Android 實作：
 - `lib/`：Flutter app 程式碼
 - `android/`：Flutter Android host 專案
 - `ios/`：遷移期間保留的 Flutter iOS host
+- `android-native/`：原生 Kotlin / Jetpack Compose Android app
 - `ios-native/`：原生 Swift / SwiftUI iOS app、本地 Swift package 與測試
 - `ios-native/Generated/Dictionary/`：原生 iOS app 使用的預先生成詞典資產
 - `assets/dictionary/kautian.ods`：Flutter app 使用的內建原始詞典來源
@@ -117,6 +126,13 @@ flutter run -d android
 
 更多原生 iOS 細節可參考 [`ios-native/README.md`](ios-native/README.md)。
 
+原生 Android app：
+
+```bash
+cd android-native
+./gradlew app:assembleDebug
+```
+
 ## 驗證
 
 Flutter 專案：
@@ -130,6 +146,14 @@ flutter test
 
 ```bash
 swift test --package-path ios-native
+```
+
+原生 Android app：
+
+```bash
+cd android-native
+./gradlew testDebugUnitTest
+./gradlew app:assembleDebugAndroidTest
 ```
 
 ## 開發注意事項
@@ -159,6 +183,7 @@ flutter build apk --release
 - 豆腐烏 Tauhu-oo 20.05 字型，用於顯示台語漢字與特定 CJK Extension 字元：`https://github.com/tauhu-tw/tauhu-oo`
 - jf open 粉圓字型，用於 App Icon 字樣：`https://github.com/justfont/open-huninn-font`
 - Open Chinese Convert for Flutter，提供執行期 OpenCC 繁簡轉換：`https://github.com/zonble/flutter_open_chinese_convert`
+- android-opencc，提供原生 Android OpenCC 繁簡轉換：`https://github.com/xyrlsz/android-opencc`
 - GRDB.swift：`https://github.com/groue/GRDB.swift`
 - ZIPFoundation：`https://github.com/weichsel/ZIPFoundation`
 - SwiftyOpenCC：`https://github.com/PhoenixEmik/SwiftyOpenCC`

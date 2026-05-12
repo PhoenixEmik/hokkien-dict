@@ -9,18 +9,19 @@
 Offline Taiwanese Hokkien and Mandarin dictionary project built around the
 Ministry of Education dataset.
 
-This repository currently contains two app implementations that share the same
+This repository currently contains multiple app implementations that share the same
 product scope:
 
 - Flutter app at the repository root for Android and legacy cross-platform code
 - Native Swift / SwiftUI app in `ios-native/` for current iOS development
+- Native Kotlin / Jetpack Compose app in `android-native/` for current Android development
 
 Both apps focus on offline lookup, downloadable audio archives, bookmarks,
 localized UI, and reference material for Tailo and Hanji usage.
 
 ## Project Status
 
-- Android: maintained from the Flutter project in the repository root
+- Android: native rewrite is maintained from `android-native/`; the Flutter Android app remains as a legacy/reference implementation
 - iOS: maintained from `ios-native/` with `TaigiDictNative.xcworkspace`
 - Legacy Flutter iOS host: still present in `ios/` during migration, but not the primary iOS app target
 
@@ -86,6 +87,13 @@ Flutter / Android implementation:
 - `spreadsheet_decoder` for parsing `kautian.ods`
 - `sqflite` for the local SQLite dictionary database
 
+Native Android implementation:
+
+- Kotlin and Jetpack Compose with Material 3
+- AndroidX ViewModel, Kotlin coroutines, and Flow / StateFlow
+- Room for local SQLite data access
+- `android-opencc` for OpenCC-based Chinese conversion
+
 Native iOS implementation:
 
 - SwiftUI
@@ -98,6 +106,7 @@ Native iOS implementation:
 - `lib/`: Flutter application code
 - `android/`: Flutter Android host project
 - `ios/`: legacy Flutter iOS host kept during migration
+- `android-native/`: native Kotlin / Jetpack Compose Android app
 - `ios-native/`: native Swift / SwiftUI iOS app, local Swift package, and tests
 - `ios-native/Generated/Dictionary/`: generated dictionary assets for the native iOS app
 - `assets/dictionary/kautian.ods`: bundled raw dictionary source used by the Flutter app
@@ -120,6 +129,13 @@ Native iOS app:
 
 For more native iOS details, see [`ios-native/README.md`](ios-native/README.md).
 
+Native Android app:
+
+```bash
+cd android-native
+./gradlew app:assembleDebug
+```
+
 ## Verify
 
 Flutter project:
@@ -133,6 +149,14 @@ Native iOS package and shared logic:
 
 ```bash
 swift test --package-path ios-native
+```
+
+Native Android app:
+
+```bash
+cd android-native
+./gradlew testDebugUnitTest
+./gradlew app:assembleDebugAndroidTest
 ```
 
 ## Development Notes
@@ -162,6 +186,7 @@ Generated artifact:
 - Tauhu-oo 20.05 font for Taiwanese Hanzi and specific CJK Extension glyph coverage: `https://github.com/tauhu-tw/tauhu-oo`
 - jf open-huninn font used in the app icon artwork: `https://github.com/justfont/open-huninn-font`
 - Open Chinese Convert for Flutter for runtime OpenCC conversion: `https://github.com/zonble/flutter_open_chinese_convert`
+- android-opencc for native Android OpenCC conversion: `https://github.com/xyrlsz/android-opencc`
 - GRDB.swift: `https://github.com/groue/GRDB.swift`
 - ZIPFoundation: `https://github.com/weichsel/ZIPFoundation`
 - SwiftyOpenCC: `https://github.com/PhoenixEmik/SwiftyOpenCC`
