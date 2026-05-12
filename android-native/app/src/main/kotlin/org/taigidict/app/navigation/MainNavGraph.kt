@@ -17,15 +17,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.taigidict.app.app.MainAppState
 import org.taigidict.app.feature.common.appPageContainerColor
 import org.taigidict.app.feature.bookmarks.BookmarksScreen
+import org.taigidict.app.feature.bookmarks.BookmarksViewModel
 import org.taigidict.app.feature.dictionary.DictionaryScreen
 import org.taigidict.app.feature.settings.SettingsScreen
 
 @Composable
 fun MainNavGraph(appState: MainAppState) {
     val currentDestination = appState.currentDestination
+    val bookmarksViewModel: BookmarksViewModel = viewModel(
+        key = "bookmarks-${appState.dictionaryDataVersion}",
+    )
 
     BackHandler(enabled = currentDestination != MainDestination.Dictionary) {
         appState.navigate(MainDestination.Dictionary)
@@ -61,6 +66,7 @@ fun MainNavGraph(appState: MainAppState) {
                 ) {
                     MainNavContent(
                         appState = appState,
+                        bookmarksViewModel = bookmarksViewModel,
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
@@ -90,6 +96,7 @@ fun MainNavGraph(appState: MainAppState) {
             ) { innerPadding ->
                 MainNavContent(
                     appState = appState,
+                    bookmarksViewModel = bookmarksViewModel,
                     modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
                 )
             }
@@ -100,6 +107,7 @@ fun MainNavGraph(appState: MainAppState) {
 @Composable
 private fun MainNavContent(
     appState: MainAppState,
+    bookmarksViewModel: BookmarksViewModel,
     modifier: Modifier = Modifier,
 ) {
     when (appState.currentDestination) {
@@ -112,6 +120,7 @@ private fun MainNavContent(
 
         MainDestination.Bookmarks -> BookmarksScreen(
             dataVersion = appState.dictionaryDataVersion,
+            viewModel = bookmarksViewModel,
             modifier = modifier,
         )
 
