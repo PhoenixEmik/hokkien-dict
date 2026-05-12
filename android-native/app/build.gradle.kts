@@ -20,11 +20,17 @@ android {
     compileSdk = 36
 
     signingConfigs {
-        create("release") {
-            storeFile = keyProperties["storeFile"]?.let { file(it as String) }
-            storePassword = keyProperties["storePassword"] as String?
-            keyAlias = keyProperties["keyAlias"] as String?
-            keyPassword = keyProperties["keyPassword"] as String?
+        if (keyPropertiesFile.exists()) {
+            create("release") {
+                val storeFilePath = keyProperties.getProperty("storeFile")
+                check(!storeFilePath.isNullOrBlank()) {
+                    "android-native/key.properties is missing storeFile"
+                }
+                storeFile = file(storeFilePath)
+                storePassword = keyProperties.getProperty("storePassword")
+                keyAlias = keyProperties.getProperty("keyAlias")
+                keyPassword = keyProperties.getProperty("keyPassword")
+            }
         }
     }
 
@@ -55,7 +61,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = if (keyPropertiesFile.exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 
