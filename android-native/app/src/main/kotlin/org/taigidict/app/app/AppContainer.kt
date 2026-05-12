@@ -92,6 +92,11 @@ class AppContainer(
     internal val offlineAudioArchiveManager: OfflineAudioArchiveManager by lazy {
         OfflineAudioArchiveManager(filesDirectory = appContext.filesDir)
     }
+    init {
+        // Preload local audio archive state so Settings does not briefly show
+        // installed archives as downloadable on first open.
+        offlineAudioArchiveManager.refreshAll()
+    }
     val dictionaryAudioPlayer: DictionaryAudioPlayer by lazy {
         OfflineDictionaryAudioPlayer(filesDirectory = appContext.filesDir)
     }
