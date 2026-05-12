@@ -94,6 +94,7 @@ Flutter / Android 實作：
 原生 iOS 實作：
 
 - SwiftUI
+- 本地 Swift package，拆分為 `TaigiDictCore` 與 `TaigiDictUI`
 - `GRDB.swift`：SQLite 存取
 - `SwiftyOpenCC`：繁簡轉換
 - `ZIPFoundation`：離線壓縮資源處理
@@ -105,6 +106,9 @@ Flutter / Android 實作：
 - `ios/`：遷移期間保留的 Flutter iOS host
 - `android-native/`：原生 Kotlin / Jetpack Compose Android app
 - `ios-native/`：原生 Swift / SwiftUI iOS app、本地 Swift package 與測試
+- `ios-native/NativeApp/`：原生 iOS app 入口與 asset catalog
+- `ios-native/Sources/TaigiDictCore/`：詞典、音訊、書籤與轉換等共享邏輯
+- `ios-native/Sources/TaigiDictUI/`：辭典、書籤、設定與資訊頁的 SwiftUI 畫面
 - `ios-native/Generated/Dictionary/`：原生 iOS app 使用的預先生成詞典資產
 - `assets/dictionary/kautian.ods`：Flutter app 使用的內建原始詞典來源
 - `tool/build_dictionary_asset.py`：作為 Flutter 端 ODS 映射參考的轉換腳本
@@ -123,6 +127,16 @@ flutter run -d android
 - 在 Xcode 開啟 `ios-native/TaigiDictNative.xcworkspace`
 - 選擇 `TaigiDictNative` scheme
 - 在 iOS 17 模擬器或實機上建置並執行
+
+原生 iOS 命令列建置：
+
+```bash
+xcodebuild \
+  -workspace ios-native/TaigiDictNative.xcworkspace \
+  -scheme TaigiDictNative \
+  -destination 'platform=iOS Simulator,name=iPhone 17' \
+  build
+```
 
 更多原生 iOS 細節可參考 [`ios-native/README.md`](ios-native/README.md)。
 
@@ -146,6 +160,16 @@ flutter test
 
 ```bash
 swift test --package-path ios-native
+```
+
+原生 iOS app 建置驗證：
+
+```bash
+xcodebuild \
+  -workspace ios-native/TaigiDictNative.xcworkspace \
+  -scheme TaigiDictNative \
+  -destination 'platform=iOS Simulator,name=iPhone 17' \
+  build
 ```
 
 原生 Android app：
