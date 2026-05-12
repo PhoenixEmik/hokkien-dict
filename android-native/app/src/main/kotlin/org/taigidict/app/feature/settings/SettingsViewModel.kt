@@ -189,19 +189,16 @@ class SettingsViewModel(
 
     fun rebuildDatabase() {
         runMaintenance(SettingsMaintenanceAction.Rebuild) {
-            if (databaseFile.exists()) {
-                databaseFile.delete()
-            }
             val preferredLocalSource = _uiState.value.sourceSnapshot.state == DownloadSnapshot.State.Completed
             if (preferredLocalSource) {
                 val importedFromLocal = runCatching {
-                    localImportService.ensureBundledDatabase()
+                    localImportService.ensureBundledDatabase(forceRebuild = true)
                 }.isSuccess
                 if (!importedFromLocal) {
-                    importService.ensureBundledDatabase()
+                    importService.ensureBundledDatabase(forceRebuild = true)
                 }
             } else {
-                importService.ensureBundledDatabase()
+                importService.ensureBundledDatabase(forceRebuild = true)
             }
             SettingsStatus.DatabaseRebuilt
         }

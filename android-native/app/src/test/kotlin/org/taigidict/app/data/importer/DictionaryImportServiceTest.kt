@@ -85,6 +85,58 @@ class DictionaryImportServiceTest {
         assertEquals("Entry count mismatch. Expected 2 but imported 1.", error.message)
     }
 
+    @Test
+    fun ensureBundledDatabase_forceRebuildPreservesExistingDatabaseWhenImportFails() {
+        val tempDirectory = createTempDirectory(prefix = "dict-import-preserve-").toFile()
+        val databaseFile = File(tempDirectory, "dictionary.sqlite")
+        val validJsonl = sampleJsonl(entryCount = 2)
+        val validManifest = DictionaryManifest(
+            schemaVersion = 1,
+            builtAt = "2026-04-30T00:00:00Z",
+            sourceModifiedAt = "2026-04-30T00:00:00Z",
+            entryCount = 2,
+            senseCount = 2,
+            exampleCount = 1,
+            entriesFileName = "dictionary_entries.jsonl",
+        )
+        DictionaryImportService(
+            databaseFile = databaseFile,
+            packageLoader = FakeDictionaryPackageLoader(
+                ValidatedDictionaryPackage(
+                    manifest = validManifest,
+                    entriesBytes = validJsonl.toByteArray(),
+                    firstEntry = DictionaryJsonlReader().readFirstEntry(validJsonl.toByteArray())!!,
+                ),
+            ),
+            jsonlReader = DictionaryJsonlReader(),
+        ).ensureBundledDatabase()
+
+        val invalidJsonl = sampleJsonl(entryCount = 1)
+        val invalidManifest = validManifest.copy(entryCount = 2, senseCount = 1, exampleCount = 1)
+        val failingService = DictionaryImportService(
+            databaseFile = databaseFile,
+            packageLoader = FakeDictionaryPackageLoader(
+                ValidatedDictionaryPackage(
+                    manifest = invalidManifest,
+                    entriesBytes = invalidJsonl.toByteArray(),
+                    firstEntry = DictionaryJsonlReader().readFirstEntry(invalidJsonl.toByteArray())!!,
+                ),
+            ),
+            jsonlReader = DictionaryJsonlReader(),
+        )
+
+        val error = runCatching {
+            failingService.ensureBundledDatabase(forceRebuild = true)
+        }.exceptionOrNull()
+        val bundle = SQLiteDictionaryRepository(databaseFile).loadBundle()
+
+        require(error is DictionaryImportException.EntryCountMismatch)
+        assertTrue(databaseFile.exists())
+        assertEquals(2, bundle.entryCount)
+        assertEquals(2, bundle.senseCount)
+        assertEquals(1, bundle.exampleCount)
+    }
+
     private fun sampleJsonl(entryCount: Int): String {
         return buildList {
             add(

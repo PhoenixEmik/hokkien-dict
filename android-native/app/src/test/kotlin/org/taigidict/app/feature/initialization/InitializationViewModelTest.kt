@@ -168,6 +168,7 @@ private class BlockingBundledDictionaryImporter(
 
     override fun ensureBundledDatabase(
         onProgress: ((DictionaryImportProgress) -> Unit)?,
+        forceRebuild: Boolean,
     ): DictionaryImportResult {
         ensureCalls += 1
         releaseLatch.await(5, TimeUnit.SECONDS)

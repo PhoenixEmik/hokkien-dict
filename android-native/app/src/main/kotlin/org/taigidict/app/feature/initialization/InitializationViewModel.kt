@@ -226,7 +226,7 @@ class InitializationViewModel(application: Application) : AndroidViewModel(appli
         range: Float,
         reportProgressToUi: Boolean,
     ): DictionaryImportResult {
-        return importService.ensureBundledDatabase { progress ->
+        return importService.ensureBundledDatabase(onProgress = { progress ->
             if (reportProgressToUi) {
                 updateState(
                     phase = InitializationPhase.RebuildingDatabase,
@@ -237,7 +237,7 @@ class InitializationViewModel(application: Application) : AndroidViewModel(appli
                     errorMessage = null,
                 )
             }
-        }
+        })
     }
 
     private fun updateState(

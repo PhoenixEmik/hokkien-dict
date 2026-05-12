@@ -91,8 +91,28 @@ class SettingsViewModelTest {
         advanceUntilIdle()
 
         assertTrue(importer.ensureCalls > 0)
+        assertTrue(importer.forceRebuildCalls > 0)
         assertEquals(SettingsStatus.DatabaseRebuilt, viewModel.uiState.value.status)
         assertFalse(viewModel.uiState.value.isRunningMaintenance)
+    }
+
+    @Test
+    fun rebuildDatabase_failurePreservesExistingDatabaseFile() = runTest(dispatcher) {
+        val databaseFile = Files.createTempFile("settings-rebuild-failure", ".sqlite").toFile()
+        seedMetadata(databaseFile)
+        val viewModel = createViewModel(
+            repository = FakeSettingsRepository(bundle = null),
+            importService = FailingBundledDictionaryImporter("boom"),
+            databaseFile = databaseFile,
+        )
+        advanceUntilIdle()
+
+        viewModel.rebuildDatabase()
+        advanceUntilIdle()
+
+        assertTrue(databaseFile.exists())
+        assertFalse(viewModel.uiState.value.isRunningMaintenance)
+        assertEquals("boom", viewModel.uiState.value.errorMessage)
     }
 
     @Test
@@ -166,11 +186,16 @@ private class FakeBundledDictionaryImporter(
     private val databaseFile: File,
 ) : BundledDictionaryImporting {
     var ensureCalls = 0
+    var forceRebuildCalls = 0
 
     override fun ensureBundledDatabase(
         onProgress: ((DictionaryImportProgress) -> Unit)?,
+        forceRebuild: Boolean,
     ): DictionaryImportResult {
         ensureCalls += 1
+        if (forceRebuild) {
+            forceRebuildCalls += 1
+        }
         if (databaseFile.exists()) {
             databaseFile.delete()
         }
@@ -195,6 +220,17 @@ private class FakeBundledDictionaryImporter(
             ),
             imported = true,
         )
+    }
+}
+
+private class FailingBundledDictionaryImporter(
+    private val message: String,
+) : BundledDictionaryImporting {
+    override fun ensureBundledDatabase(
+        onProgress: ((DictionaryImportProgress) -> Unit)?,
+        forceRebuild: Boolean,
+    ): DictionaryImportResult {
+        error(message)
     }
 }
 

@@ -37,6 +37,7 @@ data class DictionaryImportResult(
 interface BundledDictionaryImporting {
     fun ensureBundledDatabase(
         onProgress: ((DictionaryImportProgress) -> Unit)? = null,
+        forceRebuild: Boolean = false,
     ): DictionaryImportResult
 }
 
@@ -49,12 +50,13 @@ class DictionaryImportService(
     override
     fun ensureBundledDatabase(
         onProgress: ((DictionaryImportProgress) -> Unit)?,
+        forceRebuild: Boolean,
     ): DictionaryImportResult {
         val validatedPackage = packageLoader.validateBundledPackage()
         val manifest = validatedPackage.manifest
         validateSchemaVersion(manifest)
 
-        if (isExistingDatabaseCurrent(manifest)) {
+        if (!forceRebuild && isExistingDatabaseCurrent(manifest)) {
             return DictionaryImportResult(
                 databaseFile = databaseFile,
                 manifest = manifest,
@@ -164,10 +166,44 @@ class DictionaryImportService(
             }
         }
 
-        if (databaseFile.exists()) {
-            databaseFile.delete()
+        replaceDatabaseFile(tempFile)
+    }
+
+    private fun replaceDatabaseFile(tempFile: File) {
+        val backupFile = File(databaseFile.parentFile, "${databaseFile.name}.bak")
+        deleteIfExists(backupFile)
+
+        val movedExistingDatabase = if (databaseFile.exists()) {
+            if (!databaseFile.renameTo(backupFile)) {
+                throw IllegalStateException(
+                    "Failed to move existing dictionary database out of the way.",
+                )
+            }
+            true
+        } else {
+            false
         }
-        tempFile.renameTo(databaseFile)
+
+        try {
+            if (!tempFile.renameTo(databaseFile)) {
+                throw IllegalStateException("Failed to move rebuilt dictionary database into place.")
+            }
+            deleteIfExists(backupFile)
+        } catch (error: Exception) {
+            deleteIfExists(tempFile)
+            if (movedExistingDatabase && backupFile.exists() && !backupFile.renameTo(databaseFile)) {
+                error.addSuppressed(
+                    IllegalStateException("Failed to restore previous dictionary database."),
+                )
+            }
+            throw error
+        }
+    }
+
+    private fun deleteIfExists(file: File) {
+        if (file.exists() && !file.delete()) {
+            throw IllegalStateException("Failed to delete ${file.path}.")
+        }
     }
 
     private fun insertEntry(
