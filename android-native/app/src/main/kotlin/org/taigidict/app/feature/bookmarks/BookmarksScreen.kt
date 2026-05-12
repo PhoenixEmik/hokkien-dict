@@ -186,6 +186,12 @@ fun BookmarksScreen(
                         }
                     },
                 )
+            } else {
+                TopAppBar(
+                    title = {
+                        Text(text = stringResource(R.string.bookmarks_title))
+                    },
+                )
             }
         },
     ) { innerPadding ->
