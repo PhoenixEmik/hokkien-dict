@@ -2,6 +2,7 @@
 build/
 local.properties
 *.iml
+release/
 
 # Remember to never publicly share your keystore.
 key.properties
