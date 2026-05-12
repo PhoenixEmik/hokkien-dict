@@ -18,14 +18,10 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-
       - name: Decode Keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-        run: echo $KEYSTORE_BASE64 | base64 --decode > android/app/taigi_dict_upload.jks
+        run: echo $KEYSTORE_BASE64 | base64 --decode > android-native/taigi_dict_upload.jks
 
       - name: Create key.properties
         env:
@@ -33,31 +29,31 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
         run: |
-          echo "storePassword=$STORE_PASSWORD" > android/key.properties
-          echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
-          echo "keyAlias=$KEY_ALIAS" >> android/key.properties
-          echo "storeFile=taigi_dict_upload.jks" >> android/key.properties
+          echo "storePassword=$STORE_PASSWORD" > android-native/key.properties
+          echo "keyPassword=$KEY_PASSWORD" >> android-native/key.properties
+          echo "keyAlias=$KEY_ALIAS" >> android-native/key.properties
+          echo "storeFile=../taigi_dict_upload.jks" >> android-native/key.properties
 
-      - run: flutter pub get
-
-      - run: flutter build apk --release
+      - name: Build release APK
+        run: cd android-native && ./gradlew :app:assembleRelease
 
       - name: Rename APK
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           VERSION=${GITHUB_REF_NAME#v}
-          mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/taigi-dict-${VERSION}-release.apk
+          mv android-native/app/build/outputs/apk/release/app-release.apk \
+             android-native/app/build/outputs/apk/release/taigi-dict-${VERSION}-release.apk
 
       - name: Upload APK artifact (manual trigger)
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
         with:
           name: taigi-dict-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: android-native/app/build/outputs/apk/release/app-release.apk
           retention-days: 7
 
       - uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: build/app/outputs/flutter-apk/taigi-dict-*-release.apk
+          files: android-native/app/build/outputs/apk/release/taigi-dict-*-release.apk
           generate_release_notes: true
