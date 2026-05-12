@@ -14,7 +14,6 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Card
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,6 +33,9 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.taigidict.app.R
+import org.taigidict.app.feature.common.AppListDivider
+import org.taigidict.app.feature.common.appCardColors
+import org.taigidict.app.feature.common.appPageContainerColor
 
 enum class AppDocument(
     val titleRes: Int,
@@ -91,6 +93,7 @@ fun AppDocumentViewer(
     }
 
     Scaffold(
+        containerColor = appPageContainerColor(),
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(document.titleRes)) },
@@ -195,7 +198,10 @@ fun AppDocumentViewer(
 private fun MarkdownTable(table: MarkdownBlock.Table) {
     val horizontalScroll = rememberScrollState()
 
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = appCardColors(),
+    ) {
         Column(
             modifier = Modifier
                 .horizontalScroll(horizontalScroll)
@@ -205,11 +211,17 @@ private fun MarkdownTable(table: MarkdownBlock.Table) {
                 cells = table.headers,
                 isHeader = true,
             )
-            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+            AppListDivider(
+                modifier = Modifier.padding(vertical = 4.dp),
+                inset = 8.dp,
+            )
             table.rows.forEachIndexed { index, row ->
                 MarkdownTableRow(cells = row, isHeader = false)
                 if (index < table.rows.lastIndex) {
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                    AppListDivider(
+                        modifier = Modifier.padding(vertical = 4.dp),
+                        inset = 8.dp,
+                    )
                 }
             }
         }

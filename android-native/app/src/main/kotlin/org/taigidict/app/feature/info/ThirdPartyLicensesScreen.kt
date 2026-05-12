@@ -16,7 +16,6 @@ import androidx.compose.material.icons.outlined.Android
 import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -29,6 +28,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import org.taigidict.app.R
+import org.taigidict.app.feature.common.AppListDivider
+import org.taigidict.app.feature.common.appCardColors
+import org.taigidict.app.feature.common.appPageContainerColor
+import org.taigidict.app.feature.common.transparentListItemColors
 
 private data class ThirdPartyEntry(val name: String, val license: String)
 
@@ -56,6 +59,7 @@ fun ThirdPartyLicensesScreen(
 ) {
     Scaffold(
         modifier = modifier,
+        containerColor = appPageContainerColor(),
         contentWindowInsets = WindowInsets.safeDrawing.only(
             WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
         ),
@@ -118,12 +122,12 @@ private fun ThirdPartySectionCard(
     entries: List<ThirdPartyEntry>,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
 ) {
-    Card {
+    Card(colors = appCardColors()) {
         Column(modifier = Modifier.fillMaxWidth()) {
             entries.forEachIndexed { index, entry ->
                 ThirdPartyRow(entry = entry, icon = icon)
                 if (index < entries.lastIndex) {
-                    HorizontalDivider()
+                    AppListDivider()
                 }
             }
         }
@@ -136,6 +140,7 @@ private fun ThirdPartyRow(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
 ) {
     ListItem(
+        colors = transparentListItemColors(),
         leadingContent = {
             Icon(imageVector = icon, contentDescription = null)
         },

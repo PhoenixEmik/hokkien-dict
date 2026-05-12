@@ -19,7 +19,6 @@ import androidx.compose.material.icons.automirrored.outlined.TextSnippet
 import androidx.compose.material.icons.outlined.ImportContacts
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -37,6 +36,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import org.taigidict.app.R
+import org.taigidict.app.feature.common.AppListDivider
+import org.taigidict.app.feature.common.appCardColors
+import org.taigidict.app.feature.common.appPageContainerColor
+import org.taigidict.app.feature.common.transparentListItemColors
 
 private val ReferenceHorizontalPadding = 16.dp
 private val ReferenceVerticalPadding = 16.dp
@@ -66,6 +69,7 @@ fun ReferenceArticleScreen(
 
     Scaffold(
         modifier = modifier,
+        containerColor = appPageContainerColor(),
         contentWindowInsets = WindowInsets.safeDrawing.only(
             WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
         ),
@@ -100,14 +104,14 @@ fun ReferenceArticleScreen(
             }
 
             item {
-                Card {
+                Card(colors = appCardColors()) {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         ReferenceNavRow(
                             icon = Icons.Outlined.ImportContacts,
                             title = stringResource(R.string.about_tailo_title),
                             onClick = { selectedArticle = ReferenceArticle.Tailo },
                         )
-                        HorizontalDivider()
+                        AppListDivider()
                         ReferenceNavRow(
                             icon = Icons.AutoMirrored.Outlined.TextSnippet,
                             title = stringResource(R.string.about_hanji_title),
@@ -129,6 +133,7 @@ private fun ReferenceDetailScreen(
 ) {
     Scaffold(
         modifier = modifier,
+        containerColor = appPageContainerColor(),
         contentWindowInsets = WindowInsets.safeDrawing.only(
             WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
         ),
@@ -167,6 +172,7 @@ private fun ReferenceNavRow(
 ) {
     ListItem(
         modifier = Modifier.clickable(onClick = onClick),
+        colors = transparentListItemColors(),
         leadingContent = {
             Icon(
                 imageVector = icon,

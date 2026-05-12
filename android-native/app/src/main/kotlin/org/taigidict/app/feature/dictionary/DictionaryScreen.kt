@@ -24,7 +24,6 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -50,7 +49,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 import org.taigidict.app.R
 import org.taigidict.app.app.TaigiDictApplication
+import org.taigidict.app.feature.common.AppListDivider
 import org.taigidict.app.feature.common.DictionaryFallbackText
+import org.taigidict.app.feature.common.appCardColors
+import org.taigidict.app.feature.common.appListContainerColor
+import org.taigidict.app.feature.common.appPageContainerColor
+import org.taigidict.app.feature.common.transparentListItemColors
 
 private val ScreenHorizontalPadding = 16.dp
 private val ScreenVerticalPadding = 16.dp
@@ -106,6 +110,7 @@ fun DictionaryScreen(
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
+            containerColor = appPageContainerColor(),
             contentWindowInsets = WindowInsets.safeDrawing.only(
                 WindowInsetsSides.Horizontal,
             ),
@@ -337,7 +342,7 @@ internal fun DictionaryNoResultsState(
         verticalArrangement = Arrangement.spacedBy(SectionSpacing),
     ) {
         item("no-results-card") {
-            Card {
+            Card(colors = appCardColors()) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -400,7 +405,7 @@ internal fun DictionaryResultList(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.large,
-                color = MaterialTheme.colorScheme.surfaceContainer,
+                color = appListContainerColor(),
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     results.forEachIndexed { index, entry ->
@@ -408,6 +413,7 @@ internal fun DictionaryResultList(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { onEntrySelected(entry.id) },
+                            colors = transparentListItemColors(),
                             headlineContent = {
                                 DictionaryFallbackText(
                                     text = entry.hanji,
@@ -439,7 +445,7 @@ internal fun DictionaryResultList(
                             },
                         )
                         if (index < results.lastIndex) {
-                            HorizontalDivider()
+                            AppListDivider()
                         }
                     }
                 }
@@ -452,7 +458,10 @@ internal fun DictionaryResultList(
 private fun TwoPaneDetailPlaceholder(
     modifier: Modifier = Modifier,
 ) {
-    Card(modifier = modifier) {
+    Card(
+        modifier = modifier,
+        colors = appCardColors(),
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -478,7 +487,7 @@ private fun TwoPaneDetailPlaceholder(
 
 @Composable
 internal fun DictionaryHomeEmptyCard() {
-    Card {
+    Card(colors = appCardColors()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -510,13 +519,14 @@ internal fun RecentSearchHistoryCard(
     recentSearches: List<String>,
     onRecentSearchSelected: (String) -> Unit,
 ) {
-    Card {
+    Card(colors = appCardColors()) {
         Column(modifier = Modifier.fillMaxWidth()) {
             recentSearches.take(8).forEachIndexed { index, query ->
                 ListItem(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { onRecentSearchSelected(query) },
+                    colors = transparentListItemColors(),
                     leadingContent = {
                         Icon(
                             imageVector = Icons.Outlined.History,
@@ -533,7 +543,7 @@ internal fun RecentSearchHistoryCard(
                     },
                 )
                 if (index < recentSearches.take(8).lastIndex) {
-                    HorizontalDivider()
+                    AppListDivider()
                 }
             }
         }

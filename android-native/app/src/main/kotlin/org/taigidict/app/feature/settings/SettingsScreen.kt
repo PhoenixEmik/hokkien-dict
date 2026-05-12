@@ -25,10 +25,8 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,7 +44,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -58,6 +55,10 @@ import org.taigidict.app.core.settings.AppLanguagePreference
 import org.taigidict.app.core.settings.AppThemePreference
 import org.taigidict.app.data.audio.AudioArchiveDownloadSnapshot
 import org.taigidict.app.data.audio.DictionaryAudioArchiveType
+import org.taigidict.app.feature.common.AppListDivider
+import org.taigidict.app.feature.common.appCardColors
+import org.taigidict.app.feature.common.appPageContainerColor
+import org.taigidict.app.feature.common.transparentListItemColors
 import org.taigidict.app.feature.info.AboutScreen
 import org.taigidict.app.feature.info.ReferenceArticleScreen
 import org.taigidict.app.feature.info.LicenseSummaryScreen
@@ -177,6 +178,7 @@ fun SettingsScreen(
 
     Scaffold(
         modifier = modifier,
+        containerColor = appPageContainerColor(),
         contentWindowInsets = WindowInsets.safeDrawing.only(
             WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
         ),
@@ -364,7 +366,7 @@ private fun DisplaySettingsCard(
     onSelectTheme: (AppThemePreference) -> Unit,
     onScaleChanged: (Double) -> Unit,
 ) {
-    Card {
+    Card(colors = appCardColors()) {
         Column(modifier = Modifier.fillMaxWidth()) {
             PreferenceMenuRow(
                 title = stringResource(R.string.settings_language_title),
@@ -374,7 +376,7 @@ private fun DisplaySettingsCard(
                 optionLabel = { it.displayLabel() },
                 onSelect = onSelectLanguage,
             )
-            HorizontalDivider()
+            AppListDivider()
             PreferenceMenuRow(
                 title = stringResource(R.string.settings_theme_title),
                 value = selectedTheme.displayLabel(),
@@ -383,9 +385,9 @@ private fun DisplaySettingsCard(
                 optionLabel = { it.displayLabel() },
                 onSelect = onSelectTheme,
             )
-            HorizontalDivider()
+            AppListDivider()
             ListItem(
-                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                colors = transparentListItemColors(),
                 headlineContent = {
                     Text(text = stringResource(R.string.settings_text_scale_title))
                 },
@@ -426,7 +428,7 @@ internal fun <T> PreferenceMenuRow(
 
     ListItem(
         modifier = Modifier.clickable { expanded = true },
-        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        colors = transparentListItemColors(),
         headlineContent = { Text(text = title) },
         trailingContent = {
             Box {
@@ -479,10 +481,11 @@ private fun InfoAndMaintenanceCard(
     onOpenAbout: () -> Unit,
     onOpenReference: () -> Unit,
 ) {
-    Card {
+    Card(colors = appCardColors()) {
         Column(modifier = Modifier.fillMaxWidth()) {
             ListItem(
                 modifier = Modifier.clickable(onClick = onOpenAdvancedSettings),
+                colors = transparentListItemColors(),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.Build,
@@ -501,9 +504,10 @@ private fun InfoAndMaintenanceCard(
                     )
                 },
             )
-            HorizontalDivider()
+            AppListDivider()
             ListItem(
                 modifier = Modifier.clickable(onClick = onOpenAbout),
+                colors = transparentListItemColors(),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.Info,
@@ -522,9 +526,10 @@ private fun InfoAndMaintenanceCard(
                     )
                 },
             )
-            HorizontalDivider()
+            AppListDivider()
             ListItem(
                 modifier = Modifier.clickable(onClick = onOpenReference),
+                colors = transparentListItemColors(),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.MenuBook,

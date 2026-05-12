@@ -23,10 +23,8 @@ import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -59,7 +57,10 @@ import org.taigidict.app.data.audio.DictionaryAudioPlaybackResult
 import org.taigidict.app.domain.model.DictionaryEntry
 import org.taigidict.app.domain.model.DictionaryExample
 import org.taigidict.app.domain.model.DictionarySense
+import org.taigidict.app.feature.common.AppListDivider
 import org.taigidict.app.feature.common.DictionaryFallbackText
+import org.taigidict.app.feature.common.appCardColors
+import org.taigidict.app.feature.common.appPageContainerColor
 import org.taigidict.app.feature.common.buildDictionaryAnnotatedString
 
 private val DetailHorizontalPadding = 16.dp
@@ -162,6 +163,7 @@ private fun DetailLoadingScreen(
 ) {
     Scaffold(
         modifier = modifier,
+        containerColor = appPageContainerColor(),
         topBar = {
             DetailTopBar(
                 title = title,
@@ -205,6 +207,7 @@ private fun DetailStatusScreen(
 ) {
     Scaffold(
         modifier = modifier,
+        containerColor = appPageContainerColor(),
         topBar = {
             DetailTopBar(
                 title = title,
@@ -223,7 +226,7 @@ private fun DetailStatusScreen(
                 .padding(horizontal = DetailHorizontalPadding, vertical = DetailVerticalPadding),
             verticalArrangement = Arrangement.spacedBy(DetailSectionSpacing),
         ) {
-            Card {
+            Card(colors = appCardColors()) {
                 Text(
                     text = message,
                     style = MaterialTheme.typography.bodyMedium,
@@ -268,6 +271,7 @@ private fun DictionaryEntryDetailContent(
 
     Scaffold(
         modifier = modifier,
+        containerColor = appPageContainerColor(),
         topBar = {
             DetailTopBar(
                 title = entry.hanji,
@@ -288,9 +292,7 @@ private fun DictionaryEntryDetailContent(
         ) {
             item {
                 Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                    ),
+                    colors = appCardColors(),
                 ) {
                     Column(
                         modifier = Modifier
@@ -519,9 +521,7 @@ private fun DictionarySenseSection(
     )
 
     Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
+        colors = appCardColors(),
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -572,7 +572,7 @@ private fun DictionarySenseSection(
             }
 
             if (sense.examples.isNotEmpty()) {
-                HorizontalDivider()
+                AppListDivider()
 
                 Column(
                     modifier = Modifier
@@ -598,7 +598,7 @@ private fun DictionarySenseSection(
                             readingTextScale = readingTextScale,
                         )
                         if (index < sense.examples.lastIndex) {
-                            HorizontalDivider()
+                            AppListDivider()
                         }
                     }
                 }
@@ -621,9 +621,7 @@ private fun DictionaryDetailListSection(
     )
 
     Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
+        colors = appCardColors(),
     ) {
         Column(
             modifier = Modifier
@@ -646,7 +644,7 @@ private fun DictionaryDetailListSection(
                     style = scaledBodyStyle,
                 )
                 if (index < values.lastIndex) {
-                    HorizontalDivider()
+                    AppListDivider(inset = 0.dp)
                 }
             }
         }

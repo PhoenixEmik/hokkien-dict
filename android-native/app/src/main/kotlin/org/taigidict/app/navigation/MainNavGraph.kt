@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import org.taigidict.app.app.MainAppState
+import org.taigidict.app.feature.common.appPageContainerColor
 import org.taigidict.app.feature.bookmarks.BookmarksScreen
 import org.taigidict.app.feature.dictionary.DictionaryScreen
 import org.taigidict.app.feature.settings.SettingsScreen
@@ -66,6 +67,7 @@ fun MainNavGraph(appState: MainAppState) {
             }
         } else {
             Scaffold(
+                containerColor = appPageContainerColor(),
                 bottomBar = {
                     NavigationBar {
                         MainDestination.entries.forEach { destination ->

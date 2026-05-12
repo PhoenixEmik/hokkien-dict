@@ -22,7 +22,6 @@ import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -56,6 +55,10 @@ import org.taigidict.app.data.audio.AudioArchiveDownloadSnapshot
 import org.taigidict.app.data.audio.AudioArchiveDownloadState
 import org.taigidict.app.data.audio.DictionaryAudioArchiveType
 import org.taigidict.app.domain.model.DictionaryBundle
+import org.taigidict.app.feature.common.AppListDivider
+import org.taigidict.app.feature.common.appCardColors
+import org.taigidict.app.feature.common.appPageContainerColor
+import org.taigidict.app.feature.common.transparentListItemColors
 
 private val AdvancedHorizontalPadding = 16.dp
 private val AdvancedVerticalPadding = 16.dp
@@ -112,6 +115,7 @@ internal fun AdvancedSettingsScreen(
 
     Scaffold(
         modifier = modifier,
+        containerColor = appPageContainerColor(),
         contentWindowInsets = WindowInsets.safeDrawing.only(
             WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
         ),
@@ -195,12 +199,13 @@ private fun MaintenanceActionsCard(
     onRebuild: () -> Unit,
     onClear: () -> Unit,
 ) {
-    Card {
+    Card(colors = appCardColors()) {
         Column(modifier = Modifier.fillMaxWidth()) {
             ListItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(enabled = !uiState.isRunningMaintenance, onClick = onRebuild),
+                colors = transparentListItemColors(),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.Refresh,
@@ -220,12 +225,13 @@ private fun MaintenanceActionsCard(
                 },
             )
 
-            HorizontalDivider()
+            AppListDivider()
 
             ListItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(enabled = !uiState.isRunningMaintenance, onClick = onClear),
+                colors = transparentListItemColors(),
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.DeleteOutline,
@@ -272,18 +278,18 @@ private fun DictionarySummaryCard(
     val locale = LocalContext.current.resources.configuration.locales[0] ?: Locale.getDefault()
     val numberFormatter = NumberFormat.getIntegerInstance(locale)
 
-    Card {
+    Card(colors = appCardColors()) {
         Column(modifier = Modifier.fillMaxWidth()) {
             SettingsKeyValueRow(
                 key = stringResource(R.string.settings_entry_count_label),
                 value = numberFormatter.format(bundle.entryCount),
             )
-            HorizontalDivider()
+            AppListDivider()
             SettingsKeyValueRow(
                 key = stringResource(R.string.settings_sense_count_label),
                 value = numberFormatter.format(bundle.senseCount),
             )
-            HorizontalDivider()
+            AppListDivider()
             SettingsKeyValueRow(
                 key = stringResource(R.string.settings_example_count_label),
                 value = numberFormatter.format(bundle.exampleCount),
@@ -299,7 +305,7 @@ private fun DictionaryMetadataCard(
 ) {
     val locale = LocalContext.current.resources.configuration.locales[0] ?: Locale.getDefault()
 
-    Card {
+    Card(colors = appCardColors()) {
         Column(modifier = Modifier.fillMaxWidth()) {
             builtAt?.let {
                 SettingsKeyValueRow(
@@ -309,7 +315,7 @@ private fun DictionaryMetadataCard(
             }
             sourceModifiedAt?.let {
                 if (builtAt != null) {
-                    HorizontalDivider()
+                    AppListDivider()
                 }
                 SettingsKeyValueRow(
                     key = stringResource(R.string.settings_time_source_updated_label),
@@ -326,6 +332,7 @@ private fun SettingsKeyValueRow(
     value: String,
 ) {
     ListItem(
+        colors = transparentListItemColors(),
         headlineContent = {
             Text(text = key)
         },
@@ -389,8 +396,9 @@ internal fun AudioArchiveResourceCard(
     }
     val actions = availableActions(snapshot)
 
-    Card {
+    Card(colors = appCardColors()) {
         ListItem(
+            colors = transparentListItemColors(),
             headlineContent = {
                 Text(text = title)
             },

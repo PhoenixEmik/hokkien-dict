@@ -18,6 +18,7 @@ import org.taigidict.app.app.rememberMainAppState
 import org.taigidict.app.core.settings.AppLanguagePreference
 import org.taigidict.app.core.settings.AppSettingsConstants
 import org.taigidict.app.core.settings.AppThemePreference
+import org.taigidict.app.feature.common.appPageContainerColor
 import org.taigidict.app.feature.initialization.InitializationScreen
 import org.taigidict.app.feature.initialization.InitializationViewModel
 import org.taigidict.app.navigation.MainNavGraph
@@ -72,6 +73,7 @@ class MainActivity : AppCompatActivity() {
             ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
+                    color = appPageContainerColor(),
                 ) {
                     if (uiState.isReady) {
                         MainNavGraph(appState = appState)

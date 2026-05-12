@@ -21,11 +21,9 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -53,7 +51,12 @@ import kotlinx.coroutines.launch
 import org.taigidict.app.R
 import org.taigidict.app.app.TaigiDictApplication
 import org.taigidict.app.domain.model.DictionaryEntry
+import org.taigidict.app.feature.common.AppListDivider
 import org.taigidict.app.feature.common.DictionaryFallbackText
+import org.taigidict.app.feature.common.appCardColors
+import org.taigidict.app.feature.common.appListContainerColor
+import org.taigidict.app.feature.common.appPageContainerColor
+import org.taigidict.app.feature.common.selectableListItemColors
 import org.taigidict.app.feature.dictionary.DictionaryEntryDetailPane
 
 private val RootHorizontalPadding = 16.dp
@@ -114,6 +117,7 @@ fun BookmarksScreen(
 
     Scaffold(
         modifier = modifier,
+        containerColor = appPageContainerColor(),
         contentWindowInsets = WindowInsets.safeDrawing.only(
             WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
         ),
@@ -230,7 +234,7 @@ fun BookmarksScreen(
                             Surface(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = MaterialTheme.shapes.large,
-                                color = MaterialTheme.colorScheme.surfaceContainer,
+                                color = appListContainerColor(),
                             ) {
                                 Column {
                                     uiState.entries.forEachIndexed { index, entry ->
@@ -252,7 +256,7 @@ fun BookmarksScreen(
                                             },
                                         )
                                         if (index < uiState.entries.lastIndex) {
-                                            HorizontalDivider()
+                                            AppListDivider()
                                         }
                                     }
                                 }
@@ -267,7 +271,7 @@ fun BookmarksScreen(
 
 @Composable
 internal fun BookmarksEmptyCard() {
-    Card {
+    Card(colors = appCardColors()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -316,13 +320,7 @@ internal fun BookmarkEntryListItem(
                 onLongClick = onLongClick,
             )
             .testTag("bookmark-list-item-${entry.id}"),
-        colors = ListItemDefaults.colors(
-            containerColor = if (isSelected) {
-                MaterialTheme.colorScheme.secondaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceContainer
-            },
-        ),
+        colors = selectableListItemColors(isSelected = isSelected),
         leadingContent = if (isSelectionMode) {
             {
                 Checkbox(

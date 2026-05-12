@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 import org.taigidict.app.R
+import org.taigidict.app.feature.common.appCardColors
 
 @Composable
 fun InitializationScreen(
@@ -46,6 +47,7 @@ fun InitializationScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 24.dp),
+            colors = appCardColors(),
         ) {
             Column(
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp),
