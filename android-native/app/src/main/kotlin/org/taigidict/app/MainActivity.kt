@@ -36,11 +36,11 @@ class MainActivity : AppCompatActivity() {
             val uiState = initializationViewModel.uiState.collectAsStateWithLifecycle().value
             val appState = rememberMainAppState(appContainer)
             val themePreference = appContainer.appSettingsStore.themePreference
-                .collectAsState(initial = AppThemePreference.System).value
+                .collectAsState(initial = appContainer.appSettingsStore.initialThemePreference).value
             val languagePreference = appContainer.appSettingsStore.languagePreference
-                .collectAsState(initial = null).value
+                .collectAsState(initial = appContainer.appSettingsStore.initialLanguagePreference).value
             val readingTextScale = appContainer.appSettingsStore.readingTextScale
-                .collectAsState(initial = AppSettingsConstants.DEFAULT_READING_TEXT_SCALE).value
+                .collectAsState(initial = appContainer.appSettingsStore.initialReadingTextScale).value
 
             LaunchedEffect(languagePreference) {
                 val preference = languagePreference ?: return@LaunchedEffect
