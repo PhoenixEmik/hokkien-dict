@@ -1,5 +1,6 @@
 package org.taigidict.app.navigation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -24,6 +25,10 @@ import org.taigidict.app.feature.settings.SettingsScreen
 @Composable
 fun MainNavGraph(appState: MainAppState) {
     val currentDestination = appState.currentDestination
+
+    BackHandler(enabled = currentDestination != MainDestination.Dictionary) {
+        appState.navigate(MainDestination.Dictionary)
+    }
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val usesNavigationRail = MainNavigationAdaptiveLayoutPolicy.shouldUseNavigationRail(maxWidth)

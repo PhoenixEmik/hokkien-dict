@@ -82,6 +82,10 @@ fun BookmarksScreen(
         selectedBookmarkIds = emptySet()
     }
 
+    BackHandler(enabled = showsEntryDetail) {
+        viewModel.onEntryDetailDismissed()
+    }
+
     LaunchedEffect(uiState.entries) {
         val visibleEntryIds = uiState.entries.mapTo(mutableSetOf()) { it.id }
         selectedBookmarkIds = selectedBookmarkIds.intersect(visibleEntryIds)

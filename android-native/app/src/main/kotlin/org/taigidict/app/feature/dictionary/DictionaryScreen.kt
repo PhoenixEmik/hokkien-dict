@@ -1,5 +1,6 @@
 package org.taigidict.app.feature.dictionary
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -77,6 +78,10 @@ fun DictionaryScreen(
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val usesTwoPaneLayout = DictionaryAdaptiveLayoutPolicy.shouldUseTwoPane(maxWidth)
+
+        BackHandler(enabled = showsEntryDetail) {
+            viewModel.onEntryDetailDismissed()
+        }
 
         if (showsEntryDetail && !usesTwoPaneLayout) {
             DictionaryEntryDetailPane(

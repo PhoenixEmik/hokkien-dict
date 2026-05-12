@@ -1,5 +1,6 @@
 package org.taigidict.app.feature.settings
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -96,11 +97,39 @@ fun SettingsScreen(
 
     val currentDocument = selectedDocument
     if (currentDocument != null) {
+        BackHandler {
+            selectedDocument = null
+        }
+
         AppDocumentViewer(
             document = currentDocument,
             onBack = { selectedDocument = null },
         )
         return
+    }
+
+    val onBackFromCurrentRoute: (() -> Unit)? = when (route) {
+        SettingsRoute.Main -> null
+        SettingsRoute.LicenseInfo -> {
+            { route = SettingsRoute.About }
+        }
+        SettingsRoute.ThirdPartyLicenses -> {
+            { route = SettingsRoute.LicenseInfo }
+        }
+        SettingsRoute.About,
+        SettingsRoute.Reference,
+        SettingsRoute.Advanced,
+        -> {
+            { route = SettingsRoute.Main }
+        }
+    }
+
+    onBackFromCurrentRoute?.let { onBack ->
+        BackHandler(onBack = onBack)
+    }
+
+    BackHandler(enabled = pendingAction != null) {
+        pendingAction = null
     }
 
     val showingRouteScreen = renderRouteScreen(
