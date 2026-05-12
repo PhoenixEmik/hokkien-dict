@@ -97,6 +97,7 @@ Native Android implementation:
 Native iOS implementation:
 
 - SwiftUI
+- local Swift package split into `TaigiDictCore` and `TaigiDictUI`
 - `GRDB.swift` for SQLite access
 - `SwiftyOpenCC` for Chinese conversion
 - `ZIPFoundation` for offline archive handling
@@ -108,6 +109,9 @@ Native iOS implementation:
 - `ios/`: legacy Flutter iOS host kept during migration
 - `android-native/`: native Kotlin / Jetpack Compose Android app
 - `ios-native/`: native Swift / SwiftUI iOS app, local Swift package, and tests
+- `ios-native/NativeApp/`: native iOS app entry point and asset catalog
+- `ios-native/Sources/TaigiDictCore/`: shared dictionary, audio, bookmark, and conversion logic
+- `ios-native/Sources/TaigiDictUI/`: SwiftUI screens for dictionary, bookmarks, settings, and info
 - `ios-native/Generated/Dictionary/`: generated dictionary assets for the native iOS app
 - `assets/dictionary/kautian.ods`: bundled raw dictionary source used by the Flutter app
 - `tool/build_dictionary_asset.py`: reference conversion script for the Flutter-side ODS mapping
@@ -126,6 +130,16 @@ Native iOS app:
 - Open `ios-native/TaigiDictNative.xcworkspace` in Xcode
 - Select the `TaigiDictNative` scheme
 - Build and run on an iOS 17 simulator or device
+
+Native iOS command-line build:
+
+```bash
+xcodebuild \
+  -workspace ios-native/TaigiDictNative.xcworkspace \
+  -scheme TaigiDictNative \
+  -destination 'platform=iOS Simulator,name=iPhone 17' \
+  build
+```
 
 For more native iOS details, see [`ios-native/README.md`](ios-native/README.md).
 
@@ -149,6 +163,16 @@ Native iOS package and shared logic:
 
 ```bash
 swift test --package-path ios-native
+```
+
+Native iOS app build verification:
+
+```bash
+xcodebuild \
+  -workspace ios-native/TaigiDictNative.xcworkspace \
+  -scheme TaigiDictNative \
+  -destination 'platform=iOS Simulator,name=iPhone 17' \
+  build
 ```
 
 Native Android app:
