@@ -10,16 +10,16 @@
     />
     <style>
       :root {
-        --bg: #f7f3e9;
-        --bg-soft: #fdfaf4;
+        --bg: #f3f7fc;
+        --bg-soft: #fbfdff;
         --surface: #ffffff;
-        --surface-strong: #f2ebdc;
-        --text: #183531;
-        --muted: #5f6f6a;
-        --line: rgba(24, 53, 49, 0.14);
-        --accent: #2f7f63;
-        --accent-strong: #1d6a51;
-        --shadow: 0 18px 40px rgba(19, 43, 39, 0.08);
+        --surface-strong: #e7eef8;
+        --text: #18273d;
+        --muted: #5d6f88;
+        --line: rgba(35, 63, 106, 0.14);
+        --accent: #27406b;
+        --accent-strong: #1d3355;
+        --shadow: 0 18px 40px rgba(19, 39, 68, 0.08);
         --radius: 28px;
         --content-width: 1120px;
         --nav-height: 76px;
@@ -43,8 +43,8 @@
           system-ui,
           sans-serif;
         background:
-          radial-gradient(circle at top right, rgba(47, 127, 99, 0.12), transparent 30%),
-          linear-gradient(180deg, #fbf8f1 0%, var(--bg) 100%);
+          radial-gradient(circle at top right, rgba(39, 64, 107, 0.12), transparent 30%),
+          linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
         color: var(--text);
       }
 
@@ -67,8 +67,8 @@
         top: 0;
         z-index: 20;
         backdrop-filter: blur(16px);
-        background: rgba(247, 243, 233, 0.8);
-        border-bottom: 1px solid rgba(24, 53, 49, 0.08);
+        background: rgba(255, 255, 255, 0.82);
+        border-bottom: 1px solid rgba(35, 63, 106, 0.08);
       }
 
       .nav-inner,
@@ -136,7 +136,7 @@
       .github-link:hover {
         transform: translateY(-2px);
         background: #ffffff;
-        border-color: rgba(24, 53, 49, 0.22);
+        border-color: rgba(35, 63, 106, 0.22);
       }
 
       .hero {
@@ -222,7 +222,7 @@
       .cta-button.primary {
         background: var(--accent);
         color: #ffffff;
-        box-shadow: 0 16px 36px rgba(47, 127, 99, 0.22);
+        box-shadow: 0 16px 36px rgba(39, 64, 107, 0.22);
       }
 
       .cta-button.primary:hover {
@@ -254,7 +254,7 @@
         overflow: hidden;
         border-radius: 24px;
         background: transparent;
-        box-shadow: 0 24px 50px rgba(19, 43, 39, 0.12);
+        box-shadow: 0 24px 50px rgba(19, 39, 68, 0.12);
       }
 
       .hero-banner img {
@@ -343,7 +343,7 @@
 
       .slider-control:hover {
         transform: translateY(-2px);
-        border-color: rgba(47, 127, 99, 0.24);
+        border-color: rgba(39, 64, 107, 0.24);
         background: #fff;
       }
 
@@ -386,7 +386,7 @@
 
       .slide-card:hover {
         transform: translateY(-4px);
-        border-color: rgba(47, 127, 99, 0.24);
+        border-color: rgba(39, 64, 107, 0.24);
       }
 
       .slide-card figure {
@@ -400,13 +400,13 @@
         object-fit: cover;
         object-position: top center;
         display: block;
-        background: #ece5d8;
+        background: #e5edf8;
       }
 
       .slider-panel[data-platform-panel="ios"] .slide-card img {
         aspect-ratio: auto;
         object-fit: contain;
-        background: #f7f3e9;
+        background: #f3f7fc;
       }
 
       .slide-placeholder {
@@ -484,7 +484,7 @@
 
       .feature-card:hover {
         transform: translateY(-4px);
-        border-color: rgba(47, 127, 99, 0.24);
+        border-color: rgba(39, 64, 107, 0.24);
       }
 
       .feature-icon {
@@ -504,9 +504,9 @@
       .download-panel {
         border-radius: calc(var(--radius) + 6px);
         background:
-          linear-gradient(135deg, rgba(47, 127, 99, 0.1), rgba(255, 255, 255, 0.82)),
+          linear-gradient(135deg, rgba(39, 64, 107, 0.1), rgba(255, 255, 255, 0.82)),
           var(--surface);
-        border: 1px solid rgba(47, 127, 99, 0.16);
+        border: 1px solid rgba(39, 64, 107, 0.16);
         padding: 26px 22px;
         box-shadow: var(--shadow);
       }
@@ -560,7 +560,7 @@
         position: absolute;
         right: 8px;
         bottom: 8px;
-        background: rgba(24, 53, 49, 0.84);
+        background: rgba(24, 39, 61, 0.84);
         color: #fff;
         font-size: 0.72rem;
         padding: 4px 8px;
@@ -581,7 +581,7 @@
         width: min(calc(100% - 32px), var(--content-width));
         margin: 0 auto;
         padding-top: 20px;
-        border-top: 1px solid rgba(24, 53, 49, 0.1);
+        border-top: 1px solid rgba(35, 63, 106, 0.1);
         display: flex;
         flex-direction: column;
         gap: 10px;
