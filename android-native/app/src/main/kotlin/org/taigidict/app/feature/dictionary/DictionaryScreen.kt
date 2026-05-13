@@ -570,12 +570,12 @@ private fun TwoPaneDetailPlaceholder(
             verticalArrangement = Arrangement.Center,
         ) {
             Text(
-                text = stringResource(R.string.dictionary_search_results_title),
+                text = stringResource(R.string.dictionary_two_pane_placeholder_title),
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
             )
             Text(
-                text = stringResource(R.string.dictionary_empty_state_body),
+                text = stringResource(R.string.dictionary_two_pane_placeholder_body),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,

@@ -21,6 +21,8 @@
     <string name="dictionary_home_hint">輸入台語漢字、白話字或華語詞義</string>
     <string name="dictionary_empty_state_title">開始搜尋</string>
     <string name="dictionary_empty_state_body">輸入台語漢字、白話字，或華語釋義後才顯示詞條。</string>
+    <string name="dictionary_two_pane_placeholder_title">尚未選擇詞條</string>
+    <string name="dictionary_two_pane_placeholder_body">點一下左側搜尋結果，這裡就會顯示詞條詳細內容。</string>
     <string name="dictionary_searching">搜尋中</string>
     <string name="dictionary_search_results_title">搜尋結果</string>
     <string name="dictionary_recent_searches_title">搜尋紀錄</string>

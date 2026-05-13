@@ -21,6 +21,8 @@
     <string name="dictionary_home_hint">Enter a keyword to start searching the dictionary.</string>
     <string name="dictionary_empty_state_title">Start searching</string>
     <string name="dictionary_empty_state_body">Type Hanji, romanization, or Mandarin meaning to see entries.</string>
+    <string name="dictionary_two_pane_placeholder_title">No entry selected</string>
+    <string name="dictionary_two_pane_placeholder_body">Tap a result on the left to show its details here.</string>
     <string name="dictionary_searching">Searching dictionary…</string>
     <string name="dictionary_search_results_title">Results</string>
     <string name="dictionary_recent_searches_title">Search history</string>

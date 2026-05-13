@@ -21,6 +21,8 @@
     <string name="dictionary_home_hint">输入台语汉字、白话字或华语词义</string>
     <string name="dictionary_empty_state_title">开始搜索</string>
     <string name="dictionary_empty_state_body">输入台语汉字、白话字，或华语释义后才显示词条。</string>
+    <string name="dictionary_two_pane_placeholder_title">尚未选择词条</string>
+    <string name="dictionary_two_pane_placeholder_body">点一下左侧搜索结果，这里就会显示词条详细内容。</string>
     <string name="dictionary_searching">搜索中</string>
     <string name="dictionary_search_results_title">搜索结果</string>
     <string name="dictionary_recent_searches_title">搜索纪录</string>
