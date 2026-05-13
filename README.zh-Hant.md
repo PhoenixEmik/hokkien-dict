@@ -6,6 +6,13 @@
 [![Get it on Google Play](https://img.shields.io/badge/Get_it_on-Google_Play-34A853?style=for-the-badge&logo=googleplay&logoColor=white)](https://play.google.com/store/apps/details?id=org.taigidict.app)
 [![Download APK](https://img.shields.io/github/v/release/PhoenixEmik/taigi-dict?label=Download%20APK&style=for-the-badge&color=3DDC84&logo=android&logoColor=white)](https://github.com/PhoenixEmik/taigi-dict/releases/latest)
 
+![Swift](https://img.shields.io/badge/Swift-F05138?style=flat&logo=swift&logoColor=white)
+![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=flat&logo=kotlin&logoColor=white)
+![Dart](https://img.shields.io/badge/Dart-0175C2?style=flat&logo=dart&logoColor=white)
+![iOS 17+](https://img.shields.io/badge/iOS-17%2B-000000?style=flat&logo=apple&logoColor=white)
+![Android 7+](https://img.shields.io/badge/Android-7%2B-3DDC84?style=flat&logo=android&logoColor=white)
+![License MIT](https://img.shields.io/badge/License-MIT-5E5E5E?style=flat)
+
 [English README](README.md)
 
 這個專案以教育部辭典資料為核心，提供台語 / 華語離線辭典體驗。
