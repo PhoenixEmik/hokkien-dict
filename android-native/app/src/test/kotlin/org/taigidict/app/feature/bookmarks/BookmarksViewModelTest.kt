@@ -108,9 +108,10 @@ class BookmarksViewModelTest {
             romanization = "sû-tián",
             wordSynonyms = listOf("字典"),
         )
+        val linked = sampleEntry(id = 30, hanji = "字典", romanization = "jī-tián")
         val repository = FakeBookmarksRepository(
-            entryById = mapOf(source.id to source),
-            linkedEntriesByWord = mapOf("字典" to source),
+            entryById = mapOf(source.id to source, linked.id to linked),
+            linkedEntriesByWord = mapOf("字典" to linked),
         )
         val bookmarkStore = createBookmarkStore(backgroundScope)
 
@@ -127,6 +128,12 @@ class BookmarksViewModelTest {
         val loadingState = viewModel.uiState.value
         assertTrue(loadingState.isLoadingEntryDetail)
         assertEquals(source, loadingState.selectedEntry)
+        assertTrue(loadingState.openableLinkedWords.isEmpty())
+        advanceUntilIdle()
+        assertEquals(setOf("字典"), viewModel.uiState.value.openableLinkedWords)
+        viewModel.onEntrySelected(source.id)
+        assertFalse(viewModel.uiState.value.isLoadingEntryDetail)
+        assertEquals(setOf("字典"), viewModel.uiState.value.openableLinkedWords)
     }
 
     @Test

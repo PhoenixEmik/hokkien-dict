@@ -70,6 +70,9 @@ class BookmarksViewModel(
     }
 
     fun onEntrySelected(entryId: Long) {
+        if (_uiState.value.selectedEntry?.id == entryId && rawSelectedEntryDetail?.entry?.id == entryId) {
+            return
+        }
         val sourceEntry = rawEntries.firstOrNull { it.id == entryId }
         if (sourceEntry == null) {
             _uiState.update {
@@ -83,7 +86,7 @@ class BookmarksViewModel(
             it.copy(
                 isLoadingEntryDetail = true,
                 selectedEntry = displayedSourceEntry ?: it.selectedEntry,
-                openableLinkedWords = emptySet(),
+                openableLinkedWords = if (displayedSourceEntry != null) emptySet() else it.openableLinkedWords,
                 entryDetailErrorMessage = null,
             )
         }

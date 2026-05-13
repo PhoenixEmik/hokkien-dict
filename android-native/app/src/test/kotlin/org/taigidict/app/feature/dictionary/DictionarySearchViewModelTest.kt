@@ -387,11 +387,18 @@ class DictionarySearchViewModelTest {
 
     @Test
     fun onEntrySelected_keepsResultVisibleWhileDetailLoads() = runTest(dispatcher) {
-        val entry = sampleEntry(id = 7, hanji = "辭典", romanization = "sû-tián")
+        val linkedEntry = sampleEntry(id = 8, hanji = "字典", romanization = "jī-tián")
+        val entry = sampleEntry(
+            id = 7,
+            hanji = "辭典",
+            romanization = "sû-tián",
+            wordSynonyms = listOf("字典"),
+        )
         val repository = FakeDictionaryRepository(
             bundle = DictionaryBundle(1, 1, 0, "/tmp/dictionary.sqlite"),
             searchResults = listOf(entry),
-            entryById = mapOf(entry.id to entry),
+            entryById = mapOf(entry.id to entry, linkedEntry.id to linkedEntry),
+            linkedEntriesByWord = mapOf("字典" to linkedEntry),
         )
 
         val viewModel = createViewModel(repository = repository)
@@ -404,8 +411,13 @@ class DictionarySearchViewModelTest {
         val loadingState = viewModel.uiState.value
         assertTrue(loadingState.isLoadingEntryDetail)
         assertEquals(entry, loadingState.selectedEntry)
+        assertTrue(loadingState.openableLinkedWords.isEmpty())
 
         advanceUntilIdle()
+        assertEquals(setOf("字典"), viewModel.uiState.value.openableLinkedWords)
+        viewModel.onEntrySelected(entry.id)
+        assertFalse(viewModel.uiState.value.isLoadingEntryDetail)
+        assertEquals(setOf("字典"), viewModel.uiState.value.openableLinkedWords)
     }
 
     @Test

@@ -158,6 +158,9 @@ class DictionarySearchViewModel(
 
     fun onEntrySelected(entryId: Long) {
         persistCurrentQueryIfNeeded()
+        if (_uiState.value.selectedEntry?.id == entryId && rawSelectedEntryDetail?.entry?.id == entryId) {
+            return
+        }
         val sourceEntry = _uiState.value.results.firstOrNull { it.id == entryId }
         entryDetailJob?.cancel()
         rawSelectedEntryDetail = null
@@ -165,7 +168,7 @@ class DictionarySearchViewModel(
             it.copy(
                 isLoadingEntryDetail = true,
                 selectedEntry = sourceEntry ?: it.selectedEntry,
-                openableLinkedWords = emptySet(),
+                openableLinkedWords = if (sourceEntry != null) emptySet() else it.openableLinkedWords,
                 entryDetailErrorMessage = null,
             )
         }
