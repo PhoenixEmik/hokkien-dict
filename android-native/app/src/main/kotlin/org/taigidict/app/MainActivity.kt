@@ -9,18 +9,22 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.core.os.LocaleListCompat
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 import org.taigidict.app.app.TaigiDictApplication
 import org.taigidict.app.app.rememberMainAppState
 import org.taigidict.app.core.settings.AppLanguagePreference
-import org.taigidict.app.core.settings.AppSettingsConstants
+import org.taigidict.app.core.settings.AppSettingsStoring
 import org.taigidict.app.core.settings.AppThemePreference
 import org.taigidict.app.feature.common.appPageContainerColor
 import org.taigidict.app.feature.initialization.InitializationScreen
@@ -37,6 +41,7 @@ class MainActivity : AppCompatActivity() {
         applyAppLanguagePreference(appContainer.appSettingsStore.initialLanguagePreference)
 
         super.onCreate(savedInstanceState)
+        observeAppLanguagePreference(appContainer.appSettingsStore)
 
         setContent {
             val uiState = initializationViewModel.uiState.collectAsStateWithLifecycle().value
@@ -51,28 +56,13 @@ class MainActivity : AppCompatActivity() {
                 initialDestination = restoredDestination,
             )
             val themePreference = appContainer.appSettingsStore.themePreference
-                .collectAsState(initial = appContainer.appSettingsStore.initialThemePreference).value
-            val languagePreference = appContainer.appSettingsStore.languagePreference
-                .collectAsState(initial = appContainer.appSettingsStore.initialLanguagePreference).value
+                .collectAsStateWithLifecycle(initialValue = appContainer.appSettingsStore.initialThemePreference).value
             val readingTextScale = appContainer.appSettingsStore.readingTextScale
-                .collectAsState(initial = appContainer.appSettingsStore.initialReadingTextScale).value
+                .collectAsStateWithLifecycle(initialValue = appContainer.appSettingsStore.initialReadingTextScale).value
 
             LaunchedEffect(appState.currentDestination) {
                 if (savedDestinationName != appState.currentDestination.name) {
                     savedDestinationName = appState.currentDestination.name
-                }
-            }
-
-            LaunchedEffect(languagePreference) {
-                val targetLocales = when (languagePreference) {
-                    AppLanguagePreference.System -> LocaleListCompat.getEmptyLocaleList()
-                    AppLanguagePreference.TraditionalChinese -> LocaleListCompat.forLanguageTags("zh-TW")
-                    AppLanguagePreference.SimplifiedChinese -> LocaleListCompat.forLanguageTags("zh-CN")
-                    AppLanguagePreference.English -> LocaleListCompat.forLanguageTags("en")
-                }
-                val currentLocales = AppCompatDelegate.getApplicationLocales()
-                if (currentLocales != targetLocales) {
-                    AppCompatDelegate.setApplicationLocales(targetLocales)
                 }
             }
 
@@ -104,6 +94,16 @@ class MainActivity : AppCompatActivity() {
                         )
                     }
                 }
+            }
+        }
+    }
+
+    private fun observeAppLanguagePreference(settingsStore: AppSettingsStoring) {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                settingsStore.languagePreference
+                    .distinctUntilChanged()
+                    .collect(::applyAppLanguagePreference)
             }
         }
     }
