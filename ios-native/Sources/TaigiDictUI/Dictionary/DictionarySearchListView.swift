@@ -82,13 +82,13 @@ struct DictionarySearchListView: View {
                 Section(AppLocalizer.text(.searchResultsSection, locale: appLocale)) {
                     ForEach(viewModel.results) { entry in
                         if showsSelection {
-                            DictionaryEntryRowView(entry: entry)
+                            DictionaryEntryRowView(entry: entry, layoutStyle: .sidebarCompact)
                                 .tag(entry.id)
                         } else {
                             Button {
                                 viewModel.select(entry)
                             } label: {
-                                DictionaryEntryRowView(entry: entry)
+                                DictionaryEntryRowView(entry: entry, layoutStyle: .standard)
                             }
                             .foregroundStyle(.primary)
                         }
