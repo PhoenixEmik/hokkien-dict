@@ -11,16 +11,36 @@ struct LicenseOverviewScreen: View {
     var body: some View {
         List {
             Section(AppLocalizer.text(.licenseOverviewCoreSection, locale: appLocale)) {
-                Label("GRDB.swift", systemImage: "shippingbox")
-                Label("SwiftyOpenCC", systemImage: "shippingbox")
+                ForEach(ThirdPartyLicenseCatalog.directDependencies) { entry in
+                    NavigationLink {
+                        ThirdPartyLicenseDetailScreen(entry: entry)
+                    } label: {
+                        thirdPartyRow(entry)
+                    }
+                }
             }
 
             Section(AppLocalizer.text(.licenseOverviewIOSSection, locale: appLocale)) {
-                Label("SwiftUI", systemImage: "applelogo")
-                Label("Foundation", systemImage: "applelogo")
-                Label(AppLocalizer.text(.licenseOverviewAVFoundation, locale: appLocale), systemImage: "applelogo")
+                ForEach(ThirdPartyLicenseCatalog.bundledComponents) { entry in
+                    NavigationLink {
+                        ThirdPartyLicenseDetailScreen(entry: entry)
+                    } label: {
+                        thirdPartyRow(entry)
+                    }
+                }
             }
         }
         .navigationTitle(AppLocalizer.text(.licenseOverviewTitle, locale: appLocale))
+    }
+
+    @ViewBuilder
+    private func thirdPartyRow(_ entry: ThirdPartyLicenseEntry) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Label(entry.name, systemImage: "shippingbox")
+
+            Text(entry.summaryText())
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
     }
 }

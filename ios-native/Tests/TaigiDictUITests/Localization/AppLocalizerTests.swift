@@ -41,6 +41,11 @@ final class AppLocalizerTests: XCTestCase {
             AppLocalizer.text(.licenseThirdParty, locale: .traditionalChinese),
             "套件授權"
         )
+        XCTAssertEqual(
+            AppLocalizer.text(.licenseViewThirdParty, locale: .traditionalChinese),
+            "查看這個原生 App 目前使用的 Swift 套件與內嵌上游元件授權全文。"
+        )
+        XCTAssertEqual(AppLocalizer.text(.licenseTextSection, locale: .english), "License text")
 
         XCTAssertEqual(AppLocalizer.text(.bookmarksTitle, locale: .english), "Bookmarks")
         XCTAssertEqual(AppLocalizer.text(.bookmarksTitle, locale: .traditionalChinese), "書籤")

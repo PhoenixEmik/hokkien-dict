@@ -12,7 +12,7 @@ struct LicenseSummaryScreen: View {
 
     var body: some View {
         List {
-            Section {
+            Section(AppLocalizer.text(.licenseSummarySection, locale: appLocale)) {
                 LabeledContent {
                     Text(AppLocalizer.text(.licenseAppCodeDescription, locale: appLocale))
                         .foregroundStyle(.secondary)
@@ -43,7 +43,12 @@ struct LicenseSummaryScreen: View {
                 NavigationLink {
                     LicenseOverviewScreen()
                 } label: {
-                    Label(AppLocalizer.text(.licenseThirdParty, locale: appLocale), systemImage: "shippingbox")
+                    VStack(alignment: .leading, spacing: 4) {
+                        Label(AppLocalizer.text(.licenseThirdParty, locale: appLocale), systemImage: "shippingbox")
+                        Text(AppLocalizer.text(.licenseViewThirdParty, locale: appLocale))
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
         }

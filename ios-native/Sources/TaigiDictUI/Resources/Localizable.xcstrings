@@ -105,19 +105,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "View detailed open-source licenses bundled by Flutter."
+            "value" : "Review the current Swift packages and bundled upstream license texts used by this native app."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "查看 Flutter 汇整的开源套件详细授权。"
+            "value" : "查看这个原生 App 目前使用的 Swift 套件与内嵌上游元件授权全文。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "查看 Flutter 彙整的開源套件詳細授權。"
+            "value" : "查看這個原生 App 目前使用的 Swift 套件與內嵌上游元件授權全文。"
           }
         }
       }
@@ -1994,6 +1994,98 @@
         }
       }
     },
+    "licenseAgreement" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "License"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "授权协议"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "授權協議"
+          }
+        }
+      }
+    },
+    "licenseIncludedVia" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Included via"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "随此元件引入"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隨此元件引入"
+          }
+        }
+      }
+    },
+    "licenseMarisaNotice" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upstream distributes libmarisa under BSD-2-Clause OR LGPL-2.1-or-later. This screen reproduces the BSD-2-Clause option included in the shipped source tree."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上游将 libmarisa 以 BSD-2-Clause 或 LGPL-2.1-or-later 双重授权发布；此页显示随源码一并提供的 BSD-2-Clause 选项。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上游將 libmarisa 以 BSD-2-Clause 或 LGPL-2.1-or-later 雙重授權釋出；此頁顯示隨原始碼一併提供的 BSD-2-Clause 選項。"
+          }
+        }
+      }
+    },
+    "licenseMetadataSection" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Details"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "资讯"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "資訊"
+          }
+        }
+      }
+    },
     "licenseOverviewAVFoundation" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2023,19 +2115,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Core packages"
+            "value" : "Swift package dependencies"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "核心套件"
+            "value" : "Swift 套件依赖"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "核心套件"
+            "value" : "Swift 套件依賴"
           }
         }
       }
@@ -2046,19 +2138,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "iOS native frameworks"
+            "value" : "Bundled upstream components"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "iOS 原生框架"
+            "value" : "内嵌上游元件"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "iOS 原生框架"
+            "value" : "內嵌上游元件"
           }
         }
       }
@@ -2086,6 +2178,29 @@
         }
       }
     },
+    "licenseRepository" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Source repository"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "原始码仓库"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "原始碼倉庫"
+          }
+        }
+      }
+    },
     "licenseSummarySection" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2105,6 +2220,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "授權摘要"
+          }
+        }
+      }
+    },
+    "licenseTextSection" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "License text"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "授权全文"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "授權全文"
           }
         }
       }
@@ -2155,25 +2293,48 @@
         }
       }
     },
+    "licenseVersion" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "版本"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "版本"
+          }
+        }
+      }
+    },
     "licenseViewThirdParty" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "View detailed open-source licenses bundled by Flutter."
+            "value" : "Review the current Swift packages and bundled upstream license texts used by this native app."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "查看 Flutter 汇整的开源套件详细授权。"
+            "value" : "查看这个原生 App 目前使用的 Swift 套件与内嵌上游元件授权全文。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "查看 Flutter 彙整的開源套件詳細授權。"
+            "value" : "查看這個原生 App 目前使用的 Swift 套件與內嵌上游元件授權全文。"
           }
         }
       }
