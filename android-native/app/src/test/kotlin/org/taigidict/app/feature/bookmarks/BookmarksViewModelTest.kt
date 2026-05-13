@@ -1,17 +1,15 @@
 package org.taigidict.app.feature.bookmarks
 
 import android.app.Application
-import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import java.util.UUID
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -29,7 +27,7 @@ import org.taigidict.app.core.settings.AppLanguagePreference
 import org.taigidict.app.core.settings.AppSettingsConstants
 import org.taigidict.app.core.settings.AppSettingsStoring
 import org.taigidict.app.core.settings.AppThemePreference
-import org.taigidict.app.data.bookmarks.BookmarkStore
+import org.taigidict.app.data.bookmarks.BookmarkStoring
 import org.taigidict.app.data.conversion.ChineseConversionService
 import org.taigidict.app.data.repository.DictionaryRepositoryDataSource
 import org.taigidict.app.domain.model.DictionaryBundle
@@ -110,30 +108,25 @@ class BookmarksViewModelTest {
             romanization = "sû-tián",
             wordSynonyms = listOf("字典"),
         )
-        val repository = BlockingBookmarksRepository(
+        val repository = FakeBookmarksRepository(
             entryById = mapOf(source.id to source),
             linkedEntriesByWord = mapOf("字典" to source),
         )
         val bookmarkStore = createBookmarkStore(backgroundScope)
-        bookmarkStore.toggleBookmark(source.id)
 
         val viewModel = createViewModel(
             repository = repository,
             bookmarkStore = bookmarkStore,
-            ioDispatcher = Dispatchers.Default,
         )
         advanceUntilIdle()
-        waitForCondition { viewModel.uiState.value.entries.isNotEmpty() }
+        bookmarkStore.toggleBookmark(source.id)
+        advanceUntilIdle()
 
         viewModel.onEntrySelected(source.id)
-        runCurrent()
 
         val loadingState = viewModel.uiState.value
         assertTrue(loadingState.isLoadingEntryDetail)
         assertEquals(source, loadingState.selectedEntry)
-
-        repository.release()
-        advanceUntilIdle()
     }
 
     @Test
@@ -162,18 +155,59 @@ class BookmarksViewModelTest {
         assertEquals("一种工具书。", viewModel.uiState.value.entries.first().senses.first().definition)
     }
 
-    private fun createBookmarkStore(scope: CoroutineScope): BookmarkStore {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        return BookmarkStore(
-            context = context,
-            preferencesName = "bookmarks-viewmodel-test-${UUID.randomUUID()}",
-            scope = scope,
+    @Test
+    fun languageChange_retranslatesVisibleBookmarksAndDetail() = runTest(dispatcher) {
+        val linkedEntry = sampleEntry(id = 30, hanji = "辭書", romanization = "sû-su")
+        val entry = sampleEntry(
+            id = 20,
+            hanji = "辭典",
+            romanization = "sû-tián",
+            wordSynonyms = listOf("辭書"),
         )
+        val repository = FakeBookmarksRepository(
+            entryById = mapOf(entry.id to entry, linkedEntry.id to linkedEntry),
+            linkedEntriesByWord = mapOf("辭書" to linkedEntry),
+        )
+        val bookmarkStore = createBookmarkStore(backgroundScope)
+        bookmarkStore.toggleBookmark(entry.id)
+        val settingsStore = FakeBookmarksSettingsStore()
+        val conversionService = FakeBookmarksChineseConversionService(
+            translatedMap = mapOf(
+                "辭典" to "词典",
+                "辭書" to "辞书",
+                "一種工具書。" to "一种工具书。",
+            ),
+        )
+
+        val viewModel = createViewModel(
+            repository = repository,
+            bookmarkStore = bookmarkStore,
+            settingsStore = settingsStore,
+            conversionService = conversionService,
+        )
+        advanceUntilIdle()
+        viewModel.onEntrySelected(entry.id)
+        advanceUntilIdle()
+        assertEquals("辭典", viewModel.uiState.value.entries.first().hanji)
+        assertEquals("辭典", viewModel.uiState.value.selectedEntry?.hanji)
+        assertEquals(setOf("辭書"), viewModel.uiState.value.openableLinkedWords)
+
+        settingsStore.setLanguagePreference(AppLanguagePreference.SimplifiedChinese)
+        advanceUntilIdle()
+
+        assertEquals("词典", viewModel.uiState.value.entries.first().hanji)
+        assertEquals("词典", viewModel.uiState.value.selectedEntry?.hanji)
+        assertEquals("一种工具书。", viewModel.uiState.value.selectedEntry?.senses?.first()?.definition)
+        assertEquals(setOf("辞书"), viewModel.uiState.value.openableLinkedWords)
+    }
+
+    private fun createBookmarkStore(@Suppress("UNUSED_PARAMETER") scope: CoroutineScope): BookmarkStoring {
+        return FakeBookmarkStore()
     }
 
     private fun createViewModel(
         repository: DictionaryRepositoryDataSource,
-        bookmarkStore: BookmarkStore,
+        bookmarkStore: BookmarkStoring,
         settingsStore: AppSettingsStoring = FakeBookmarksSettingsStore(),
         conversionService: ChineseConversionService = FakeBookmarksChineseConversionService(),
         ioDispatcher: kotlinx.coroutines.CoroutineDispatcher = dispatcher,
@@ -190,16 +224,42 @@ class BookmarksViewModelTest {
     }
 }
 
-private fun waitForCondition(
-    timeoutMillis: Long = 10_000,
-    predicate: () -> Boolean,
-) {
-    val deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMillis)
-    while (!predicate()) {
-        if (System.nanoTime() >= deadline) {
-            throw AssertionError("Condition was not met within ${timeoutMillis}ms")
+private class FakeBookmarkStore : BookmarkStoring {
+    private val _bookmarkedIds = MutableStateFlow(emptyList<Long>())
+    override val bookmarkedIds: StateFlow<List<Long>> = _bookmarkedIds.asStateFlow()
+
+    override fun isBookmarked(entryId: Long): Boolean {
+        return _bookmarkedIds.value.contains(entryId)
+    }
+
+    override suspend fun toggleBookmark(entryId: Long): Boolean {
+        val updated = _bookmarkedIds.value.toMutableList().apply {
+            if (contains(entryId)) {
+                remove(entryId)
+            } else {
+                remove(entryId)
+                add(0, entryId)
+            }
         }
-        Thread.sleep(10)
+        _bookmarkedIds.value = updated
+        return updated.contains(entryId)
+    }
+
+    override suspend fun addBookmark(entryId: Long, index: Int): Boolean {
+        _bookmarkedIds.value = _bookmarkedIds.value.toMutableList().apply {
+            remove(entryId)
+            add(index.coerceIn(0, size), entryId)
+        }
+        return true
+    }
+
+    override suspend fun removeBookmark(entryId: Long): Boolean {
+        val previous = _bookmarkedIds.value
+        if (!previous.contains(entryId)) {
+            return false
+        }
+        _bookmarkedIds.value = previous.filterNot { it == entryId }
+        return true
     }
 }
 
@@ -236,7 +296,11 @@ private class FakeBookmarksChineseConversionService(
     }
 
     override suspend fun translateForDisplay(text: String, locale: AppLocale): String {
-        return translatedMap[text] ?: text
+        return if (locale == AppLocale.SimplifiedChinese) {
+            translatedMap[text] ?: text
+        } else {
+            text
+        }
     }
 }
 
@@ -262,32 +326,6 @@ private class FakeBookmarksRepository(
 
     override fun findLinkedEntry(rawWord: String): DictionaryEntry? {
         return linkedEntriesByWord[rawWord]
-    }
-}
-
-private class BlockingBookmarksRepository(
-    private val entryById: Map<Long, DictionaryEntry>,
-    private val linkedEntriesByWord: Map<String, DictionaryEntry>,
-) : DictionaryRepositoryDataSource {
-    private val releaseLatch = CountDownLatch(1)
-
-    override fun loadBundle(): DictionaryBundle {
-        return DictionaryBundle(0, 0, 0, "/tmp/dictionary.sqlite")
-    }
-
-    override fun search(rawQuery: String, limit: Int): List<DictionaryEntry> = emptyList()
-
-    override fun entries(ids: List<Long>): List<DictionaryEntry> = ids.mapNotNull(entryById::get)
-
-    override fun entry(id: Long): DictionaryEntry? = entryById[id]
-
-    override fun findLinkedEntry(rawWord: String): DictionaryEntry? {
-        releaseLatch.await(5, TimeUnit.SECONDS)
-        return linkedEntriesByWord[rawWord]
-    }
-
-    fun release() {
-        releaseLatch.countDown()
     }
 }
 

@@ -72,6 +72,8 @@ class DictionarySearchViewModel(
     private var searchJob: Job? = null
     private var entryDetailJob: Job? = null
     private var currentLocale: AppLocale = AppLocale.TraditionalChinese
+    private var rawResults: List<DictionaryEntry> = emptyList()
+    private var rawSelectedEntryDetail: PreparedDictionaryEntryDetail? = null
 
     init {
         observeLanguagePreference()
@@ -95,6 +97,7 @@ class DictionarySearchViewModel(
 
     fun onQueryChange(query: String) {
         entryDetailJob?.cancel()
+        rawSelectedEntryDetail = null
         _uiState.update {
             it.copy(
                 query = query,
@@ -108,6 +111,7 @@ class DictionarySearchViewModel(
 
         searchJob?.cancel()
         if (query.isBlank()) {
+            rawResults = emptyList()
             _uiState.update {
                 it.copy(
                     isSearching = false,
@@ -134,18 +138,19 @@ class DictionarySearchViewModel(
                         text = query,
                         locale = currentLocale,
                     )
-                    val rawResults = repository.search(convertedQuery)
-                    rawResults.map { entry ->
+                    val rawSearchResults = repository.search(convertedQuery)
+                    rawSearchResults to rawSearchResults.map { entry ->
                         translateEntryForDisplay(entry)
                     }
                 }
             }
 
+            rawResults = result.getOrNull()?.first.orEmpty()
             _uiState.update {
                 it.copy(
                     isSearching = false,
                     searchErrorMessage = result.exceptionOrNull()?.message,
-                    results = result.getOrDefault(emptyList()),
+                    results = result.getOrNull()?.second.orEmpty(),
                 )
             }
         }
@@ -155,6 +160,7 @@ class DictionarySearchViewModel(
         persistCurrentQueryIfNeeded()
         val sourceEntry = _uiState.value.results.firstOrNull { it.id == entryId }
         entryDetailJob?.cancel()
+        rawSelectedEntryDetail = null
         _uiState.update {
             it.copy(
                 isLoadingEntryDetail = true,
@@ -168,21 +174,18 @@ class DictionarySearchViewModel(
                 runCatching {
                     val entry = repository.entry(entryId)
                         ?: throw IllegalStateException("Entry $entryId not found")
-                    val prepared = detailController.prepareEntryDetail(entry)
-                    PreparedDictionaryEntryDetail(
-                        entry = translateEntryForDisplay(prepared.entry),
-                        openableLinkedWords = prepared.openableLinkedWords.map {
-                            chineseConversionService.translateForDisplay(it, currentLocale)
-                        }.toSet(),
-                    )
+                    val rawDetail = detailController.prepareEntryDetail(entry)
+                    rawDetail to translateEntryDetailForDisplay(rawDetail)
                 }
             }
 
+            rawSelectedEntryDetail = result.getOrNull()?.first
+            val translatedDetail = result.getOrNull()?.second
             _uiState.update {
                 it.copy(
                     isLoadingEntryDetail = false,
-                    selectedEntry = result.getOrNull()?.entry,
-                    openableLinkedWords = result.getOrNull()?.openableLinkedWords.orEmpty(),
+                    selectedEntry = translatedDetail?.entry,
+                    openableLinkedWords = translatedDetail?.openableLinkedWords.orEmpty(),
                     entryDetailErrorMessage = result.exceptionOrNull()?.message,
                 )
             }
@@ -190,7 +193,7 @@ class DictionarySearchViewModel(
     }
 
     fun onLinkedWordSelected(word: String) {
-        val currentEntry = _uiState.value.selectedEntry ?: return
+        val currentEntry = rawSelectedEntryDetail?.entry ?: _uiState.value.selectedEntry ?: return
         if (!_uiState.value.openableLinkedWords.contains(word)) {
             return
         }
@@ -215,28 +218,22 @@ class DictionarySearchViewModel(
                             locale = currentLocale,
                         )
                     }.toSet()
-                    detailController.prepareLinkedEntry(
+                    val rawDetail = detailController.prepareLinkedEntry(
                         currentEntryId = currentEntry.id,
                         openableLinkedWords = convertedOpenableWords,
                         word = convertedWord,
                     )
+                    rawDetail to translateEntryDetailForDisplay(rawDetail)
                 }
             }
 
+            rawSelectedEntryDetail = result.getOrNull()?.first
+            val translatedDetail = result.getOrNull()?.second
             _uiState.update {
                 it.copy(
                     isLoadingEntryDetail = false,
-                    selectedEntry = result.getOrNull()?.entry?.let { entry ->
-                        runCatching { translateEntryForDisplay(entry) }.getOrDefault(entry)
-                    } ?: currentEntry,
-                    openableLinkedWords = result.getOrNull()?.openableLinkedWords?.map { linkedWord ->
-                        runCatching {
-                            chineseConversionService.translateForDisplay(
-                                linkedWord,
-                                currentLocale,
-                            )
-                        }.getOrDefault(linkedWord)
-                    }?.toSet() ?: it.openableLinkedWords,
+                    selectedEntry = translatedDetail?.entry ?: it.selectedEntry,
+                    openableLinkedWords = translatedDetail?.openableLinkedWords ?: it.openableLinkedWords,
                     entryDetailErrorMessage = result.exceptionOrNull()?.message,
                 )
             }
@@ -245,6 +242,7 @@ class DictionarySearchViewModel(
 
     fun onEntryDetailDismissed() {
         entryDetailJob?.cancel()
+        rawSelectedEntryDetail = null
         _uiState.update {
             it.copy(
                 isLoadingEntryDetail = false,
@@ -294,6 +292,7 @@ class DictionarySearchViewModel(
         viewModelScope.launch {
             settingsStore.languagePreference.collectLatest { preference ->
                 currentLocale = AppLocaleResolver.resolve(preference)
+                retranslateVisibleContent()
             }
         }
     }
@@ -380,6 +379,47 @@ class DictionarySearchViewModel(
             },
             senses = senses,
         )
+    }
+
+    private suspend fun translateEntryDetailForDisplay(
+        detail: PreparedDictionaryEntryDetail,
+    ): PreparedDictionaryEntryDetail {
+        return PreparedDictionaryEntryDetail(
+            entry = translateEntryForDisplay(detail.entry),
+            openableLinkedWords = detail.openableLinkedWords.map { word ->
+                chineseConversionService.translateForDisplay(word, currentLocale)
+            }.toSet(),
+        )
+    }
+
+    private suspend fun retranslateVisibleContent() {
+        val result = withContext(ioDispatcher) {
+            runCatching {
+                val translatedResults = rawResults.map { entry ->
+                    translateEntryForDisplay(entry)
+                }
+                val translatedDetail = rawSelectedEntryDetail?.let { detail ->
+                    translateEntryDetailForDisplay(detail)
+                }
+                translatedResults to translatedDetail
+            }
+        }
+        val (translatedResults, translatedDetail) = result.getOrNull() ?: return
+        _uiState.update {
+            val translatedLoadingPreview = if (rawSelectedEntryDetail == null) {
+                it.selectedEntry?.let { selected ->
+                    translatedResults.firstOrNull { result -> result.id == selected.id }
+                }
+            } else {
+                null
+            }
+            it.copy(
+                results = translatedResults,
+                selectedEntry = translatedDetail?.entry ?: translatedLoadingPreview,
+                openableLinkedWords = translatedDetail?.openableLinkedWords
+                    ?: if (rawSelectedEntryDetail == null) it.openableLinkedWords else emptySet(),
+            )
+        }
     }
 
     private companion object {

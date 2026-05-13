@@ -16,13 +16,14 @@ import org.taigidict.app.app.TaigiDictApplication
 import org.taigidict.app.core.localization.AppLocale
 import org.taigidict.app.core.localization.AppLocaleResolver
 import org.taigidict.app.core.settings.AppSettingsStoring
-import org.taigidict.app.data.bookmarks.BookmarkStore
+import org.taigidict.app.data.bookmarks.BookmarkStoring
 import org.taigidict.app.data.conversion.ChineseConversionService
 import org.taigidict.app.data.repository.DictionaryRepositoryDataSource
 import org.taigidict.app.domain.model.DictionaryEntry
 import org.taigidict.app.domain.model.DictionaryExample
 import org.taigidict.app.domain.model.DictionarySense
 import org.taigidict.app.feature.dictionary.DictionaryEntryDetailController
+import org.taigidict.app.feature.dictionary.PreparedDictionaryEntryDetail
 
 data class BookmarksUiState(
     val isLoadingEntries: Boolean = true,
@@ -42,7 +43,7 @@ class BookmarksViewModel(
         (application as TaigiDictApplication).appContainer.appSettingsStore,
     private val chineseConversionService: ChineseConversionService =
         (application as TaigiDictApplication).appContainer.chineseConversionService,
-    private val bookmarkStore: BookmarkStore =
+    private val bookmarkStore: BookmarkStoring =
         (application as TaigiDictApplication).appContainer.bookmarkStore,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : AndroidViewModel(application) {
@@ -58,6 +59,8 @@ class BookmarksViewModel(
     private val detailController = DictionaryEntryDetailController(repository)
     private val _uiState = MutableStateFlow(BookmarksUiState())
     private var currentLocale: AppLocale = AppLocale.TraditionalChinese
+    private var rawEntries: List<DictionaryEntry> = emptyList()
+    private var rawSelectedEntryDetail: PreparedDictionaryEntryDetail? = null
 
     val uiState: StateFlow<BookmarksUiState> = _uiState.asStateFlow()
 
@@ -67,7 +70,7 @@ class BookmarksViewModel(
     }
 
     fun onEntrySelected(entryId: Long) {
-        val sourceEntry = _uiState.value.entries.firstOrNull { it.id == entryId }
+        val sourceEntry = rawEntries.firstOrNull { it.id == entryId }
         if (sourceEntry == null) {
             _uiState.update {
                 it.copy(entryDetailErrorMessage = "Entry $entryId not found")
@@ -75,10 +78,11 @@ class BookmarksViewModel(
             return
         }
 
+        val displayedSourceEntry = _uiState.value.entries.firstOrNull { it.id == entryId }
         _uiState.update {
             it.copy(
                 isLoadingEntryDetail = true,
-                selectedEntry = sourceEntry,
+                selectedEntry = displayedSourceEntry ?: it.selectedEntry,
                 openableLinkedWords = emptySet(),
                 entryDetailErrorMessage = null,
             )
@@ -86,21 +90,18 @@ class BookmarksViewModel(
         viewModelScope.launch {
             val result = withContext(ioDispatcher) {
                 runCatching {
-                    val prepared = detailController.prepareEntryDetail(sourceEntry)
-                    org.taigidict.app.feature.dictionary.PreparedDictionaryEntryDetail(
-                        entry = translateEntryForDisplay(prepared.entry),
-                        openableLinkedWords = prepared.openableLinkedWords.map {
-                            chineseConversionService.translateForDisplay(it, currentLocale)
-                        }.toSet(),
-                    )
+                    val rawDetail = detailController.prepareEntryDetail(sourceEntry)
+                    rawDetail to translateEntryDetailForDisplay(rawDetail)
                 }
             }
 
+            rawSelectedEntryDetail = result.getOrNull()?.first
+            val translatedDetail = result.getOrNull()?.second
             _uiState.update {
                 it.copy(
                     isLoadingEntryDetail = false,
-                    selectedEntry = result.getOrNull()?.entry,
-                    openableLinkedWords = result.getOrNull()?.openableLinkedWords.orEmpty(),
+                    selectedEntry = translatedDetail?.entry,
+                    openableLinkedWords = translatedDetail?.openableLinkedWords.orEmpty(),
                     entryDetailErrorMessage = result.exceptionOrNull()?.message,
                 )
             }
@@ -108,7 +109,7 @@ class BookmarksViewModel(
     }
 
     fun onLinkedWordSelected(word: String) {
-        val currentEntry = _uiState.value.selectedEntry ?: return
+        val currentEntry = rawSelectedEntryDetail?.entry ?: _uiState.value.selectedEntry ?: return
 
         _uiState.update {
             it.copy(
@@ -129,28 +130,22 @@ class BookmarksViewModel(
                             locale = currentLocale,
                         )
                     }.toSet()
-                    detailController.prepareLinkedEntry(
+                    val rawDetail = detailController.prepareLinkedEntry(
                         currentEntryId = currentEntry.id,
                         openableLinkedWords = convertedOpenableWords,
                         word = convertedWord,
                     )
+                    rawDetail to translateEntryDetailForDisplay(rawDetail)
                 }
             }
 
+            rawSelectedEntryDetail = result.getOrNull()?.first
+            val translatedDetail = result.getOrNull()?.second
             _uiState.update {
                 it.copy(
                     isLoadingEntryDetail = false,
-                    selectedEntry = result.getOrNull()?.entry?.let { entry ->
-                        runCatching { translateEntryForDisplay(entry) }.getOrDefault(entry)
-                    } ?: currentEntry,
-                    openableLinkedWords = result.getOrNull()?.openableLinkedWords?.map { linkedWord ->
-                        runCatching {
-                            chineseConversionService.translateForDisplay(
-                                linkedWord,
-                                currentLocale,
-                            )
-                        }.getOrDefault(linkedWord)
-                    }?.toSet() ?: it.openableLinkedWords,
+                    selectedEntry = translatedDetail?.entry ?: it.selectedEntry,
+                    openableLinkedWords = translatedDetail?.openableLinkedWords ?: it.openableLinkedWords,
                     entryDetailErrorMessage = result.exceptionOrNull()?.message,
                 )
             }
@@ -158,6 +153,7 @@ class BookmarksViewModel(
     }
 
     fun onEntryDetailDismissed() {
+        rawSelectedEntryDetail = null
         _uiState.update {
             it.copy(
                 isLoadingEntryDetail = false,
@@ -208,20 +204,22 @@ class BookmarksViewModel(
 
                 val result = withContext(ioDispatcher) {
                     runCatching {
-                        if (bookmarkedIds.isEmpty()) {
+                        val rawBookmarkedEntries = if (bookmarkedIds.isEmpty()) {
                             emptyList()
                         } else {
-                            repository.entries(bookmarkedIds).map { entry ->
-                                translateEntryForDisplay(entry)
-                            }
+                            repository.entries(bookmarkedIds)
+                        }
+                        rawBookmarkedEntries to rawBookmarkedEntries.map { entry ->
+                            translateEntryForDisplay(entry)
                         }
                     }
                 }
 
+                rawEntries = result.getOrNull()?.first.orEmpty()
                 _uiState.update {
                     it.copy(
                         isLoadingEntries = false,
-                        entries = result.getOrDefault(emptyList()),
+                        entries = result.getOrNull()?.second.orEmpty(),
                         entriesErrorMessage = result.exceptionOrNull()?.message,
                     )
                 }
@@ -233,6 +231,7 @@ class BookmarksViewModel(
         viewModelScope.launch {
             settingsStore.languagePreference.collectLatest { preference ->
                 currentLocale = AppLocaleResolver.resolve(preference)
+                retranslateVisibleContent()
             }
         }
     }
@@ -308,5 +307,46 @@ class BookmarksViewModel(
             },
             senses = senses,
         )
+    }
+
+    private suspend fun translateEntryDetailForDisplay(
+        detail: PreparedDictionaryEntryDetail,
+    ): PreparedDictionaryEntryDetail {
+        return PreparedDictionaryEntryDetail(
+            entry = translateEntryForDisplay(detail.entry),
+            openableLinkedWords = detail.openableLinkedWords.map { word ->
+                chineseConversionService.translateForDisplay(word, currentLocale)
+            }.toSet(),
+        )
+    }
+
+    private suspend fun retranslateVisibleContent() {
+        val result = withContext(ioDispatcher) {
+            runCatching {
+                val translatedEntries = rawEntries.map { entry ->
+                    translateEntryForDisplay(entry)
+                }
+                val translatedDetail = rawSelectedEntryDetail?.let { detail ->
+                    translateEntryDetailForDisplay(detail)
+                }
+                translatedEntries to translatedDetail
+            }
+        }
+        val (translatedEntries, translatedDetail) = result.getOrNull() ?: return
+        _uiState.update {
+            val translatedLoadingPreview = if (rawSelectedEntryDetail == null) {
+                it.selectedEntry?.let { selected ->
+                    translatedEntries.firstOrNull { entry -> entry.id == selected.id }
+                }
+            } else {
+                null
+            }
+            it.copy(
+                entries = translatedEntries,
+                selectedEntry = translatedDetail?.entry ?: translatedLoadingPreview,
+                openableLinkedWords = translatedDetail?.openableLinkedWords
+                    ?: if (rawSelectedEntryDetail == null) it.openableLinkedWords else emptySet(),
+            )
+        }
     }
 }

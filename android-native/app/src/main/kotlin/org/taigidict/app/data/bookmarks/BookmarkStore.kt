@@ -21,12 +21,24 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
+interface BookmarkStoring {
+    val bookmarkedIds: StateFlow<List<Long>>
+
+    fun isBookmarked(entryId: Long): Boolean
+
+    suspend fun toggleBookmark(entryId: Long): Boolean
+
+    suspend fun addBookmark(entryId: Long, index: Int = 0): Boolean
+
+    suspend fun removeBookmark(entryId: Long): Boolean
+}
+
 class BookmarkStore(
     context: Context,
     preferencesName: String = DEFAULT_PREFERENCES_NAME,
     storageKey: String = DEFAULT_STORAGE_KEY,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
-) {
+) : BookmarkStoring {
     private val storagePreferenceKey = stringPreferencesKey(storageKey)
     private val dataStore = PreferenceDataStoreFactory.create(
         migrations = listOf(SharedPreferencesMigration(context, preferencesName)),
@@ -37,7 +49,7 @@ class BookmarkStore(
     )
 
     private val _bookmarkedIds = MutableStateFlow(emptyList<Long>())
-    val bookmarkedIds: StateFlow<List<Long>> = _bookmarkedIds.asStateFlow()
+    override val bookmarkedIds: StateFlow<List<Long>> = _bookmarkedIds.asStateFlow()
 
     init {
         scope.launch {
@@ -52,11 +64,11 @@ class BookmarkStore(
         }
     }
 
-    fun isBookmarked(entryId: Long): Boolean {
+    override fun isBookmarked(entryId: Long): Boolean {
         return bookmarkedIds.value.contains(entryId)
     }
 
-    suspend fun toggleBookmark(entryId: Long): Boolean {
+    override suspend fun toggleBookmark(entryId: Long): Boolean {
         val updatedIds = _bookmarkedIds.value.toMutableList().apply {
             if (contains(entryId)) {
                 remove(entryId)
@@ -72,7 +84,7 @@ class BookmarkStore(
         return updatedIds.contains(entryId)
     }
 
-    suspend fun addBookmark(entryId: Long, index: Int = 0): Boolean {
+    override suspend fun addBookmark(entryId: Long, index: Int): Boolean {
         val updatedIds = _bookmarkedIds.value.toMutableList().apply {
             remove(entryId)
             add(index.coerceIn(0, size), entryId)
@@ -84,7 +96,7 @@ class BookmarkStore(
         return true
     }
 
-    suspend fun removeBookmark(entryId: Long): Boolean {
+    override suspend fun removeBookmark(entryId: Long): Boolean {
         val existingIds = _bookmarkedIds.value
         if (!existingIds.contains(entryId)) {
             return false

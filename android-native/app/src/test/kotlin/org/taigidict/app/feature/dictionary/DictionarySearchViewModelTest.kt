@@ -309,6 +309,55 @@ class DictionarySearchViewModelTest {
     }
 
     @Test
+    fun languageChange_retranslatesVisibleResultsAndDetail() = runTest(dispatcher) {
+        val linkedEntry = sampleEntry(id = 8, hanji = "辭書", romanization = "sû-su")
+        val entry = sampleEntry(
+            id = 7,
+            hanji = "辭典",
+            romanization = "sû-tián",
+            wordSynonyms = listOf("辭書"),
+        )
+        val repository = FakeDictionaryRepository(
+            bundle = DictionaryBundle(1, 1, 0, "/tmp/dictionary.sqlite"),
+            searchResults = listOf(entry),
+            entryById = mapOf(entry.id to entry, linkedEntry.id to linkedEntry),
+            linkedEntriesByWord = mapOf("辭書" to linkedEntry),
+        )
+        val settingsStore = FakeDictionarySettingsStore()
+        val conversionService = FakeChineseConversionService(
+            translatedMap = mapOf(
+                "辭典" to "词典",
+                "辭書" to "辞书",
+                "一種工具書。" to "一种工具书。",
+            ),
+        )
+
+        val viewModel = createViewModel(
+            repository = repository,
+            settingsStore = settingsStore,
+            conversionService = conversionService,
+        )
+        advanceUntilIdle()
+
+        viewModel.onQueryChange("辭典")
+        advanceUntilIdle()
+        viewModel.onEntrySelected(entry.id)
+        advanceUntilIdle()
+        assertEquals("辭典", viewModel.uiState.value.results.first().hanji)
+        assertEquals("辭典", viewModel.uiState.value.selectedEntry?.hanji)
+        assertEquals(setOf("辭書"), viewModel.uiState.value.openableLinkedWords)
+
+        settingsStore.setLanguagePreference(AppLanguagePreference.SimplifiedChinese)
+        advanceUntilIdle()
+
+        assertEquals(listOf("辭典"), repository.searchQueries)
+        assertEquals("词典", viewModel.uiState.value.results.first().hanji)
+        assertEquals("词典", viewModel.uiState.value.selectedEntry?.hanji)
+        assertEquals("一种工具书。", viewModel.uiState.value.selectedEntry?.senses?.first()?.definition)
+        assertEquals(setOf("辞书"), viewModel.uiState.value.openableLinkedWords)
+    }
+
+    @Test
     fun onEntrySelected_loadsFullEntryIntoUiState() = runTest(dispatcher) {
         val linkedEntry = sampleEntry(id = 8, hanji = "字典", romanization = "jī-tián")
         val entry = sampleEntry(
@@ -504,7 +553,11 @@ private class FakeChineseConversionService(
     }
 
     override suspend fun translateForDisplay(text: String, locale: AppLocale): String {
-        return translatedMap[text] ?: text
+        return if (locale == AppLocale.SimplifiedChinese) {
+            translatedMap[text] ?: text
+        } else {
+            text
+        }
     }
 }
 
