@@ -275,7 +275,7 @@ struct DictionaryDetailView: View {
     }
 
     private func refreshBookmarkState() async {
-        guard let entry = viewModel.entry, let bookmarkStore else {
+        guard let entry = viewModel.entry, bookmarkStore != nil else {
             isBookmarked = false
             return
         }

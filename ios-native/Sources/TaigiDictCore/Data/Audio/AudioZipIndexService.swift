@@ -7,14 +7,17 @@ public protocol AudioZipIndexing: Sendable {
 }
 
 public struct AudioZipIndexService: AudioZipIndexing {
-    private let fileManager: FileManager
+    private let fileManager: SendableFileManagerBox
 
     public init(fileManager: FileManager = .default) {
-        self.fileManager = fileManager
+        self.fileManager = SendableFileManagerBox(fileManager)
     }
 
     public func buildIndex(for archiveURL: URL) throws -> [String: String] {
-        guard let archive = Archive(url: archiveURL, accessMode: .read) else {
+        let archive: Archive
+        do {
+            archive = try Archive(url: archiveURL, accessMode: .read)
+        } catch {
             throw AudioZipIndexError.invalidArchive
         }
 
@@ -34,11 +37,15 @@ public struct AudioZipIndexService: AudioZipIndexing {
     }
 
     public func materializeClip(clipID: String, from archiveURL: URL, index: [String: String], to clipURL: URL) throws {
+        let fileManager = fileManager.rawValue
         guard let entryPath = index[clipID] else {
             throw AudioZipIndexError.clipNotFound(clipID)
         }
 
-        guard let archive = Archive(url: archiveURL, accessMode: .read) else {
+        let archive: Archive
+        do {
+            archive = try Archive(url: archiveURL, accessMode: .read)
+        } catch {
             throw AudioZipIndexError.invalidArchive
         }
 

@@ -29,15 +29,13 @@ final class AudioZipIndexServiceTests: XCTestCase {
     }
 
     private func createArchive(at url: URL, entries: [String: Data]) throws {
-        guard let archive = Archive(url: url, accessMode: .create) else {
-            throw NSError(domain: "AudioZipIndexServiceTests", code: 1)
-        }
+        let archive = try Archive(url: url, accessMode: .create)
 
         for (path, data) in entries {
             try archive.addEntry(
                 with: path,
                 type: .file,
-                uncompressedSize: UInt32(data.count),
+                uncompressedSize: Int64(data.count),
                 compressionMethod: .deflate,
                 provider: { position, size in
                     let lower = Int(position)

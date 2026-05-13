@@ -8,11 +8,11 @@ public protocol AudioArchiveStoring: Sendable {
 
 public struct AudioArchiveStorage: AudioArchiveStoring {
     private let rootDirectory: URL
-    private let fileManager: FileManager
+    private let fileManager: SendableFileManagerBox
 
     public init(rootDirectory: URL, fileManager: FileManager = .default) {
         self.rootDirectory = rootDirectory
-        self.fileManager = fileManager
+        self.fileManager = SendableFileManagerBox(fileManager)
     }
 
     public func archiveURL(for type: AudioArchiveType) -> URL {
@@ -30,6 +30,7 @@ public struct AudioArchiveStorage: AudioArchiveStoring {
     }
 
     public func clearClipCache(for type: AudioArchiveType) throws {
+        let fileManager = fileManager.rawValue
         let cacheDirectory = rootDirectory
             .appendingPathComponent("clips", isDirectory: true)
             .appendingPathComponent(type.rawValue, isDirectory: true)
@@ -41,6 +42,7 @@ public struct AudioArchiveStorage: AudioArchiveStoring {
 
 extension AudioArchiveStorage {
     public func ensureDirectories() throws {
+        let fileManager = fileManager.rawValue
         let archiveDirectory = rootDirectory.appendingPathComponent("archives", isDirectory: true)
         let clipsDirectory = rootDirectory.appendingPathComponent("clips", isDirectory: true)
 
