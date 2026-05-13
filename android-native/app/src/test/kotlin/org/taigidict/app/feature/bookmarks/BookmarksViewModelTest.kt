@@ -123,6 +123,7 @@ class BookmarksViewModelTest {
             ioDispatcher = Dispatchers.Default,
         )
         advanceUntilIdle()
+        waitForCondition { viewModel.uiState.value.entries.isNotEmpty() }
 
         viewModel.onEntrySelected(source.id)
         runCurrent()
@@ -189,11 +190,27 @@ class BookmarksViewModelTest {
     }
 }
 
+private fun waitForCondition(
+    timeoutMillis: Long = 2_000,
+    predicate: () -> Boolean,
+) {
+    val deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMillis)
+    while (!predicate()) {
+        if (System.nanoTime() >= deadline) {
+            throw AssertionError("Condition was not met within ${timeoutMillis}ms")
+        }
+        Thread.sleep(10)
+    }
+}
+
 private class FakeBookmarksSettingsStore : AppSettingsStoring {
     private val _themePreference = kotlinx.coroutines.flow.MutableStateFlow(AppThemePreference.System)
     private val _languagePreference = kotlinx.coroutines.flow.MutableStateFlow(AppLanguagePreference.System)
     private val _readingTextScale = kotlinx.coroutines.flow.MutableStateFlow(AppSettingsConstants.DEFAULT_READING_TEXT_SCALE)
 
+    override val initialThemePreference: AppThemePreference = _themePreference.value
+    override val initialLanguagePreference: AppLanguagePreference = _languagePreference.value
+    override val initialReadingTextScale: Double = _readingTextScale.value
     override val themePreference: kotlinx.coroutines.flow.StateFlow<AppThemePreference> = _themePreference
     override val languagePreference: kotlinx.coroutines.flow.StateFlow<AppLanguagePreference> = _languagePreference
     override val readingTextScale: kotlinx.coroutines.flow.StateFlow<Double> = _readingTextScale

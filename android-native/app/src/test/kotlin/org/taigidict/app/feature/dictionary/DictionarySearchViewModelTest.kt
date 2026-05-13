@@ -434,6 +434,9 @@ private class FakeDictionarySettingsStore : AppSettingsStoring {
     private val _languagePreference = MutableStateFlow(AppLanguagePreference.System)
     private val _readingTextScale = MutableStateFlow(AppSettingsConstants.DEFAULT_READING_TEXT_SCALE)
 
+    override val initialThemePreference: AppThemePreference = _themePreference.value
+    override val initialLanguagePreference: AppLanguagePreference = _languagePreference.value
+    override val initialReadingTextScale: Double = _readingTextScale.value
     override val themePreference: StateFlow<AppThemePreference> = _themePreference
     override val languagePreference: StateFlow<AppLanguagePreference> = _languagePreference
     override val readingTextScale: StateFlow<Double> = _readingTextScale
