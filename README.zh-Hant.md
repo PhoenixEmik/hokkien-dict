@@ -2,6 +2,9 @@
 
 <img src="assets/icon/taigi_dict.png" alt="台語辭典 App Icon" width="120" />
 
+[<img src="assets/site/app-store-badge.svg" alt="Download on the App Store" height="44" />](https://apps.apple.com/tw/app/%E5%8F%B0%E8%AA%9E%E8%BE%AD%E5%85%B8/id6763974066)
+[<img src="assets/site/google-play-badge.png" alt="Get it on Google Play" height="44" />](https://play.google.com/store/apps/details?id=org.taigidict.app)
+
 [![Download APK](https://img.shields.io/github/v/release/PhoenixEmik/taigi-dict?label=Download%20APK&color=success&logo=android)](https://github.com/PhoenixEmik/taigi-dict/releases/latest)
 
 [English README](README.md)
