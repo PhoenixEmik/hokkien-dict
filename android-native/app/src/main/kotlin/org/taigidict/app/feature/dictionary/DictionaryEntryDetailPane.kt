@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -30,6 +31,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -69,6 +71,14 @@ private val DetailVerticalPadding = 12.dp
 private val DetailSectionSpacing = 16.dp
 private val DetailCardHorizontalPadding = 20.dp
 private val DetailCardVerticalPadding = 18.dp
+
+private fun detailTopPadding(showTopBar: Boolean) = if (showTopBar) DetailVerticalPadding else 0.dp
+@Composable
+private fun detailContentInsets(showTopBar: Boolean) = if (showTopBar) {
+    ScaffoldDefaults.contentWindowInsets
+} else {
+    WindowInsets(0, 0, 0, 0)
+}
 
 @Composable
 fun DictionaryEntryDetailPane(
@@ -209,6 +219,7 @@ private fun DetailLoadingScreen(
     Scaffold(
         modifier = modifier,
         containerColor = appPageContainerColor(),
+        contentWindowInsets = detailContentInsets(showTopBar),
         topBar = if (showTopBar) {
             {
                 DetailTopBar(
@@ -228,7 +239,12 @@ private fun DetailLoadingScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = DetailHorizontalPadding, vertical = DetailVerticalPadding)
+                .padding(
+                    start = DetailHorizontalPadding,
+                    top = detailTopPadding(showTopBar),
+                    end = DetailHorizontalPadding,
+                    bottom = DetailVerticalPadding,
+                )
                 .testTag("dictionary-detail-loading"),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
@@ -258,6 +274,7 @@ private fun DetailStatusScreen(
     Scaffold(
         modifier = modifier,
         containerColor = appPageContainerColor(),
+        contentWindowInsets = detailContentInsets(showTopBar),
         topBar = if (showTopBar) {
             {
                 DetailTopBar(
@@ -277,7 +294,12 @@ private fun DetailStatusScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = DetailHorizontalPadding, vertical = DetailVerticalPadding),
+                .padding(
+                    start = DetailHorizontalPadding,
+                    top = detailTopPadding(showTopBar),
+                    end = DetailHorizontalPadding,
+                    bottom = DetailVerticalPadding,
+                ),
             verticalArrangement = Arrangement.spacedBy(DetailSectionSpacing),
         ) {
             Card(colors = appCardColors()) {
@@ -327,6 +349,7 @@ private fun DictionaryEntryDetailContent(
     Scaffold(
         modifier = modifier,
         containerColor = appPageContainerColor(),
+        contentWindowInsets = detailContentInsets(showTopBar),
         topBar = if (showTopBar) {
             {
                 DetailTopBar(
@@ -346,7 +369,12 @@ private fun DictionaryEntryDetailContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = DetailHorizontalPadding, vertical = DetailVerticalPadding),
+                .padding(
+                    start = DetailHorizontalPadding,
+                    top = detailTopPadding(showTopBar),
+                    end = DetailHorizontalPadding,
+                    bottom = DetailVerticalPadding,
+                ),
             verticalArrangement = Arrangement.spacedBy(DetailSectionSpacing),
         ) {
             item {

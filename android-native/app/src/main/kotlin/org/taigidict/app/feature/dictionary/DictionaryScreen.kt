@@ -46,6 +46,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -316,7 +317,10 @@ fun DictionaryScreen(
                                     .weight(0.54f)
                                     .fillMaxHeight(),
                             ) {
-                                Spacer(modifier = Modifier.height(TwoPaneSectionHeaderHeight + ComponentSpacing))
+                                TwoPaneResultsHeader(
+                                    visible = false,
+                                )
+                                Spacer(modifier = Modifier.height(ComponentSpacing))
 
                                 if (showsEntryDetail) {
                                     DictionaryEntryDetailPane(
@@ -375,6 +379,7 @@ fun DictionaryScreen(
 
 @Composable
 private fun TwoPaneResultsHeader(
+    visible: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -386,6 +391,7 @@ private fun TwoPaneResultsHeader(
         Text(
             text = stringResource(R.string.dictionary_search_results_title),
             style = MaterialTheme.typography.titleMedium,
+            modifier = if (visible) Modifier else Modifier.alpha(0f),
         )
     }
 }
