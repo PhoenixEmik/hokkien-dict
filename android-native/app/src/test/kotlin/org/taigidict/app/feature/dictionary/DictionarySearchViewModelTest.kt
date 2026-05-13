@@ -386,7 +386,7 @@ class DictionarySearchViewModelTest {
     }
 
     @Test
-    fun onEntrySelected_keepsResultVisibleWhileDetailLoads() = runTest(dispatcher) {
+    fun onEntrySelected_waitsForOpenableWordsBeforeShowingDetail() = runTest(dispatcher) {
         val linkedEntry = sampleEntry(id = 8, hanji = "字典", romanization = "jī-tián")
         val entry = sampleEntry(
             id = 7,
@@ -410,10 +410,11 @@ class DictionarySearchViewModelTest {
 
         val loadingState = viewModel.uiState.value
         assertTrue(loadingState.isLoadingEntryDetail)
-        assertEquals(entry, loadingState.selectedEntry)
+        assertNull(loadingState.selectedEntry)
         assertTrue(loadingState.openableLinkedWords.isEmpty())
 
         advanceUntilIdle()
+        assertEquals(entry, viewModel.uiState.value.selectedEntry)
         assertEquals(setOf("字典"), viewModel.uiState.value.openableLinkedWords)
         viewModel.onEntrySelected(entry.id)
         assertFalse(viewModel.uiState.value.isLoadingEntryDetail)

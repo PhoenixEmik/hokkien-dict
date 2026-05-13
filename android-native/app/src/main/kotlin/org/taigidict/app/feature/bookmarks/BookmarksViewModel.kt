@@ -81,12 +81,11 @@ class BookmarksViewModel(
             return
         }
 
-        val displayedSourceEntry = _uiState.value.entries.firstOrNull { it.id == entryId }
         _uiState.update {
             it.copy(
                 isLoadingEntryDetail = true,
-                selectedEntry = displayedSourceEntry ?: it.selectedEntry,
-                openableLinkedWords = if (displayedSourceEntry != null) emptySet() else it.openableLinkedWords,
+                selectedEntry = null,
+                openableLinkedWords = emptySet(),
                 entryDetailErrorMessage = null,
             )
         }

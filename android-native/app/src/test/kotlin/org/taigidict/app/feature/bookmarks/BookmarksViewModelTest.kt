@@ -16,6 +16,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -101,7 +102,7 @@ class BookmarksViewModelTest {
     }
 
     @Test
-    fun onEntrySelected_keepsBookmarkVisibleWhileDetailLoads() = runTest(dispatcher) {
+    fun onEntrySelected_waitsForOpenableWordsBeforeShowingBookmarkDetail() = runTest(dispatcher) {
         val source = sampleEntry(
             id = 20,
             hanji = "辭典",
@@ -127,9 +128,10 @@ class BookmarksViewModelTest {
 
         val loadingState = viewModel.uiState.value
         assertTrue(loadingState.isLoadingEntryDetail)
-        assertEquals(source, loadingState.selectedEntry)
+        assertNull(loadingState.selectedEntry)
         assertTrue(loadingState.openableLinkedWords.isEmpty())
         advanceUntilIdle()
+        assertEquals(source, viewModel.uiState.value.selectedEntry)
         assertEquals(setOf("字典"), viewModel.uiState.value.openableLinkedWords)
         viewModel.onEntrySelected(source.id)
         assertFalse(viewModel.uiState.value.isLoadingEntryDetail)

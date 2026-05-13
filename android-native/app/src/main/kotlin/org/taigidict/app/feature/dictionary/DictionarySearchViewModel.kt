@@ -161,14 +161,13 @@ class DictionarySearchViewModel(
         if (_uiState.value.selectedEntry?.id == entryId && rawSelectedEntryDetail?.entry?.id == entryId) {
             return
         }
-        val sourceEntry = _uiState.value.results.firstOrNull { it.id == entryId }
         entryDetailJob?.cancel()
         rawSelectedEntryDetail = null
         _uiState.update {
             it.copy(
                 isLoadingEntryDetail = true,
-                selectedEntry = sourceEntry ?: it.selectedEntry,
-                openableLinkedWords = if (sourceEntry != null) emptySet() else it.openableLinkedWords,
+                selectedEntry = null,
+                openableLinkedWords = emptySet(),
                 entryDetailErrorMessage = null,
             )
         }
