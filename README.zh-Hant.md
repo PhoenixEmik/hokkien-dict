@@ -37,7 +37,8 @@
 - App 顯示名稱：`台語辭典`
 - Android application ID：`org.taigidict.app`
 - iOS bundle identifier：`org.taigidict.app`
-- 封存 Flutter app 版本：`1.3.3+6`
+- 目前原生 app 版本：`1.3.3`（build `6`）
+- 封存 Flutter package 版本：`1.3.3+6`
 - 官方網站：`https://taigidict.org`
 - 正式環境資產來源：`https://app.taigidict.org/assets/`
 
@@ -71,6 +72,7 @@ App 實際使用的正式環境離線資源端點：
 
 - 上游原始資料授權為 `CC BY-ND 3.0 TW`
 - 封存 Flutter app 會內建原始 `kautian.ods`，再於裝置上建立本機 SQLite 詞典資料庫
+- 原生 Android app 使用 `android-native/Generated/Dictionary/` 下的預先生成詞典資料，不會在執行期解析 `kautian.ods`
 - 原生 iOS app 使用 `ios-native/Generated/Dictionary/` 下的預先生成詞典資料，不會在執行期解析 `kautian.ods`
 
 ## 技術棧
@@ -89,7 +91,8 @@ App 實際使用的正式環境離線資源端點：
 
 - Kotlin 與 Jetpack Compose / Material 3
 - AndroidX ViewModel、Kotlin coroutines、Flow / StateFlow
-- Room：本機 SQLite 資料存取
+- `Preferences DataStore`：app 設定、書籤與搜尋紀錄，並保留舊偏好設定 migration
+- 預設詞典資料層目前仍是自管 SQLite 匯入 / repository，專案內也已包含 Room-backed repository
 - `android-opencc`：以 OpenCC 進行繁簡轉換
 
 原生 iOS 實作：
@@ -103,18 +106,20 @@ App 實際使用的正式環境離線資源端點：
 ## 專案結構
 
 - `android-native/`：原生 Kotlin / Jetpack Compose Android app
+- `android-native/Generated/Dictionary/`：原生 Android app 內建的預先生成詞典資料包
 - `ios-native/`：原生 Swift / SwiftUI iOS app、本地 Swift package 與測試
+- `ios-native/Generated/Dictionary/`：原生 iOS app 內建的預先生成詞典資料包
 - `flutter-archive/`：封存的第一代 Flutter app 與平台 host
 - `flutter-archive/lib/`：Flutter app 程式碼
 - `flutter-archive/android/`：Flutter Android host 專案
 - `flutter-archive/ios/`：Flutter iOS host 專案
 - `flutter-archive/test/`：Flutter 測試
 - `flutter-archive/assets/dictionary/kautian.ods`：Flutter app 使用的內建原始詞典來源
+- `data/source/kautian.ods`：目前詞典轉換流程共用的原始來源檔
 - `tool/build_dictionary_asset.py`：目前原生流程仍共用的詞典轉換腳本
 - `ios-native/NativeApp/`：原生 iOS app 入口與 asset catalog
 - `ios-native/Sources/TaigiDictCore/`：詞典、音訊、書籤與轉換等共享邏輯
 - `ios-native/Sources/TaigiDictUI/`：辭典、書籤、設定與資訊頁的 SwiftUI 畫面
-- `ios-native/Generated/Dictionary/`：原生 iOS app 使用的預先生成詞典資產
 
 ## 執行
 
@@ -175,6 +180,13 @@ xcodebuild \
 cd android-native
 ./gradlew testDebugUnitTest
 ./gradlew app:assembleDebugAndroidTest
+```
+
+可選的 Android Room-backed 驗證：
+
+```bash
+cd android-native
+./gradlew verifyRoomDebug
 ```
 
 封存 Flutter app：

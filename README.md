@@ -40,7 +40,8 @@ The product is organized around three primary tabs:
 - App display name: `台語辭典`
 - Android application ID: `org.taigidict.app`
 - iOS bundle identifier: `org.taigidict.app`
-- Archived Flutter app version: `1.3.3+6`
+- Current native app version: `1.3.3` (build `6`)
+- Archived Flutter package version: `1.3.3+6`
 - Official project domain: `https://taigidict.org`
 - Production asset host: `https://app.taigidict.org/assets/`
 
@@ -74,7 +75,8 @@ Important distribution note:
 
 - The upstream raw data is under `CC BY-ND 3.0 TW`
 - The archived Flutter app bundles the raw `kautian.ods` asset and builds the local SQLite database on-device
-- Native iOS app uses the generated dictionary package under `ios-native/Generated/Dictionary/` and does not parse `kautian.ods` at runtime
+- Native Android app bundles the generated dictionary package under `android-native/Generated/Dictionary/` and does not parse `kautian.ods` at runtime
+- Native iOS app bundles the generated dictionary package under `ios-native/Generated/Dictionary/` and does not parse `kautian.ods` at runtime
 
 ## Tech Stack
 
@@ -92,7 +94,8 @@ Native Android implementation:
 
 - Kotlin and Jetpack Compose with Material 3
 - AndroidX ViewModel, Kotlin coroutines, and Flow / StateFlow
-- Room for local SQLite data access
+- `Preferences DataStore` for app settings, bookmarks, and search history, with legacy preference migration
+- custom SQLite import / repository as the default dictionary backend, with a Room-backed repository also present in the project
 - `android-opencc` for OpenCC-based Chinese conversion
 
 Native iOS implementation:
@@ -106,18 +109,20 @@ Native iOS implementation:
 ## Project Structure
 
 - `android-native/`: native Kotlin / Jetpack Compose Android app
+- `android-native/Generated/Dictionary/`: generated dictionary package bundled by the native Android app
 - `ios-native/`: native Swift / SwiftUI iOS app, local Swift package, and tests
+- `ios-native/Generated/Dictionary/`: generated dictionary package bundled by the native iOS app
 - `flutter-archive/`: archived first-generation Flutter app and platform hosts
 - `flutter-archive/lib/`: Flutter application code
 - `flutter-archive/android/`: Flutter Android host project
 - `flutter-archive/ios/`: Flutter iOS host project
 - `flutter-archive/test/`: Flutter test suite
 - `flutter-archive/assets/dictionary/kautian.ods`: bundled raw dictionary source used by the Flutter app
+- `data/source/kautian.ods`: shared raw source file used by the conversion pipeline
 - `tool/build_dictionary_asset.py`: shared dictionary conversion script used by the current native pipelines
 - `ios-native/NativeApp/`: native iOS app entry point and asset catalog
 - `ios-native/Sources/TaigiDictCore/`: shared dictionary, audio, bookmark, and conversion logic
 - `ios-native/Sources/TaigiDictUI/`: SwiftUI screens for dictionary, bookmarks, settings, and info
-- `ios-native/Generated/Dictionary/`: generated dictionary assets for the native iOS app
 
 ## Run
 
@@ -178,6 +183,13 @@ Native Android app:
 cd android-native
 ./gradlew testDebugUnitTest
 ./gradlew app:assembleDebugAndroidTest
+```
+
+Optional Android Room-backed verification:
+
+```bash
+cd android-native
+./gradlew verifyRoomDebug
 ```
 
 Legacy Flutter archive:
