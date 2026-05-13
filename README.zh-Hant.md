@@ -36,7 +36,7 @@
 - App 顯示名稱：`台語辭典`
 - Android application ID：`org.taigidict.app`
 - iOS bundle identifier：`org.taigidict.app`
-- 目前 Flutter app 版本：`1.3.0+3`
+- 目前 Flutter app 版本：`1.3.3+6`
 - 官方網站：`https://taigidict.org`
 - 正式環境資產來源：`https://app.taigidict.org/assets/`
 
