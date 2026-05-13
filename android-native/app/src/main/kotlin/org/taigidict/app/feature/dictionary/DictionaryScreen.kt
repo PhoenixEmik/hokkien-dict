@@ -3,14 +3,18 @@ package org.taigidict.app.feature.dictionary
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -35,7 +39,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
@@ -62,6 +71,7 @@ private val TopContentPadding = 16.dp
 private val SectionSpacing = 16.dp
 private val ComponentSpacing = 8.dp
 private val TwoPaneContentSpacing = 16.dp
+private val TwoPaneSectionHeaderHeight = 40.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,12 +92,49 @@ fun DictionaryScreen(
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val usesTwoPaneLayout = DictionaryAdaptiveLayoutPolicy.shouldUseTwoPane(maxWidth)
+        var selectedPreviewEntryId by rememberSaveable { mutableStateOf<Long?>(null) }
+        var showsDetailPage by rememberSaveable { mutableStateOf(false) }
+        val showsFullscreenDetail = showsEntryDetail && (!usesTwoPaneLayout || showsDetailPage)
 
-        BackHandler(enabled = showsEntryDetail) {
-            viewModel.onEntryDetailDismissed()
+        LaunchedEffect(showsEntryDetail, usesTwoPaneLayout) {
+            if (!showsEntryDetail || !usesTwoPaneLayout) {
+                showsDetailPage = false
+            }
         }
 
-        if (showsEntryDetail && !usesTwoPaneLayout) {
+        LaunchedEffect(uiState.results) {
+            if (selectedPreviewEntryId != null && uiState.results.none { it.id == selectedPreviewEntryId }) {
+                selectedPreviewEntryId = null
+                showsDetailPage = false
+            }
+        }
+
+        val onResultSelected: (Long) -> Unit = { entryId ->
+            if (shouldOpenTwoPaneDetailPage(
+                    usesTwoPaneLayout = usesTwoPaneLayout,
+                    selectedPreviewEntryId = selectedPreviewEntryId,
+                    tappedEntryId = entryId,
+                    isDetailPageVisible = showsDetailPage,
+                )
+            ) {
+                showsDetailPage = true
+            } else {
+                selectedPreviewEntryId = entryId
+                showsDetailPage = false
+                viewModel.onEntrySelected(entryId)
+            }
+        }
+
+        BackHandler(enabled = showsEntryDetail) {
+            if (usesTwoPaneLayout && showsDetailPage) {
+                showsDetailPage = false
+            } else {
+                selectedPreviewEntryId = null
+                viewModel.onEntryDetailDismissed()
+            }
+        }
+
+        if (showsFullscreenDetail) {
             DictionaryEntryDetailPane(
                 isLoading = uiState.isLoadingEntryDetail,
                 entry = uiState.selectedEntry,
@@ -101,9 +148,18 @@ fun DictionaryScreen(
                         }
                     }
                 },
-                onBack = viewModel::onEntryDetailDismissed,
-                onOpenLinkedWord = viewModel::onLinkedWordSelected,
-                                showTopBar = false,
+                onBack = {
+                    if (usesTwoPaneLayout) {
+                        showsDetailPage = false
+                    } else {
+                        selectedPreviewEntryId = null
+                        viewModel.onEntryDetailDismissed()
+                    }
+                },
+                onOpenLinkedWord = { word ->
+                    selectedPreviewEntryId = null
+                    viewModel.onLinkedWordSelected(word)
+                },
                 modifier = Modifier.fillMaxSize(),
             )
             return@BoxWithConstraints
@@ -246,44 +302,53 @@ fun DictionaryScreen(
                                 modifier = Modifier.weight(0.46f),
                                 verticalArrangement = Arrangement.spacedBy(0.dp),
                             ) {
-                                Text(
-                                    text = stringResource(R.string.dictionary_search_results_title),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    modifier = Modifier.padding(bottom = ComponentSpacing),
-                                )
+                                TwoPaneResultsHeader()
+                                Spacer(modifier = Modifier.height(ComponentSpacing))
                                 DictionaryResultList(
                                     results = uiState.results,
-                                    onEntrySelected = viewModel::onEntrySelected,
+                                    onEntrySelected = onResultSelected,
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             }
 
-                            if (showsEntryDetail) {
-                                DictionaryEntryDetailPane(
-                                    isLoading = uiState.isLoadingEntryDetail,
-                                    entry = uiState.selectedEntry,
-                                    openableLinkedWords = uiState.openableLinkedWords,
-                                    errorMessage = uiState.entryDetailErrorMessage,
-                                    isBookmarked = uiState.selectedEntry?.id in bookmarkedIds,
-                                    onToggleBookmark = {
-                                        uiState.selectedEntry?.let { entry ->
-                                            scope.launch {
-                                                appContainer.bookmarkStore.toggleBookmark(entry.id)
+                            Column(
+                                modifier = Modifier
+                                    .weight(0.54f)
+                                    .fillMaxHeight(),
+                            ) {
+                                Spacer(modifier = Modifier.height(TwoPaneSectionHeaderHeight + ComponentSpacing))
+
+                                if (showsEntryDetail) {
+                                    DictionaryEntryDetailPane(
+                                        isLoading = uiState.isLoadingEntryDetail,
+                                        entry = uiState.selectedEntry,
+                                        openableLinkedWords = uiState.openableLinkedWords,
+                                        errorMessage = uiState.entryDetailErrorMessage,
+                                        isBookmarked = uiState.selectedEntry?.id in bookmarkedIds,
+                                        onToggleBookmark = {
+                                            uiState.selectedEntry?.let { entry ->
+                                                scope.launch {
+                                                    appContainer.bookmarkStore.toggleBookmark(entry.id)
+                                                }
                                             }
-                                        }
-                                    },
-                                    onBack = viewModel::onEntryDetailDismissed,
-                                    onOpenLinkedWord = viewModel::onLinkedWordSelected,
-                                    modifier = Modifier
-                                        .weight(0.54f)
-                                        .fillMaxHeight(),
-                                )
-                            } else {
-                                TwoPaneDetailPlaceholder(
-                                    modifier = Modifier
-                                        .weight(0.54f)
-                                        .fillMaxHeight(),
-                                )
+                                        },
+                                        onBack = viewModel::onEntryDetailDismissed,
+                                        onOpenLinkedWord = { word ->
+                                            selectedPreviewEntryId = null
+                                            viewModel.onLinkedWordSelected(word)
+                                        },
+                                        showTopBar = false,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .weight(1f),
+                                    )
+                                } else {
+                                    TwoPaneDetailPlaceholder(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .weight(1f),
+                                    )
+                                }
                             }
                         }
                     }
@@ -297,7 +362,7 @@ fun DictionaryScreen(
                             )
                             DictionaryResultList(
                                 results = uiState.results,
-                                onEntrySelected = viewModel::onEntrySelected,
+                                onEntrySelected = onResultSelected,
                                 modifier = Modifier.weight(1f, fill = true),
                             )
                         }
@@ -306,6 +371,34 @@ fun DictionaryScreen(
             }
         }
     }
+}
+
+@Composable
+private fun TwoPaneResultsHeader(
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = TwoPaneSectionHeaderHeight),
+        contentAlignment = Alignment.CenterStart,
+    ) {
+        Text(
+            text = stringResource(R.string.dictionary_search_results_title),
+            style = MaterialTheme.typography.titleMedium,
+        )
+    }
+}
+
+internal fun shouldOpenTwoPaneDetailPage(
+    usesTwoPaneLayout: Boolean,
+    selectedPreviewEntryId: Long?,
+    tappedEntryId: Long,
+    isDetailPageVisible: Boolean,
+): Boolean {
+    return usesTwoPaneLayout &&
+        selectedPreviewEntryId == tappedEntryId &&
+        !isDetailPageVisible
 }
 
 @Composable

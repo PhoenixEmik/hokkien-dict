@@ -75,7 +75,12 @@ class SettingsViewModel(
     )
 
     private val _uiState = MutableStateFlow(
-        SettingsUiState(databasePath = databaseFile.path),
+        SettingsUiState(
+            databasePath = databaseFile.path,
+            themePreference = settingsStore.initialThemePreference,
+            languagePreference = settingsStore.initialLanguagePreference,
+            readingTextScale = settingsStore.initialReadingTextScale,
+        ),
     )
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
     private var sourceDownloadJob: Job? = null

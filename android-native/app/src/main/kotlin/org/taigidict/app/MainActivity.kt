@@ -33,9 +33,10 @@ class MainActivity : AppCompatActivity() {
     private val initializationViewModel: InitializationViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
         val appContainer = (application as TaigiDictApplication).appContainer
+        applyAppLanguagePreference(appContainer.appSettingsStore.initialLanguagePreference)
+
+        super.onCreate(savedInstanceState)
 
         setContent {
             val uiState = initializationViewModel.uiState.collectAsStateWithLifecycle().value
@@ -104,6 +105,19 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+        }
+    }
+
+    private fun applyAppLanguagePreference(preference: AppLanguagePreference) {
+        val targetLocales = when (preference) {
+            AppLanguagePreference.System -> LocaleListCompat.getEmptyLocaleList()
+            AppLanguagePreference.TraditionalChinese -> LocaleListCompat.forLanguageTags("zh-TW")
+            AppLanguagePreference.SimplifiedChinese -> LocaleListCompat.forLanguageTags("zh-CN")
+            AppLanguagePreference.English -> LocaleListCompat.forLanguageTags("en")
+        }
+        val currentLocales = AppCompatDelegate.getApplicationLocales()
+        if (currentLocales != targetLocales) {
+            AppCompatDelegate.setApplicationLocales(targetLocales)
         }
     }
 }
