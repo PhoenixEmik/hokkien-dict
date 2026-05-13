@@ -94,10 +94,15 @@ class DictionarySearchViewModel(
     }
 
     fun onQueryChange(query: String) {
+        entryDetailJob?.cancel()
         _uiState.update {
             it.copy(
                 query = query,
+                isLoadingEntryDetail = false,
+                selectedEntry = null,
+                openableLinkedWords = emptySet(),
                 searchErrorMessage = null,
+                entryDetailErrorMessage = null,
             )
         }
 

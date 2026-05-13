@@ -163,6 +163,42 @@ class DictionarySearchViewModelTest {
     }
 
     @Test
+    fun onQueryChange_clearsVisibleDetailPreview() = runTest(dispatcher) {
+        val linkedEntry = sampleEntry(id = 8, hanji = "字典", romanization = "jī-tián")
+        val entry = sampleEntry(
+            id = 7,
+            hanji = "辭典",
+            romanization = "sû-tián",
+            variantChars = listOf("字典"),
+        )
+        val repository = FakeDictionaryRepository(
+            bundle = DictionaryBundle(1, 1, 0, "/tmp/dictionary.sqlite"),
+            searchResults = listOf(entry),
+            entryById = mapOf(entry.id to entry, linkedEntry.id to linkedEntry),
+            linkedEntriesByWord = mapOf("字典" to linkedEntry),
+        )
+
+        val viewModel = createViewModel(repository)
+        advanceUntilIdle()
+
+        viewModel.onQueryChange("辭典")
+        advanceUntilIdle()
+        viewModel.onEntrySelected(entry.id)
+        advanceUntilIdle()
+        assertEquals(entry, viewModel.uiState.value.selectedEntry)
+        assertEquals(setOf("字典"), viewModel.uiState.value.openableLinkedWords)
+
+        viewModel.onQueryChange("編")
+
+        val uiState = viewModel.uiState.value
+        assertEquals("編", uiState.query)
+        assertNull(uiState.selectedEntry)
+        assertTrue(uiState.openableLinkedWords.isEmpty())
+        assertNull(uiState.entryDetailErrorMessage)
+        assertFalse(uiState.isLoadingEntryDetail)
+    }
+
+    @Test
     fun onSearchSubmitted_addsQueryToHistory() = runTest(dispatcher) {
         val repository = FakeDictionaryRepository(
             bundle = DictionaryBundle(1, 1, 0, "/tmp/dictionary.sqlite"),

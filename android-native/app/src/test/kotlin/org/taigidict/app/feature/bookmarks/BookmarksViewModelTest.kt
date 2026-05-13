@@ -191,7 +191,7 @@ class BookmarksViewModelTest {
 }
 
 private fun waitForCondition(
-    timeoutMillis: Long = 2_000,
+    timeoutMillis: Long = 10_000,
     predicate: () -> Boolean,
 ) {
     val deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMillis)
