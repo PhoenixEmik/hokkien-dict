@@ -1,6 +1,6 @@
 # 台語辭典
 
-<img src="assets/icon/taigi_dict.png" alt="台語辭典 App Icon" width="160" />
+<img src="assets/site/taigi_dict_banner.png" alt="台語辭典 Taigi Dict banner" width="360" />
 
 [![Download on the App Store](https://img.shields.io/badge/Download_on_the-App_Store-0D96F6?style=for-the-badge&logo=appstore&logoColor=white)](https://apps.apple.com/tw/app/%E5%8F%B0%E8%AA%9E%E8%BE%AD%E5%85%B8/id6763974066)
 [![Get it on Google Play](https://img.shields.io/badge/Get_it_on-Google_Play-34A853?style=for-the-badge&logo=googleplay&logoColor=white)](https://play.google.com/store/apps/details?id=org.taigidict.app)
