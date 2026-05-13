@@ -3,7 +3,7 @@
 <img src="assets/icon/taigi_dict.png" alt="台語辭典 App Icon" width="160" />
 
 [![Download on the App Store](assets/site/app-store-badge.svg)](https://apps.apple.com/tw/app/%E5%8F%B0%E8%AA%9E%E8%BE%AD%E5%85%B8/id6763974066)
-[![Get it on Google Play](assets/site/google-play-badge.png)](https://play.google.com/store/apps/details?id=org.taigidict.app)
+[![Get it on Google Play](https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png)](https://play.google.com/store/apps/details?id=org.taigidict.app)
 
 [![Download APK](https://img.shields.io/github/v/release/PhoenixEmik/taigi-dict?label=Download%20APK&color=success&logo=android)](https://github.com/PhoenixEmik/taigi-dict/releases/latest)
 
