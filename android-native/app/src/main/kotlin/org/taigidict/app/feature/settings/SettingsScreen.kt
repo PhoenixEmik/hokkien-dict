@@ -64,6 +64,8 @@ import org.taigidict.app.feature.info.AboutScreen
 import org.taigidict.app.feature.info.ReferenceArticleScreen
 import org.taigidict.app.feature.info.LicenseSummaryScreen
 import org.taigidict.app.feature.info.ThirdPartyLicensesScreen
+import org.taigidict.app.feature.info.ThirdPartyLicenseCatalog
+import org.taigidict.app.feature.info.ThirdPartyLicenseDetailScreen
 import org.taigidict.app.feature.info.AppDocumentViewer
 import org.taigidict.app.feature.info.AppDocument
 
@@ -87,6 +89,7 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
 ) {
     var selectedDocument by rememberSaveable { mutableStateOf<AppDocument?>(null) }
+    var selectedThirdPartyLicenseId by rememberSaveable { mutableStateOf<String?>(null) }
     var route by rememberSaveable { mutableStateOf(SettingsRoute.Main) }
     var pendingAction by rememberSaveable { mutableStateOf<SettingsDangerousAction?>(null) }
     val context = LocalContext.current
@@ -106,6 +109,22 @@ fun SettingsScreen(
         AppDocumentViewer(
             document = currentDocument,
             onBack = { selectedDocument = null },
+        )
+        return
+    }
+
+    val selectedThirdPartyLicense = selectedThirdPartyLicenseId?.let {
+        ThirdPartyLicenseCatalog.findEntry(it)
+    }
+    if (selectedThirdPartyLicense != null) {
+        BackHandler {
+            selectedThirdPartyLicenseId = null
+        }
+
+        ThirdPartyLicenseDetailScreen(
+            entry = selectedThirdPartyLicense,
+            onBack = { selectedThirdPartyLicenseId = null },
+            modifier = modifier,
         )
         return
     }
@@ -145,6 +164,7 @@ fun SettingsScreen(
         onOpenDocument = { selectedDocument = it },
         onOpenLicenseInfo = { route = SettingsRoute.LicenseInfo },
         onOpenThirdPartyLicenses = { route = SettingsRoute.ThirdPartyLicenses },
+        onOpenThirdPartyLicenseDetail = { selectedThirdPartyLicenseId = it },
         onRebuild = { pendingAction = SettingsDangerousAction.RebuildDatabase },
         onClear = { pendingAction = SettingsDangerousAction.ClearDatabase },
     )
@@ -300,6 +320,7 @@ private fun renderRouteScreen(
     onOpenDocument: (AppDocument) -> Unit,
     onOpenLicenseInfo: () -> Unit,
     onOpenThirdPartyLicenses: () -> Unit,
+    onOpenThirdPartyLicenseDetail: (String) -> Unit,
     onRebuild: () -> Unit,
     onClear: () -> Unit,
 ): Boolean {
@@ -326,6 +347,7 @@ private fun renderRouteScreen(
         SettingsRoute.ThirdPartyLicenses -> {
             ThirdPartyLicensesScreen(
                 onBack = onBackFromThirdPartyLicenses,
+                onOpenLicenseDetail = onOpenThirdPartyLicenseDetail,
                 modifier = modifier,
             )
             true

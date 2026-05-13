@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Android
 import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.Card
@@ -33,28 +35,14 @@ import org.taigidict.app.feature.common.appCardColors
 import org.taigidict.app.feature.common.appPageContainerColor
 import org.taigidict.app.feature.common.transparentListItemColors
 
-private data class ThirdPartyEntry(val name: String, val license: String)
-
-private val CoreEntries = listOf(
-    ThirdPartyEntry("android-opencc", "Apache 2.0"),
-    ThirdPartyEntry("SQLite", "Public Domain"),
-)
-
 private val ThirdPartyHorizontalPadding = 16.dp
 private val ThirdPartyVerticalPadding = 16.dp
-
-private val AndroidEntries = listOf(
-    ThirdPartyEntry("Jetpack Compose", "Apache 2.0"),
-    ThirdPartyEntry("AndroidX", "Apache 2.0"),
-    ThirdPartyEntry("Material3", "Apache 2.0"),
-    ThirdPartyEntry("Kotlin", "Apache 2.0"),
-    ThirdPartyEntry("kotlinx.serialization", "Apache 2.0"),
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ThirdPartyLicensesScreen(
     onBack: () -> Unit,
+    onOpenLicenseDetail: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -85,23 +73,20 @@ fun ThirdPartyLicensesScreen(
                 .padding(top = ThirdPartyVerticalPadding, bottom = ThirdPartyVerticalPadding),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            item {
-                SectionLabel(text = stringResource(R.string.third_party_core_section))
-            }
-            item {
-                ThirdPartySectionCard(
-                    entries = CoreEntries,
-                    icon = Icons.Outlined.ShoppingBag,
-                )
-            }
-            item {
-                SectionLabel(text = stringResource(R.string.third_party_android_section))
-            }
-            item {
-                ThirdPartySectionCard(
-                    entries = AndroidEntries,
-                    icon = Icons.Outlined.Android,
-                )
+            ThirdPartyLicenseCatalog.sections.forEach { section ->
+                item {
+                    SectionLabel(text = stringResource(section.titleRes))
+                }
+                item {
+                    ThirdPartySectionCard(
+                        entries = section.entries,
+                        icon = when (section.titleRes) {
+                            R.string.third_party_core_section -> Icons.Outlined.ShoppingBag
+                            else -> Icons.Outlined.Android
+                        },
+                        onOpenLicenseDetail = onOpenLicenseDetail,
+                    )
+                }
             }
         }
     }
@@ -119,13 +104,18 @@ private fun SectionLabel(text: String) {
 
 @Composable
 private fun ThirdPartySectionCard(
-    entries: List<ThirdPartyEntry>,
+    entries: List<ThirdPartyLicenseEntry>,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onOpenLicenseDetail: (String) -> Unit,
 ) {
     Card(colors = appCardColors()) {
         Column(modifier = Modifier.fillMaxWidth()) {
             entries.forEachIndexed { index, entry ->
-                ThirdPartyRow(entry = entry, icon = icon)
+                ThirdPartyRow(
+                    entry = entry,
+                    icon = icon,
+                    onOpenLicenseDetail = onOpenLicenseDetail,
+                )
                 if (index < entries.lastIndex) {
                     AppListDivider()
                 }
@@ -136,10 +126,12 @@ private fun ThirdPartySectionCard(
 
 @Composable
 private fun ThirdPartyRow(
-    entry: ThirdPartyEntry,
+    entry: ThirdPartyLicenseEntry,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onOpenLicenseDetail: (String) -> Unit,
 ) {
     ListItem(
+        modifier = Modifier.clickable { onOpenLicenseDetail(entry.id) },
         colors = transparentListItemColors(),
         leadingContent = {
             Icon(imageVector = icon, contentDescription = null)
@@ -147,12 +139,22 @@ private fun ThirdPartyRow(
         headlineContent = {
             Text(text = entry.name)
         },
+        supportingContent = {
+            Text(text = stringResource(R.string.third_party_license_version, entry.version))
+        },
         trailingContent = {
-            Text(
-                text = entry.license,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Column(horizontalAlignment = androidx.compose.ui.Alignment.End) {
+                Text(
+                    text = entry.license,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         },
     )
 }
