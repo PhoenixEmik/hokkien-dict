@@ -1,5 +1,6 @@
 package org.taigidict.app
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
@@ -9,11 +10,13 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.core.os.LocaleListCompat
+import androidx.core.view.WindowCompat
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -76,6 +79,9 @@ class MainActivity : AppCompatActivity() {
                 AppThemePreference.Dark -> true
                 AppThemePreference.System -> systemDark
             }
+            SideEffect {
+                applySystemBarAppearance(darkTheme)
+            }
 
             TaigiDictTheme(
                 darkTheme = darkTheme,
@@ -118,6 +124,16 @@ class MainActivity : AppCompatActivity() {
         val currentLocales = AppCompatDelegate.getApplicationLocales()
         if (currentLocales != targetLocales) {
             AppCompatDelegate.setApplicationLocales(targetLocales)
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun applySystemBarAppearance(darkTheme: Boolean) {
+        window.statusBarColor = Color.TRANSPARENT
+        window.navigationBarColor = Color.TRANSPARENT
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightStatusBars = !darkTheme
+            isAppearanceLightNavigationBars = !darkTheme
         }
     }
 }
