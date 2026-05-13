@@ -4,15 +4,15 @@
 
 分析基準主要來自：
 
-- `lib/app/shell/main_shell.dart`
-- `lib/app/initialization/app_initialization_controller.dart`
-- `lib/features/dictionary/data/dictionary_repository.dart`
-- `lib/features/dictionary/data/dictionary_database_builder_service.dart`
-- `lib/features/dictionary/application/dictionary_search_controller.dart`
-- `lib/features/audio/data/offline_audio_library.dart`
-- `lib/features/dictionary/presentation/screens/dictionary_screen.dart`
-- `lib/features/dictionary/presentation/coordinators/word_detail_coordinator.dart`
-- `lib/features/settings/presentation/screens/settings_screen.dart`
+- `flutter-archive/lib/app/shell/main_shell.dart`
+- `flutter-archive/lib/app/initialization/app_initialization_controller.dart`
+- `flutter-archive/lib/features/dictionary/data/dictionary_repository.dart`
+- `flutter-archive/lib/features/dictionary/data/dictionary_database_builder_service.dart`
+- `flutter-archive/lib/features/dictionary/application/dictionary_search_controller.dart`
+- `flutter-archive/lib/features/audio/data/offline_audio_library.dart`
+- `flutter-archive/lib/features/dictionary/presentation/screens/dictionary_screen.dart`
+- `flutter-archive/lib/features/dictionary/presentation/coordinators/word_detail_coordinator.dart`
+- `flutter-archive/lib/features/settings/presentation/screens/settings_screen.dart`
 - `ios-native/README.md`
 - `docs/ios-native-migration-spec.md`
 - `docs/ios-native-implementation-plan.md`

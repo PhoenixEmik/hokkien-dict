@@ -12,18 +12,19 @@ Ministry of Education dataset.
 This repository currently contains multiple app implementations that share the same
 product scope:
 
-- Flutter app at the repository root for Android and legacy cross-platform code
 - Native Swift / SwiftUI app in `ios-native/` for current iOS development
 - Native Kotlin / Jetpack Compose app in `android-native/` for current Android development
+- Archived Flutter app in `flutter-archive/` as the first-generation implementation
 
-Both apps focus on offline lookup, downloadable audio archives, bookmarks,
-localized UI, and reference material for Tailo and Hanji usage.
+The current native apps focus on offline lookup, downloadable audio archives,
+bookmarks, localized UI, and reference material for Tailo and Hanji usage.
+The archived Flutter app preserves the first-generation implementation for reference.
 
 ## Project Status
 
-- Android: native rewrite is maintained from `android-native/`; the Flutter Android app remains as a legacy/reference implementation
+- Android: native rewrite is maintained from `android-native/`
 - iOS: maintained from `ios-native/` with `TaigiDictNative.xcworkspace`
-- Legacy Flutter iOS host: still present in `ios/` during migration, but not the primary iOS app target
+- Legacy Flutter implementation: archived under `flutter-archive/` as historical/reference code
 
 ## Core Experience
 
@@ -39,7 +40,7 @@ The product is organized around three primary tabs:
 - App display name: `台語辭典`
 - Android application ID: `org.taigidict.app`
 - iOS bundle identifier: `org.taigidict.app`
-- Current Flutter app version: `1.3.3+6`
+- Archived Flutter app version: `1.3.3+6`
 - Official project domain: `https://taigidict.org`
 - Production asset host: `https://app.taigidict.org/assets/`
 
@@ -72,12 +73,12 @@ Production offline resource endpoints used by the apps:
 Important distribution note:
 
 - The upstream raw data is under `CC BY-ND 3.0 TW`
-- Android Flutter app bundles the raw `kautian.ods` asset and builds the local SQLite database on-device
+- The archived Flutter app bundles the raw `kautian.ods` asset and builds the local SQLite database on-device
 - Native iOS app uses the generated dictionary package under `ios-native/Generated/Dictionary/` and does not parse `kautian.ods` at runtime
 
 ## Tech Stack
 
-Flutter / Android implementation:
+Archived Flutter implementation:
 
 - Flutter with Material 3
 - `dio` for resumable downloads
@@ -104,26 +105,21 @@ Native iOS implementation:
 
 ## Project Structure
 
-- `lib/`: Flutter application code
-- `android/`: Flutter Android host project
-- `ios/`: legacy Flutter iOS host kept during migration
 - `android-native/`: native Kotlin / Jetpack Compose Android app
 - `ios-native/`: native Swift / SwiftUI iOS app, local Swift package, and tests
+- `flutter-archive/`: archived first-generation Flutter app and platform hosts
+- `flutter-archive/lib/`: Flutter application code
+- `flutter-archive/android/`: Flutter Android host project
+- `flutter-archive/ios/`: Flutter iOS host project
+- `flutter-archive/test/`: Flutter test suite
+- `flutter-archive/assets/dictionary/kautian.ods`: bundled raw dictionary source used by the Flutter app
+- `tool/build_dictionary_asset.py`: shared dictionary conversion script used by the current native pipelines
 - `ios-native/NativeApp/`: native iOS app entry point and asset catalog
 - `ios-native/Sources/TaigiDictCore/`: shared dictionary, audio, bookmark, and conversion logic
 - `ios-native/Sources/TaigiDictUI/`: SwiftUI screens for dictionary, bookmarks, settings, and info
 - `ios-native/Generated/Dictionary/`: generated dictionary assets for the native iOS app
-- `assets/dictionary/kautian.ods`: bundled raw dictionary source used by the Flutter app
-- `tool/build_dictionary_asset.py`: reference conversion script for the Flutter-side ODS mapping
 
 ## Run
-
-Android Flutter app:
-
-```bash
-flutter pub get
-flutter run -d android
-```
 
 Native iOS app:
 
@@ -150,14 +146,15 @@ cd android-native
 ./gradlew app:assembleDebug
 ```
 
-## Verify
-
-Flutter project:
+Legacy Flutter archive:
 
 ```bash
-flutter analyze
-flutter test
+cd flutter-archive
+flutter pub get
+flutter run -d android
 ```
+
+## Verify
 
 Native iOS package and shared logic:
 
@@ -183,22 +180,32 @@ cd android-native
 ./gradlew app:assembleDebugAndroidTest
 ```
 
+Legacy Flutter archive:
+
+```bash
+cd flutter-archive
+flutter analyze
+flutter test
+```
+
 ## Development Notes
 
 - Active iOS product work happens in `ios-native/`
-- The legacy Flutter iOS host in `ios/` is still checked in for migration compatibility
-- `pubspec.yaml` pins `path_provider_foundation` with `dependency_overrides` to `2.6.0`
-- `spreadsheet_decoder` is a git dependency, so Flutter dependency resolution is not fully pub.dev-only
+- Active Android product work happens in `android-native/`
+- The legacy Flutter implementation is kept under `flutter-archive/`
+- `flutter-archive/pubspec.yaml` pins `path_provider_foundation` with `dependency_overrides` to `2.6.0`
+- `spreadsheet_decoder` is a git dependency in the archived Flutter project, so Flutter dependency resolution is not fully pub.dev-only
 
 ## Build Release APK
 
 ```bash
-flutter build apk --release
+cd android-native
+./gradlew :app:assembleRelease
 ```
 
 Generated artifact:
 
-- `build/app/outputs/flutter-apk/app-release.apk`
+- `android-native/app/build/outputs/apk/release/app-release.apk`
 
 ## Privacy Policy
 

@@ -10,17 +10,18 @@
 
 目前這個 repository 同時包含多條實作線：
 
-- 根目錄 Flutter app，主要負責 Android 與既有跨平台程式碼
 - `ios-native/` 內的原生 Swift / SwiftUI app，作為目前 iOS 的主要開發目標
 - `android-native/` 內的原生 Kotlin / Jetpack Compose app，作為目前 Android 的主要開發目標
+- `flutter-archive/` 內的封存 Flutter app，保留第一代實作作為歷史與行為參考
 
-兩個 app 都圍繞同一組產品能力：離線查詢、可下載音檔、書籤、本地化介面，以及台羅 / 漢字參考資料。
+目前兩個原生 app 都圍繞同一組產品能力：離線查詢、可下載音檔、書籤、本地化介面，以及台羅 / 漢字參考資料。
+封存的 Flutter app 則保留第一代實作，作為歷史與行為參考。
 
 ## 目前狀態
 
-- Android：由 `android-native/` 原生重寫維護；Flutter Android app 保留作為舊版與行為參考
+- Android：由 `android-native/` 原生重寫維護
 - iOS：由 `ios-native/` 與 `TaigiDictNative.xcworkspace` 維護
-- 舊版 Flutter iOS host：仍保留在 `ios/`，但已不是主要 iOS app 目標
+- 舊版 Flutter 實作：已封存到 `flutter-archive/`，作為歷史與行為參考
 
 ## 核心體驗
 
@@ -36,7 +37,7 @@
 - App 顯示名稱：`台語辭典`
 - Android application ID：`org.taigidict.app`
 - iOS bundle identifier：`org.taigidict.app`
-- 目前 Flutter app 版本：`1.3.3+6`
+- 封存 Flutter app 版本：`1.3.3+6`
 - 官方網站：`https://taigidict.org`
 - 正式環境資產來源：`https://app.taigidict.org/assets/`
 
@@ -69,12 +70,12 @@ App 實際使用的正式環境離線資源端點：
 重要發行說明：
 
 - 上游原始資料授權為 `CC BY-ND 3.0 TW`
-- Android Flutter app 會內建原始 `kautian.ods`，再於裝置上建立本機 SQLite 詞典資料庫
+- 封存 Flutter app 會內建原始 `kautian.ods`，再於裝置上建立本機 SQLite 詞典資料庫
 - 原生 iOS app 使用 `ios-native/Generated/Dictionary/` 下的預先生成詞典資料，不會在執行期解析 `kautian.ods`
 
 ## 技術棧
 
-Flutter / Android 實作：
+封存 Flutter 實作：
 
 - Flutter 與 Material 3
 - `dio`：可續傳下載
@@ -101,26 +102,21 @@ Flutter / Android 實作：
 
 ## 專案結構
 
-- `lib/`：Flutter app 程式碼
-- `android/`：Flutter Android host 專案
-- `ios/`：遷移期間保留的 Flutter iOS host
 - `android-native/`：原生 Kotlin / Jetpack Compose Android app
 - `ios-native/`：原生 Swift / SwiftUI iOS app、本地 Swift package 與測試
+- `flutter-archive/`：封存的第一代 Flutter app 與平台 host
+- `flutter-archive/lib/`：Flutter app 程式碼
+- `flutter-archive/android/`：Flutter Android host 專案
+- `flutter-archive/ios/`：Flutter iOS host 專案
+- `flutter-archive/test/`：Flutter 測試
+- `flutter-archive/assets/dictionary/kautian.ods`：Flutter app 使用的內建原始詞典來源
+- `tool/build_dictionary_asset.py`：目前原生流程仍共用的詞典轉換腳本
 - `ios-native/NativeApp/`：原生 iOS app 入口與 asset catalog
 - `ios-native/Sources/TaigiDictCore/`：詞典、音訊、書籤與轉換等共享邏輯
 - `ios-native/Sources/TaigiDictUI/`：辭典、書籤、設定與資訊頁的 SwiftUI 畫面
 - `ios-native/Generated/Dictionary/`：原生 iOS app 使用的預先生成詞典資產
-- `assets/dictionary/kautian.ods`：Flutter app 使用的內建原始詞典來源
-- `tool/build_dictionary_asset.py`：作為 Flutter 端 ODS 映射參考的轉換腳本
 
 ## 執行
-
-Android Flutter app：
-
-```bash
-flutter pub get
-flutter run -d android
-```
 
 原生 iOS app：
 
@@ -147,14 +143,15 @@ cd android-native
 ./gradlew app:assembleDebug
 ```
 
-## 驗證
-
-Flutter 專案：
+封存 Flutter app：
 
 ```bash
-flutter analyze
-flutter test
+cd flutter-archive
+flutter pub get
+flutter run -d android
 ```
+
+## 驗證
 
 原生 iOS package 與共享邏輯：
 
@@ -180,22 +177,32 @@ cd android-native
 ./gradlew app:assembleDebugAndroidTest
 ```
 
+封存 Flutter app：
+
+```bash
+cd flutter-archive
+flutter analyze
+flutter test
+```
+
 ## 開發注意事項
 
 - 目前 iOS 正式開發工作在 `ios-native/`
-- `ios/` 下的 Flutter iOS host 主要為遷移相容性而保留
-- `pubspec.yaml` 目前以 `dependency_overrides` 固定 `path_provider_foundation: 2.6.0`
-- `spreadsheet_decoder` 來自 git dependency，因此 Flutter 依賴解析不完全只由 pub.dev 決定
+- 目前 Android 正式開發工作在 `android-native/`
+- 舊版 Flutter 實作集中封存在 `flutter-archive/`
+- `flutter-archive/pubspec.yaml` 目前以 `dependency_overrides` 固定 `path_provider_foundation: 2.6.0`
+- `spreadsheet_decoder` 來自 git dependency，因此封存 Flutter 專案的依賴解析不完全只由 pub.dev 決定
 
 ## 建置 Release APK
 
 ```bash
-flutter build apk --release
+cd android-native
+./gradlew :app:assembleRelease
 ```
 
 產物位置：
 
-- `build/app/outputs/flutter-apk/app-release.apk`
+- `android-native/app/build/outputs/apk/release/app-release.apk`
 
 ## 隱私權政策
 

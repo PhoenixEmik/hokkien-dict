@@ -142,30 +142,30 @@ Tablet flow reuses the same preparation logic and renders the result in place.
 
 ### Main shell
 
-- [main_shell.dart](/Users/emik/Documents/Hokkien/lib/app/shell/main_shell.dart)
+- [main_shell.dart](/Users/emik/repository/taigi-dict/flutter-archive/lib/app/shell/main_shell.dart)
 
 ### Dictionary tablet split view
 
-- [dictionary_screen.dart](/Users/emik/Documents/Hokkien/lib/features/dictionary/presentation/screens/dictionary_screen.dart)
-- [entry_list_item.dart](/Users/emik/Documents/Hokkien/lib/features/dictionary/presentation/widgets/entry_list_item.dart)
-- [word_detail_screen.dart](/Users/emik/Documents/Hokkien/lib/features/dictionary/presentation/screens/word_detail_screen.dart)
+- [dictionary_screen.dart](/Users/emik/repository/taigi-dict/flutter-archive/lib/features/dictionary/presentation/screens/dictionary_screen.dart)
+- [entry_list_item.dart](/Users/emik/repository/taigi-dict/flutter-archive/lib/features/dictionary/presentation/widgets/entry_list_item.dart)
+- [word_detail_screen.dart](/Users/emik/repository/taigi-dict/flutter-archive/lib/features/dictionary/presentation/screens/word_detail_screen.dart)
 
 ### Bookmarks tablet layout
 
-- [bookmarks_screen.dart](/Users/emik/Documents/Hokkien/lib/features/bookmarks/presentation/screens/bookmarks_screen.dart)
+- [bookmarks_screen.dart](/Users/emik/repository/taigi-dict/flutter-archive/lib/features/bookmarks/presentation/screens/bookmarks_screen.dart)
 
 ### Settings tablet layout
 
-- [settings_screen.dart](/Users/emik/Documents/Hokkien/lib/features/settings/presentation/screens/settings_screen.dart)
+- [settings_screen.dart](/Users/emik/repository/taigi-dict/flutter-archive/lib/features/settings/presentation/screens/settings_screen.dart)
 
 ### Shared detail logic
 
-- [word_detail_coordinator.dart](/Users/emik/Documents/Hokkien/lib/features/dictionary/presentation/coordinators/word_detail_coordinator.dart)
-- [word_detail_screen.dart](/Users/emik/Documents/Hokkien/lib/features/dictionary/presentation/screens/word_detail_screen.dart)
+- [word_detail_coordinator.dart](/Users/emik/repository/taigi-dict/flutter-archive/lib/features/dictionary/presentation/coordinators/word_detail_coordinator.dart)
+- [word_detail_screen.dart](/Users/emik/repository/taigi-dict/flutter-archive/lib/features/dictionary/presentation/screens/word_detail_screen.dart)
 
 ### Localization
 
-- [app_localizations.dart](/Users/emik/Documents/Hokkien/lib/core/localization/app_localizations.dart)
+- [app_localizations.dart](/Users/emik/repository/taigi-dict/flutter-archive/lib/core/localization/app_localizations.dart)
 
 ## New Localization Keys
 
@@ -187,8 +187,8 @@ This work is intentionally not on `main`.
 
 Ran successfully:
 
-- `flutter analyze`
-- `flutter test test/widget_test.dart`
+- `cd flutter-archive && flutter analyze`
+- `cd flutter-archive && flutter test test/widget_test.dart`
 
 ## Recommended Next Steps
 

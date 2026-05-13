@@ -8,12 +8,10 @@ The repository contains multiple implementations and support files for the same 
 
 Current important paths:
 
-- `lib/`: legacy Flutter application source.
-- `ios/`: legacy Flutter-generated iOS project.
-- `android/`: legacy Flutter-generated Android project.
-- `test/`: legacy Flutter tests.
-- `tool/`: legacy/support tooling, including dictionary data processing references.
-- `assets/`: shared or legacy Flutter assets.
+- `flutter-archive/`: archived first-generation Flutter app, including legacy source, platform hosts, tests, and archive-only assets.
+- `tool/`: shared/support tooling, including dictionary data processing references still used by the native apps.
+- `assets/`: shared assets for the site, documentation, and retained product artwork.
+- `data/`: shared source data inputs, including raw dictionary source files.
 - `docs/`: project documentation.
 - `ci_scripts/`: CI/support scripts.
 - `.github/workflows/`: GitHub Actions workflows.
@@ -29,14 +27,14 @@ Do not modify legacy Flutter code unless explicitly asked.
 
 Legacy Flutter code includes, but is not limited to:
 
-- `lib/`
-- `ios/`
-- `android/`
-- `test/`
-- `pubspec.yaml`
-- `pubspec.lock`
-- `analysis_options.yaml`
-- Flutter-specific files under `tool/`
+- `flutter-archive/lib/`
+- `flutter-archive/ios/`
+- `flutter-archive/android/`
+- `flutter-archive/test/`
+- `flutter-archive/pubspec.yaml`
+- `flutter-archive/pubspec.lock`
+- `flutter-archive/analysis_options.yaml`
+- Flutter-specific files under `flutter-archive/`
 
 Do not modify native iOS code unless the task is specifically about the native iOS app.
 
@@ -133,7 +131,7 @@ Do not merge these resource flows unless explicitly requested.
 
 ## Source-of-truth guidance
 
-The Flutter app is the legacy/reference implementation.
+The Flutter app under `flutter-archive/` is the legacy/reference implementation.
 
 The native iOS app under `ios-native/` may represent newer intended product behavior.
 
@@ -141,7 +139,7 @@ The native Android app under `android-native/` may be a work-in-progress rewrite
 
 When behavior differs between Flutter and native iOS, do not assume which one is correct. Inspect both implementations and document the difference before making changes.
 
-For future Android native work, use both the Flutter app and `ios-native/` as behavioral references. Preserve product behavior, but implement Android UI and architecture idiomatically.
+For future Android native work, use both `flutter-archive/` and `ios-native/` as behavioral references. Preserve product behavior, but implement Android UI and architecture idiomatically.
 
 Do not translate Flutter/Dart code line-by-line into Swift or Kotlin.
 
@@ -195,7 +193,7 @@ This is a normal native Android app written in Kotlin.
 
 Do not interpret `android-native/` as:
 
-- the legacy Flutter `android/` folder
+- the legacy Flutter `flutter-archive/android/` folder
 - a Kotlin Multiplatform project
 - a Kotlin/Native target
 - a Dart-to-Kotlin translation output
@@ -220,17 +218,17 @@ The legacy Flutter app remains an important reference implementation.
 
 Important Flutter locations:
 
-- `lib/main.dart`: app entry point.
-- `lib/app/`: app shell, navigation, and theme bootstrap.
-- `lib/app/initialization/`: first-run bundled-source restore and dictionary build gating flow.
-- `lib/app/shell/`: main three-tab app shell.
-- `lib/core/`: constants, localization, translation, and shared preferences.
-- `lib/features/dictionary/`: dictionary models, search, SQLite build/load logic, and UI.
-- `lib/features/audio/`: offline audio archive download, indexing, and playback.
-- `lib/features/bookmarks/`: bookmark persistence and screens.
-- `lib/features/settings/`: settings UI, offline resource controls, and localized reference articles.
-- `lib/features/settings/presentation/content/reference_articles.dart`: localized Tailo and Hanji reference article content.
-- `tool/build_dictionary_asset.py`: Python conversion script kept as a reference for the Dart-side ODS-to-SQLite mapping logic.
+- `flutter-archive/lib/main.dart`: app entry point.
+- `flutter-archive/lib/app/`: app shell, navigation, and theme bootstrap.
+- `flutter-archive/lib/app/initialization/`: first-run bundled-source restore and dictionary build gating flow.
+- `flutter-archive/lib/app/shell/`: main three-tab app shell.
+- `flutter-archive/lib/core/`: constants, localization, translation, and shared preferences.
+- `flutter-archive/lib/features/dictionary/`: dictionary models, search, SQLite build/load logic, and UI.
+- `flutter-archive/lib/features/audio/`: offline audio archive download, indexing, and playback.
+- `flutter-archive/lib/features/bookmarks/`: bookmark persistence and screens.
+- `flutter-archive/lib/features/settings/`: settings UI, offline resource controls, and localized reference articles.
+- `flutter-archive/lib/features/settings/presentation/content/reference_articles.dart`: localized Tailo and Hanji reference article content.
+- `tool/build_dictionary_asset.py`: shared Python conversion script used as the reference ODS-to-runtime-data mapping pipeline.
 
 Do not change Flutter code unless explicitly asked.
 
@@ -332,8 +330,8 @@ Use the relevant verification commands for the part of the repo being changed.
 
 For legacy Flutter:
 
-- `flutter analyze`
-- `flutter test`
+- `cd flutter-archive && flutter analyze`
+- `cd flutter-archive && flutter test`
 
 For native iOS:
 

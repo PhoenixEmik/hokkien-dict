@@ -13,6 +13,7 @@
 .swiftpm/
 migrate_working_dir/
 assets/data/
+flutter-archive/assets/data/
 data/source/*.ods
 android/key.properties
 *.jks
