@@ -58,13 +58,14 @@ internal class OfflineDictionaryAudioPlayer(
         try {
             storage.ensureDirectories()
             val archiveFile = storage.findArchiveFile(archiveType)
-                ?: return@withContext DictionaryAudioPlaybackResult.Failed(
+                ?: return@withContext failedResult(
                     DictionaryAudioPlaybackResult.FailureReason.ArchiveNotDownloaded,
                 )
             val index = cachedIndexes[archiveType] ?: buildAndCacheIndex(archiveType, archiveFile)
-            val entry = index[normalizedClipId] ?: return@withContext DictionaryAudioPlaybackResult.Failed(
-                DictionaryAudioPlaybackResult.FailureReason.AudioClipNotFound,
-            )
+            val entry = index[normalizedClipId]
+                ?: return@withContext failedResult(
+                    DictionaryAudioPlaybackResult.FailureReason.AudioClipNotFound,
+                )
             val clipFile = storage.clipCacheFile(archiveType, normalizedClipId)
             zipIndexer.materializeEntry(
                 archiveFile = archiveFile,
@@ -129,10 +130,14 @@ internal class OfflineDictionaryAudioPlayer(
     }
 
     private fun unavailableResult(): DictionaryAudioPlaybackResult {
+        return failedResult(DictionaryAudioPlaybackResult.FailureReason.AudioNotAvailable)
+    }
+
+    private fun failedResult(
+        reason: DictionaryAudioPlaybackResult.FailureReason,
+    ): DictionaryAudioPlaybackResult {
         _playbackState.value = DictionaryAudioPlaybackState.Idle
-        return DictionaryAudioPlaybackResult.Failed(
-            DictionaryAudioPlaybackResult.FailureReason.AudioNotAvailable,
-        )
+        return DictionaryAudioPlaybackResult.Failed(reason)
     }
 }
 

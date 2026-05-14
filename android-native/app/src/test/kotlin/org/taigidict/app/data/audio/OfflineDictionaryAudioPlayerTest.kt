@@ -71,6 +71,35 @@ class OfflineDictionaryAudioPlayerTest {
             DictionaryAudioPlaybackResult.Failed(DictionaryAudioPlaybackResult.FailureReason.ArchiveNotDownloaded),
             result,
         )
+        assertEquals(DictionaryAudioPlaybackState.Idle, player.playbackState.value)
+    }
+
+    @Test
+    fun playEntryAudio_withoutClipInArchive_resetsStateToIdle() = runTest {
+        val rootDirectory = Files.createTempDirectory("offline-audio-missing-clip").toFile()
+        val player = OfflineDictionaryAudioPlayer(
+            filesDirectory = rootDirectory,
+            playbackController = RecordingAudioPlaybackController(),
+        )
+        val archiveFile = File(
+            File(File(rootDirectory, DictionaryAudioArchiveStorage.ROOT_DIRECTORY_NAME), "archives"),
+            "sutiau-mp3.zip",
+        )
+
+        writeStoredZip(
+            archiveFile = archiveFile,
+            entries = mapOf(
+                "word/1(1).mp3" to "validation".toByteArray(),
+            ),
+        )
+
+        val result = player.playEntryAudio(sampleEntry(audioId = "missing-entry"))
+
+        assertEquals(
+            DictionaryAudioPlaybackResult.Failed(DictionaryAudioPlaybackResult.FailureReason.AudioClipNotFound),
+            result,
+        )
+        assertEquals(DictionaryAudioPlaybackState.Idle, player.playbackState.value)
     }
 
     @Test
