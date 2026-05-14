@@ -170,7 +170,7 @@ fun DictionaryScreen(
             modifier = Modifier.fillMaxSize(),
             containerColor = appPageContainerColor(),
             contentWindowInsets = WindowInsets.safeDrawing.only(
-                WindowInsetsSides.Horizontal,
+                WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
             ),
         ) { innerPadding ->
             Column(

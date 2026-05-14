@@ -2,7 +2,9 @@ package org.taigidict.app
 
 import android.graphics.Color
 import android.os.Bundle
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatDelegate
@@ -16,7 +18,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.core.os.LocaleListCompat
-import androidx.core.view.WindowCompat
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -44,6 +45,7 @@ class MainActivity : AppCompatActivity() {
         applyAppLanguagePreference(appContainer.appSettingsStore.initialLanguagePreference)
 
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         observeAppLanguagePreference(appContainer.appSettingsStore)
 
         setContent {
@@ -80,7 +82,7 @@ class MainActivity : AppCompatActivity() {
                 AppThemePreference.System -> systemDark
             }
             SideEffect {
-                applySystemBarAppearance(darkTheme)
+                applyEdgeToEdgeAppearance(darkTheme)
             }
 
             TaigiDictTheme(
@@ -127,13 +129,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    @Suppress("DEPRECATION")
-    private fun applySystemBarAppearance(darkTheme: Boolean) {
-        window.statusBarColor = Color.TRANSPARENT
-        window.navigationBarColor = Color.TRANSPARENT
-        WindowCompat.getInsetsController(window, window.decorView).apply {
-            isAppearanceLightStatusBars = !darkTheme
-            isAppearanceLightNavigationBars = !darkTheme
+    private fun applyEdgeToEdgeAppearance(darkTheme: Boolean) {
+        val systemBarStyle = if (darkTheme) {
+            SystemBarStyle.dark(Color.TRANSPARENT)
+        } else {
+            SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
         }
+        enableEdgeToEdge(
+            statusBarStyle = systemBarStyle,
+            navigationBarStyle = systemBarStyle,
+        )
     }
 }
