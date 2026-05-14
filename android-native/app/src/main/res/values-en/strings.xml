@@ -178,7 +178,6 @@
     <string name="third_party_description_androidx_datastore">Preferences DataStore used for app settings and user preferences.</string>
     <string name="third_party_description_androidx_room">Room runtime used by the optional Room dictionary backend.</string>
     <string name="third_party_description_compose">Jetpack Compose UI runtime and Material Compose dependency alignment.</string>
-    <string name="third_party_description_material_components">Material Components dependency used by the Android app theme base.</string>
     <string name="third_party_description_kotlin">Kotlin language and runtime libraries used by the native Android app.</string>
     <string name="third_party_description_kotlinx_serialization">JSON serialization runtime used for dictionary data and app metadata parsing.</string>
     <string name="settings_info_reference">Reference</string>

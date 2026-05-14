@@ -181,7 +181,6 @@
     <string name="third_party_description_androidx_datastore">用於 App 設定與使用者偏好的 Preferences DataStore。</string>
     <string name="third_party_description_androidx_room">供選用 Room 辭典後端使用的 Room runtime。</string>
     <string name="third_party_description_compose">Jetpack Compose UI runtime 與 Material Compose 依賴版本對齊。</string>
-    <string name="third_party_description_material_components">Android App theme base 使用的 Material Components 依賴。</string>
     <string name="third_party_description_kotlin">Native Android App 使用的 Kotlin 語言與 runtime 函式庫。</string>
     <string name="third_party_description_kotlinx_serialization">用於辭典資料與 App metadata 解析的 JSON serialization runtime。</string>
     <string name="settings_info_reference">參考資料</string>

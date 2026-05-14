@@ -98,12 +98,6 @@ object ThirdPartyLicenseCatalog {
                     descriptionRes = R.string.third_party_description_compose,
                 ),
                 apacheEntry(
-                    id = "material-components",
-                    name = "Material Components for Android",
-                    version = "1.12.0",
-                    descriptionRes = R.string.third_party_description_material_components,
-                ),
-                apacheEntry(
                     id = "kotlin",
                     name = "Kotlin",
                     version = "2.2.20",
