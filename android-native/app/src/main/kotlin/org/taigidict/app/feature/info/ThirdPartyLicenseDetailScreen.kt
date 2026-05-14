@@ -93,7 +93,10 @@ fun ThirdPartyLicenseDetailScreen(
                 .padding(top = LicenseDetailVerticalPadding, bottom = LicenseDetailVerticalPadding),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Card(colors = appCardColors()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = appCardColors(),
+            ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     LicenseMetadataRow(
                         label = stringResource(R.string.third_party_license_package),
@@ -132,9 +135,14 @@ fun ThirdPartyLicenseDetailScreen(
                 }
             }
 
-            Card(colors = appCardColors()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = appCardColors(),
+            ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
@@ -149,9 +157,14 @@ fun ThirdPartyLicenseDetailScreen(
                 }
             }
 
-            Card(colors = appCardColors()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = appCardColors(),
+            ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Text(
