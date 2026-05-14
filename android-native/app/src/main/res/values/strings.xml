@@ -106,7 +106,7 @@
     <string name="settings_audio_status_idle">Ready to download · %1$s</string>
     <string name="settings_audio_status_downloading">Downloading · %1$s / %2$s</string>
     <string name="settings_audio_status_paused">Paused · %1$s / %2$s</string>
-    <string name="settings_audio_status_completed">Ready · %1$s</string>
+    <string name="settings_audio_status_completed">Completed</string>
     <string name="settings_audio_status_failed">Failed · %1$s</string>
     <string name="settings_audio_action_download">Download</string>
     <string name="settings_audio_action_pause">Pause</string>

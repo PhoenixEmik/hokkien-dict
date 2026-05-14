@@ -385,10 +385,7 @@ internal fun AudioArchiveResourceCard(
             downloadedSize,
             totalSize,
         )
-        AudioArchiveDownloadState.Completed -> stringResource(
-            R.string.settings_audio_status_completed,
-            downloadedSize,
-        )
+        AudioArchiveDownloadState.Completed -> stringResource(R.string.settings_audio_status_completed)
         AudioArchiveDownloadState.Failed -> stringResource(
             R.string.settings_audio_status_failed,
             snapshot.errorMessage ?: stringResource(R.string.unknown_error),
@@ -406,7 +403,6 @@ internal fun AudioArchiveResourceCard(
                 Column(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    Text(text = type.archiveFileName)
                     Text(
                         text = statusText,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
