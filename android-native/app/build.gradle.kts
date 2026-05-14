@@ -1,9 +1,9 @@
 import java.util.Properties
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.kapt")
+    id("com.android.legacy-kapt")
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.kotlin.plugin.serialization")
 }
@@ -74,10 +74,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
-
     buildFeatures {
         compose = true
         buildConfig = true
@@ -88,6 +84,13 @@ android {
     }
 
     packaging {
+        jniLibs {
+            keepDebugSymbols += setOf(
+                "**/libChineseConverter.so",
+                "**/libandroidx.graphics.path.so",
+                "**/libdatastore_shared_counter.so",
+            )
+        }
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
@@ -95,10 +98,8 @@ android {
 
     sourceSets {
         getByName("main") {
-            assets.srcDirs(
-                "src/main/assets",
-                rootProject.layout.projectDirectory.dir("Generated").asFile,
-            )
+            assets.directories.add("src/main/assets")
+            assets.directories.add(rootProject.layout.projectDirectory.dir("Generated").asFile.path)
         }
     }
 }
@@ -142,8 +143,10 @@ dependencies {
     kapt("androidx.room:room-compiler:2.7.2")
 }
 
-kapt {
-    correctErrorTypes = true
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
+    }
 }
 
 tasks.register("verifyRoomDebug") {

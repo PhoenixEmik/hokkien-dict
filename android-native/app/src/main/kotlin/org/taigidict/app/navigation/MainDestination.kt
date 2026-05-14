@@ -9,7 +9,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import org.taigidict.app.R
 
 enum class MainDestination(
-    @StringRes val labelRes: Int,
+    @param:StringRes val labelRes: Int,
     val icon: ImageVector,
 ) {
     Dictionary(R.string.tab_dictionary, Icons.AutoMirrored.Outlined.MenuBook),
