@@ -133,7 +133,7 @@
     <string name="source_status_idle">Not downloaded</string>
     <string name="source_status_downloading">Downloading</string>
     <string name="source_status_paused">Paused</string>
-    <string name="source_status_completed">Downloaded</string>
+    <string name="source_status_completed">Completed</string>
     <string name="source_status_failed">Failed</string>
     <string name="settings_text_scale_title">Reading text size</string>
     <string name="settings_text_scale_label">Scale</string>
