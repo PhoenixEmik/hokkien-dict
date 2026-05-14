@@ -33,15 +33,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -99,7 +99,7 @@ fun DictionaryEntryDetailPane(
     val audioPlayer = appContainer.dictionaryAudioPlayer
     val playbackState = audioPlayer.playbackState.collectAsState(initial = DictionaryAudioPlaybackState.Idle).value
     val scope = rememberCoroutineScope()
-    var audioMessage by remember(entry?.id) { mutableStateOf<String?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
 
     when {
         isLoading && entry == null -> DetailLoadingScreen(
@@ -123,7 +123,6 @@ fun DictionaryEntryDetailPane(
         )
 
         entry != null -> DictionaryEntryDetailContent(
-            audioMessage = audioMessage,
             entry = entry,
             openableLinkedWords = openableLinkedWords,
             playbackState = playbackState,
@@ -147,24 +146,31 @@ fun DictionaryEntryDetailPane(
             },
             onPlayEntryAudio = {
                 scope.launch {
-                    audioMessage = audioResultMessage(
+                    val message = audioResultMessage(
                         result = audioPlayer.playEntryAudio(entry),
                         missingClipMessage = context.getString(R.string.dictionary_audio_missing_clip),
                         unavailableMessage = context.getString(R.string.dictionary_audio_unavailable),
                     )
+                    if (message != null) {
+                        snackbarHostState.showSnackbar(message = message)
+                    }
                 }
             },
             onPlayExampleAudio = { example ->
                 scope.launch {
-                    audioMessage = audioResultMessage(
+                    val message = audioResultMessage(
                         result = audioPlayer.playExampleAudio(example),
                         missingClipMessage = context.getString(R.string.dictionary_audio_missing_clip),
                         unavailableMessage = context.getString(R.string.dictionary_audio_unavailable),
                     )
+                    if (message != null) {
+                        snackbarHostState.showSnackbar(message = message)
+                    }
                 }
             },
             onOpenLinkedWord = onOpenLinkedWord,
             showTopBar = showTopBar,
+            snackbarHostState = snackbarHostState,
             modifier = modifier.fillMaxSize(),
         )
     }
@@ -280,7 +286,6 @@ private fun DetailStatusScreen(
 
 @Composable
 private fun DictionaryEntryDetailContent(
-    audioMessage: String?,
     entry: DictionaryEntry,
     openableLinkedWords: Set<String>,
     playbackState: DictionaryAudioPlaybackState,
@@ -293,6 +298,7 @@ private fun DictionaryEntryDetailContent(
     onPlayExampleAudio: (DictionaryExample) -> Unit,
     onOpenLinkedWord: (String) -> Unit,
     showTopBar: Boolean,
+    snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
 ) {
     val scaledHeadlineStyle = MaterialTheme.typography.headlineLarge.copy(
@@ -326,6 +332,7 @@ private fun DictionaryEntryDetailContent(
         } else {
             {}
         },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
@@ -393,13 +400,6 @@ private fun DictionaryEntryDetailContent(
                             )
                         }
 
-                        if (audioMessage != null) {
-                            Text(
-                                text = audioMessage,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                        }
                     }
                 }
             }
