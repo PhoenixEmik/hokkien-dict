@@ -47,7 +47,7 @@
 - Android application ID：`org.taigidict.app`
 - iOS bundle identifier：`org.taigidict.app`
 - 目前原生 app 版本：`1.3.3`（build `6`）
-- 封存 Flutter package 版本：`1.3.3+6`
+- 封存 Flutter package 版本：`1.3.0+3`
 - 官方網站：`https://taigidict.org`
 - 正式環境資產來源：`https://app.taigidict.org/assets/`
 
