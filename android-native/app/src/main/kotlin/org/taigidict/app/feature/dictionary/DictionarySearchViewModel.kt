@@ -34,6 +34,7 @@ data class DictionarySearchUiState(
     val isLoadingEntryDetail: Boolean = false,
     val bundle: DictionaryBundle? = null,
     val selectedEntry: DictionaryEntry? = null,
+    val canNavigateBackInDetail: Boolean = false,
     val openableLinkedWords: Set<String> = emptySet(),
     val bundleErrorMessage: String? = null,
     val searchErrorMessage: String? = null,
@@ -74,6 +75,7 @@ class DictionarySearchViewModel(
     private var currentLocale: AppLocale = AppLocale.TraditionalChinese
     private var rawResults: List<DictionaryEntry> = emptyList()
     private var rawSelectedEntryDetail: PreparedDictionaryEntryDetail? = null
+    private var rawEntryDetailBackStack: List<PreparedDictionaryEntryDetail> = emptyList()
 
     init {
         observeLanguagePreference()
@@ -98,11 +100,13 @@ class DictionarySearchViewModel(
     fun onQueryChange(query: String) {
         entryDetailJob?.cancel()
         rawSelectedEntryDetail = null
+        rawEntryDetailBackStack = emptyList()
         _uiState.update {
             it.copy(
                 query = query,
                 isLoadingEntryDetail = false,
                 selectedEntry = null,
+                canNavigateBackInDetail = false,
                 openableLinkedWords = emptySet(),
                 searchErrorMessage = null,
                 entryDetailErrorMessage = null,
@@ -163,10 +167,12 @@ class DictionarySearchViewModel(
         }
         entryDetailJob?.cancel()
         rawSelectedEntryDetail = null
+        rawEntryDetailBackStack = emptyList()
         _uiState.update {
             it.copy(
                 isLoadingEntryDetail = true,
                 selectedEntry = null,
+                canNavigateBackInDetail = false,
                 openableLinkedWords = emptySet(),
                 entryDetailErrorMessage = null,
             )
@@ -195,7 +201,8 @@ class DictionarySearchViewModel(
     }
 
     fun onLinkedWordSelected(word: String) {
-        val currentEntry = rawSelectedEntryDetail?.entry ?: _uiState.value.selectedEntry ?: return
+        val currentDetail = rawSelectedEntryDetail ?: return
+        val currentEntry = currentDetail.entry
         if (!_uiState.value.openableLinkedWords.contains(word)) {
             return
         }
@@ -229,14 +236,51 @@ class DictionarySearchViewModel(
                 }
             }
 
-            rawSelectedEntryDetail = result.getOrNull()?.first
+            val rawDetail = result.getOrNull()?.first
             val translatedDetail = result.getOrNull()?.second
+            if (rawDetail != null && translatedDetail != null) {
+                rawSelectedEntryDetail = rawDetail
+                rawEntryDetailBackStack = rawEntryDetailBackStack + currentDetail
+            }
             _uiState.update {
                 it.copy(
                     isLoadingEntryDetail = false,
                     selectedEntry = translatedDetail?.entry ?: it.selectedEntry,
+                    canNavigateBackInDetail = rawEntryDetailBackStack.isNotEmpty(),
                     openableLinkedWords = translatedDetail?.openableLinkedWords ?: it.openableLinkedWords,
                     entryDetailErrorMessage = result.exceptionOrNull()?.message,
+                )
+            }
+        }
+    }
+
+    fun onEntryDetailBack() {
+        val previousDetail = rawEntryDetailBackStack.lastOrNull()
+        if (previousDetail == null) {
+            onEntryDetailDismissed()
+            return
+        }
+
+        entryDetailJob?.cancel()
+        rawEntryDetailBackStack = rawEntryDetailBackStack.dropLast(1)
+        rawSelectedEntryDetail = previousDetail
+        _uiState.update {
+            it.copy(
+                isLoadingEntryDetail = true,
+                entryDetailErrorMessage = null,
+            )
+        }
+        entryDetailJob = viewModelScope.launch {
+            val translatedDetail = withContext(ioDispatcher) {
+                translateEntryDetailForDisplay(previousDetail)
+            }
+            _uiState.update {
+                it.copy(
+                    isLoadingEntryDetail = false,
+                    selectedEntry = translatedDetail.entry,
+                    canNavigateBackInDetail = rawEntryDetailBackStack.isNotEmpty(),
+                    openableLinkedWords = translatedDetail.openableLinkedWords,
+                    entryDetailErrorMessage = null,
                 )
             }
         }
@@ -245,10 +289,12 @@ class DictionarySearchViewModel(
     fun onEntryDetailDismissed() {
         entryDetailJob?.cancel()
         rawSelectedEntryDetail = null
+        rawEntryDetailBackStack = emptyList()
         _uiState.update {
             it.copy(
                 isLoadingEntryDetail = false,
                 selectedEntry = null,
+                canNavigateBackInDetail = false,
                 openableLinkedWords = emptySet(),
                 entryDetailErrorMessage = null,
             )
@@ -418,6 +464,7 @@ class DictionarySearchViewModel(
             it.copy(
                 results = translatedResults,
                 selectedEntry = translatedDetail?.entry ?: translatedLoadingPreview,
+                canNavigateBackInDetail = rawEntryDetailBackStack.isNotEmpty(),
                 openableLinkedWords = translatedDetail?.openableLinkedWords
                     ?: if (rawSelectedEntryDetail == null) it.openableLinkedWords else emptySet(),
             )

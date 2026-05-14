@@ -86,7 +86,11 @@ fun BookmarksScreen(
     }
 
     BackHandler(enabled = showsEntryDetail) {
-        viewModel.onEntryDetailDismissed()
+        if (uiState.canNavigateBackInDetail) {
+            viewModel.onEntryDetailBack()
+        } else {
+            viewModel.onEntryDetailDismissed()
+        }
     }
 
     LaunchedEffect(uiState.entries) {
@@ -108,7 +112,13 @@ fun BookmarksScreen(
                     }
                 }
             },
-            onBack = viewModel::onEntryDetailDismissed,
+            onBack = {
+                if (uiState.canNavigateBackInDetail) {
+                    viewModel.onEntryDetailBack()
+                } else {
+                    viewModel.onEntryDetailDismissed()
+                }
+            },
             onOpenLinkedWord = viewModel::onLinkedWordSelected,
             modifier = modifier.fillMaxSize(),
         )

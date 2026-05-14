@@ -31,6 +31,7 @@ data class BookmarksUiState(
     val entriesErrorMessage: String? = null,
     val isLoadingEntryDetail: Boolean = false,
     val selectedEntry: DictionaryEntry? = null,
+    val canNavigateBackInDetail: Boolean = false,
     val openableLinkedWords: Set<String> = emptySet(),
     val entryDetailErrorMessage: String? = null,
 )
@@ -61,6 +62,7 @@ class BookmarksViewModel(
     private var currentLocale: AppLocale = AppLocale.TraditionalChinese
     private var rawEntries: List<DictionaryEntry> = emptyList()
     private var rawSelectedEntryDetail: PreparedDictionaryEntryDetail? = null
+    private var rawEntryDetailBackStack: List<PreparedDictionaryEntryDetail> = emptyList()
 
     val uiState: StateFlow<BookmarksUiState> = _uiState.asStateFlow()
 
@@ -85,10 +87,12 @@ class BookmarksViewModel(
             it.copy(
                 isLoadingEntryDetail = true,
                 selectedEntry = null,
+                canNavigateBackInDetail = false,
                 openableLinkedWords = emptySet(),
                 entryDetailErrorMessage = null,
             )
         }
+        rawEntryDetailBackStack = emptyList()
         viewModelScope.launch {
             val result = withContext(ioDispatcher) {
                 runCatching {
@@ -111,7 +115,11 @@ class BookmarksViewModel(
     }
 
     fun onLinkedWordSelected(word: String) {
-        val currentEntry = rawSelectedEntryDetail?.entry ?: _uiState.value.selectedEntry ?: return
+        val currentDetail = rawSelectedEntryDetail ?: return
+        val currentEntry = currentDetail.entry
+        if (!_uiState.value.openableLinkedWords.contains(word)) {
+            return
+        }
 
         _uiState.update {
             it.copy(
@@ -141,12 +149,17 @@ class BookmarksViewModel(
                 }
             }
 
-            rawSelectedEntryDetail = result.getOrNull()?.first
+            val rawDetail = result.getOrNull()?.first
             val translatedDetail = result.getOrNull()?.second
+            if (rawDetail != null && translatedDetail != null) {
+                rawSelectedEntryDetail = rawDetail
+                rawEntryDetailBackStack = rawEntryDetailBackStack + currentDetail
+            }
             _uiState.update {
                 it.copy(
                     isLoadingEntryDetail = false,
                     selectedEntry = translatedDetail?.entry ?: it.selectedEntry,
+                    canNavigateBackInDetail = rawEntryDetailBackStack.isNotEmpty(),
                     openableLinkedWords = translatedDetail?.openableLinkedWords ?: it.openableLinkedWords,
                     entryDetailErrorMessage = result.exceptionOrNull()?.message,
                 )
@@ -154,12 +167,45 @@ class BookmarksViewModel(
         }
     }
 
+    fun onEntryDetailBack() {
+        val previousDetail = rawEntryDetailBackStack.lastOrNull()
+        if (previousDetail == null) {
+            onEntryDetailDismissed()
+            return
+        }
+
+        rawEntryDetailBackStack = rawEntryDetailBackStack.dropLast(1)
+        rawSelectedEntryDetail = previousDetail
+        _uiState.update {
+            it.copy(
+                isLoadingEntryDetail = true,
+                entryDetailErrorMessage = null,
+            )
+        }
+        viewModelScope.launch {
+            val translatedDetail = withContext(ioDispatcher) {
+                translateEntryDetailForDisplay(previousDetail)
+            }
+            _uiState.update {
+                it.copy(
+                    isLoadingEntryDetail = false,
+                    selectedEntry = translatedDetail.entry,
+                    canNavigateBackInDetail = rawEntryDetailBackStack.isNotEmpty(),
+                    openableLinkedWords = translatedDetail.openableLinkedWords,
+                    entryDetailErrorMessage = null,
+                )
+            }
+        }
+    }
+
     fun onEntryDetailDismissed() {
         rawSelectedEntryDetail = null
+        rawEntryDetailBackStack = emptyList()
         _uiState.update {
             it.copy(
                 isLoadingEntryDetail = false,
                 selectedEntry = null,
+                canNavigateBackInDetail = false,
                 openableLinkedWords = emptySet(),
                 entryDetailErrorMessage = null,
             )
@@ -346,6 +392,7 @@ class BookmarksViewModel(
             it.copy(
                 entries = translatedEntries,
                 selectedEntry = translatedDetail?.entry ?: translatedLoadingPreview,
+                canNavigateBackInDetail = rawEntryDetailBackStack.isNotEmpty(),
                 openableLinkedWords = translatedDetail?.openableLinkedWords
                     ?: if (rawSelectedEntryDetail == null) it.openableLinkedWords else emptySet(),
             )

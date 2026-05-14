@@ -129,7 +129,9 @@ fun DictionaryScreen(
         }
 
         BackHandler(enabled = showsEntryDetail) {
-            if (usesTwoPaneLayout && showsDetailPage) {
+            if (uiState.canNavigateBackInDetail) {
+                viewModel.onEntryDetailBack()
+            } else if (usesTwoPaneLayout && showsDetailPage) {
                 showsDetailPage = false
             } else {
                 selectedPreviewEntryId = null
@@ -152,7 +154,9 @@ fun DictionaryScreen(
                     }
                 },
                 onBack = {
-                    if (usesTwoPaneLayout) {
+                    if (uiState.canNavigateBackInDetail) {
+                        viewModel.onEntryDetailBack()
+                    } else if (usesTwoPaneLayout) {
                         showsDetailPage = false
                     } else {
                         selectedPreviewEntryId = null
@@ -341,7 +345,13 @@ fun DictionaryScreen(
                                                 }
                                             }
                                         },
-                                        onBack = viewModel::onEntryDetailDismissed,
+                                        onBack = {
+                                            if (uiState.canNavigateBackInDetail) {
+                                                viewModel.onEntryDetailBack()
+                                            } else {
+                                                viewModel.onEntryDetailDismissed()
+                                            }
+                                        },
                                         onOpenLinkedWord = { word ->
                                             selectedPreviewEntryId = null
                                             viewModel.onLinkedWordSelected(word)

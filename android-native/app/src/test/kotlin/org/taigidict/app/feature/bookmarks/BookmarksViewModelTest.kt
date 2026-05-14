@@ -99,6 +99,42 @@ class BookmarksViewModelTest {
         advanceUntilIdle()
 
         assertEquals(linked, viewModel.uiState.value.selectedEntry)
+        assertTrue(viewModel.uiState.value.canNavigateBackInDetail)
+    }
+
+    @Test
+    fun onEntryDetailBack_afterLinkedWordRestoresPreviousBookmarkEntry() = runTest(dispatcher) {
+        val source = sampleEntry(
+            id = 20,
+            hanji = "辭典",
+            romanization = "sû-tián",
+            wordSynonyms = listOf("字典"),
+        )
+        val linked = sampleEntry(id = 30, hanji = "字典", romanization = "jī-tián")
+        val repository = FakeBookmarksRepository(
+            entryById = mapOf(source.id to source, linked.id to linked),
+            linkedEntriesByWord = mapOf("字典" to linked),
+        )
+        val bookmarkStore = createBookmarkStore(backgroundScope)
+        bookmarkStore.toggleBookmark(source.id)
+
+        val viewModel = createViewModel(repository, bookmarkStore)
+        advanceUntilIdle()
+        viewModel.onEntrySelected(source.id)
+        advanceUntilIdle()
+        viewModel.onLinkedWordSelected("字典")
+        advanceUntilIdle()
+
+        assertEquals(linked, viewModel.uiState.value.selectedEntry)
+        assertTrue(viewModel.uiState.value.canNavigateBackInDetail)
+
+        viewModel.onEntryDetailBack()
+        advanceUntilIdle()
+
+        val uiState = viewModel.uiState.value
+        assertEquals(source, uiState.selectedEntry)
+        assertFalse(uiState.canNavigateBackInDetail)
+        assertEquals(setOf("字典"), uiState.openableLinkedWords)
     }
 
     @Test

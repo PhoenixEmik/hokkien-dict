@@ -481,7 +481,42 @@ class DictionarySearchViewModelTest {
 
         val uiState = viewModel.uiState.value
         assertEquals(aliasTarget, uiState.selectedEntry)
+        assertTrue(uiState.canNavigateBackInDetail)
         assertEquals(listOf("字典", "字典"), repository.linkedWordRequests)
+    }
+
+    @Test
+    fun onEntryDetailBack_afterLinkedWordRestoresPreviousEntry() = runTest(dispatcher) {
+        val linkedEntry = sampleEntry(id = 8, hanji = "字典", romanization = "jī-tián")
+        val entry = sampleEntry(
+            id = 7,
+            hanji = "辭典",
+            romanization = "sû-tián",
+            wordSynonyms = listOf("字典"),
+        )
+        val repository = FakeDictionaryRepository(
+            bundle = DictionaryBundle(1, 1, 0, "/tmp/dictionary.sqlite"),
+            entryById = mapOf(entry.id to entry, linkedEntry.id to linkedEntry),
+            linkedEntriesByWord = mapOf("字典" to linkedEntry),
+        )
+
+        val viewModel = createViewModel(repository)
+        advanceUntilIdle()
+        viewModel.onEntrySelected(entry.id)
+        advanceUntilIdle()
+        viewModel.onLinkedWordSelected("字典")
+        advanceUntilIdle()
+
+        assertEquals(linkedEntry, viewModel.uiState.value.selectedEntry)
+        assertTrue(viewModel.uiState.value.canNavigateBackInDetail)
+
+        viewModel.onEntryDetailBack()
+        advanceUntilIdle()
+
+        val uiState = viewModel.uiState.value
+        assertEquals(entry, uiState.selectedEntry)
+        assertFalse(uiState.canNavigateBackInDetail)
+        assertEquals(setOf("字典"), uiState.openableLinkedWords)
     }
 
     @Test
