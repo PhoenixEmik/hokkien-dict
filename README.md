@@ -49,7 +49,7 @@ The product is organized around three primary tabs:
 - App display name: `台語辭典`
 - Android application ID: `org.taigidict.app`
 - iOS bundle identifier: `org.taigidict.app`
-- Current native app version: `1.3.3` (build `6`)
+- Current native app version: `1.3.4` (build `7`)
 - Archived Flutter package version: `1.3.0+3`
 - Official project domain: `https://taigidict.org`
 - Production asset host: `https://app.taigidict.org/assets/`
