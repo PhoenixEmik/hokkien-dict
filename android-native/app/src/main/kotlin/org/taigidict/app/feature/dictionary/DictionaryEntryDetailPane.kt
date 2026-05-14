@@ -412,6 +412,7 @@ private fun DictionaryEntryDetailContent(
                         openableLinkedWords = openableLinkedWords,
                         onOpenLinkedWord = onOpenLinkedWord,
                         readingTextScale = readingTextScale,
+                        useCard = true,
                     )
                 }
             }
@@ -424,6 +425,7 @@ private fun DictionaryEntryDetailContent(
                         openableLinkedWords = openableLinkedWords,
                         onOpenLinkedWord = onOpenLinkedWord,
                         readingTextScale = readingTextScale,
+                        useCard = true,
                     )
                 }
             }
@@ -436,6 +438,7 @@ private fun DictionaryEntryDetailContent(
                         openableLinkedWords = openableLinkedWords,
                         onOpenLinkedWord = onOpenLinkedWord,
                         readingTextScale = readingTextScale,
+                        useCard = true,
                     )
                 }
             }
@@ -773,6 +776,7 @@ private fun DictionaryDetailRelationshipSection(
     openableLinkedWords: Set<String>,
     onOpenLinkedWord: (String) -> Unit,
     readingTextScale: Double,
+    useCard: Boolean = false,
 ) {
     val scaledLabelStyle = MaterialTheme.typography.labelLarge.copy(
         fontSize = MaterialTheme.typography.labelLarge.fontSize * readingTextScale.toFloat(),
@@ -781,10 +785,49 @@ private fun DictionaryDetailRelationshipSection(
         fontSize = MaterialTheme.typography.bodySmall.fontSize * readingTextScale.toFloat(),
     )
 
+    val content: @Composable () -> Unit = {
+        DictionaryDetailRelationshipContent(
+            title = title,
+            values = values,
+            openableLinkedWords = openableLinkedWords,
+            onOpenLinkedWord = onOpenLinkedWord,
+            labelStyle = scaledLabelStyle,
+            chipStyle = scaledChipStyle,
+        )
+    }
+
+    if (useCard) {
+        Card(colors = appCardColors()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        horizontal = DetailCardHorizontalPadding,
+                        vertical = DetailCardVerticalPadding,
+                    ),
+            ) {
+                content()
+            }
+        }
+    } else {
+        content()
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun DictionaryDetailRelationshipContent(
+    title: String,
+    values: List<String>,
+    openableLinkedWords: Set<String>,
+    onOpenLinkedWord: (String) -> Unit,
+    labelStyle: TextStyle,
+    chipStyle: TextStyle,
+) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(
             text = title,
-            style = scaledLabelStyle,
+            style = labelStyle,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         FlowRow(
@@ -798,7 +841,7 @@ private fun DictionaryDetailRelationshipSection(
                     label = {
                         DictionaryFallbackText(
                             text = value,
-                            style = scaledChipStyle,
+                            style = chipStyle,
                         )
                     },
                 )
