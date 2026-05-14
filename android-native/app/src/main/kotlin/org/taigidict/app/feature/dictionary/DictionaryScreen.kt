@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -169,21 +171,24 @@ fun DictionaryScreen(
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             containerColor = appPageContainerColor(),
-            contentWindowInsets = WindowInsets.safeDrawing.only(
-                WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
-            ),
+            contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
         ) { innerPadding ->
+            val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
                     .padding(horizontal = ScreenHorizontalPadding)
-                    .padding(top = TopContentPadding, bottom = ScreenVerticalPadding),
+                    .padding(
+                        top = statusBarPadding + TopContentPadding,
+                        bottom = ScreenVerticalPadding,
+                    ),
                 verticalArrangement = Arrangement.spacedBy(SectionSpacing),
             ) {
 
                 SearchBar(
                     modifier = Modifier.fillMaxWidth(),
+                    windowInsets = WindowInsets(0, 0, 0, 0),
                     inputField = {
                         SearchBarDefaults.InputField(
                             query = uiState.query,
