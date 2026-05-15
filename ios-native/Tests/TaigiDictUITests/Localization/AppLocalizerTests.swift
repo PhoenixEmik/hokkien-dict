@@ -34,6 +34,7 @@ final class AppLocalizerTests: XCTestCase {
         XCTAssertEqual(AppLocalizer.text(.aboutVersionValue, locale: .traditionalChinese), "1.3.4")
         XCTAssertEqual(AppLocalizer.text(.aboutVersionValue, locale: .simplifiedChinese), "1.3.4")
         XCTAssertEqual(AppLocalizer.text(.aboutGitHub, locale: .traditionalChinese), "開放源碼")
+        XCTAssertEqual(AppLocalizer.text(.aboutPrivacy, locale: .traditionalChinese), "隱私權政策")
 
         XCTAssertEqual(AppLocalizer.text(.licenseAppCodeDescription, locale: .english), "MIT License")
         XCTAssertEqual(AppLocalizer.text(.licenseMinistryCopyright, locale: .traditionalChinese), "教育部著作權說明")
