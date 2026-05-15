@@ -138,7 +138,7 @@
     <string name="settings_text_scale_title">阅读字级</string>
     <string name="settings_text_scale_label">比例</string>
     <string name="settings_info_title">关于与文档</string>
-    <string name="settings_info_body">可在 App 内阅读隐私政策与数据授权文件。</string>
+    <string name="settings_info_body">可在 App 内阅读授权文档，隐私政策将打开外部链接。</string>
     <string name="settings_info_about">关于</string>
     <string name="about_title">关于台语辞典</string>
     <string name="about_app_section">台语辞典</string>

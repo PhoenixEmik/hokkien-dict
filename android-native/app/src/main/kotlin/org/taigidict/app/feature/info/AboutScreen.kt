@@ -47,6 +47,7 @@ private val AboutHorizontalPadding = 16.dp
 private val AboutVerticalPadding = 16.dp
 
 private const val RepoUrl = "https://github.com/PhoenixEmik/taigi-dict"
+private const val PrivacyPolicyUrl = "https://github.com/PhoenixEmik/taigi-dict/blob/main/PRIVACY_POLICY.md"
 private const val ReferencePageUrl = "https://sutian.moe.edu.tw/zh-hant/siongkuantsuguan/"
 private const val TailoGuideUrl = "https://sutian.moe.edu.tw/zh-hant/piantsip/tailo-phiautsu-suatbing/"
 private const val HanjiGuideUrl = "https://sutian.moe.edu.tw/zh-hant/piantsip/hanji-iongji-guantsik/"
@@ -128,7 +129,7 @@ fun AboutScreen(
                     AboutNavRow(
                         icon = Icons.Outlined.Policy,
                         title = stringResource(R.string.settings_info_privacy_policy),
-                        onClick = { onOpenDocument(AppDocument.PrivacyPolicy) },
+                        onClick = { uriHandler.openUri(PrivacyPolicyUrl) },
                     )
                 }
             }

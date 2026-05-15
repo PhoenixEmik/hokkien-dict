@@ -22,7 +22,7 @@ Taigi Dict is an offline-first Taiwanese Hokkien and Mandarin dictionary app.
 ## Data and Licensing Notes
 
 - Dictionary data and audio licensing are documented in DATA_LICENSE.md
-- Privacy behavior is documented in PRIVACY_POLICY.md
+- Privacy behavior is documented at https://github.com/PhoenixEmik/taigi-dict/blob/main/PRIVACY_POLICY.md
 - App code is released under the MIT License
 
 ## Project Links
