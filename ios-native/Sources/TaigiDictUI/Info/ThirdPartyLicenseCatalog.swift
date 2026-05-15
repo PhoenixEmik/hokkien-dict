@@ -77,12 +77,17 @@ struct ThirdPartyLicenseEntry: Identifiable, Hashable {
     }
 
     func licenseText() -> String {
+        let candidateURL = Bundle.module.url(
+            forResource: licenseResourceName,
+            withExtension: "txt"
+        ) ?? Bundle.module.url(
+            forResource: licenseResourceName,
+            withExtension: "txt",
+            subdirectory: "ThirdPartyLicenses"
+        )
+
         guard
-            let url = Bundle.module.url(
-                forResource: licenseResourceName,
-                withExtension: "txt",
-                subdirectory: "ThirdPartyLicenses"
-            ),
+            let url = candidateURL,
             let contents = try? String(contentsOf: url, encoding: .utf8)
         else {
             assertionFailure("Missing bundled license resource: \(licenseResourceName)")
