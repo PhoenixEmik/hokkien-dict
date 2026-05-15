@@ -41,6 +41,27 @@ final class BookmarksViewModelTests: XCTestCase {
         let ids = await bookmarkStore.bookmarkedEntryIDs()
         XCTAssertEqual(ids, [1])
     }
+
+    func testRemoveBookmarksByIDsDeletesSpecifiedEntriesAndReloads() async {
+        let entries = [
+            entry(id: 1, hanji: "辭典", romanization: "sû-tián", definition: "工具書"),
+            entry(id: 2, hanji: "字典", romanization: "jī-tián", definition: "工具書"),
+            entry(id: 3, hanji: "字母", romanization: "jī-bó", definition: "文字符號"),
+        ]
+        let repository = InMemoryRepository(entries: entries)
+        let bookmarkStore = InMemoryBookmarksStore(ids: [3, 2, 1])
+        let viewModel = BookmarksViewModel(
+            library: DictionaryLibrary(repository: repository),
+            bookmarkStore: bookmarkStore
+        )
+
+        await viewModel.load()
+        await viewModel.removeBookmarks(entryIDs: [3, 1])
+
+        XCTAssertEqual(viewModel.entries.map(\.id), [2])
+        let ids = await bookmarkStore.bookmarkedEntryIDs()
+        XCTAssertEqual(ids, [2])
+    }
 }
 
 private actor InMemoryRepository: DictionaryRepositoryProtocol {

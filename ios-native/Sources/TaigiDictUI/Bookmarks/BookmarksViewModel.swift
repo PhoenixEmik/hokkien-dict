@@ -48,4 +48,14 @@ public final class BookmarksViewModel {
         await bookmarkStore.removeBookmarks(entryIDs: [entryID])
         await load()
     }
+
+    public func removeBookmarks(entryIDs: Set<Int64>) async {
+        let ids = Array(entryIDs)
+        guard !ids.isEmpty else {
+            return
+        }
+
+        await bookmarkStore.removeBookmarks(entryIDs: ids)
+        await load()
+    }
 }

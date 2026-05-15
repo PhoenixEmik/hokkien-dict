@@ -53,6 +53,11 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case bookmarksEmptyTitle
     case bookmarksEmptyDescription
     case bookmarksSectionSaved
+    case bookmarksSelect
+    case bookmarksSelectAll
+    case bookmarksDeselectAll
+    case bookmarksDeleteSelected
+    case bookmarksDoneSelecting
 
     case initializationFailedTitle
     case initializationRetry

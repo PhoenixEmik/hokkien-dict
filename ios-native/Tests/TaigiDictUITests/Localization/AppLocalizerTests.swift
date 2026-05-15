@@ -51,6 +51,9 @@ final class AppLocalizerTests: XCTestCase {
         XCTAssertEqual(AppLocalizer.text(.bookmarksTitle, locale: .english), "Bookmarks")
         XCTAssertEqual(AppLocalizer.text(.bookmarksTitle, locale: .traditionalChinese), "書籤")
         XCTAssertEqual(AppLocalizer.text(.bookmarksTitle, locale: .simplifiedChinese), "书签")
+        XCTAssertEqual(AppLocalizer.text(.bookmarksSelect, locale: .traditionalChinese), "選取")
+        XCTAssertEqual(AppLocalizer.text(.bookmarksDeselectAll, locale: .traditionalChinese), "取消全選")
+        XCTAssertEqual(AppLocalizer.text(.bookmarksDeleteSelected, locale: .english), "Delete selected")
     }
 
     func testAppLocaleResolvesFoundationNormalizedChineseIdentifiers() {
