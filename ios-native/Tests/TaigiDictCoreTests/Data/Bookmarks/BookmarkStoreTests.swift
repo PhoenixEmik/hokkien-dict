@@ -29,6 +29,16 @@ final class BookmarkStoreTests: XCTestCase {
         XCTAssertEqual(ids, [3, 1])
     }
 
+    func testContainsPersistedBookmarkReadsStoredStateSynchronously() async {
+        let defaults = makeIsolatedDefaults()
+        let store = BookmarkStore(userDefaults: defaults, storageKey: "bookmark_store_tests")
+
+        _ = await store.toggleBookmark(entryID: 42)
+
+        XCTAssertTrue(store.containsPersistedBookmark(42))
+        XCTAssertFalse(store.containsPersistedBookmark(99))
+    }
+
     private func makeIsolatedDefaults() -> UserDefaults {
         let suiteName = "BookmarkStoreTests-\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!

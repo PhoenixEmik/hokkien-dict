@@ -32,10 +32,22 @@ struct DictionaryDetailView: View {
                 conversionService: conversionService
             )
         )
+        _isBookmarked = State(
+            initialValue: {
+                guard let entry, let bookmarkStore = bookmarkStore as? BookmarkStore else {
+                    return false
+                }
+                return bookmarkStore.containsPersistedBookmark(entry.id)
+            }()
+        )
     }
 
     private var appLocale: AppLocale {
         AppLocalizer.appLocale(from: locale)
+    }
+
+    private var displayedEntry: DictionaryEntry? {
+        viewModel.entry ?? sourceEntry
     }
 
     var body: some View {
@@ -186,10 +198,10 @@ struct DictionaryDetailView: View {
             }
         }
         .toolbar {
-            if viewModel.entry != nil {
+            if let displayedEntry {
                 if bookmarkStore != nil {
                     Button {
-                        toggleBookmark()
+                        toggleBookmark(displayedEntry)
                     } label: {
                         Label(
                             isBookmarked
@@ -200,7 +212,7 @@ struct DictionaryDetailView: View {
                     }
                 }
 
-                ShareLink(item: viewModel.shareText()) {
+                ShareLink(item: WordDetailViewModel.shareText(for: displayedEntry)) {
                     Label(AppLocalizer.text(.share, locale: appLocale), systemImage: "square.and.arrow.up")
                 }
             }
@@ -261,8 +273,8 @@ struct DictionaryDetailView: View {
         }
     }
 
-    private func toggleBookmark() {
-        guard let entry = viewModel.entry, let bookmarkStore else {
+    private func toggleBookmark(_ entry: DictionaryEntry) {
+        guard let bookmarkStore else {
             return
         }
 

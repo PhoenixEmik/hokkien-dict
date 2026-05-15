@@ -9,8 +9,8 @@ public protocol BookmarksStoreProtocol: Sendable {
 }
 
 public actor BookmarkStore: BookmarksStoreProtocol {
-    private let userDefaults: UserDefaults
-    private let storageKey: String
+    nonisolated(unsafe) private let userDefaults: UserDefaults
+    nonisolated private let storageKey: String
 
     public init(
         userDefaults: UserDefaults = .standard,
@@ -52,7 +52,15 @@ public actor BookmarkStore: BookmarksStoreProtocol {
         write(remaining)
     }
 
+    public nonisolated func containsPersistedBookmark(_ entryID: Int64) -> Bool {
+        Self.readIDs(from: userDefaults, storageKey: storageKey).contains(entryID)
+    }
+
     private func readIDs() -> [Int64] {
+        Self.readIDs(from: userDefaults, storageKey: storageKey)
+    }
+
+    private static func readIDs(from userDefaults: UserDefaults, storageKey: String) -> [Int64] {
         if let numbers = userDefaults.array(forKey: storageKey) as? [NSNumber] {
             return numbers.map(\.int64Value)
         }
