@@ -20,7 +20,7 @@
 ## 快速連結
 
 - [iOS app](ios-native/) 與 [iOS 說明](ios-native/README.md)
-- [Android app](android-native/)
+- [Android app](android-native/) 與 [Android 說明](android-native/README.md)
 - [Flutter 封存版](flutter-archive/)
 - [隱私權政策](PRIVACY_POLICY.md)、[資料授權](DATA_LICENSE.md) 與 [MIT 授權](LICENSE)
 
@@ -163,6 +163,8 @@ xcodebuild \
 cd android-native
 ./gradlew app:assembleDebug
 ```
+
+更多原生 Android 細節可參考 [android-native/README.md](android-native/README.md)。
 
 封存 Flutter app：
 

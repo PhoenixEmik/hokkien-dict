@@ -21,7 +21,7 @@ Ministry of Education dataset.
 ## Quick Links
 
 - [iOS app](ios-native/) and [iOS notes](ios-native/README.md)
-- [Android app](android-native/)
+- [Android app](android-native/) and [Android notes](android-native/README.md)
 - [Flutter archive](flutter-archive/)
 - [Privacy Policy](PRIVACY_POLICY.md), [Data License](DATA_LICENSE.md), and [MIT License](LICENSE)
 
@@ -166,6 +166,8 @@ Native Android app:
 cd android-native
 ./gradlew app:assembleDebug
 ```
+
+For more native Android details, see [android-native/README.md](android-native/README.md).
 
 Legacy Flutter archive:
 
