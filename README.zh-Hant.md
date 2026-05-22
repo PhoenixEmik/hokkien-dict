@@ -231,14 +231,14 @@ cd android-native
 
 ## 致謝
 
-- 教育部臺灣台語常用詞辭典：`https://sutian.moe.edu.tw/`
-- 豆腐烏 Tauhu-oo 20.05 字型，用於顯示台語漢字與特定 CJK Extension 字元：`https://github.com/tauhu-tw/tauhu-oo`
-- jf open 粉圓字型，用於 App Icon 字樣：`https://github.com/justfont/open-huninn-font`
-- Open Chinese Convert for Flutter，提供執行期 OpenCC 繁簡轉換：`https://github.com/zonble/flutter_open_chinese_convert`
-- android-opencc，提供原生 Android OpenCC 繁簡轉換：`https://github.com/xyrlsz/android-opencc`
-- GRDB.swift：`https://github.com/groue/GRDB.swift`
-- ZIPFoundation：`https://github.com/weichsel/ZIPFoundation`
-- SwiftyOpenCC：`https://github.com/PhoenixEmik/SwiftyOpenCC`
+- [教育部臺灣台語常用詞辭典](https://sutian.moe.edu.tw/)：詞典資料來源參考
+- [豆腐烏 Tauhu-oo 20.05](https://github.com/tauhu-tw/tauhu-oo)：用於顯示台語漢字與特定 CJK Extension 字元的字型
+- [jf open 粉圓](https://github.com/justfont/open-huninn-font)：用於 App Icon 字樣的字型
+- [Open Chinese Convert for Flutter](https://github.com/zonble/flutter_open_chinese_convert)：封存 Flutter app 的執行期 OpenCC 繁簡轉換
+- [android-opencc](https://github.com/xyrlsz/android-opencc)：原生 Android app 的 OpenCC 繁簡轉換
+- [GRDB.swift](https://github.com/groue/GRDB.swift)：原生 iOS app 的 SQLite 存取
+- [ZIPFoundation](https://github.com/weichsel/ZIPFoundation)：原生 iOS app 的離線壓縮資源處理
+- [SwiftyOpenCC](https://github.com/PhoenixEmik/SwiftyOpenCC)：原生 iOS app 的繁簡轉換
 
 ## 授權
 

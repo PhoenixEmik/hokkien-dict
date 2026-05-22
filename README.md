@@ -234,14 +234,14 @@ Generated artifact:
 
 ## Acknowledgments
 
-- Ministry of Education Taiwanese Hokkien Dictionary: `https://sutian.moe.edu.tw/`
-- Tauhu-oo 20.05 font for Taiwanese Hanzi and specific CJK Extension glyph coverage: `https://github.com/tauhu-tw/tauhu-oo`
-- jf open-huninn font used in the app icon artwork: `https://github.com/justfont/open-huninn-font`
-- Open Chinese Convert for Flutter for runtime OpenCC conversion: `https://github.com/zonble/flutter_open_chinese_convert`
-- android-opencc for native Android OpenCC conversion: `https://github.com/xyrlsz/android-opencc`
-- GRDB.swift: `https://github.com/groue/GRDB.swift`
-- ZIPFoundation: `https://github.com/weichsel/ZIPFoundation`
-- SwiftyOpenCC: `https://github.com/PhoenixEmik/SwiftyOpenCC`
+- [Ministry of Education Taiwanese Hokkien Dictionary](https://sutian.moe.edu.tw/): source dictionary data reference
+- [Tauhu-oo 20.05](https://github.com/tauhu-tw/tauhu-oo): font used for Taiwanese Hanzi and specific CJK Extension glyph coverage
+- [jf open-huninn](https://github.com/justfont/open-huninn-font): font used in the app icon artwork
+- [Open Chinese Convert for Flutter](https://github.com/zonble/flutter_open_chinese_convert): runtime OpenCC conversion in the archived Flutter app
+- [android-opencc](https://github.com/xyrlsz/android-opencc): OpenCC conversion in the native Android app
+- [GRDB.swift](https://github.com/groue/GRDB.swift): SQLite access in the native iOS app
+- [ZIPFoundation](https://github.com/weichsel/ZIPFoundation): offline archive handling in the native iOS app
+- [SwiftyOpenCC](https://github.com/PhoenixEmik/SwiftyOpenCC): Chinese conversion in the native iOS app
 
 ## License
 
