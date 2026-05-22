@@ -3,11 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
     <title>台語辭典 | Taigi Dict</title>
     <meta
       name="description"
       content="純粹、極速的台語離線辭典。無廣告、免連網、開源免費，隨時隨地探索台語之美。"
     />
+    <script>
+      (() => {
+        let storedTheme = null;
+        try {
+          storedTheme = localStorage.getItem("taigi-dict-theme");
+        } catch (_error) {}
+        const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+        const theme =
+          storedTheme === "light" || storedTheme === "dark"
+            ? storedTheme
+            : systemTheme;
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme;
+      })();
+    </script>
     <style>
       :root {
         --bg: #f3f7fc;
@@ -20,9 +38,60 @@
         --accent: #27406b;
         --accent-strong: #1d3355;
         --shadow: 0 18px 40px rgba(19, 39, 68, 0.08);
+        --surface-raised: rgba(255, 255, 255, 0.82);
+        --surface-raised-hover: #ffffff;
+        --surface-panel: rgba(255, 255, 255, 0.78);
+        --surface-card: rgba(255, 255, 255, 0.76);
+        --surface-card-soft: rgba(255, 255, 255, 0.74);
+        --surface-nav-border: rgba(35, 63, 106, 0.08);
+        --surface-line-strong: rgba(35, 63, 106, 0.22);
+        --surface-line-hover: rgba(39, 64, 107, 0.24);
+        --body-glow: rgba(39, 64, 107, 0.12);
+        --body-top: #ffffff;
+        --hero-shadow: 0 24px 50px rgba(19, 39, 68, 0.12);
+        --button-shadow: 0 16px 36px rgba(39, 64, 107, 0.22);
+        --media-fallback: #e5edf8;
+        --media-soft: #f3f7fc;
+        --placeholder-top: rgba(255, 255, 255, 0.84);
+        --placeholder-bottom: rgba(242, 235, 220, 0.96);
+        --download-glow: rgba(39, 64, 107, 0.1);
+        --overlay-pill: rgba(24, 39, 61, 0.84);
+        --overlay-pill-text: #ffffff;
         --radius: 28px;
         --content-width: 1120px;
         --nav-height: 76px;
+      }
+
+      :root[data-theme="dark"] {
+        --bg: #0c1524;
+        --bg-soft: #121f34;
+        --surface: #101b2c;
+        --surface-strong: #1a2a41;
+        --text: #ecf3ff;
+        --muted: #a1b2cb;
+        --line: rgba(164, 187, 221, 0.18);
+        --accent: #587bcd;
+        --accent-strong: #bed3ff;
+        --shadow: 0 20px 42px rgba(0, 0, 0, 0.28);
+        --surface-raised: rgba(10, 19, 33, 0.78);
+        --surface-raised-hover: rgba(15, 27, 46, 0.94);
+        --surface-panel: rgba(13, 23, 39, 0.82);
+        --surface-card: rgba(14, 24, 40, 0.84);
+        --surface-card-soft: rgba(16, 28, 47, 0.88);
+        --surface-nav-border: rgba(164, 187, 221, 0.12);
+        --surface-line-strong: rgba(164, 187, 221, 0.3);
+        --surface-line-hover: rgba(143, 181, 255, 0.38);
+        --body-glow: rgba(109, 149, 229, 0.22);
+        --body-top: #07101c;
+        --hero-shadow: 0 28px 56px rgba(0, 0, 0, 0.36);
+        --button-shadow: 0 18px 36px rgba(77, 122, 214, 0.24);
+        --media-fallback: #18263b;
+        --media-soft: #111d31;
+        --placeholder-top: rgba(22, 34, 53, 0.96);
+        --placeholder-bottom: rgba(11, 20, 34, 0.98);
+        --download-glow: rgba(143, 181, 255, 0.12);
+        --overlay-pill: rgba(236, 243, 255, 0.16);
+        --overlay-pill-text: #ecf3ff;
       }
 
       * {
@@ -43,9 +112,12 @@
           system-ui,
           sans-serif;
         background:
-          radial-gradient(circle at top right, rgba(39, 64, 107, 0.12), transparent 30%),
-          linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
+          radial-gradient(circle at top right, var(--body-glow), transparent 30%),
+          linear-gradient(180deg, var(--body-top) 0%, var(--bg) 100%);
         color: var(--text);
+        transition:
+          background 220ms ease,
+          color 220ms ease;
       }
 
       a {
@@ -67,8 +139,11 @@
         top: 0;
         z-index: 20;
         backdrop-filter: blur(16px);
-        background: rgba(255, 255, 255, 0.82);
-        border-bottom: 1px solid rgba(35, 63, 106, 0.08);
+        background: var(--surface-raised);
+        border-bottom: 1px solid var(--surface-nav-border);
+        transition:
+          background-color 220ms ease,
+          border-color 220ms ease;
       }
 
       .nav-inner,
@@ -83,6 +158,12 @@
         align-items: center;
         justify-content: space-between;
         gap: 16px;
+      }
+
+      .nav-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
       }
 
       .brand-lockup {
@@ -119,24 +200,49 @@
         flex-shrink: 0;
       }
 
-      .github-link {
+      .github-link,
+      .theme-toggle {
         width: 44px;
         height: 44px;
         border-radius: 999px;
         display: grid;
         place-items: center;
         border: 1px solid var(--line);
-        background: rgba(255, 255, 255, 0.78);
+        background: var(--surface-panel);
+        color: var(--text);
         transition:
           transform 180ms ease,
           background-color 180ms ease,
-          border-color 180ms ease;
+          border-color 180ms ease,
+          color 180ms ease;
       }
 
-      .github-link:hover {
+      .github-link:hover,
+      .theme-toggle:hover {
         transform: translateY(-2px);
-        background: #ffffff;
-        border-color: rgba(35, 63, 106, 0.22);
+        background: var(--surface-raised-hover);
+        border-color: var(--surface-line-strong);
+      }
+
+      .theme-toggle {
+        appearance: none;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .theme-toggle-glyph {
+        font-size: 1.05rem;
+        line-height: 1;
+      }
+
+      .github-link:focus-visible,
+      .theme-toggle:focus-visible,
+      .cta-button:focus-visible,
+      .platform-tab:focus-visible,
+      .slider-control:focus-visible,
+      .footer-links a:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
       }
 
       .hero {
@@ -222,7 +328,7 @@
       .cta-button.primary {
         background: var(--accent);
         color: #ffffff;
-        box-shadow: 0 16px 36px rgba(39, 64, 107, 0.22);
+        box-shadow: var(--button-shadow);
       }
 
       .cta-button.primary:hover {
@@ -236,7 +342,7 @@
       }
 
       .cta-button.secondary:hover {
-        background: rgba(255, 255, 255, 0.74);
+        background: var(--surface-card-soft);
       }
 
       .hero-note {
@@ -254,7 +360,7 @@
         overflow: hidden;
         border-radius: 24px;
         background: transparent;
-        box-shadow: 0 24px 50px rgba(19, 39, 68, 0.12);
+        box-shadow: var(--hero-shadow);
       }
 
       .hero-banner img {
@@ -276,7 +382,7 @@
         gap: 8px;
         padding: 6px;
         border-radius: 999px;
-        background: rgba(255, 255, 255, 0.78);
+        background: var(--surface-panel);
         border: 1px solid var(--line);
         margin-bottom: 18px;
       }
@@ -330,7 +436,7 @@
         height: 40px;
         border-radius: 999px;
         border: 1px solid var(--line);
-        background: rgba(255, 255, 255, 0.82);
+        background: var(--surface-raised);
         color: var(--text);
         font: inherit;
         font-size: 1.1rem;
@@ -343,8 +449,8 @@
 
       .slider-control:hover {
         transform: translateY(-2px);
-        border-color: rgba(39, 64, 107, 0.24);
-        background: #fff;
+        border-color: var(--surface-line-hover);
+        background: var(--surface-raised-hover);
       }
 
       .slider-track {
@@ -376,7 +482,7 @@
         scroll-snap-align: start;
         border-radius: 24px;
         overflow: hidden;
-        background: rgba(255, 255, 255, 0.76);
+        background: var(--surface-card);
         border: 1px solid var(--line);
         box-shadow: var(--shadow);
         transition:
@@ -386,7 +492,7 @@
 
       .slide-card:hover {
         transform: translateY(-4px);
-        border-color: rgba(39, 64, 107, 0.24);
+        border-color: var(--surface-line-hover);
       }
 
       .slide-card figure {
@@ -400,13 +506,13 @@
         object-fit: cover;
         object-position: top center;
         display: block;
-        background: #e5edf8;
+        background: var(--media-fallback);
       }
 
       .slider-panel[data-platform-panel="ios"] .slide-card img {
         aspect-ratio: auto;
         object-fit: contain;
-        background: #f3f7fc;
+        background: var(--media-soft);
       }
 
       .slide-placeholder {
@@ -414,7 +520,7 @@
         place-items: center;
         padding: 20px;
         background:
-          linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(242, 235, 220, 0.96));
+          linear-gradient(180deg, var(--placeholder-top), var(--placeholder-bottom));
         text-align: center;
       }
 
@@ -469,7 +575,7 @@
       .feature-card {
         padding: 22px;
         border-radius: var(--radius);
-        background: rgba(255, 255, 255, 0.74);
+        background: var(--surface-card-soft);
         border: 1px solid var(--line);
         box-shadow: var(--shadow);
         min-height: 220px;
@@ -484,7 +590,7 @@
 
       .feature-card:hover {
         transform: translateY(-4px);
-        border-color: rgba(39, 64, 107, 0.24);
+        border-color: var(--surface-line-hover);
       }
 
       .feature-icon {
@@ -504,9 +610,9 @@
       .download-panel {
         border-radius: calc(var(--radius) + 6px);
         background:
-          linear-gradient(135deg, rgba(39, 64, 107, 0.1), rgba(255, 255, 255, 0.82)),
+          linear-gradient(135deg, var(--download-glow), var(--surface-raised)),
           var(--surface);
-        border: 1px solid rgba(39, 64, 107, 0.16);
+        border: 1px solid var(--line);
         padding: 26px 22px;
         box-shadow: var(--shadow);
       }
@@ -560,8 +666,8 @@
         position: absolute;
         right: 8px;
         bottom: 8px;
-        background: rgba(24, 39, 61, 0.84);
-        color: #fff;
+        background: var(--overlay-pill);
+        color: var(--overlay-pill-text);
         font-size: 0.72rem;
         padding: 4px 8px;
         border-radius: 999px;
@@ -581,7 +687,7 @@
         width: min(calc(100% - 32px), var(--content-width));
         margin: 0 auto;
         padding-top: 20px;
-        border-top: 1px solid rgba(35, 63, 106, 0.1);
+        border-top: 1px solid var(--surface-nav-border);
         display: flex;
         flex-direction: column;
         gap: 10px;
@@ -664,25 +770,36 @@
               <span>Taigi Dict</span>
             </span>
           </a>
-          <a
-            class="github-link"
-            href="https://github.com/PhoenixEmik/taigi-dict"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="View Taigi Dict on GitHub"
-          >
-            <svg
-              aria-hidden="true"
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="currentColor"
+          <div class="nav-actions">
+            <button
+              class="theme-toggle"
+              type="button"
+              aria-label="切換深色模式"
+              title="切換深色模式"
+              data-theme-toggle
             >
-              <path
-                d="M12 .5C5.65.5.5 5.66.5 12.02c0 5.09 3.3 9.4 7.87 10.92.58.11.79-.25.79-.56 0-.28-.01-1.19-.02-2.16-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.97.1-.75.4-1.26.73-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.45.11-3.02 0 0 .97-.31 3.16 1.17a10.9 10.9 0 0 1 5.76 0c2.2-1.49 3.16-1.17 3.16-1.17.63 1.57.24 2.73.12 3.02.74.8 1.18 1.82 1.18 3.07 0 4.41-2.69 5.39-5.25 5.67.41.36.78 1.08.78 2.18 0 1.58-.02 2.85-.02 3.23 0 .31.21.67.8.56A11.53 11.53 0 0 0 23.5 12C23.5 5.66 18.35.5 12 .5Z"
-              />
-            </svg>
-          </a>
+              <span class="theme-toggle-glyph" aria-hidden="true">☾</span>
+            </button>
+            <a
+              class="github-link"
+              href="https://github.com/PhoenixEmik/taigi-dict"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="View Taigi Dict on GitHub"
+            >
+              <svg
+                aria-hidden="true"
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M12 .5C5.65.5.5 5.66.5 12.02c0 5.09 3.3 9.4 7.87 10.92.58.11.79-.25.79-.56 0-.28-.01-1.19-.02-2.16-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.97.1-.75.4-1.26.73-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.45.11-3.02 0 0 .97-.31 3.16 1.17a10.9 10.9 0 0 1 5.76 0c2.2-1.49 3.16-1.17 3.16-1.17.63 1.57.24 2.73.12 3.02.74.8 1.18 1.82 1.18 3.07 0 4.41-2.69 5.39-5.25 5.67.41.36.78 1.08.78 2.18 0 1.58-.02 2.85-.02 3.23 0 .31.21.67.8.56A11.53 11.53 0 0 0 23.5 12C23.5 5.66 18.35.5 12 .5Z"
+                />
+              </svg>
+            </a>
+          </div>
         </div>
       </header>
 
@@ -982,6 +1099,57 @@
     </div>
 
     <script>
+      const themeStorageKey = "taigi-dict-theme";
+      const themeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      const themeToggle = document.querySelector("[data-theme-toggle]");
+      const themeToggleGlyph = themeToggle?.querySelector(".theme-toggle-glyph");
+
+      const getStoredTheme = () => {
+        try {
+          const value = localStorage.getItem(themeStorageKey);
+          return value === "light" || value === "dark" ? value : null;
+        } catch (_error) {
+          return null;
+        }
+      };
+
+      const getPreferredTheme = () => getStoredTheme() ?? (themeMediaQuery.matches ? "dark" : "light");
+
+      const applyTheme = (theme) => {
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme;
+
+        if (!themeToggle || !themeToggleGlyph) return;
+
+        const nextTheme = theme === "dark" ? "light" : "dark";
+        themeToggleGlyph.textContent = theme === "dark" ? "☀︎" : "☾";
+        themeToggle.setAttribute(
+          "aria-label",
+          theme === "dark" ? "切換為淺色模式" : "切換為深色模式"
+        );
+        themeToggle.setAttribute(
+          "title",
+          theme === "dark" ? "切換為淺色模式" : "切換為深色模式"
+        );
+        themeToggle.dataset.nextTheme = nextTheme;
+      };
+
+      applyTheme(getPreferredTheme());
+
+      themeToggle?.addEventListener("click", () => {
+        const nextTheme = themeToggle.dataset.nextTheme === "dark" ? "dark" : "light";
+        try {
+          localStorage.setItem(themeStorageKey, nextTheme);
+        } catch (_error) {}
+        applyTheme(nextTheme);
+      });
+
+      themeMediaQuery.addEventListener("change", () => {
+        if (!getStoredTheme()) {
+          applyTheme(getPreferredTheme());
+        }
+      });
+
       const observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
