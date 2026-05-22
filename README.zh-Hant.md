@@ -17,20 +17,27 @@
 
 這個專案以教育部辭典資料為核心，提供台語 / 華語離線辭典體驗。
 
+## 快速連結
+
+- [iOS app](ios-native/) 與 [iOS 說明](ios-native/README.md)
+- [Android app](android-native/)
+- [Flutter 封存版](flutter-archive/)
+- [隱私權政策](PRIVACY_POLICY.md)、[資料授權](DATA_LICENSE.md) 與 [MIT 授權](LICENSE)
+
 目前這個 repository 同時包含多條實作線：
 
-- `ios-native/` 內的原生 Swift / SwiftUI app，作為目前 iOS 的主要開發目標
-- `android-native/` 內的原生 Kotlin / Jetpack Compose app，作為目前 Android 的主要開發目標
-- `flutter-archive/` 內的封存 Flutter app，保留第一代實作作為歷史與行為參考
+- [ios-native/](ios-native/) 內的原生 Swift / SwiftUI app，作為目前 iOS 的主要開發目標
+- [android-native/](android-native/) 內的原生 Kotlin / Jetpack Compose app，作為目前 Android 的主要開發目標
+- [flutter-archive/](flutter-archive/) 內的封存 Flutter app，保留第一代實作作為歷史與行為參考
 
 目前兩個原生 app 都圍繞同一組產品能力：離線查詢、可下載音檔、書籤、本地化介面，以及台羅 / 漢字參考資料。
 封存的 Flutter app 則保留第一代實作，作為歷史與行為參考。
 
 ## 目前狀態
 
-- Android：由 `android-native/` 原生重寫維護
-- iOS：由 `ios-native/` 與 `TaigiDictNative.xcworkspace` 維護
-- 舊版 Flutter 實作：已封存到 `flutter-archive/`，作為歷史與行為參考
+- Android：由 [android-native/](android-native/) 原生重寫維護
+- iOS：由 [ios-native/](ios-native/) 與 [TaigiDictNative.xcworkspace](ios-native/TaigiDictNative.xcworkspace) 維護
+- 舊版 Flutter 實作：已封存到 [flutter-archive/](flutter-archive/)，作為歷史與行為參考
 
 ## 核心體驗
 
@@ -48,8 +55,8 @@
 - iOS bundle identifier：`org.taigidict.app`
 - 目前原生 app 版本：`1.3.5`（build `8`）
 - 封存 Flutter package 版本：`1.3.0+3`
-- 官方網站：`https://taigidict.org`
-- 正式環境資產來源：`https://app.taigidict.org/assets/`
+- 官方網站：[taigidict.org](https://taigidict.org)
+- 正式環境資產來源：[app.taigidict.org/assets](https://app.taigidict.org/assets/)
 
 ## 功能
 
@@ -65,24 +72,24 @@
 
 教育部官方參考來源：
 
-- 辭典入口：`https://sutian.moe.edu.tw/zh-hant/siongkuantsuguan/`
-- 版權與授權說明：`https://sutian.moe.edu.tw/zh-hant/piantsip/pankhuan-singbing/`
-- 原始試算表：`https://sutian.moe.edu.tw/media/senn/ods/kautian.ods`
-- 台羅說明：`https://sutian.moe.edu.tw/zh-hant/piantsip/tailo-phiautsu-suatbing/`
-- 漢字使用說明：`https://sutian.moe.edu.tw/zh-hant/piantsip/hanji-iongji-guantsik/`
+- [辭典入口](https://sutian.moe.edu.tw/zh-hant/siongkuantsuguan/)
+- [版權與授權說明](https://sutian.moe.edu.tw/zh-hant/piantsip/pankhuan-singbing/)
+- [原始試算表](https://sutian.moe.edu.tw/media/senn/ods/kautian.ods)
+- [台羅說明](https://sutian.moe.edu.tw/zh-hant/piantsip/tailo-phiautsu-suatbing/)
+- [漢字使用說明](https://sutian.moe.edu.tw/zh-hant/piantsip/hanji-iongji-guantsik/)
 
 App 實際使用的正式環境離線資源端點：
 
-- 詞目音檔：`https://app.taigidict.org/assets/sutiau-mp3.zip`
-- 例句音檔：`https://app.taigidict.org/assets/leku-mp3.zip`
-- 詞典原始檔：`https://app.taigidict.org/assets/kautian.ods`
+- [詞目音檔](https://app.taigidict.org/assets/sutiau-mp3.zip)
+- [例句音檔](https://app.taigidict.org/assets/leku-mp3.zip)
+- [詞典原始檔](https://app.taigidict.org/assets/kautian.ods)
 
 重要發行說明：
 
 - 上游原始資料授權為 `CC BY-ND 3.0 TW`
-- 封存 Flutter app 會內建原始 `kautian.ods`，再於裝置上建立本機 SQLite 詞典資料庫
-- 原生 Android app 使用 `android-native/Generated/Dictionary/` 下的預先生成詞典資料，不會在執行期解析 `kautian.ods`
-- 原生 iOS app 使用 `ios-native/Generated/Dictionary/` 下的預先生成詞典資料，不會在執行期解析 `kautian.ods`
+- 封存 Flutter app 會內建原始 [kautian.ods](flutter-archive/assets/dictionary/kautian.ods)，再於裝置上建立本機 SQLite 詞典資料庫
+- 原生 Android app 使用 [android-native/Generated/Dictionary/](android-native/Generated/Dictionary/) 下的預先生成詞典資料，不會在執行期解析 `kautian.ods`
+- 原生 iOS app 使用 [ios-native/Generated/Dictionary/](ios-native/Generated/Dictionary/) 下的預先生成詞典資料，不會在執行期解析 `kautian.ods`
 
 ## 技術棧
 
@@ -114,27 +121,27 @@ App 實際使用的正式環境離線資源端點：
 
 ## 專案結構
 
-- `android-native/`：原生 Kotlin / Jetpack Compose Android app
-- `android-native/Generated/Dictionary/`：原生 Android app 內建的預先生成詞典資料包
-- `ios-native/`：原生 Swift / SwiftUI iOS app、本地 Swift package 與測試
-- `ios-native/Generated/Dictionary/`：原生 iOS app 內建的預先生成詞典資料包
-- `flutter-archive/`：封存的第一代 Flutter app 與平台 host
-- `flutter-archive/lib/`：Flutter app 程式碼
-- `flutter-archive/android/`：Flutter Android host 專案
-- `flutter-archive/ios/`：Flutter iOS host 專案
-- `flutter-archive/test/`：Flutter 測試
-- `flutter-archive/assets/dictionary/kautian.ods`：Flutter app 使用的內建原始詞典來源
-- `data/source/kautian.ods`：目前詞典轉換流程共用的原始來源檔
-- `tool/build_dictionary_asset.py`：目前原生流程仍共用的詞典轉換腳本
-- `ios-native/NativeApp/`：原生 iOS app 入口與 asset catalog
-- `ios-native/Sources/TaigiDictCore/`：詞典、音訊、書籤與轉換等共享邏輯
-- `ios-native/Sources/TaigiDictUI/`：辭典、書籤、設定與資訊頁的 SwiftUI 畫面
+- [android-native/](android-native/)：原生 Kotlin / Jetpack Compose Android app
+- [android-native/Generated/Dictionary/](android-native/Generated/Dictionary/)：原生 Android app 內建的預先生成詞典資料包
+- [ios-native/](ios-native/)：原生 Swift / SwiftUI iOS app、本地 Swift package 與測試
+- [ios-native/Generated/Dictionary/](ios-native/Generated/Dictionary/)：原生 iOS app 內建的預先生成詞典資料包
+- [flutter-archive/](flutter-archive/)：封存的第一代 Flutter app 與平台 host
+- [flutter-archive/lib/](flutter-archive/lib/)：Flutter app 程式碼
+- [flutter-archive/android/](flutter-archive/android/)：Flutter Android host 專案
+- [flutter-archive/ios/](flutter-archive/ios/)：Flutter iOS host 專案
+- [flutter-archive/test/](flutter-archive/test/)：Flutter 測試
+- [flutter-archive/assets/dictionary/kautian.ods](flutter-archive/assets/dictionary/kautian.ods)：Flutter app 使用的內建原始詞典來源
+- [data/source/kautian.ods](data/source/kautian.ods)：目前詞典轉換流程共用的原始來源檔
+- [tool/build_dictionary_asset.py](tool/build_dictionary_asset.py)：目前原生流程仍共用的詞典轉換腳本
+- [ios-native/NativeApp/](ios-native/NativeApp/)：原生 iOS app 入口與 asset catalog
+- [ios-native/Sources/TaigiDictCore/](ios-native/Sources/TaigiDictCore/)：詞典、音訊、書籤與轉換等共享邏輯
+- [ios-native/Sources/TaigiDictUI/](ios-native/Sources/TaigiDictUI/)：辭典、書籤、設定與資訊頁的 SwiftUI 畫面
 
 ## 執行
 
 原生 iOS app：
 
-- 在 Xcode 開啟 `ios-native/TaigiDictNative.xcworkspace`
+- 在 Xcode 開啟 [ios-native/TaigiDictNative.xcworkspace](ios-native/TaigiDictNative.xcworkspace)
 - 選擇 `TaigiDictNative` scheme
 - 在 iOS 17 模擬器或實機上建置並執行
 
@@ -208,9 +215,9 @@ flutter test
 
 ## 開發注意事項
 
-- 目前 iOS 正式開發工作在 `ios-native/`
-- 目前 Android 正式開發工作在 `android-native/`
-- 舊版 Flutter 實作集中封存在 `flutter-archive/`
+- 目前 iOS 正式開發工作在 [ios-native/](ios-native/)
+- 目前 Android 正式開發工作在 [android-native/](android-native/)
+- 舊版 Flutter 實作集中封存在 [flutter-archive/](flutter-archive/)
 - `flutter-archive/pubspec.yaml` 目前以 `dependency_overrides` 固定 `path_provider_foundation: 2.6.0`
 - `spreadsheet_decoder` 來自 git dependency，因此封存 Flutter 專案的依賴解析不完全只由 pub.dev 決定
 
@@ -227,7 +234,7 @@ cd android-native
 
 ## 隱私權政策
 
-- 中英雙語：`PRIVACY_POLICY.md`
+- 中英雙語：[PRIVACY_POLICY.md](PRIVACY_POLICY.md)
 
 ## 致謝
 
@@ -242,7 +249,7 @@ cd android-native
 
 ## 授權
 
-- App 程式碼：MIT，請見 `LICENSE`
-- 詞典資料：`CC BY-ND 3.0 TW`，請見 `DATA_LICENSE.md`
-- 詞典音檔：`CC BY-ND 3.0 TW`，請見 `DATA_LICENSE.md`
-- 教育部版權說明：`https://sutian.moe.edu.tw/zh-hant/piantsip/pankhuan-singbing/`
+- App 程式碼：MIT，請見 [LICENSE](LICENSE)
+- 詞典資料：`CC BY-ND 3.0 TW`，請見 [DATA_LICENSE.md](DATA_LICENSE.md)
+- 詞典音檔：`CC BY-ND 3.0 TW`，請見 [DATA_LICENSE.md](DATA_LICENSE.md)
+- [教育部版權說明](https://sutian.moe.edu.tw/zh-hant/piantsip/pankhuan-singbing/)
