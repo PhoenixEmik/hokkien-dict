@@ -127,7 +127,7 @@ public actor OfflineAudioStore: OfflineAudioManaging {
             let index = try zipIndexer.buildIndex(for: storage.archiveURL(for: type))
             guard index[type.validationClipID] != nil else {
                 let failure = DownloadSnapshot(
-                    state: .failed("missing validation clip \(type.validationClipID)"),
+                    state: .failed("Offline audio archive is incomplete or missing required files."),
                     downloadedBytes: snapshots[type]?.downloadedBytes ?? 0,
                     totalBytes: snapshots[type]?.totalBytes
                 )
@@ -139,7 +139,7 @@ public actor OfflineAudioStore: OfflineAudioManaging {
             indexes[type] = index
         } catch {
             let failure = DownloadSnapshot(
-                state: .failed(error.localizedDescription),
+                state: .failed(error.userFacingMessage),
                 downloadedBytes: snapshots[type]?.downloadedBytes ?? 0,
                 totalBytes: snapshots[type]?.totalBytes
             )

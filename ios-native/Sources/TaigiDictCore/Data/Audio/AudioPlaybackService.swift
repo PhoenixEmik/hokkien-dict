@@ -58,3 +58,12 @@ public actor AudioPlaybackService: NSObject, AudioPlaybackControlling {
 public enum AudioPlaybackError: Error, Equatable {
     case unableToStartPlayback
 }
+
+extension AudioPlaybackError: LocalizedError {
+    public var errorDescription: String? {
+        switch self {
+        case .unableToStartPlayback:
+            return "Unable to start audio playback."
+        }
+    }
+}

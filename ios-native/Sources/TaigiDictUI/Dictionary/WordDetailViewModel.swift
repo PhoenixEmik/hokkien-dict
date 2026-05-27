@@ -53,7 +53,7 @@ public final class WordDetailViewModel {
         } catch {
             entry = sourceEntry
             resolvedEntryID = sourceEntry.id
-            errorMessage = String(describing: error)
+            errorMessage = error.userFacingMessage
         }
     }
 

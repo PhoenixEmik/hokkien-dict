@@ -268,7 +268,7 @@ public final class SettingsViewModel {
             isRunningAction = false
             return true
         } catch {
-            errorMessage = String(describing: error)
+            errorMessage = error.userFacingMessage
             statusMessageKey = nil
             isRunningAction = false
             return false

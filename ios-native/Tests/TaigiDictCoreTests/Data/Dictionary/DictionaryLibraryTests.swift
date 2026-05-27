@@ -110,6 +110,24 @@ final class DictionaryLibraryTests: XCTestCase {
         )
     }
 
+    func testPrepareUsesUserFacingErrorMessageWhenLoadFails() async {
+        let repository = LibraryMaintenanceRepository(
+            bundle: sampleBundle(),
+            supportsMaintenance: true,
+            loadError: DictionaryPackageLoaderError.missingManifest(
+                URL(fileURLWithPath: "/tmp/dictionary_manifest.json")
+            )
+        )
+        let library = DictionaryLibrary(repository: repository)
+
+        let phase = await library.prepare()
+
+        XCTAssertEqual(
+            phase,
+            .failed("Dictionary source package is missing its manifest.")
+        )
+    }
+
     private func sampleBundle() -> DictionaryBundle {
         DictionaryBundle(
             entryCount: 1,
@@ -138,19 +156,29 @@ private actor LibraryMaintenanceRepository: DictionaryRepositoryProtocol {
     private let bundleValue: DictionaryBundle
     private let supportsMaintenanceValue: Bool
     private let metadataValue: [String: String]?
+    private let loadError: Error?
 
     var clearCacheCount = 0
     var rebuildCount = 0
     var clearInstalledCount = 0
 
-    init(bundle: DictionaryBundle, supportsMaintenance: Bool, metadata: [String: String]? = nil) {
+    init(
+        bundle: DictionaryBundle,
+        supportsMaintenance: Bool,
+        metadata: [String: String]? = nil,
+        loadError: Error? = nil
+    ) {
         self.bundleValue = bundle
         self.supportsMaintenanceValue = supportsMaintenance
         self.metadataValue = metadata
+        self.loadError = loadError
     }
 
     func loadBundle() async throws -> DictionaryBundle {
-        bundleValue
+        if let loadError {
+            throw loadError
+        }
+        return bundleValue
     }
 
     func search(_ rawQuery: String, limit: Int, offset: Int) async throws -> [DictionaryEntry] {

@@ -26,7 +26,7 @@ public final class BookmarksViewModel {
             entries = try await library.entries(ids: bookmarkedIDs)
         } catch {
             entries = []
-            errorMessage = String(describing: error)
+            errorMessage = error.userFacingMessage
         }
 
         isLoading = false

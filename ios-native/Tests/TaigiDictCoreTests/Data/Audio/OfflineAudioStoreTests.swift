@@ -78,9 +78,31 @@ final class OfflineAudioStoreTests: XCTestCase {
 
         switch snapshot.state {
         case .failed(let message):
-            XCTAssertTrue(message.contains("missing validation clip"))
+            XCTAssertEqual(message, "Offline audio archive is incomplete or missing required files.")
         default:
             XCTFail("Expected failed snapshot when validation clip is missing")
+        }
+    }
+
+    func testInvalidArchiveMarksSnapshotFailedWithReadableMessage() async {
+        let storage = TestAudioStorage()
+        let downloader = TestDownloader(snapshots: [
+            "word": DownloadSnapshot(state: .completed, downloadedBytes: 80, totalBytes: 80),
+        ])
+        let store = OfflineAudioStore(
+            downloadService: downloader,
+            storage: storage,
+            zipIndexer: FailingIndexer(error: .invalidArchive)
+        )
+
+        await store.startDownload(.word)
+        let snapshot = await store.snapshot(for: .word)
+
+        switch snapshot.state {
+        case .failed(let message):
+            XCTAssertEqual(message, "Offline audio archive is damaged or unreadable.")
+        default:
+            XCTFail("Expected failed snapshot when archive is invalid")
         }
     }
 
@@ -241,6 +263,18 @@ private final class BlockingIndexer: AudioZipIndexing, @unchecked Sendable {
     }
 
     func materializeClip(clipID: String, from archiveURL: URL, index: [String: String], to clipURL: URL) throws {}
+}
+
+private struct FailingIndexer: AudioZipIndexing {
+    let error: AudioZipIndexError
+
+    func buildIndex(for archiveURL: URL) throws -> [String: String] {
+        throw error
+    }
+
+    func materializeClip(clipID: String, from archiveURL: URL, index: [String: String], to clipURL: URL) throws {
+        throw error
+    }
 }
 
 private actor TestPlaybackController: AudioPlaybackControlling {

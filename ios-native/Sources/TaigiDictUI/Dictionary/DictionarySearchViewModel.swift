@@ -111,7 +111,7 @@ public final class DictionarySearchViewModel {
                 guard isCurrentSearch(generation) else {
                     return
                 }
-                errorMessage = String(describing: error)
+                errorMessage = error.userFacingMessage
                 isSearching = false
             }
         }
@@ -225,7 +225,7 @@ public final class DictionarySearchViewModel {
             }
             results = []
             selectedEntry = nil
-            errorMessage = String(describing: error)
+            errorMessage = error.userFacingMessage
         }
 
         if isCurrentSearch(generation) {

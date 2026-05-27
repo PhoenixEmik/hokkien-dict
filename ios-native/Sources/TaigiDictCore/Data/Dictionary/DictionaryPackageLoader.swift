@@ -7,6 +7,19 @@ public enum DictionaryPackageLoaderError: Error, Equatable {
     case checksumMismatch(expected: String, actual: String)
 }
 
+extension DictionaryPackageLoaderError: LocalizedError {
+    public var errorDescription: String? {
+        switch self {
+        case .missingManifest:
+            return "Dictionary source package is missing its manifest."
+        case .missingEntries:
+            return "Dictionary source package is missing its entry data."
+        case .checksumMismatch:
+            return "Dictionary source package failed integrity validation."
+        }
+    }
+}
+
 public struct DictionaryPackageLoader: Sendable {
     private let decoder: JSONDecoder
     private let importService: DictionaryImportService

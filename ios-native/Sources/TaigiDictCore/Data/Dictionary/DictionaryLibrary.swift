@@ -86,7 +86,7 @@ public actor DictionaryLibrary {
             )
             phaseStorage = .ready(summary)
         } catch {
-            phaseStorage = .failed(String(describing: error))
+            phaseStorage = .failed(error.userFacingMessage)
         }
         return phaseStorage
     }

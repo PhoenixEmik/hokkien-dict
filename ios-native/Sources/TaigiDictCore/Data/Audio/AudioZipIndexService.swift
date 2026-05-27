@@ -73,3 +73,14 @@ public enum AudioZipIndexError: Error, Equatable {
     case invalidArchive
     case clipNotFound(String)
 }
+
+extension AudioZipIndexError: LocalizedError {
+    public var errorDescription: String? {
+        switch self {
+        case .invalidArchive:
+            return "Offline audio archive is damaged or unreadable."
+        case .clipNotFound:
+            return "The requested audio clip is unavailable in the offline archive."
+        }
+    }
+}

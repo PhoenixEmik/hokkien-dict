@@ -52,7 +52,7 @@ public actor DictionarySourceResourceStore: DictionarySourceResourceManaging {
             try copyPackage(from: bundledDirectory, to: localDirectory)
             currentSnapshot = localPackageSnapshot()
         } catch {
-            currentSnapshot = DownloadSnapshot(state: .failed(error.localizedDescription))
+            currentSnapshot = DownloadSnapshot(state: .failed(error.userFacingMessage))
         }
     }
 
@@ -81,7 +81,7 @@ public actor DictionarySourceResourceStore: DictionarySourceResourceManaging {
             currentSnapshot = localPackageSnapshot()
         } catch {
             currentSnapshot = DownloadSnapshot(
-                state: .failed(error.localizedDescription),
+                state: .failed(error.userFacingMessage),
                 downloadedBytes: currentSnapshot.downloadedBytes,
                 totalBytes: currentSnapshot.totalBytes
             )
