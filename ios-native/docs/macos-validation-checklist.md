@@ -47,6 +47,8 @@ Open `TaigiDictNative.xcworkspace`, choose `TaigiDictNativeMac`, and validate th
 - Interface language switching updates visible UI.
 - Theme preference applies correctly.
 - Reading text scale updates visible text sizing.
+- Dictionary source can be restored from the app bundle.
+- Dictionary source can be refreshed from the network.
 - Advanced settings opens.
 - `Rebuild` completes and the dictionary remains usable afterward.
 - `Clear` removes installed data and the app can recover cleanly.

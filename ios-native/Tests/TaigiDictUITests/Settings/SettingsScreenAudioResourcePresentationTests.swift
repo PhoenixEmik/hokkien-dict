@@ -3,6 +3,17 @@ import TaigiDictCore
 @testable import TaigiDictUI
 
 final class SettingsScreenAudioResourcePresentationTests: XCTestCase {
+    func testDictionarySourceActionMapping() {
+        XCTAssertEqual(
+            DictionarySourceResourcePresentation.actions(isLoading: true),
+            []
+        )
+        XCTAssertEqual(
+            DictionarySourceResourcePresentation.actions(),
+            [.restore, .download]
+        )
+    }
+
     func testActionMappingPerDownloadState() {
         XCTAssertEqual(
             AudioResourcePresentation.actions(for: DownloadSnapshot(state: .idle), isLoading: true),
@@ -32,7 +43,7 @@ final class SettingsScreenAudioResourcePresentationTests: XCTestCase {
 
     func testDescriptionPerDownloadState() {
         XCTAssertEqual(
-            AudioResourcePresentation.description(
+            DownloadSnapshotStatusPresentation.description(
                 for: DownloadSnapshot(state: .idle),
                 locale: .traditionalChinese,
                 isLoading: true
@@ -41,21 +52,42 @@ final class SettingsScreenAudioResourcePresentationTests: XCTestCase {
         )
 
         XCTAssertEqual(
-            AudioResourcePresentation.description(for: DownloadSnapshot(state: .idle), locale: .traditionalChinese),
+            DownloadSnapshotStatusPresentation.description(
+                for: DownloadSnapshot(state: .idle),
+                locale: .traditionalChinese
+            ),
             "尚未下載"
         )
 
         let downloading = DownloadSnapshot(state: .downloading, downloadedBytes: 50, totalBytes: 100)
-        XCTAssertTrue(AudioResourcePresentation.description(for: downloading, locale: .traditionalChinese).contains("下載中"))
+        XCTAssertTrue(
+            DownloadSnapshotStatusPresentation.description(
+                for: downloading,
+                locale: .traditionalChinese
+            ).contains("下載中")
+        )
 
         let paused = DownloadSnapshot(state: .paused, downloadedBytes: 10, totalBytes: 100)
-        XCTAssertTrue(AudioResourcePresentation.description(for: paused, locale: .traditionalChinese).contains("已暫停"))
+        XCTAssertTrue(
+            DownloadSnapshotStatusPresentation.description(
+                for: paused,
+                locale: .traditionalChinese
+            ).contains("已暫停")
+        )
 
         let completed = DownloadSnapshot(state: .completed, downloadedBytes: 100, totalBytes: 100)
-        XCTAssertTrue(AudioResourcePresentation.description(for: completed, locale: .traditionalChinese).contains("已完成"))
+        XCTAssertTrue(
+            DownloadSnapshotStatusPresentation.description(
+                for: completed,
+                locale: .traditionalChinese
+            ).contains("已完成")
+        )
 
         let failed = DownloadSnapshot(state: .failed("broken zip"), downloadedBytes: 0, totalBytes: nil)
-        let failedDescription = AudioResourcePresentation.description(for: failed, locale: .traditionalChinese)
+        let failedDescription = DownloadSnapshotStatusPresentation.description(
+            for: failed,
+            locale: .traditionalChinese
+        )
         XCTAssertTrue(failedDescription.contains("失敗"))
         XCTAssertTrue(failedDescription.contains("broken zip"))
     }

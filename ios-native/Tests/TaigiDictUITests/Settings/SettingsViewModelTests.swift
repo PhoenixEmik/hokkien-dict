@@ -195,6 +195,20 @@ final class SettingsViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.dictionarySourceSnapshot.state, .completed)
         XCTAssertFalse(viewModel.isDictionarySourceActionRunning)
     }
+
+    func testRunDictionarySourceDownloadRefreshesSnapshot() async {
+        let repository = SettingsRepository(supportsMaintenance: true)
+        let sourceStore = TestDictionarySourceResourceManager()
+        let viewModel = SettingsViewModel(
+            library: DictionaryLibrary(repository: repository),
+            dictionarySourceStore: sourceStore
+        )
+
+        await viewModel.runDictionarySourceAction(.download)
+
+        XCTAssertEqual(viewModel.dictionarySourceSnapshot.state, .completed)
+        XCTAssertFalse(viewModel.isDictionarySourceActionRunning)
+    }
 }
 
 private struct FakeDateFormatter: SettingsDateFormatting {

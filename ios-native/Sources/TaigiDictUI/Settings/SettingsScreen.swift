@@ -111,6 +111,20 @@ public struct SettingsScreen: View {
                     }
                 }
 
+                if viewModel.supportsDictionarySourceResources {
+                    Section(AppLocalizer.text(.settingsDictionaryResourcesSection, locale: appLocale)) {
+                        DictionarySourceResourceRow(
+                            title: AppLocalizer.text(.settingsDictionarySource, locale: appLocale),
+                            locale: appLocale,
+                            snapshot: viewModel.dictionarySourceSnapshot,
+                            isSnapshotLoading: false,
+                            isRunningAction: viewModel.isDictionarySourceActionRunning
+                        ) { action in
+                            handleDictionarySourceAction(action)
+                        }
+                    }
+                }
+
                 Section(AppLocalizer.text(.settingsOfflineAudioSection, locale: appLocale)) {
                     AudioArchiveResourceRow(
                         title: wordAudioTitle,
@@ -199,6 +213,13 @@ public struct SettingsScreen: View {
         }
     }
 
+    private func handleDictionarySourceAction(_ action: SettingsViewModel.DictionarySourceAction) {
+        Task {
+            await viewModel.runDictionarySourceAction(action)
+            onMaintenanceCompleted()
+        }
+    }
+
     private func handleAudioAction(
         _ action: SettingsViewModel.AudioResourceAction,
         for type: AudioArchiveType,
@@ -246,6 +267,57 @@ private extension AppLanguage {
     }
 }
 
+private struct DictionarySourceResourceRow: View {
+    let title: String
+    let locale: AppLocale
+    let snapshot: DownloadSnapshot
+    let isSnapshotLoading: Bool
+    let isRunningAction: Bool
+    let runAction: (SettingsViewModel.DictionarySourceAction) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                    Text(snapshotDescription)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer(minLength: 12)
+
+                if isSnapshotLoading || isRunningAction {
+                    ProgressView()
+                        .controlSize(.small)
+                }
+
+                ResourceActionControl(
+                    locale: locale,
+                    isDisabled: isSnapshotLoading || isRunningAction,
+                    actions: availableActions,
+                    buttonTitle: { $0.buttonTitle(locale: locale) },
+                    systemImage: \.systemImage,
+                    runAction: runAction
+                )
+            }
+
+            if let progress = snapshot.progress {
+                ProgressView(value: progress)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private var availableActions: [SettingsViewModel.DictionarySourceAction] {
+        DictionarySourceResourcePresentation.actions(isLoading: isSnapshotLoading)
+    }
+
+    private var snapshotDescription: String {
+        DownloadSnapshotStatusPresentation.description(for: snapshot, locale: locale, isLoading: isSnapshotLoading)
+    }
+}
+
 private struct AudioArchiveResourceRow: View {
     let title: String
     let locale: AppLocale
@@ -256,7 +328,7 @@ private struct AudioArchiveResourceRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
+            HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                     Text(snapshotDescription)
@@ -264,31 +336,21 @@ private struct AudioArchiveResourceRow: View {
                         .foregroundStyle(.secondary)
                 }
 
-                Spacer()
+                Spacer(minLength: 12)
 
                 if isSnapshotLoading || isRunningAction {
                     ProgressView()
                         .controlSize(.small)
                 }
 
-                Menu {
-                    ForEach(availableActions, id: \.self) { action in
-                        Button(action.buttonTitle(locale: locale), systemImage: action.systemImage) {
-                            runAction(action)
-                        }
-                    }
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "ellipsis.circle")
-                            .font(.system(size: 22))
-                            .frame(width: 24, height: 24)
-                            .accessibilityHidden(true)
-
-                        Text(AppLocalizer.text(.settingsActionsMenu, locale: locale))
-                    }
-                    .fixedSize(horizontal: true, vertical: true)
-                }
-                .disabled(isSnapshotLoading || isRunningAction || availableActions.isEmpty)
+                ResourceActionControl(
+                    locale: locale,
+                    isDisabled: isSnapshotLoading || isRunningAction,
+                    actions: availableActions,
+                    buttonTitle: { $0.buttonTitle(locale: locale) },
+                    systemImage: \.systemImage,
+                    runAction: runAction
+                )
             }
 
             if let progress = snapshot.progress {
@@ -303,7 +365,60 @@ private struct AudioArchiveResourceRow: View {
     }
 
     private var snapshotDescription: String {
-        AudioResourcePresentation.description(for: snapshot, locale: locale, isLoading: isSnapshotLoading)
+        DownloadSnapshotStatusPresentation.description(for: snapshot, locale: locale, isLoading: isSnapshotLoading)
+    }
+}
+
+private struct ResourceActionControl<Action: Hashable>: View {
+    let locale: AppLocale
+    let isDisabled: Bool
+    let actions: [Action]
+    let buttonTitle: (Action) -> String
+    let systemImage: (Action) -> String
+    let runAction: (Action) -> Void
+
+    var body: some View {
+#if os(macOS)
+        HStack(spacing: 8) {
+            ForEach(actions, id: \.self) { action in
+                Button(buttonTitle(action), systemImage: systemImage(action)) {
+                    runAction(action)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+            }
+        }
+        .disabled(isDisabled || actions.isEmpty)
+#else
+        Menu {
+            ForEach(actions, id: \.self) { action in
+                Button(buttonTitle(action), systemImage: systemImage(action)) {
+                    runAction(action)
+                }
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "ellipsis.circle")
+                    .font(.system(size: 22))
+                    .frame(width: 24, height: 24)
+                    .accessibilityHidden(true)
+
+                Text(AppLocalizer.text(.settingsActionsMenu, locale: locale))
+            }
+            .fixedSize(horizontal: true, vertical: true)
+        }
+        .disabled(isDisabled || actions.isEmpty)
+#endif
+    }
+}
+
+enum DictionarySourceResourcePresentation {
+    static func actions(isLoading: Bool = false) -> [SettingsViewModel.DictionarySourceAction] {
+        guard !isLoading else {
+            return []
+        }
+
+        return [.restore, .download]
     }
 }
 
@@ -326,7 +441,9 @@ enum AudioResourcePresentation {
             return [.restart]
         }
     }
+}
 
+enum DownloadSnapshotStatusPresentation {
     static func description(for snapshot: DownloadSnapshot, locale: AppLocale, isLoading: Bool = false) -> String {
         guard !isLoading else {
             return AppLocalizer.text(.audioStatusChecking, locale: locale)
@@ -346,6 +463,26 @@ enum AudioResourcePresentation {
             return "\(AppLocalizer.text(.audioStatusCompleted, locale: locale)) · \(downloaded)"
         case .failed(let message):
             return "\(AppLocalizer.text(.audioStatusFailed, locale: locale)) · \(message)"
+        }
+    }
+}
+
+private extension SettingsViewModel.DictionarySourceAction {
+    func buttonTitle(locale: AppLocale) -> String {
+        switch self {
+        case .restore:
+            return AppLocalizer.text(.dictionarySourceActionRestore, locale: locale)
+        case .download:
+            return AppLocalizer.text(.dictionarySourceActionDownload, locale: locale)
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .restore:
+            return "arrow.uturn.backward.circle"
+        case .download:
+            return "arrow.down.circle"
         }
     }
 }
