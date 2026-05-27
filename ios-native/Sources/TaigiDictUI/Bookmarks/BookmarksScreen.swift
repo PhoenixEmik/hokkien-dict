@@ -4,6 +4,7 @@ import TaigiDictCore
 public struct BookmarksScreen: View {
     @State private var viewModel: BookmarksViewModel
     @State private var selectedEntryIDs: Set<Int64> = []
+    @State private var primarySelectedEntryID: Int64?
 #if os(iOS)
     @State private var editMode: EditMode = .inactive
 #endif
@@ -28,8 +29,24 @@ public struct BookmarksScreen: View {
 
     public var body: some View {
         let appLocale = AppLocalizer.appLocale(from: locale)
+        bookmarksContainer(locale: appLocale)
+        .task {
+            await viewModel.load()
+        }
+    }
+
+    @ViewBuilder
+    private func bookmarksContainer(locale: AppLocale) -> some View {
+#if os(macOS)
+        NavigationSplitView {
+            bookmarksRoot(locale: locale)
+        } detail: {
+            bookmarksDetail(locale: locale)
+        }
+        .navigationSplitViewStyle(.balanced)
+#else
         NavigationStack {
-            bookmarksRoot(locale: appLocale)
+            bookmarksRoot(locale: locale)
                 .navigationDestination(for: DictionaryEntry.self) { entry in
                 DictionaryDetailView(
                     entry: entry,
@@ -42,9 +59,7 @@ public struct BookmarksScreen: View {
                 .taigiInlineNavigationTitle()
             }
         }
-        .task {
-            await viewModel.load()
-        }
+#endif
     }
 
     @ViewBuilder
@@ -84,10 +99,19 @@ public struct BookmarksScreen: View {
                 entryIDs: viewModel.entries.map(\.id)
             )
 #else
-        bookmarksList(locale: locale)
+        bookmarksDesktopList(locale: locale)
             .navigationTitle(AppLocalizer.text(.bookmarksTitle, locale: locale))
+            .toolbar {
+                if showsToolbarActions {
+                    ToolbarItemGroup {
+                        selectAllToggleButton(locale: locale)
+                        deleteSelectedButton(locale: locale)
+                    }
+                }
+            }
             .bookmarksSelectionBehavior(
                 selectedEntryIDs: $selectedEntryIDs,
+                primarySelectedEntryID: $primarySelectedEntryID,
                 entryIDs: viewModel.entries.map(\.id)
             )
 #endif
@@ -116,6 +140,23 @@ public struct BookmarksScreen: View {
         )
     }
 
+    private var selectedBookmarkEntry: DictionaryEntry? {
+        guard let selectedID = resolvedPrimarySelectedEntryID else {
+            return nil
+        }
+
+        return viewModel.entries.first { $0.id == selectedID }
+    }
+
+    private var resolvedPrimarySelectedEntryID: Int64? {
+        if let primarySelectedEntryID,
+           selectedEntryIDs.contains(primarySelectedEntryID) {
+            return primarySelectedEntryID
+        }
+
+        return viewModel.entries.first { selectedEntryIDs.contains($0.id) }?.id
+    }
+
     @ViewBuilder
     private func bookmarksList(locale: AppLocale) -> some View {
         if isSelecting {
@@ -128,6 +169,35 @@ public struct BookmarksScreen: View {
             }
         }
     }
+
+#if os(macOS)
+    @ViewBuilder
+    private func bookmarksDesktopList(locale: AppLocale) -> some View {
+        List(selection: $selectedEntryIDs) {
+            bookmarksContent(locale: locale, isSelecting: true)
+        }
+    }
+
+    @ViewBuilder
+    private func bookmarksDetail(locale: AppLocale) -> some View {
+        if let selectedBookmarkEntry {
+            DictionaryDetailView(
+                entry: selectedBookmarkEntry,
+                library: library,
+                bookmarkStore: bookmarkStore,
+                offlineAudioStore: offlineAudioStore,
+                conversionService: conversionService
+            )
+            .navigationTitle(selectedBookmarkEntry.hanji)
+        } else {
+            ContentUnavailableView(
+                AppLocalizer.text(.searchStartDetailTitle, locale: locale),
+                systemImage: "bookmark",
+                description: Text(AppLocalizer.text(.bookmarksEmptyDescription, locale: locale))
+            )
+        }
+    }
+#endif
 
     @ViewBuilder
     private func bookmarksContent(locale: AppLocale, isSelecting: Bool) -> some View {
@@ -160,6 +230,21 @@ public struct BookmarksScreen: View {
                     if isSelecting {
                         DictionaryEntryRowView(entry: entry, layoutStyle: .sidebarCompact)
                             .tag(entry.id)
+#if os(macOS)
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    Task {
+                                        await removeBookmarks(entryIDs: [entry.id])
+                                    }
+                                } label: {
+                                    Label(AppLocalizer.text(.commonDelete, locale: locale), systemImage: "trash")
+                                }
+
+                                ShareLink(item: WordDetailViewModel.shareText(for: entry)) {
+                                    Label(AppLocalizer.text(.share, locale: locale), systemImage: "square.and.arrow.up")
+                                }
+                            }
+#endif
                     } else {
                         NavigationLink(value: entry) {
                             DictionaryEntryRowView(entry: entry)
@@ -187,6 +272,7 @@ public struct BookmarksScreen: View {
     private func selectAllButton(locale: AppLocale) -> some View {
         Button(AppLocalizer.text(.bookmarksSelectAll, locale: locale)) {
             selectedEntryIDs = Set(viewModel.entries.map(\.id))
+            primarySelectedEntryID = viewModel.entries.first?.id
         }
         .disabled(areAllBookmarksSelected)
     }
@@ -194,6 +280,7 @@ public struct BookmarksScreen: View {
     private func deselectAllButton(locale: AppLocale) -> some View {
         Button(AppLocalizer.text(.bookmarksDeselectAll, locale: locale)) {
             selectedEntryIDs = []
+            primarySelectedEntryID = nil
         }
         .disabled(!hasSelection)
     }
@@ -210,6 +297,7 @@ public struct BookmarksScreen: View {
     private func doneSelectingButton(locale: AppLocale) -> some View {
         Button {
             selectedEntryIDs = []
+            primarySelectedEntryID = nil
 #if os(iOS)
             editMode = .inactive
 #endif
@@ -223,6 +311,7 @@ public struct BookmarksScreen: View {
         Menu {
             Button(AppLocalizer.text(.bookmarksSelect, locale: locale)) {
                 selectedEntryIDs = []
+                primarySelectedEntryID = nil
 #if os(iOS)
                 editMode = .active
 #endif
@@ -236,9 +325,7 @@ public struct BookmarksScreen: View {
     private func deleteSelectedButton(locale: AppLocale) -> some View {
         Button(AppLocalizer.text(.bookmarksDeleteSelected, locale: locale), role: .destructive) {
             Task {
-                let idsToRemove = selectedEntryIDs
-                selectedEntryIDs = []
-                await viewModel.removeBookmarks(entryIDs: idsToRemove)
+                await removeBookmarks(entryIDs: selectedEntryIDs)
 #if os(iOS)
                 editMode = .inactive
 #endif
@@ -253,6 +340,13 @@ public struct BookmarksScreen: View {
 
     private var areAllBookmarksSelected: Bool {
         !viewModel.entries.isEmpty && selectedEntryIDs.count == viewModel.entries.count
+    }
+
+    private func removeBookmarks(entryIDs: Set<Int64>) async {
+        let idsToRemove = entryIDs
+        selectedEntryIDs = []
+        primarySelectedEntryID = nil
+        await viewModel.removeBookmarks(entryIDs: idsToRemove)
     }
 }
 
@@ -287,11 +381,28 @@ private extension View {
     @ViewBuilder
     func bookmarksSelectionBehavior(
         selectedEntryIDs: Binding<Set<Int64>>,
+        primarySelectedEntryID: Binding<Int64?>,
         entryIDs: [Int64]
     ) -> some View {
-        self.onChange(of: entryIDs) { _, newIDs in
-            selectedEntryIDs.wrappedValue.formIntersection(Set(newIDs))
-        }
+        self
+            .onChange(of: selectedEntryIDs.wrappedValue) { _, newSelection in
+                if newSelection.isEmpty {
+                    primarySelectedEntryID.wrappedValue = nil
+                } else if let currentPrimary = primarySelectedEntryID.wrappedValue,
+                          newSelection.contains(currentPrimary) {
+                    return
+                } else {
+                    primarySelectedEntryID.wrappedValue = entryIDs.first { newSelection.contains($0) }
+                }
+            }
+            .onChange(of: entryIDs) { _, newIDs in
+                let validIDs = Set(newIDs)
+                selectedEntryIDs.wrappedValue.formIntersection(validIDs)
+                if let currentPrimary = primarySelectedEntryID.wrappedValue,
+                   !validIDs.contains(currentPrimary) {
+                    primarySelectedEntryID.wrappedValue = newIDs.first { selectedEntryIDs.wrappedValue.contains($0) }
+                }
+            }
     }
 #endif
 }

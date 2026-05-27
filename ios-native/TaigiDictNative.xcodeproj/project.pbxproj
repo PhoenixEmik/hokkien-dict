@@ -14,6 +14,12 @@
 		8A000001000000000000001A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8A000001000000000000001B /* Assets.xcassets */; };
 		8A000001000000000000001C /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C20000010000000000000004 /* InfoPlist.strings */; };
 		B10000010000000000000001 /* LanguageSwitchingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000010000000000000002 /* LanguageSwitchingUITests.swift */; };
+		D10000010000000000000001 /* TaigiDictNativeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A0000010000000000000002 /* TaigiDictNativeApp.swift */; };
+		D10000010000000000000002 /* Generated/Dictionary in Resources */ = {isa = PBXBuildFile; fileRef = 8A0000010000000000000004 /* Generated/Dictionary */; };
+		D10000010000000000000003 /* TaigiDictCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8A0000010000000000000006 /* TaigiDictCore */; };
+		D10000010000000000000004 /* TaigiDictUI in Frameworks */ = {isa = PBXBuildFile; productRef = 8A0000010000000000000008 /* TaigiDictUI */; };
+		D10000010000000000000005 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C20000010000000000000004 /* InfoPlist.strings */; };
+		D10000010000000000000006 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8A000001000000000000001B /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,6 +43,7 @@
 		C20000010000000000000001 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C20000010000000000000002 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		C20000010000000000000003 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		D10000010000000000000007 /* TaigiDictNativeMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TaigiDictNativeMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +60,15 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D10000010000000000000008 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D10000010000000000000003 /* TaigiDictCore in Frameworks */,
+				D10000010000000000000004 /* TaigiDictUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -93,6 +109,7 @@
 			children = (
 				8A0000010000000000000009 /* TaigiDictNative.app */,
 				B10000010000000000000007 /* TaigiDictNativeUITests.xctest */,
+				D10000010000000000000007 /* TaigiDictNativeMac.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -149,6 +166,27 @@
 			productReference = B10000010000000000000007 /* TaigiDictNativeUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		D10000010000000000000009 /* TaigiDictNativeMac */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D1000001000000000000000A /* Build configuration list for PBXNativeTarget "TaigiDictNativeMac" */;
+			buildPhases = (
+				D1000001000000000000000C /* Sources */,
+				D10000010000000000000008 /* Frameworks */,
+				D1000001000000000000000B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TaigiDictNativeMac;
+			packageProductDependencies = (
+				8A0000010000000000000006 /* TaigiDictCore */,
+				8A0000010000000000000008 /* TaigiDictUI */,
+			);
+			productName = TaigiDictNativeMac;
+			productReference = D10000010000000000000007 /* TaigiDictNativeMac.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -166,6 +204,9 @@
 					B10000010000000000000004 = {
 						CreatedOnToolsVersion = 26.4.1;
 						TestTargetID = 8A000001000000000000000F;
+					};
+					D10000010000000000000009 = {
+						CreatedOnToolsVersion = 26.4.1;
 					};
 				};
 			};
@@ -189,6 +230,7 @@
 			targets = (
 				8A000001000000000000000F /* TaigiDictNative */,
 				B10000010000000000000004 /* TaigiDictNativeUITests */,
+				D10000010000000000000009 /* TaigiDictNativeMac */,
 			);
 		};
 /* End PBXProject section */
@@ -211,6 +253,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D1000001000000000000000B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D10000010000000000000002 /* Generated/Dictionary in Resources */,
+				D10000010000000000000005 /* InfoPlist.strings in Resources */,
+				D10000010000000000000006 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -227,6 +279,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				B10000010000000000000001 /* LanguageSwitchingUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D1000001000000000000000C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D10000010000000000000001 /* TaigiDictNativeApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -477,6 +537,58 @@
 			};
 			name = Release;
 		};
+		D1000001000000000000000D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 8;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "TaigiDictNative-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "台語辭典";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.reference";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.3.5;
+				PRODUCT_BUNDLE_IDENTIFIER = org.taigidict.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		D1000001000000000000000E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 8;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "TaigiDictNative-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "台語辭典";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.reference";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.3.5;
+				PRODUCT_BUNDLE_IDENTIFIER = org.taigidict.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -503,6 +615,15 @@
 			buildConfigurations = (
 				B1000001000000000000000C /* Debug */,
 				B1000001000000000000000D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D1000001000000000000000A /* Build configuration list for PBXNativeTarget "TaigiDictNativeMac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D1000001000000000000000D /* Debug */,
+				D1000001000000000000000E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

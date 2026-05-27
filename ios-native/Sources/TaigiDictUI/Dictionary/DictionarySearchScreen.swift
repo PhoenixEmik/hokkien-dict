@@ -84,8 +84,27 @@ enum DictionarySearchPresentation: Equatable {
     case compactStack
     case regularSplit
 
-    static func resolve(horizontalSizeClass: UserInterfaceSizeClass?) -> DictionarySearchPresentation {
-        horizontalSizeClass == .regular ? .regularSplit : .compactStack
+    static func resolve(
+        horizontalSizeClass: UserInterfaceSizeClass?,
+        prefersDesktopSplit: Bool = Self.prefersDesktopSplit
+    ) -> DictionarySearchPresentation {
+        if prefersDesktopSplit {
+            return .regularSplit
+        }
+
+        if horizontalSizeClass == .regular {
+            return .regularSplit
+        }
+
+        return .compactStack
+    }
+
+    private static var prefersDesktopSplit: Bool {
+#if os(macOS)
+        true
+#else
+        false
+#endif
     }
 }
 

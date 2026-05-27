@@ -38,7 +38,10 @@ Open the workspace, not just the project:
 open TaigiDictNative.xcworkspace
 ```
 
-Then select the `TaigiDictNative` scheme and run on an iPhone or iPad simulator.
+Then select:
+
+- `TaigiDictNative` for iPhone or iPad
+- `TaigiDictNativeMac` for macOS
 
 Command-line build:
 
@@ -47,6 +50,16 @@ xcodebuild \
   -workspace TaigiDictNative.xcworkspace \
   -scheme TaigiDictNative \
   -destination 'platform=iOS Simulator,name=iPhone 17' \
+  build
+```
+
+Command-line macOS build:
+
+```bash
+xcodebuild \
+  -workspace TaigiDictNative.xcworkspace \
+  -scheme TaigiDictNativeMac \
+  -destination 'platform=macOS' \
   build
 ```
 
@@ -119,6 +132,16 @@ xcodebuild \
   -workspace TaigiDictNative.xcworkspace \
   -scheme TaigiDictNative \
   -destination 'platform=iOS Simulator,name=iPhone 17' \
+  build
+```
+
+macOS build verification:
+
+```bash
+xcodebuild \
+  -workspace TaigiDictNative.xcworkspace \
+  -scheme TaigiDictNativeMac \
+  -destination 'platform=macOS' \
   build
 ```
 
