@@ -63,6 +63,12 @@ xcodebuild \
   build
 ```
 
+One-step macOS verification:
+
+```bash
+./Scripts/verify_macos.sh
+```
+
 ## Package Layout
 
 ```text
@@ -144,6 +150,10 @@ xcodebuild \
   -destination 'platform=macOS' \
   build
 ```
+
+Desktop validation checklist:
+
+- [docs/macos-validation-checklist.md](</Users/emik/repository/taigi-dict/ios-native/docs/macos-validation-checklist.md>)
 
 ## Notes
 

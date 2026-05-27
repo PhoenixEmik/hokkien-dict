@@ -149,14 +149,10 @@ public struct TaigiDictAppRootView: View {
     }
 
     private static func makeOfflineAudioStore() -> OfflineAudioStore {
-        let baseDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
-            ?? FileManager.default.temporaryDirectory
+        let appStorage = TaigiDictAppStorage.resolve()
+        try? appStorage.prepareAudioDirectory()
 
-        let storage = AudioArchiveStorage(
-            rootDirectory: baseDirectory
-                .appendingPathComponent("TaigiDictNative", isDirectory: true)
-                .appendingPathComponent("Audio", isDirectory: true)
-        )
+        let storage = AudioArchiveStorage(rootDirectory: appStorage.audioDirectory)
         try? storage.ensureDirectories()
 
         return OfflineAudioStore(storage: storage)
