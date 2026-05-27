@@ -58,14 +58,12 @@ Open `TaigiDictNative.xcworkspace`, choose `TaigiDictNativeMac`, and validate th
 - Download state survives refresh and relaunch.
 - Broken or missing archive states show readable failure messaging.
 
-## Current Gap
+## CI Status
 
-The repository still lacks a committed root-level CI workflow update for this macOS verification path.
+The repository now includes a root GitHub Actions workflow for this verification path:
 
-Reason:
+- [ios_native_macos.yml](/Users/emik/repository/taigi-dict/.github/workflows/ios_native_macos.yml)
 
-- GitHub Actions workflows live outside `ios-native/`, and this phase only changed files inside the writable native iOS directory.
+That workflow runs:
 
-Recommended next step:
-
-- Add a root workflow job that runs `cd ios-native && ./Scripts/verify_macos.sh`
+- `cd ios-native && ./Scripts/verify_macos.sh`

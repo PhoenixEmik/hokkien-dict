@@ -1,0 +1,24 @@
+name: iOS Native macOS Verification
+
+on:
+  push:
+    paths:
+      - 'ios-native/**'
+      - '.github/workflows/ios_native_macos.yml'
+  pull_request:
+    paths:
+      - 'ios-native/**'
+      - '.github/workflows/ios_native_macos.yml'
+  workflow_dispatch:
+
+jobs:
+  verify-macos:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify macOS native app
+        run: |
+          cd ios-native
+          ./Scripts/verify_macos.sh
