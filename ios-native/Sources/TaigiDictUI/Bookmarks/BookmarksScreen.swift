@@ -269,20 +269,34 @@ public struct BookmarksScreen: View {
         }
     }
 
+    @ViewBuilder
     private func selectAllButton(locale: AppLocale) -> some View {
-        Button(AppLocalizer.text(.bookmarksSelectAll, locale: locale)) {
+        let button = Button(AppLocalizer.text(.bookmarksSelectAll, locale: locale)) {
             selectedEntryIDs = Set(viewModel.entries.map(\.id))
             primarySelectedEntryID = viewModel.entries.first?.id
         }
         .disabled(areAllBookmarksSelected)
+
+#if os(macOS)
+        button.keyboardShortcut("a", modifiers: [.command])
+#else
+        button
+#endif
     }
 
+    @ViewBuilder
     private func deselectAllButton(locale: AppLocale) -> some View {
-        Button(AppLocalizer.text(.bookmarksDeselectAll, locale: locale)) {
+        let button = Button(AppLocalizer.text(.bookmarksDeselectAll, locale: locale)) {
             selectedEntryIDs = []
             primarySelectedEntryID = nil
         }
         .disabled(!hasSelection)
+
+#if os(macOS)
+        button.keyboardShortcut("a", modifiers: [.command, .shift])
+#else
+        button
+#endif
     }
 
     @ViewBuilder
@@ -322,8 +336,9 @@ public struct BookmarksScreen: View {
         .accessibilityLabel(AppLocalizer.text(.settingsActionsMenu, locale: locale))
     }
 
+    @ViewBuilder
     private func deleteSelectedButton(locale: AppLocale) -> some View {
-        Button(AppLocalizer.text(.bookmarksDeleteSelected, locale: locale), role: .destructive) {
+        let button = Button(AppLocalizer.text(.bookmarksDeleteSelected, locale: locale), role: .destructive) {
             Task {
                 await removeBookmarks(entryIDs: selectedEntryIDs)
 #if os(iOS)
@@ -332,6 +347,12 @@ public struct BookmarksScreen: View {
             }
         }
         .disabled(!hasSelection)
+
+#if os(macOS)
+        button.keyboardShortcut(.delete, modifiers: [])
+#else
+        button
+#endif
     }
 
     private var hasSelection: Bool {
@@ -343,10 +364,60 @@ public struct BookmarksScreen: View {
     }
 
     private func removeBookmarks(entryIDs: Set<Int64>) async {
-        let idsToRemove = entryIDs
+        let orderedEntryIDs = viewModel.entries.map(\.id)
+        let idsToRemove = entryIDs.intersection(Set(orderedEntryIDs))
+        let nextPrimarySelection = BookmarksSelectionTransition.nextSelection(
+            orderedEntryIDs: orderedEntryIDs,
+            removing: idsToRemove
+        )
         selectedEntryIDs = []
         primarySelectedEntryID = nil
         await viewModel.removeBookmarks(entryIDs: idsToRemove)
+#if os(macOS)
+        if let nextPrimarySelection,
+           viewModel.entries.contains(where: { $0.id == nextPrimarySelection }) {
+            selectedEntryIDs = [nextPrimarySelection]
+            primarySelectedEntryID = nextPrimarySelection
+        }
+#endif
+    }
+}
+
+enum BookmarksSelectionTransition {
+    static func nextSelection(
+        orderedEntryIDs: [Int64],
+        removing removedEntryIDs: Set<Int64>
+    ) -> Int64? {
+        guard !orderedEntryIDs.isEmpty else {
+            return nil
+        }
+
+        guard !removedEntryIDs.isEmpty else {
+            return orderedEntryIDs.first
+        }
+
+        let lastRemovedIndex = orderedEntryIDs.lastIndex { removedEntryIDs.contains($0) }
+        let remainingEntryIDs = orderedEntryIDs.filter { !removedEntryIDs.contains($0) }
+
+        guard !remainingEntryIDs.isEmpty else {
+            return nil
+        }
+
+        guard let lastRemovedIndex else {
+            return remainingEntryIDs.first
+        }
+
+        if lastRemovedIndex + 1 < orderedEntryIDs.count {
+            for candidate in orderedEntryIDs[(lastRemovedIndex + 1)...] where !removedEntryIDs.contains(candidate) {
+                return candidate
+            }
+        }
+
+        for candidate in orderedEntryIDs[..<lastRemovedIndex].reversed() where !removedEntryIDs.contains(candidate) {
+            return candidate
+        }
+
+        return remainingEntryIDs.first
     }
 }
 
