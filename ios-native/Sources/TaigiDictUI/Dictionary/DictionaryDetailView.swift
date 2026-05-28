@@ -197,26 +197,7 @@ struct DictionaryDetailView: View {
                 )
             }
         }
-        .toolbar {
-            if let displayedEntry {
-                if bookmarkStore != nil {
-                    Button {
-                        toggleBookmark(displayedEntry)
-                    } label: {
-                        Label(
-                            isBookmarked
-                                ? AppLocalizer.text(.bookmarksRemove, locale: appLocale)
-                                : AppLocalizer.text(.bookmarksAdd, locale: appLocale),
-                            systemImage: isBookmarked ? "bookmark.fill" : "bookmark"
-                        )
-                    }
-                }
-
-                ShareLink(item: WordDetailViewModel.shareText(for: displayedEntry)) {
-                    Label(AppLocalizer.text(.share, locale: appLocale), systemImage: "square.and.arrow.up")
-                }
-            }
-        }
+        .detailToolbar(displayedEntry: displayedEntry, appLocale: appLocale, isBookmarked: isBookmarked, toggleBookmark: toggleBookmark)
         .navigationDestination(item: $linkedEntry) { entry in
             DictionaryDetailView(
                 entry: entry,
@@ -306,6 +287,39 @@ struct DictionaryDetailView: View {
             return
         }
         isBookmarked = bookmarked
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func detailToolbar(
+        displayedEntry: DictionaryEntry?,
+        appLocale: AppLocale,
+        isBookmarked: Bool,
+        toggleBookmark: @escaping (DictionaryEntry) -> Void
+    ) -> some View {
+#if os(macOS)
+        self
+#else
+        toolbar {
+            if let displayedEntry {
+                Button {
+                    toggleBookmark(displayedEntry)
+                } label: {
+                    Label(
+                        isBookmarked
+                            ? AppLocalizer.text(.bookmarksRemove, locale: appLocale)
+                            : AppLocalizer.text(.bookmarksAdd, locale: appLocale),
+                        systemImage: isBookmarked ? "bookmark.fill" : "bookmark"
+                    )
+                }
+
+                ShareLink(item: WordDetailViewModel.shareText(for: displayedEntry)) {
+                    Label(AppLocalizer.text(.share, locale: appLocale), systemImage: "square.and.arrow.up")
+                }
+            }
+        }
+#endif
     }
 }
 

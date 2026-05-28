@@ -1,5 +1,8 @@
 import SwiftUI
 import TaigiDictCore
+#if os(macOS)
+import AppKit
+#endif
 
 public struct TaigiDictAppRootView: View {
     @Environment(\.locale) private var locale
@@ -60,6 +63,7 @@ public struct TaigiDictAppRootView: View {
         }
         .preferredColorScheme(appSettings.themePreference.preferredColorScheme)
         .dynamicTypeSize(appSettings.readingTextScale.dynamicTypeSize)
+        .taigiMacWindowToolbarBaselineHidden()
     }
 
     @ViewBuilder
@@ -158,6 +162,56 @@ public struct TaigiDictAppRootView: View {
         return OfflineAudioStore(storage: storage)
     }
 }
+
+private extension View {
+    @ViewBuilder
+    func taigiMacWindowToolbarBaselineHidden() -> some View {
+#if os(macOS)
+        background(MacWindowToolbarConfigurator())
+#else
+        self
+#endif
+    }
+}
+
+#if os(macOS)
+private struct MacWindowToolbarConfigurator: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        DispatchQueue.main.async {
+            context.coordinator.applyConfiguration(for: view)
+        }
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        DispatchQueue.main.async {
+            context.coordinator.applyConfiguration(for: nsView)
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    final class Coordinator {
+        private weak var configuredWindow: NSWindow?
+
+        func applyConfiguration(for view: NSView) {
+            guard let window = view.window else {
+                return
+            }
+
+            guard configuredWindow !== window || window.toolbar?.showsBaselineSeparator != false else {
+                return
+            }
+
+            configuredWindow = window
+            window.toolbar?.showsBaselineSeparator = false
+        }
+    }
+}
+#endif
 
 private enum AppTab: Hashable {
     case dictionary
