@@ -106,7 +106,7 @@ public struct BookmarksScreen: View {
                 entryIDs: viewModel.entries.map(\.id)
             )
 #else
-        bookmarksDesktopList(locale: locale)
+        bookmarksDesktopRoot(locale: locale)
             .navigationTitle(AppLocalizer.text(.bookmarksTitle, locale: locale))
             .toolbar {
                 if showsToolbarActions {
@@ -179,6 +179,33 @@ public struct BookmarksScreen: View {
 
 #if os(macOS)
     @ViewBuilder
+    private func bookmarksDesktopRoot(locale: AppLocale) -> some View {
+        if viewModel.isLoading {
+            centeredDesktopState {
+                ProgressView(AppLocalizer.text(.bookmarksLoading, locale: locale))
+            }
+        } else if let errorMessage = viewModel.errorMessage {
+            centeredDesktopState {
+                ContentUnavailableView(
+                    AppLocalizer.text(.loadingFailedTitle, locale: locale),
+                    systemImage: "exclamationmark.triangle",
+                    description: Text(errorMessage)
+                )
+            }
+        } else if viewModel.entries.isEmpty {
+            centeredDesktopState {
+                ContentUnavailableView(
+                    AppLocalizer.text(.bookmarksEmptyTitle, locale: locale),
+                    systemImage: "bookmark",
+                    description: Text(AppLocalizer.text(.bookmarksEmptyDescription, locale: locale))
+                )
+            }
+        } else {
+            bookmarksDesktopList(locale: locale)
+        }
+    }
+
+    @ViewBuilder
     private func bookmarksDesktopList(locale: AppLocale) -> some View {
         List(selection: $selectedEntryIDs) {
             bookmarksContent(locale: locale, isSelecting: true)
@@ -203,6 +230,12 @@ public struct BookmarksScreen: View {
                 description: Text(AppLocalizer.text(.bookmarksEmptyDescription, locale: locale))
             )
         }
+    }
+
+    private func centeredDesktopState<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        content()
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            .padding(24)
     }
 #endif
 

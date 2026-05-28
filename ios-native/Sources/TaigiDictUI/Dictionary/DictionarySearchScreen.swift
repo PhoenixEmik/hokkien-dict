@@ -62,9 +62,10 @@ public struct DictionarySearchScreen: View {
                 ))
             }
             .navigationSplitViewStyle(.balanced)
-            .toolbar {
-                macToolbarSearchItem(prompt: searchPrompt)
-            }
+            .desktopDictionaryToolbarSearch(
+                viewModel: viewModel,
+                prompt: searchPrompt
+            )
         case .regularSplit:
             NavigationSplitView {
                 DictionarySearchListView(
@@ -123,26 +124,10 @@ public struct DictionarySearchScreen: View {
                     .navigationTitle(entry.hanji)
                 }
         }
-        .toolbar {
-            macToolbarSearchItem(prompt: searchPrompt)
-        }
-    }
-
-    @ToolbarContentBuilder
-    private func macToolbarSearchItem(prompt: String) -> some ToolbarContent {
-#if os(macOS)
-        ToolbarItem(placement: .primaryAction) {
-            MacDictionarySearchField(
-                text: $viewModel.searchText,
-                prompt: prompt
-            ) {
-                viewModel.scheduleSearch()
-            } onSubmit: {
-                viewModel.submitSearch()
-            }
-            .frame(width: 300)
-        }
-#endif
+        .desktopDictionaryToolbarSearch(
+            viewModel: viewModel,
+            prompt: searchPrompt
+        )
     }
 }
 
@@ -302,6 +287,33 @@ private struct DictionaryDesktopSinglePaneView: View {
 }
 
 extension View {
+    @ViewBuilder
+    func desktopDictionaryToolbarSearch(
+        viewModel: DictionarySearchViewModel,
+        prompt: String
+    ) -> some View {
+#if os(macOS)
+        toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                MacDictionarySearchField(
+                    text: Binding(
+                        get: { viewModel.searchText },
+                        set: { viewModel.searchText = $0 }
+                    ),
+                    prompt: prompt
+                ) {
+                    viewModel.scheduleSearch()
+                } onSubmit: {
+                    viewModel.submitSearch()
+                }
+                .frame(width: 300)
+            }
+        }
+#else
+        self
+#endif
+    }
+
     @ViewBuilder
     func dictionarySearchInput(
         viewModel: DictionarySearchViewModel,
