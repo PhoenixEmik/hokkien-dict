@@ -7,13 +7,13 @@ import AppKit
 public struct TaigiDictAppRootView: View {
     @Environment(\.locale) private var locale
     @StateObject private var appLanguageManager: AppLanguageManager
+    @ObservedObject private var navigationModel: AppNavigationModel
     @State private var viewModel: DictionarySearchViewModel
     @State private var initializationViewModel = InitializationViewModel()
     @State private var bookmarkStore = BookmarkStore()
     @State private var offlineAudioStore: OfflineAudioStore
     @State private var appSettings = AppSettingsSnapshot()
     @State private var hasLoadedAppSettings = false
-    @State private var selectedTab: AppTab = .dictionary
 
     private let settingsStore: any AppSettingsStoring
     private let conversionService: (any ChineseConversionProviding)?
@@ -24,12 +24,14 @@ public struct TaigiDictAppRootView: View {
         repository: any DictionaryRepositoryProtocol,
         settingsStore: any AppSettingsStoring = UserDefaultsAppSettingsStore(),
         dictionarySourceStore: (any DictionarySourceResourceManaging)? = nil,
-        appLanguageManager: AppLanguageManager? = nil
+        appLanguageManager: AppLanguageManager? = nil,
+        navigationModel: AppNavigationModel = AppNavigationModel()
     ) {
         let conversionService = Self.makeChineseConversionService()
         self.conversionService = conversionService
         self.dictionarySourceStore = dictionarySourceStore
         _appLanguageManager = StateObject(wrappedValue: appLanguageManager ?? AppLanguageManager())
+        self.navigationModel = navigationModel
         _viewModel = State(initialValue: DictionarySearchViewModel(
             repository: repository,
             conversionService: conversionService
@@ -86,49 +88,72 @@ public struct TaigiDictAppRootView: View {
 
     private var mainTabView: some View {
         let currentLocale = appLocale
-        return TabView(selection: $selectedTab) {
-            DictionarySearchScreen(
-                viewModel: viewModel,
-                bookmarkStore: bookmarkStore,
-                offlineAudioStore: offlineAudioStore,
-                conversionService: conversionService
-            )
-                .tabItem {
-                    Label(appLanguageManager.localized(.tabDictionary), systemImage: "book")
-                }
-                .tag(AppTab.dictionary)
-
-            BookmarksScreen(
-                library: viewModel.library,
-                bookmarkStore: bookmarkStore,
-                offlineAudioStore: offlineAudioStore,
-                conversionService: conversionService
-            )
-            .tabItem {
-                Label(appLanguageManager.localized(.tabBookmarks), systemImage: "bookmark")
+        return Group {
+#if os(macOS)
+            switch navigationModel.selectedTab {
+            case .dictionary:
+                dictionaryTab
+            case .bookmarks:
+                bookmarksTab
+            case .settings:
+                settingsTab
             }
-            .tag(AppTab.bookmarks)
-
-            SettingsScreen(
-                library: viewModel.library,
-                settingsStore: settingsStore,
-                dictionarySourceStore: dictionarySourceStore,
-                offlineAudioStore: offlineAudioStore,
-                initialSettings: appSettings
-            ) {
-                Task { @MainActor in
-                    await viewModel.resetAfterMaintenance()
-                    initializationViewModel.retry()
-                }
-            } onSettingsChanged: { settings in
-                appSettings = settings
+#else
+            TabView(selection: $navigationModel.selectedTab) {
+                dictionaryTab
+                bookmarksTab
+                settingsTab
             }
-            .tabItem {
-                Label(appLanguageManager.localized(.tabSettings), systemImage: "gearshape")
-            }
-            .tag(AppTab.settings)
+#endif
         }
         .id(currentLocale)
+    }
+
+    private var dictionaryTab: some View {
+        DictionarySearchScreen(
+            viewModel: viewModel,
+            bookmarkStore: bookmarkStore,
+            offlineAudioStore: offlineAudioStore,
+            conversionService: conversionService
+        )
+        .tabItem {
+            Label(appLanguageManager.localized(.tabDictionary), systemImage: "book")
+        }
+        .tag(AppTab.dictionary)
+    }
+
+    private var bookmarksTab: some View {
+        BookmarksScreen(
+            library: viewModel.library,
+            bookmarkStore: bookmarkStore,
+            offlineAudioStore: offlineAudioStore,
+            conversionService: conversionService
+        )
+        .tabItem {
+            Label(appLanguageManager.localized(.tabBookmarks), systemImage: "bookmark")
+        }
+        .tag(AppTab.bookmarks)
+    }
+
+    private var settingsTab: some View {
+        SettingsScreen(
+            library: viewModel.library,
+            settingsStore: settingsStore,
+            dictionarySourceStore: dictionarySourceStore,
+            offlineAudioStore: offlineAudioStore,
+            initialSettings: appSettings
+        ) {
+            Task { @MainActor in
+                await viewModel.resetAfterMaintenance()
+                initializationViewModel.retry()
+            }
+        } onSettingsChanged: { settings in
+            appSettings = settings
+        }
+        .tabItem {
+            Label(appLanguageManager.localized(.tabSettings), systemImage: "gearshape")
+        }
+        .tag(AppTab.settings)
     }
 
     private var appLocale: AppLocale {
@@ -160,6 +185,24 @@ public struct TaigiDictAppRootView: View {
         try? storage.ensureDirectories()
 
         return OfflineAudioStore(storage: storage)
+    }
+}
+
+public final class AppNavigationModel: ObservableObject {
+    @Published var selectedTab: AppTab = .dictionary
+
+    public init() {}
+
+    public func showDictionary() {
+        selectedTab = .dictionary
+    }
+
+    public func showBookmarks() {
+        selectedTab = .bookmarks
+    }
+
+    public func showSettings() {
+        selectedTab = .settings
     }
 }
 
@@ -213,7 +256,7 @@ private struct MacWindowToolbarConfigurator: NSViewRepresentable {
 }
 #endif
 
-private enum AppTab: Hashable {
+enum AppTab: Hashable {
     case dictionary
     case bookmarks
     case settings

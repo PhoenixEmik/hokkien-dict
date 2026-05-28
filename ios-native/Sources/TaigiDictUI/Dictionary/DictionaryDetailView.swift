@@ -82,16 +82,6 @@ struct DictionaryDetailView: View {
 
                         Spacer(minLength: 0)
 
-                        #if os(macOS)
-                        MacDictionaryDetailActions(
-                            entry: entry,
-                            bookmarkStore: bookmarkStore,
-                            isBookmarked: isBookmarked,
-                            toggleBookmark: toggleBookmark,
-                            appLocale: appLocale
-                        )
-                        #endif
-
                         if !entry.audioID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                             Button {
                                 Task {
@@ -217,7 +207,13 @@ struct DictionaryDetailView: View {
                 )
             }
         }
-        .detailToolbar(displayedEntry: displayedEntry, appLocale: appLocale, isBookmarked: isBookmarked, toggleBookmark: toggleBookmark)
+        .detailToolbar(
+            displayedEntry: displayedEntry,
+            bookmarkStore: bookmarkStore,
+            appLocale: appLocale,
+            isBookmarked: isBookmarked,
+            toggleBookmark: toggleBookmark
+        )
         .navigationDestination(item: $linkedEntry) { entry in
             DictionaryDetailView(
                 entry: entry,
@@ -311,7 +307,7 @@ struct DictionaryDetailView: View {
 }
 
 #if os(macOS)
-private struct MacDictionaryDetailActions: View {
+private struct MacDictionaryToolbarActions: View {
     let entry: DictionaryEntry
     let bookmarkStore: (any BookmarksStoreProtocol)?
     let isBookmarked: Bool
@@ -420,12 +416,25 @@ private extension View {
     @ViewBuilder
     func detailToolbar(
         displayedEntry: DictionaryEntry?,
+        bookmarkStore: (any BookmarksStoreProtocol)?,
         appLocale: AppLocale,
         isBookmarked: Bool,
         toggleBookmark: @escaping (DictionaryEntry) -> Void
     ) -> some View {
 #if os(macOS)
-        self
+        toolbar {
+            if let displayedEntry {
+                ToolbarItem(placement: .automatic) {
+                    MacDictionaryToolbarActions(
+                        entry: displayedEntry,
+                        bookmarkStore: bookmarkStore,
+                        isBookmarked: isBookmarked,
+                        toggleBookmark: toggleBookmark,
+                        appLocale: appLocale
+                    )
+                }
+            }
+        }
 #else
         toolbar {
             if let displayedEntry {
