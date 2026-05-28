@@ -155,20 +155,6 @@ public struct SettingsScreen: View {
                 }
             }
 
-            if viewModel.supportsDictionarySourceResources {
-                Section(AppLocalizer.text(.settingsDictionaryResourcesSection, locale: locale)) {
-                    DictionarySourceResourceRow(
-                        title: AppLocalizer.text(.settingsDictionarySource, locale: locale),
-                        locale: locale,
-                        snapshot: viewModel.dictionarySourceSnapshot,
-                        isSnapshotLoading: false,
-                        isRunningAction: viewModel.isDictionarySourceActionRunning
-                    ) { action in
-                        handleDictionarySourceAction(action)
-                    }
-                }
-            }
-
             Section(AppLocalizer.text(.settingsOfflineAudioSection, locale: locale)) {
                 AudioArchiveResourceRow(
                     title: wordAudioTitle,
@@ -226,20 +212,6 @@ public struct SettingsScreen: View {
 
             macSettingsTabContainer {
                 Form {
-                    if viewModel.supportsDictionarySourceResources {
-                        Section(AppLocalizer.text(.settingsDictionaryResourcesSection, locale: locale)) {
-                            DictionarySourceResourceRow(
-                                title: AppLocalizer.text(.settingsDictionarySource, locale: locale),
-                                locale: locale,
-                                snapshot: viewModel.dictionarySourceSnapshot,
-                                isSnapshotLoading: false,
-                                isRunningAction: viewModel.isDictionarySourceActionRunning
-                            ) { action in
-                                handleDictionarySourceAction(action)
-                            }
-                        }
-                    }
-
                     Section(AppLocalizer.text(.settingsOfflineAudioSection, locale: locale)) {
                         AudioArchiveResourceRow(
                             title: wordAudioTitle,
@@ -403,13 +375,6 @@ public struct SettingsScreen: View {
 #endif
     }
 
-    private func handleDictionarySourceAction(_ action: SettingsViewModel.DictionarySourceAction) {
-        Task {
-            await viewModel.runDictionarySourceAction(action)
-            onMaintenanceCompleted()
-        }
-    }
-
     private func handleAudioAction(
         _ action: SettingsViewModel.AudioResourceAction,
         for type: AudioArchiveType,
@@ -454,69 +419,6 @@ private extension AppLanguage {
         case .en:
             return "settings.interfaceLanguage.en"
         }
-    }
-}
-
-private struct DictionarySourceResourceRow: View {
-    let title: String
-    let locale: AppLocale
-    let snapshot: DownloadSnapshot
-    let isSnapshotLoading: Bool
-    let isRunningAction: Bool
-    let runAction: (SettingsViewModel.DictionarySourceAction) -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                    Text(snapshotDescription)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer(minLength: 12)
-
-                if isSnapshotLoading || isRunningAction {
-                    ProgressView()
-                        .controlSize(.small)
-                }
-
-                ResourceActionControl(
-                    locale: locale,
-                    isDisabled: isSnapshotLoading || isRunningAction,
-                    actions: availableActions,
-                    buttonTitle: { $0.buttonTitle(locale: locale) },
-                    systemImage: \.systemImage,
-                    runAction: runAction
-                )
-            }
-
-            if let progress = progressValue {
-                ProgressView(value: progress)
-            }
-        }
-        .padding(.vertical, 4)
-    }
-
-    private var availableActions: [SettingsViewModel.DictionarySourceAction] {
-        DictionarySourceResourcePresentation.actions(isLoading: isSnapshotLoading)
-    }
-
-    private var snapshotDescription: String {
-        DownloadSnapshotStatusPresentation.description(for: snapshot, locale: locale, isLoading: isSnapshotLoading)
-    }
-
-    private var progressValue: Double? {
-        guard !isSnapshotLoading,
-              snapshot.state == .downloading || snapshot.state == .paused,
-              let progress = snapshot.progress,
-              progress < 1
-        else {
-            return nil
-        }
-
-        return progress
     }
 }
 
