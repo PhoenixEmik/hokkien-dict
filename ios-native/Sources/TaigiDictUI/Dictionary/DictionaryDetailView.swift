@@ -1,5 +1,8 @@
 import SwiftUI
 import TaigiDictCore
+#if os(macOS)
+import AppKit
+#endif
 
 struct DictionaryDetailView: View {
     var sourceEntry: DictionaryEntry?
@@ -77,9 +80,19 @@ struct DictionaryDetailView: View {
                         }
                         .accessibilityElement(children: .combine)
 
-                        if !entry.audioID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                            Spacer(minLength: 0)
+                        Spacer(minLength: 0)
 
+                        #if os(macOS)
+                        MacDictionaryDetailActions(
+                            entry: entry,
+                            bookmarkStore: bookmarkStore,
+                            isBookmarked: isBookmarked,
+                            toggleBookmark: toggleBookmark,
+                            appLocale: appLocale
+                        )
+                        #endif
+
+                        if !entry.audioID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                             Button {
                                 Task {
                                     await viewModel.playWordAudio()
@@ -94,101 +107,108 @@ struct DictionaryDetailView: View {
                     }
                 }
 
-                RelationshipSection(
-                    title: AppLocalizer.text(.relationshipsVariant, locale: appLocale),
-                    words: entry.variantChars,
-                    openableWords: viewModel.openableWords,
-                    openWord: openLinkedWord
-                )
+                if entry.hasDisplayableDetailContent {
+                    RelationshipSection(
+                        title: AppLocalizer.text(.relationshipsVariant, locale: appLocale),
+                        words: entry.variantChars,
+                        openableWords: viewModel.openableWords,
+                        openWord: openLinkedWord
+                    )
 
-                RelationshipSection(
-                    title: AppLocalizer.text(.relationshipsSynonym, locale: appLocale),
-                    words: entry.wordSynonyms,
-                    openableWords: viewModel.openableWords,
-                    openWord: openLinkedWord
-                )
+                    RelationshipSection(
+                        title: AppLocalizer.text(.relationshipsSynonym, locale: appLocale),
+                        words: entry.wordSynonyms,
+                        openableWords: viewModel.openableWords,
+                        openWord: openLinkedWord
+                    )
 
-                RelationshipSection(
-                    title: AppLocalizer.text(.relationshipsAntonym, locale: appLocale),
-                    words: entry.wordAntonyms,
-                    openableWords: viewModel.openableWords,
-                    openWord: openLinkedWord
-                )
+                    RelationshipSection(
+                        title: AppLocalizer.text(.relationshipsAntonym, locale: appLocale),
+                        words: entry.wordAntonyms,
+                        openableWords: viewModel.openableWords,
+                        openWord: openLinkedWord
+                    )
 
-                ForEach(Array(entry.senses.enumerated()), id: \.offset) { _, sense in
-                    Section(sense.partOfSpeech.isEmpty ? AppLocalizer.text(.definitionFallbackTitle, locale: appLocale) : sense.partOfSpeech) {
-                        if !sense.definition.isEmpty {
-                            LinkedReferenceText(sense.definition, openWord: openLinkedWord)
-                        }
+                    ForEach(Array(entry.senses.enumerated()), id: \.offset) { _, sense in
+                        Section(sense.partOfSpeech.isEmpty ? AppLocalizer.text(.definitionFallbackTitle, locale: appLocale) : sense.partOfSpeech) {
+                            if !sense.definition.isEmpty {
+                                LinkedReferenceText(sense.definition, openWord: openLinkedWord)
+                            }
 
-                        RelationshipSectionContent(
-                            title: AppLocalizer.text(.definitionSynonym, locale: appLocale),
-                            words: sense.definitionSynonyms,
-                            openableWords: viewModel.openableWords,
-                            openWord: openLinkedWord
-                        )
+                            RelationshipSectionContent(
+                                title: AppLocalizer.text(.definitionSynonym, locale: appLocale),
+                                words: sense.definitionSynonyms,
+                                openableWords: viewModel.openableWords,
+                                openWord: openLinkedWord
+                            )
 
-                        RelationshipSectionContent(
-                            title: AppLocalizer.text(.definitionAntonym, locale: appLocale),
-                            words: sense.definitionAntonyms,
-                            openableWords: viewModel.openableWords,
-                            openWord: openLinkedWord
-                        )
+                            RelationshipSectionContent(
+                                title: AppLocalizer.text(.definitionAntonym, locale: appLocale),
+                                words: sense.definitionAntonyms,
+                                openableWords: viewModel.openableWords,
+                                openWord: openLinkedWord
+                            )
 
-                        ForEach(Array(sense.examples.enumerated()), id: \.offset) { _, example in
-                            VStack(alignment: .leading, spacing: 6) {
-                                HStack(alignment: .top, spacing: 12) {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(example.hanji)
-                                        Text(example.romanization)
-                                            .font(.subheadline)
-                                            .foregroundStyle(.secondary)
-                                        LinkedReferenceText(example.mandarin, openWord: openLinkedWord)
-                                            .font(.subheadline)
-                                            .foregroundStyle(.secondary)
-                                    }
-
-                                    Spacer(minLength: 0)
-
-                                    if !example.audioID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                        Button {
-                                            Task {
-                                                await viewModel.playExampleAudio(example)
-                                            }
-                                        } label: {
-                                            Image(systemName: "speaker.wave.2.fill")
-                                                .font(.title3)
+                            ForEach(Array(sense.examples.enumerated()), id: \.offset) { _, example in
+                                VStack(alignment: .leading, spacing: 6) {
+                                    HStack(alignment: .top, spacing: 12) {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(example.hanji)
+                                            Text(example.romanization)
+                                                .font(.subheadline)
+                                                .foregroundStyle(.secondary)
+                                            LinkedReferenceText(example.mandarin, openWord: openLinkedWord)
+                                                .font(.subheadline)
+                                                .foregroundStyle(.secondary)
                                         }
-                                        .buttonStyle(.borderless)
-                                        .accessibilityLabel(AppLocalizer.text(.playExampleAudio, locale: appLocale))
+
+                                        Spacer(minLength: 0)
+
+                                        if !example.audioID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                            Button {
+                                                Task {
+                                                    await viewModel.playExampleAudio(example)
+                                                }
+                                            } label: {
+                                                Image(systemName: "speaker.wave.2.fill")
+                                                    .font(.title3)
+                                            }
+                                            .buttonStyle(.borderless)
+                                            .accessibilityLabel(AppLocalizer.text(.playExampleAudio, locale: appLocale))
+                                        }
                                     }
                                 }
+                                .accessibilityElement(children: .combine)
                             }
-                            .accessibilityElement(children: .combine)
                         }
                     }
-                }
 
-                DetailStringListSection(
-                    title: AppLocalizer.text(.detailAlternativePronunciationsTitle, locale: appLocale),
-                    values: entry.alternativePronunciations
-                )
-                DetailStringListSection(
-                    title: AppLocalizer.text(.detailContractedPronunciationsTitle, locale: appLocale),
-                    values: entry.contractedPronunciations
-                )
-                DetailStringListSection(
-                    title: AppLocalizer.text(.detailColloquialPronunciationsTitle, locale: appLocale),
-                    values: entry.colloquialPronunciations
-                )
-                DetailStringListSection(
-                    title: AppLocalizer.text(.detailPhoneticDifferencesTitle, locale: appLocale),
-                    values: entry.phoneticDifferences
-                )
-                DetailStringListSection(
-                    title: AppLocalizer.text(.detailVocabularyComparisonsTitle, locale: appLocale),
-                    values: entry.vocabularyComparisons
-                )
+                    DetailStringListSection(
+                        title: AppLocalizer.text(.detailAlternativePronunciationsTitle, locale: appLocale),
+                        values: entry.alternativePronunciations
+                    )
+                    DetailStringListSection(
+                        title: AppLocalizer.text(.detailContractedPronunciationsTitle, locale: appLocale),
+                        values: entry.contractedPronunciations
+                    )
+                    DetailStringListSection(
+                        title: AppLocalizer.text(.detailColloquialPronunciationsTitle, locale: appLocale),
+                        values: entry.colloquialPronunciations
+                    )
+                    DetailStringListSection(
+                        title: AppLocalizer.text(.detailPhoneticDifferencesTitle, locale: appLocale),
+                        values: entry.phoneticDifferences
+                    )
+                    DetailStringListSection(
+                        title: AppLocalizer.text(.detailVocabularyComparisonsTitle, locale: appLocale),
+                        values: entry.vocabularyComparisons
+                    )
+                } else if !entry.briefSummary.isEmpty {
+                    Section(AppLocalizer.text(.definitionFallbackTitle, locale: appLocale)) {
+                        Text(entry.briefSummary)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             } else {
                 ContentUnavailableView(
                     AppLocalizer.text(.searchStartDetailTitle, locale: appLocale),
@@ -287,6 +307,112 @@ struct DictionaryDetailView: View {
             return
         }
         isBookmarked = bookmarked
+    }
+}
+
+#if os(macOS)
+private struct MacDictionaryDetailActions: View {
+    let entry: DictionaryEntry
+    let bookmarkStore: (any BookmarksStoreProtocol)?
+    let isBookmarked: Bool
+    let toggleBookmark: (DictionaryEntry) -> Void
+    let appLocale: AppLocale
+
+    var body: some View {
+        ControlGroup {
+            if bookmarkStore != nil {
+                Button {
+                    toggleBookmark(entry)
+                } label: {
+                    Label(
+                        isBookmarked
+                            ? AppLocalizer.text(.bookmarksRemove, locale: appLocale)
+                            : AppLocalizer.text(.bookmarksAdd, locale: appLocale),
+                        systemImage: isBookmarked ? "bookmark.fill" : "bookmark"
+                    )
+                }
+            }
+
+            MacDictionaryShareButton(
+                shareText: WordDetailViewModel.shareText(for: entry),
+                appLocale: appLocale
+            )
+        }
+        .controlSize(.large)
+    }
+}
+
+private struct MacDictionaryShareButton: View {
+    let shareText: String
+    let appLocale: AppLocale
+
+    @State private var isPresentingSharePicker = false
+
+    var body: some View {
+        Button {
+            isPresentingSharePicker = true
+        } label: {
+            Label(AppLocalizer.text(.share, locale: appLocale), systemImage: "square.and.arrow.up")
+        }
+        .background(
+            MacSharingServicePresenter(
+                isPresented: $isPresentingSharePicker,
+                items: [shareText]
+            )
+            .frame(width: 0, height: 0)
+        )
+    }
+}
+
+private struct MacSharingServicePresenter: NSViewRepresentable {
+    @Binding var isPresented: Bool
+    let items: [Any]
+
+    func makeNSView(context: Context) -> NSView {
+        NSView(frame: .zero)
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        guard isPresented else {
+            return
+        }
+
+        context.coordinator.present(from: nsView, items: items)
+        DispatchQueue.main.async {
+            isPresented = false
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    final class Coordinator {
+        func present(from view: NSView, items: [Any]) {
+            let picker = NSSharingServicePicker(items: items)
+            picker.show(relativeTo: view.bounds, of: view, preferredEdge: .minY)
+        }
+    }
+}
+#endif
+
+private extension DictionaryEntry {
+    var hasDisplayableDetailContent: Bool {
+        senses.contains { sense in
+            !sense.partOfSpeech.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                || !sense.definition.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                || !sense.definitionSynonyms.isEmpty
+                || !sense.definitionAntonyms.isEmpty
+                || !sense.examples.isEmpty
+        }
+        || !variantChars.isEmpty
+        || !wordSynonyms.isEmpty
+        || !wordAntonyms.isEmpty
+        || !alternativePronunciations.isEmpty
+        || !contractedPronunciations.isEmpty
+        || !colloquialPronunciations.isEmpty
+        || !phoneticDifferences.isEmpty
+        || !vocabularyComparisons.isEmpty
     }
 }
 

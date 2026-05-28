@@ -32,7 +32,6 @@ public struct DictionarySearchScreen: View {
         let dictionaryTitle = AppLocalizer.text(.dictionaryTitle, locale: appLocale)
         let searchTitle = AppLocalizer.text(.searchTitle, locale: appLocale)
         let searchPrompt = AppLocalizer.text(.searchPrompt, locale: appLocale)
-        let toolbarEntry = desktopToolbarEntry
 
         switch DictionarySearchPresentation.resolve(
             horizontalSizeClass: horizontalSizeClass,
@@ -65,9 +64,7 @@ public struct DictionarySearchScreen: View {
             .navigationSplitViewStyle(.balanced)
             .desktopDictionaryToolbar(
                 viewModel: viewModel,
-                prompt: searchPrompt,
-                entry: toolbarEntry,
-                bookmarkStore: bookmarkStore
+                prompt: searchPrompt
             )
         case .regularSplit:
             NavigationSplitView {
@@ -112,14 +109,6 @@ public struct DictionarySearchScreen: View {
         }
     }
 
-    private var desktopToolbarEntry: DictionaryEntry? {
-#if os(macOS)
-        viewModel.selectedEntry ?? viewModel.detailEntry
-#else
-        nil
-#endif
-    }
-
     private func desktopSinglePaneContainer(title: String, searchPrompt: String) -> some View {
         NavigationStack {
             DictionaryDesktopSinglePaneView(viewModel: viewModel)
@@ -137,9 +126,7 @@ public struct DictionarySearchScreen: View {
         }
         .desktopDictionaryToolbar(
             viewModel: viewModel,
-            prompt: searchPrompt,
-            entry: desktopToolbarEntry,
-            bookmarkStore: bookmarkStore
+            prompt: searchPrompt
         )
     }
 }
@@ -303,13 +290,11 @@ extension View {
     @ViewBuilder
     func desktopDictionaryToolbar(
         viewModel: DictionarySearchViewModel,
-        prompt: String,
-        entry: DictionaryEntry?,
-        bookmarkStore: (any BookmarksStoreProtocol)?
+        prompt: String
     ) -> some View {
 #if os(macOS)
         toolbar {
-            ToolbarItem(placement: .secondaryAction) {
+            ToolbarItem(placement: .primaryAction) {
                 MacDictionarySearchField(
                     text: Binding(
                         get: { viewModel.searchText },
@@ -322,16 +307,6 @@ extension View {
                     viewModel.submitSearch()
                 }
                 .frame(width: 300)
-                .padding(.trailing, entry == nil ? 0 : 12)
-            }
-
-            if let entry {
-                ToolbarItemGroup(placement: .primaryAction) {
-                    MacDictionaryToolbarActions(
-                        entry: entry,
-                        bookmarkStore: bookmarkStore
-                    )
-                }
             }
         }
 #else
@@ -362,52 +337,6 @@ extension View {
 }
 
 #if os(macOS)
-private struct MacDictionaryToolbarActions: View {
-    let entry: DictionaryEntry
-    let bookmarkStore: (any BookmarksStoreProtocol)?
-
-    @Environment(\.locale) private var locale
-    @State private var isBookmarked = false
-
-    private var appLocale: AppLocale {
-        AppLocalizer.appLocale(from: locale)
-    }
-
-    var body: some View {
-        HStack(spacing: 14) {
-            if let bookmarkStore {
-                Button {
-                    Task {
-                        let bookmarked = await bookmarkStore.toggleBookmark(entryID: entry.id)
-                        await MainActor.run {
-                            isBookmarked = bookmarked
-                        }
-                    }
-                } label: {
-                    Label(
-                        isBookmarked
-                            ? AppLocalizer.text(.bookmarksRemove, locale: appLocale)
-                            : AppLocalizer.text(.bookmarksAdd, locale: appLocale),
-                        systemImage: isBookmarked ? "bookmark.fill" : "bookmark"
-                    )
-                }
-            }
-
-            ShareLink(item: WordDetailViewModel.shareText(for: entry)) {
-                Label(AppLocalizer.text(.share, locale: appLocale), systemImage: "square.and.arrow.up")
-            }
-        }
-        .task(id: entry.id) {
-            guard let bookmarkStore else {
-                isBookmarked = false
-                return
-            }
-
-            isBookmarked = await bookmarkStore.isBookmarked(entry.id)
-        }
-    }
-}
-
 private struct MacDictionarySearchField: NSViewRepresentable {
     @Binding var text: String
     var prompt: String
