@@ -1341,6 +1341,29 @@
         }
       }
     },
+    "bookmarksSectionSaved" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved entries"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已收藏词条"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已收藏詞條"
+          }
+        }
+      }
+    },
     "bookmarksSelect" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1383,29 +1406,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "全選"
-          }
-        }
-      }
-    },
-    "bookmarksSectionSaved" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saved entries"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已收藏词条"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已收藏詞條"
           }
         }
       }
