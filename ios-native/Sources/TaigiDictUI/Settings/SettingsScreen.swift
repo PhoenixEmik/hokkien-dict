@@ -5,6 +5,9 @@ public struct SettingsScreen: View {
     @EnvironmentObject private var appLanguageManager: AppLanguageManager
     @State private var viewModel: SettingsViewModel
     @State private var pendingAudioRestart: PendingAudioRestart?
+#if os(macOS)
+    @State private var selectedReferenceKind: ReferenceArticleKind = .taiLo
+#endif
     @Environment(\.locale) private var locale
     private let onMaintenanceCompleted: () -> Void
     private let onSettingsChanged: (AppSettingsSnapshot) -> Void
@@ -35,13 +38,23 @@ public struct SettingsScreen: View {
         let appLocale = AppLocalizer.appLocale(from: locale)
         let wordAudioTitle = AppLocalizer.text(.settingsWordAudio, locale: appLocale)
         let sentenceAudioTitle = AppLocalizer.text(.settingsSentenceAudio, locale: appLocale)
-        NavigationStack {
-            settingsContent(
+        Group {
+#if os(macOS)
+            macSettingsContent(
                 locale: appLocale,
                 wordAudioTitle: wordAudioTitle,
                 sentenceAudioTitle: sentenceAudioTitle
             )
-            .navigationTitle(AppLocalizer.text(.settingsTitle, locale: appLocale))
+#else
+            NavigationStack {
+                settingsContent(
+                    locale: appLocale,
+                    wordAudioTitle: wordAudioTitle,
+                    sentenceAudioTitle: sentenceAudioTitle
+                )
+                .navigationTitle(AppLocalizer.text(.settingsTitle, locale: appLocale))
+            }
+#endif
         }
         .task {
             await viewModel.loadCapabilities()
@@ -113,87 +126,6 @@ public struct SettingsScreen: View {
         wordAudioTitle: String,
         sentenceAudioTitle: String
     ) -> some View {
-#if os(macOS)
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                settingsSectionCard(title: AppLocalizer.text(.settingsDisplayLanguageSection, locale: locale)) {
-                    settingsPickerRow(title: appLanguageManager.localized(.settingsInterfaceLanguageLabel)) {
-                        interfaceLanguagePicker
-                    }
-                    settingsPickerRow(title: AppLocalizer.text(.settingsThemeLabel, locale: locale)) {
-                        themePicker(locale: locale)
-                    }
-                    readingTextScaleControl(locale: locale)
-                }
-
-                settingsSectionCard(title: AppLocalizer.text(.settingsDataAndInfoSection, locale: locale)) {
-                    settingsNavigationRow(
-                        title: AppLocalizer.text(.settingsAdvanced, locale: locale),
-                        systemImage: "wrench.and.screwdriver"
-                    ) {
-                        AdvancedSettingsScreen(viewModel: viewModel) {
-                            onMaintenanceCompleted()
-                        }
-                    }
-                    settingsNavigationRow(
-                        title: AppLocalizer.text(.settingsAbout, locale: locale),
-                        systemImage: "info.circle"
-                    ) {
-                        AboutScreen()
-                    }
-                    settingsNavigationRow(
-                        title: AppLocalizer.text(.settingsReferences, locale: locale),
-                        systemImage: "text.book.closed"
-                    ) {
-                        ReferenceArticleListScreen()
-                    }
-                }
-
-                if viewModel.supportsDictionarySourceResources {
-                    settingsSectionCard(title: AppLocalizer.text(.settingsDictionaryResourcesSection, locale: locale)) {
-                        DictionarySourceResourceRow(
-                            title: AppLocalizer.text(.settingsDictionarySource, locale: locale),
-                            locale: locale,
-                            snapshot: viewModel.dictionarySourceSnapshot,
-                            isSnapshotLoading: false,
-                            isRunningAction: viewModel.isDictionarySourceActionRunning
-                        ) { action in
-                            handleDictionarySourceAction(action)
-                        }
-                    }
-                }
-
-                settingsSectionCard(title: AppLocalizer.text(.settingsOfflineAudioSection, locale: locale)) {
-                    AudioArchiveResourceRow(
-                        title: wordAudioTitle,
-                        locale: locale,
-                        snapshot: viewModel.snapshot(for: .word),
-                        isSnapshotLoading: !viewModel.hasLoadedAudioSnapshots,
-                        isRunningAction: viewModel.isAudioActionRunning(for: .word)
-                    ) { action in
-                        handleAudioAction(action, for: .word, title: wordAudioTitle)
-                    }
-
-                    Divider()
-
-                    AudioArchiveResourceRow(
-                        title: sentenceAudioTitle,
-                        locale: locale,
-                        snapshot: viewModel.snapshot(for: .sentence),
-                        isSnapshotLoading: !viewModel.hasLoadedAudioSnapshots,
-                        isRunningAction: viewModel.isAudioActionRunning(for: .sentence)
-                    ) { action in
-                        handleAudioAction(action, for: .sentence, title: sentenceAudioTitle)
-                    }
-                }
-            }
-            .frame(maxWidth: 760, alignment: .leading)
-            .padding(.horizontal, 24)
-            .padding(.vertical, 20)
-            .frame(maxWidth: .infinity, alignment: .top)
-        }
-        .scrollContentBackground(.hidden)
-#else
         Form {
             Section(AppLocalizer.text(.settingsDisplayLanguageSection, locale: locale)) {
                 interfaceLanguagePicker
@@ -259,8 +191,122 @@ public struct SettingsScreen: View {
                 }
             }
         }
-#endif
     }
+
+#if os(macOS)
+    private func macSettingsContent(
+        locale: AppLocale,
+        wordAudioTitle: String,
+        sentenceAudioTitle: String
+    ) -> some View {
+        TabView {
+            macSettingsTabContainer {
+                Form {
+                    Section(AppLocalizer.text(.settingsDisplayLanguageSection, locale: locale)) {
+                        LabeledContent(appLanguageManager.localized(.settingsInterfaceLanguageLabel)) {
+                            interfaceLanguagePicker
+                                .labelsHidden()
+                                .pickerStyle(.menu)
+                        }
+
+                        LabeledContent(AppLocalizer.text(.settingsThemeLabel, locale: locale)) {
+                            themePicker(locale: locale)
+                                .labelsHidden()
+                                .pickerStyle(.menu)
+                        }
+
+                        readingTextScaleControl(locale: locale)
+                    }
+                }
+                .formStyle(.grouped)
+            }
+            .tabItem {
+                Label(AppLocalizer.text(.settingsGeneralTab, locale: locale), systemImage: "gearshape")
+            }
+
+            macSettingsTabContainer {
+                Form {
+                    if viewModel.supportsDictionarySourceResources {
+                        Section(AppLocalizer.text(.settingsDictionaryResourcesSection, locale: locale)) {
+                            DictionarySourceResourceRow(
+                                title: AppLocalizer.text(.settingsDictionarySource, locale: locale),
+                                locale: locale,
+                                snapshot: viewModel.dictionarySourceSnapshot,
+                                isSnapshotLoading: false,
+                                isRunningAction: viewModel.isDictionarySourceActionRunning
+                            ) { action in
+                                handleDictionarySourceAction(action)
+                            }
+                        }
+                    }
+
+                    Section(AppLocalizer.text(.settingsOfflineAudioSection, locale: locale)) {
+                        AudioArchiveResourceRow(
+                            title: wordAudioTitle,
+                            locale: locale,
+                            snapshot: viewModel.snapshot(for: .word),
+                            isSnapshotLoading: !viewModel.hasLoadedAudioSnapshots,
+                            isRunningAction: viewModel.isAudioActionRunning(for: .word)
+                        ) { action in
+                            handleAudioAction(action, for: .word, title: wordAudioTitle)
+                        }
+
+                        AudioArchiveResourceRow(
+                            title: sentenceAudioTitle,
+                            locale: locale,
+                            snapshot: viewModel.snapshot(for: .sentence),
+                            isSnapshotLoading: !viewModel.hasLoadedAudioSnapshots,
+                            isRunningAction: viewModel.isAudioActionRunning(for: .sentence)
+                        ) { action in
+                            handleAudioAction(action, for: .sentence, title: sentenceAudioTitle)
+                        }
+                    }
+                }
+                .formStyle(.grouped)
+            }
+            .tabItem {
+                Label(AppLocalizer.text(.settingsResourcesTab, locale: locale), systemImage: "internaldrive")
+            }
+
+            macSettingsTabContainer {
+                VStack(alignment: .leading, spacing: 16) {
+                    Picker(AppLocalizer.text(.settingsReferences, locale: locale), selection: $selectedReferenceKind) {
+                        Text(AppLocalizer.text(.referenceTaiLoTitle, locale: locale))
+                            .tag(ReferenceArticleKind.taiLo)
+                        Text(AppLocalizer.text(.referenceHanjiTitle, locale: locale))
+                            .tag(ReferenceArticleKind.hanji)
+                    }
+                    .pickerStyle(.segmented)
+
+                    LocalizedReferenceArticleScreen(
+                        kind: selectedReferenceKind,
+                        fallbackTitle: selectedReferenceKind == .taiLo
+                            ? AppLocalizer.text(.referenceTaiLoTitle, locale: locale)
+                            : AppLocalizer.text(.referenceHanjiTitle, locale: locale)
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .padding(20)
+            }
+            .tabItem {
+                Label(AppLocalizer.text(.settingsReferences, locale: locale), systemImage: "text.book.closed")
+            }
+
+            AdvancedSettingsScreen(viewModel: viewModel) {
+                onMaintenanceCompleted()
+            }
+            .tabItem {
+                Label(AppLocalizer.text(.settingsAdvanced, locale: locale), systemImage: "wrench.and.screwdriver")
+            }
+        }
+        .frame(minWidth: 760, minHeight: 560)
+    }
+
+    private func macSettingsTabContainer<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        content()
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+#endif
 
     private var interfaceLanguagePicker: some View {
         Picker(appLanguageManager.localized(.settingsInterfaceLanguageLabel), selection: Binding(
@@ -296,6 +342,41 @@ public struct SettingsScreen: View {
     }
 
     private func readingTextScaleControl(locale: AppLocale) -> some View {
+#if os(macOS)
+        LabeledContent(AppLocalizer.text(.settingsReadingTextScaleLabel, locale: locale)) {
+            VStack(alignment: .leading, spacing: 8) {
+                Slider(
+                    value: Binding(
+                        get: { viewModel.readingTextScale },
+                        set: { value in
+                            Task {
+                                await viewModel.setReadingTextScale(value)
+                                onSettingsChanged(viewModel.currentSettingsSnapshot)
+                            }
+                        }
+                    ),
+                    in: viewModel.minReadingTextScale...viewModel.maxReadingTextScale,
+                    step: (viewModel.maxReadingTextScale - viewModel.minReadingTextScale) / Double(viewModel.readingTextScaleDivisions)
+                ) {
+                    EmptyView()
+                } minimumValueLabel: {
+                    Text("A")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                } maximumValueLabel: {
+                    Text("A")
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
+
+                Text(viewModel.readingTextScale.displayScaleLabel(locale: locale))
+                    .font(.footnote)
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+            }
+            .frame(minWidth: 240, maxWidth: 300, alignment: .leading)
+        }
+#else
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text(AppLocalizer.text(.settingsReadingTextScaleLabel, locale: locale))
@@ -319,59 +400,8 @@ public struct SettingsScreen: View {
                 step: (viewModel.maxReadingTextScale - viewModel.minReadingTextScale) / Double(viewModel.readingTextScaleDivisions)
             )
         }
-    }
-
-#if os(macOS)
-    private func settingsSectionCard<Content: View>(
-        title: String,
-        @ViewBuilder content: () -> Content
-    ) -> some View {
-        GroupBox {
-            VStack(alignment: .leading, spacing: 14) {
-                content()
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        } label: {
-            Text(title)
-                .font(.headline)
-        }
-    }
-
-    private func settingsPickerRow<Content: View>(
-        title: String,
-        @ViewBuilder content: () -> Content
-    ) -> some View {
-        HStack(alignment: .center, spacing: 16) {
-            Text(title)
-                .frame(width: 96, alignment: .leading)
-
-            content()
-                .frame(maxWidth: 260, alignment: .leading)
-
-            Spacer(minLength: 0)
-        }
-    }
-
-    private func settingsNavigationRow<Destination: View>(
-        title: String,
-        systemImage: String,
-        @ViewBuilder destination: () -> Destination
-    ) -> some View {
-        NavigationLink {
-            destination()
-        } label: {
-            HStack(spacing: 10) {
-                Label(title, systemImage: systemImage)
-                Spacer(minLength: 12)
-                Image(systemName: "chevron.right")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.tertiary)
-            }
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
 #endif
+    }
 
     private func handleDictionarySourceAction(_ action: SettingsViewModel.DictionarySourceAction) {
         Task {
@@ -462,7 +492,7 @@ private struct DictionarySourceResourceRow: View {
                 )
             }
 
-            if let progress = snapshot.progress {
+            if let progress = progressValue {
                 ProgressView(value: progress)
             }
         }
@@ -475,6 +505,18 @@ private struct DictionarySourceResourceRow: View {
 
     private var snapshotDescription: String {
         DownloadSnapshotStatusPresentation.description(for: snapshot, locale: locale, isLoading: isSnapshotLoading)
+    }
+
+    private var progressValue: Double? {
+        guard !isSnapshotLoading,
+              snapshot.state == .downloading || snapshot.state == .paused,
+              let progress = snapshot.progress,
+              progress < 1
+        else {
+            return nil
+        }
+
+        return progress
     }
 }
 
@@ -513,7 +555,7 @@ private struct AudioArchiveResourceRow: View {
                 )
             }
 
-            if let progress = snapshot.progress {
+            if let progress = progressValue {
                 ProgressView(value: progress)
             }
         }
@@ -526,6 +568,18 @@ private struct AudioArchiveResourceRow: View {
 
     private var snapshotDescription: String {
         DownloadSnapshotStatusPresentation.description(for: snapshot, locale: locale, isLoading: isSnapshotLoading)
+    }
+
+    private var progressValue: Double? {
+        guard !isSnapshotLoading,
+              snapshot.state == .downloading || snapshot.state == .paused,
+              let progress = snapshot.progress,
+              progress < 1
+        else {
+            return nil
+        }
+
+        return progress
     }
 }
 

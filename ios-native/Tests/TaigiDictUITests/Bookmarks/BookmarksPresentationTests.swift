@@ -2,13 +2,13 @@ import XCTest
 @testable import TaigiDictUI
 
 final class BookmarksPresentationTests: XCTestCase {
-    func testMacOSUsesSinglePaneWithoutSelection() {
+    func testMacOSUsesSplitPresentationWithoutSelection() {
         XCTAssertEqual(
             BookmarksPresentation.resolve(
                 hasSelection: false,
                 prefersDesktopLayout: true
             ),
-            .desktopSinglePane
+            .desktopResultsSplit
         )
     }
 

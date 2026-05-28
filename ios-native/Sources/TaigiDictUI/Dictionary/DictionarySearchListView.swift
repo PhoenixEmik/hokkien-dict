@@ -99,6 +99,7 @@ struct DictionarySearchListView: View {
         }
         .animation(.easeOut(duration: 0.12), value: viewModel.isSearching)
         .animation(.easeOut(duration: 0.12), value: viewModel.results.isEmpty)
+        .dictionaryListSearchInput(viewModel: viewModel, locale: appLocale)
         .dictionarySearchInput(viewModel: viewModel, locale: appLocale)
     }
 }
@@ -132,5 +133,31 @@ struct SearchResultSkeletonRow: View {
         }
         .padding(.vertical, 6)
         .accessibilityHidden(true)
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func dictionaryListSearchInput(
+        viewModel: DictionarySearchViewModel,
+        locale: AppLocale
+    ) -> some View {
+#if os(macOS)
+        searchable(
+            text: Binding(
+                get: { viewModel.searchText },
+                set: { viewModel.searchText = $0 }
+            ),
+            prompt: AppLocalizer.text(.searchPrompt, locale: locale)
+        )
+        .onChange(of: viewModel.searchText) { _, _ in
+            viewModel.scheduleSearch()
+        }
+        .onSubmit(of: .search) {
+            viewModel.submitSearch()
+        }
+#else
+        self
+#endif
     }
 }

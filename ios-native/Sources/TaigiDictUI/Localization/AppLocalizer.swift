@@ -5,6 +5,7 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case tabDictionary
     case tabBookmarks
     case tabSettings
+    case menuGo
     case dictionaryTitle
     case searchTitle
     case searchPrompt
@@ -38,6 +39,7 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case audioPlaybackFailedPrefix
     case searchStartDetailTitle
     case searchStartDetailDescription
+    case bookmarksEmptyAction
     case bookmarksAdd
     case bookmarksRemove
     case share
@@ -66,6 +68,8 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case initializationIncomplete
 
     case settingsTitle
+    case settingsGeneralTab
+    case settingsResourcesTab
     case settingsDisplayLanguageSection
     case settingsInterfaceLanguageLabel
     case settingsThemeLabel

@@ -11,17 +11,20 @@ public struct DictionarySearchScreen: View {
     private let bookmarkStore: (any BookmarksStoreProtocol)?
     private let offlineAudioStore: (any OfflineAudioManaging)?
     private let conversionService: (any ChineseConversionProviding)?
+    private let macNavigationSelection: Binding<MacNavigationSection>?
 
     public init(
         viewModel: DictionarySearchViewModel,
         bookmarkStore: (any BookmarksStoreProtocol)? = nil,
         offlineAudioStore: (any OfflineAudioManaging)? = nil,
-        conversionService: (any ChineseConversionProviding)? = nil
+        conversionService: (any ChineseConversionProviding)? = nil,
+        macNavigationSelection: Binding<MacNavigationSection>? = nil
     ) {
         _viewModel = Bindable(viewModel)
         self.bookmarkStore = bookmarkStore
         self.offlineAudioStore = offlineAudioStore
         self.conversionService = conversionService
+        self.macNavigationSelection = macNavigationSelection
     }
 
     private var appLocale: AppLocale {
@@ -31,7 +34,6 @@ public struct DictionarySearchScreen: View {
     public var body: some View {
         let dictionaryTitle = AppLocalizer.text(.dictionaryTitle, locale: appLocale)
         let searchTitle = AppLocalizer.text(.searchTitle, locale: appLocale)
-        let searchPrompt = AppLocalizer.text(.searchPrompt, locale: appLocale)
 
         switch DictionarySearchPresentation.resolve(
             horizontalSizeClass: horizontalSizeClass,
@@ -39,7 +41,7 @@ public struct DictionarySearchScreen: View {
             hasResults: !viewModel.results.isEmpty
         ) {
         case .desktopSinglePane:
-            desktopSinglePaneContainer(title: dictionaryTitle, searchPrompt: searchPrompt)
+            desktopSinglePaneContainer()
         case .desktopResultsSplit:
             NavigationSplitView {
                 DictionarySearchListView(
@@ -47,7 +49,6 @@ public struct DictionarySearchScreen: View {
                     showsSelection: true,
                     startPresentation: .historyOnly
                 )
-                .navigationTitle(searchTitle)
             } detail: {
                 DictionaryDetailView(
                     entry: viewModel.selectedEntry,
@@ -56,15 +57,11 @@ public struct DictionarySearchScreen: View {
                     offlineAudioStore: offlineAudioStore,
                     conversionService: conversionService
                 )
-                .navigationTitle(DictionarySearchNavigationTitle.detailTitle(
-                    selectedEntryHanji: viewModel.selectedEntry?.hanji,
-                    dictionaryTitle: dictionaryTitle
-                ))
             }
             .navigationSplitViewStyle(.balanced)
-            .desktopDictionaryToolbar(
-                viewModel: viewModel,
-                prompt: searchPrompt
+            .macMainNavigationToolbar(
+                selection: macNavigationSelection,
+                locale: appLocale
             )
         case .regularSplit:
             NavigationSplitView {
@@ -109,10 +106,9 @@ public struct DictionarySearchScreen: View {
         }
     }
 
-    private func desktopSinglePaneContainer(title: String, searchPrompt: String) -> some View {
+    private func desktopSinglePaneContainer() -> some View {
         NavigationStack {
             DictionaryDesktopSinglePaneView(viewModel: viewModel)
-                .navigationTitle(title)
                 .navigationDestination(item: $viewModel.detailEntry) { entry in
                     DictionaryDetailView(
                         entry: entry,
@@ -124,10 +120,6 @@ public struct DictionarySearchScreen: View {
                     .navigationTitle(entry.hanji)
                 }
         }
-        .desktopDictionaryToolbar(
-            viewModel: viewModel,
-            prompt: searchPrompt
-        )
     }
 }
 
@@ -150,10 +142,7 @@ enum DictionarySearchPresentation: Equatable {
         hasResults: Bool = false
     ) -> DictionarySearchPresentation {
         if prefersDesktopLayout {
-            if isSearching || hasResults {
-                return .desktopResultsSplit
-            }
-            return .desktopSinglePane
+            return .desktopResultsSplit
         }
 
         if horizontalSizeClass == .regular {
@@ -288,33 +277,6 @@ private struct DictionaryDesktopSinglePaneView: View {
 
 extension View {
     @ViewBuilder
-    func desktopDictionaryToolbar(
-        viewModel: DictionarySearchViewModel,
-        prompt: String
-    ) -> some View {
-#if os(macOS)
-        toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                MacDictionarySearchField(
-                    text: Binding(
-                        get: { viewModel.searchText },
-                        set: { viewModel.searchText = $0 }
-                    ),
-                    prompt: prompt
-                ) {
-                    viewModel.scheduleSearch()
-                } onSubmit: {
-                    viewModel.submitSearch()
-                }
-                .frame(width: 300)
-            }
-        }
-#else
-        self
-#endif
-    }
-
-    @ViewBuilder
     func dictionarySearchInput(
         viewModel: DictionarySearchViewModel,
         locale: AppLocale
@@ -336,60 +298,33 @@ extension View {
     }
 }
 
+private extension View {
+    @ViewBuilder
+    func macMainNavigationToolbar(
+        selection: Binding<MacNavigationSection>?,
+        locale: AppLocale
+    ) -> some View {
 #if os(macOS)
-private struct MacDictionarySearchField: NSViewRepresentable {
-    @Binding var text: String
-    var prompt: String
-    var onChange: () -> Void
-    var onSubmit: () -> Void
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-
-    func makeNSView(context: Context) -> NSSearchField {
-        let field = NSSearchField()
-        field.delegate = context.coordinator
-        field.target = context.coordinator
-        field.action = #selector(Coordinator.performSubmit)
-        field.placeholderString = prompt
-        field.sendsSearchStringImmediately = true
-        field.maximumRecents = 0
-        field.recentsAutosaveName = nil
-        return field
-    }
-
-    func updateNSView(_ field: NSSearchField, context: Context) {
-        context.coordinator.parent = self
-        if field.stringValue != text {
-            field.stringValue = text
-        }
-        if field.placeholderString != prompt {
-            field.placeholderString = prompt
-        }
-    }
-
-    final class Coordinator: NSObject, NSSearchFieldDelegate {
-        var parent: MacDictionarySearchField
-
-        init(_ parent: MacDictionarySearchField) {
-            self.parent = parent
-        }
-
-        func controlTextDidChange(_ notification: Notification) {
-            guard let field = notification.object as? NSSearchField else {
-                return
+        toolbar {
+            if let selection {
+                ToolbarItem(placement: .principal) {
+                    Picker("", selection: selection) {
+                        Text(AppLocalizer.text(.tabDictionary, locale: locale))
+                            .tag(MacNavigationSection.dictionary)
+                        Text(AppLocalizer.text(.tabBookmarks, locale: locale))
+                            .tag(MacNavigationSection.bookmarks)
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.segmented)
+                    .frame(width: 220)
+                }
             }
-            parent.text = field.stringValue
-            parent.onChange()
         }
-
-        @objc func performSubmit() {
-            parent.onSubmit()
-        }
+#else
+        self
+#endif
     }
 }
-#endif
 
 extension View {
     @ViewBuilder

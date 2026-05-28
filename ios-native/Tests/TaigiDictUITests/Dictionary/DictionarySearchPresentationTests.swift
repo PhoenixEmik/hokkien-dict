@@ -33,7 +33,7 @@ final class DictionarySearchPresentationTests: XCTestCase {
         )
     }
 
-    func testMacOSPrefersSinglePanePresentationWithoutQueryResults() {
+    func testMacOSUsesSplitPresentationWithoutQueryResults() {
         XCTAssertEqual(
             DictionarySearchPresentation.resolve(
                 horizontalSizeClass: nil,
@@ -41,7 +41,7 @@ final class DictionarySearchPresentationTests: XCTestCase {
                 isSearching: false,
                 hasResults: false
             ),
-            .desktopSinglePane
+            .desktopResultsSplit
         )
     }
 

@@ -5,28 +5,47 @@ import TaigiDictUI
 @main
 struct TaigiDictNativeApp: App {
     private static let appStorage = TaigiDictAppStorage.resolve()
+    private static let repository = InstalledDictionaryRepository(
+        sourceDirectory: appStorage.dictionarySourceDirectory,
+        installedDirectory: appStorage.installedDictionaryDirectory,
+        fallbackSourceDirectory: bundledDictionaryDirectory
+    )
+    private static let settingsStore = UserDefaultsAppSettingsStore()
+    private static let dictionarySourceStore = DictionarySourceResourceStore(
+        bundledDirectory: bundledDictionaryDirectory,
+        localDirectory: appStorage.dictionarySourceDirectory
+    )
+    private static let settingsLibrary = DictionaryLibrary(repository: repository)
+    private static let settingsOfflineAudioStore = makeOfflineAudioStore()
+
     @StateObject private var appLanguageManager = AppLanguageManager()
     @StateObject private var navigationModel = AppNavigationModel()
+    @State private var settingsSnapshot = AppSettingsSnapshot()
+    @State private var maintenanceToken = UUID()
 
     var body: some Scene {
         WindowGroup {
             TaigiDictAppRootView(
-                repository: InstalledDictionaryRepository(
-                    sourceDirectory: Self.appStorage.dictionarySourceDirectory,
-                    installedDirectory: Self.appStorage.installedDictionaryDirectory,
-                    fallbackSourceDirectory: Self.bundledDictionaryDirectory
-                ),
-                dictionarySourceStore: DictionarySourceResourceStore(
-                    bundledDirectory: Self.bundledDictionaryDirectory,
-                    localDirectory: Self.appStorage.dictionarySourceDirectory
-                ),
+                repository: Self.repository,
+                settingsStore: Self.settingsStore,
+                dictionarySourceStore: Self.dictionarySourceStore,
                 appLanguageManager: appLanguageManager,
-                navigationModel: navigationModel
+                navigationModel: navigationModel,
+                settingsSnapshot: settingsSnapshot,
+                maintenanceToken: maintenanceToken,
+                onMaintenanceCompleted: {
+                    maintenanceToken = UUID()
+                },
+                onSettingsChanged: { settings in
+                    settingsSnapshot = settings
+                }
             )
         }
         .commands {
 #if os(macOS)
-            CommandGroup(after: .sidebar) {
+            SidebarCommands()
+
+            CommandMenu(appLanguageManager.localized(.menuGo)) {
                 Button(appLanguageManager.localized(.tabDictionary)) {
                     navigationModel.showDictionary()
                 }
@@ -36,14 +55,33 @@ struct TaigiDictNativeApp: App {
                     navigationModel.showBookmarks()
                 }
                 .keyboardShortcut("2", modifiers: [.command])
-
-                Button(appLanguageManager.localized(.tabSettings)) {
-                    navigationModel.showSettings()
-                }
-                .keyboardShortcut("3", modifiers: [.command])
             }
 #endif
         }
+
+#if os(macOS)
+        Settings {
+            SettingsScreen(
+                library: Self.settingsLibrary,
+                settingsStore: Self.settingsStore,
+                dictionarySourceStore: Self.dictionarySourceStore,
+                offlineAudioStore: Self.settingsOfflineAudioStore,
+                initialSettings: settingsSnapshot
+            ) {
+                maintenanceToken = UUID()
+            } onSettingsChanged: { settings in
+                settingsSnapshot = settings
+            }
+            .environmentObject(appLanguageManager)
+        }
+#endif
+    }
+
+    private static func makeOfflineAudioStore() -> OfflineAudioStore {
+        try? appStorage.prepareAudioDirectory()
+        let storage = AudioArchiveStorage(rootDirectory: appStorage.audioDirectory)
+        try? storage.ensureDirectories()
+        return OfflineAudioStore(storage: storage)
     }
 
     private static var bundledDictionaryDirectory: URL {

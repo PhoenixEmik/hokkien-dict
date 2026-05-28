@@ -424,7 +424,7 @@ private extension View {
 #if os(macOS)
         toolbar {
             if let displayedEntry {
-                ToolbarItem(placement: .automatic) {
+                ToolbarItem(placement: .primaryAction) {
                     MacDictionaryToolbarActions(
                         entry: displayedEntry,
                         bookmarkStore: bookmarkStore,

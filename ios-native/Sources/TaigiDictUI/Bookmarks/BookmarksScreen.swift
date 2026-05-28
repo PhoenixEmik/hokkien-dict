@@ -13,17 +13,23 @@ public struct BookmarksScreen: View {
     private let bookmarkStore: any BookmarksStoreProtocol
     private let offlineAudioStore: (any OfflineAudioManaging)?
     private let conversionService: (any ChineseConversionProviding)?
+    private let macNavigationSelection: Binding<MacNavigationSection>?
+    private let onOpenDictionarySearch: () -> Void
 
     public init(
         library: DictionaryLibrary,
         bookmarkStore: any BookmarksStoreProtocol,
         offlineAudioStore: (any OfflineAudioManaging)? = nil,
-        conversionService: (any ChineseConversionProviding)? = nil
+        conversionService: (any ChineseConversionProviding)? = nil,
+        macNavigationSelection: Binding<MacNavigationSection>? = nil,
+        onOpenDictionarySearch: @escaping () -> Void = {}
     ) {
         self.library = library
         self.bookmarkStore = bookmarkStore
         self.offlineAudioStore = offlineAudioStore
         self.conversionService = conversionService
+        self.macNavigationSelection = macNavigationSelection
+        self.onOpenDictionarySearch = onOpenDictionarySearch
         _viewModel = State(initialValue: BookmarksViewModel(library: library, bookmarkStore: bookmarkStore))
     }
 
@@ -43,6 +49,10 @@ public struct BookmarksScreen: View {
             NavigationStack {
                 bookmarksRoot(locale: locale)
             }
+            .macMainNavigationToolbar(
+                selection: macNavigationSelection,
+                locale: locale
+            )
         case .desktopResultsSplit:
             NavigationSplitView {
                 bookmarksRoot(locale: locale)
@@ -50,6 +60,10 @@ public struct BookmarksScreen: View {
                 bookmarksDetail(locale: locale)
             }
             .navigationSplitViewStyle(.balanced)
+            .macMainNavigationToolbar(
+                selection: macNavigationSelection,
+                locale: locale
+            )
         }
 #else
         NavigationStack {
@@ -107,10 +121,9 @@ public struct BookmarksScreen: View {
             )
 #else
         bookmarksDesktopRoot(locale: locale)
-            .navigationTitle(AppLocalizer.text(.bookmarksTitle, locale: locale))
             .toolbar {
                 if showsToolbarActions {
-                    ToolbarItemGroup {
+                    ToolbarItemGroup(placement: .primaryAction) {
                         selectAllToggleButton(locale: locale)
                         deleteSelectedButton(locale: locale)
                     }
@@ -180,35 +193,13 @@ public struct BookmarksScreen: View {
 #if os(macOS)
     @ViewBuilder
     private func bookmarksDesktopRoot(locale: AppLocale) -> some View {
-        if viewModel.isLoading {
-            centeredDesktopState {
-                ProgressView(AppLocalizer.text(.bookmarksLoading, locale: locale))
-            }
-        } else if let errorMessage = viewModel.errorMessage {
-            centeredDesktopState {
-                ContentUnavailableView(
-                    AppLocalizer.text(.loadingFailedTitle, locale: locale),
-                    systemImage: "exclamationmark.triangle",
-                    description: Text(errorMessage)
-                )
-            }
-        } else if viewModel.entries.isEmpty {
-            centeredDesktopState {
-                ContentUnavailableView(
-                    AppLocalizer.text(.bookmarksEmptyTitle, locale: locale),
-                    systemImage: "bookmark",
-                    description: Text(AppLocalizer.text(.bookmarksEmptyDescription, locale: locale))
-                )
-            }
-        } else {
-            bookmarksDesktopList(locale: locale)
-        }
+        bookmarksDesktopList(locale: locale)
     }
 
     @ViewBuilder
     private func bookmarksDesktopList(locale: AppLocale) -> some View {
         List(selection: $selectedEntryIDs) {
-            bookmarksContent(locale: locale, isSelecting: true)
+            bookmarksContent(locale: locale, isSelecting: true, showsEmptyState: false)
         }
     }
 
@@ -222,13 +213,10 @@ public struct BookmarksScreen: View {
                 offlineAudioStore: offlineAudioStore,
                 conversionService: conversionService
             )
-            .navigationTitle(selectedBookmarkEntry.hanji)
         } else {
-            ContentUnavailableView(
-                AppLocalizer.text(.searchStartDetailTitle, locale: locale),
-                systemImage: "bookmark",
-                description: Text(AppLocalizer.text(.bookmarksEmptyDescription, locale: locale))
-            )
+            centeredDesktopState {
+                bookmarksEmptyState(locale: locale)
+            }
         }
     }
 
@@ -237,10 +225,26 @@ public struct BookmarksScreen: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             .padding(24)
     }
+
+    private func bookmarksEmptyState(locale: AppLocale) -> some View {
+        ContentUnavailableView {
+            Label(
+                AppLocalizer.text(.bookmarksEmptyTitle, locale: locale),
+                systemImage: "bookmark"
+            )
+        } description: {
+            Text(AppLocalizer.text(.bookmarksEmptyDescription, locale: locale))
+        } actions: {
+            Button(AppLocalizer.text(.bookmarksEmptyAction, locale: locale)) {
+                onOpenDictionarySearch()
+            }
+            .buttonStyle(.borderedProminent)
+        }
+    }
 #endif
 
     @ViewBuilder
-    private func bookmarksContent(locale: AppLocale, isSelecting: Bool) -> some View {
+    private func bookmarksContent(locale: AppLocale, isSelecting: Bool, showsEmptyState: Bool = true) -> some View {
         if viewModel.isLoading {
             Section {
                 HStack {
@@ -257,12 +261,14 @@ public struct BookmarksScreen: View {
                 )
             }
         } else if viewModel.entries.isEmpty {
-            Section {
-                ContentUnavailableView(
-                    AppLocalizer.text(.bookmarksEmptyTitle, locale: locale),
-                    systemImage: "bookmark",
-                    description: Text(AppLocalizer.text(.bookmarksEmptyDescription, locale: locale))
-                )
+            if showsEmptyState {
+                Section {
+                    ContentUnavailableView(
+                        AppLocalizer.text(.bookmarksEmptyTitle, locale: locale),
+                        systemImage: "bookmark",
+                        description: Text(AppLocalizer.text(.bookmarksEmptyDescription, locale: locale))
+                    )
+                }
             }
         } else {
             Section(AppLocalizer.text(.bookmarksSectionSaved, locale: locale)) {
@@ -423,6 +429,34 @@ public struct BookmarksScreen: View {
     }
 }
 
+private extension View {
+    @ViewBuilder
+    func macMainNavigationToolbar(
+        selection: Binding<MacNavigationSection>?,
+        locale: AppLocale
+    ) -> some View {
+#if os(macOS)
+        toolbar {
+            if let selection {
+                ToolbarItem(placement: .principal) {
+                    Picker("", selection: selection) {
+                        Text(AppLocalizer.text(.tabDictionary, locale: locale))
+                            .tag(MacNavigationSection.dictionary)
+                        Text(AppLocalizer.text(.tabBookmarks, locale: locale))
+                            .tag(MacNavigationSection.bookmarks)
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.segmented)
+                    .frame(width: 220)
+                }
+            }
+        }
+#else
+        self
+#endif
+    }
+}
+
 enum BookmarksPresentation: Equatable {
     case desktopSinglePane
     case desktopResultsSplit
@@ -431,7 +465,7 @@ enum BookmarksPresentation: Equatable {
         hasSelection: Bool,
         prefersDesktopLayout: Bool = Self.prefersDesktopLayout
     ) -> BookmarksPresentation {
-        if prefersDesktopLayout, hasSelection {
+        if prefersDesktopLayout {
             return .desktopResultsSplit
         }
 

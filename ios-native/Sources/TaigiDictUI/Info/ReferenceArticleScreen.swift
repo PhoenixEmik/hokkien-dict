@@ -19,7 +19,7 @@ private struct ReferenceArticleDocument: Decodable {
     let sections: [ReferenceArticleSectionModel]
 }
 
-private enum ReferenceArticleKind: String {
+enum ReferenceArticleKind: String {
     case taiLo = "reference_tailo"
     case hanji = "reference_hanji"
 }
@@ -85,7 +85,7 @@ struct ReferenceArticleListScreen: View {
     }
 }
 
-private struct LocalizedReferenceArticleScreen: View {
+struct LocalizedReferenceArticleScreen: View {
     @Environment(\.locale) private var locale
     let kind: ReferenceArticleKind
     let fallbackTitle: String

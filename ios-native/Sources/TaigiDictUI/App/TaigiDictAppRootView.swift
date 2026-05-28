@@ -12,12 +12,16 @@ public struct TaigiDictAppRootView: View {
     @State private var initializationViewModel = InitializationViewModel()
     @State private var bookmarkStore = BookmarkStore()
     @State private var offlineAudioStore: OfflineAudioStore
-    @State private var appSettings = AppSettingsSnapshot()
     @State private var hasLoadedAppSettings = false
+    @State private var selectedIOSTab: IOSAppTab = .dictionary
 
     private let settingsStore: any AppSettingsStoring
     private let conversionService: (any ChineseConversionProviding)?
     private let dictionarySourceStore: (any DictionarySourceResourceManaging)?
+    private let settingsSnapshot: AppSettingsSnapshot
+    private let onSettingsChanged: (AppSettingsSnapshot) -> Void
+    private let onMaintenanceCompleted: () -> Void
+    private let maintenanceToken: UUID
 
     @MainActor
     public init(
@@ -25,7 +29,11 @@ public struct TaigiDictAppRootView: View {
         settingsStore: any AppSettingsStoring = UserDefaultsAppSettingsStore(),
         dictionarySourceStore: (any DictionarySourceResourceManaging)? = nil,
         appLanguageManager: AppLanguageManager? = nil,
-        navigationModel: AppNavigationModel = AppNavigationModel()
+        navigationModel: AppNavigationModel = AppNavigationModel(),
+        settingsSnapshot: AppSettingsSnapshot = AppSettingsSnapshot(),
+        maintenanceToken: UUID = UUID(),
+        onMaintenanceCompleted: @escaping () -> Void = {},
+        onSettingsChanged: @escaping (AppSettingsSnapshot) -> Void = { _ in }
     ) {
         let conversionService = Self.makeChineseConversionService()
         self.conversionService = conversionService
@@ -38,6 +46,10 @@ public struct TaigiDictAppRootView: View {
         ))
         _offlineAudioStore = State(initialValue: Self.makeOfflineAudioStore())
         self.settingsStore = settingsStore
+        self.settingsSnapshot = settingsSnapshot
+        self.maintenanceToken = maintenanceToken
+        self.onMaintenanceCompleted = onMaintenanceCompleted
+        self.onSettingsChanged = onSettingsChanged
     }
 
     public var body: some View {
@@ -57,14 +69,20 @@ public struct TaigiDictAppRootView: View {
             await loadAppSettingsIfNeeded()
             syncAppLocaleWithSystem()
         }
+        .onChange(of: maintenanceToken) { _, _ in
+            Task { @MainActor in
+                await viewModel.resetAfterMaintenance()
+                initializationViewModel.retry()
+            }
+        }
         .onChange(of: locale.identifier) { _, _ in
             appLanguageManager.updateSystemLocale(locale)
         }
         .onChange(of: appLocale) { _, _ in
             syncAppLocaleWithSystem()
         }
-        .preferredColorScheme(appSettings.themePreference.preferredColorScheme)
-        .dynamicTypeSize(appSettings.readingTextScale.dynamicTypeSize)
+        .preferredColorScheme(settingsSnapshot.themePreference.preferredColorScheme)
+        .dynamicTypeSize(settingsSnapshot.readingTextScale.dynamicTypeSize)
         .taigiMacWindowToolbarBaselineHidden()
     }
 
@@ -90,16 +108,9 @@ public struct TaigiDictAppRootView: View {
         let currentLocale = appLocale
         return Group {
 #if os(macOS)
-            switch navigationModel.selectedTab {
-            case .dictionary:
-                dictionaryTab
-            case .bookmarks:
-                bookmarksTab
-            case .settings:
-                settingsTab
-            }
+            macWindowContent
 #else
-            TabView(selection: $navigationModel.selectedTab) {
+            TabView(selection: $selectedIOSTab) {
                 dictionaryTab
                 bookmarksTab
                 settingsTab
@@ -114,12 +125,13 @@ public struct TaigiDictAppRootView: View {
             viewModel: viewModel,
             bookmarkStore: bookmarkStore,
             offlineAudioStore: offlineAudioStore,
-            conversionService: conversionService
+            conversionService: conversionService,
+            macNavigationSelection: macNavigationSelectionOrNil
         )
         .tabItem {
             Label(appLanguageManager.localized(.tabDictionary), systemImage: "book")
         }
-        .tag(AppTab.dictionary)
+        .tag(IOSAppTab.dictionary)
     }
 
     private var bookmarksTab: some View {
@@ -127,12 +139,20 @@ public struct TaigiDictAppRootView: View {
             library: viewModel.library,
             bookmarkStore: bookmarkStore,
             offlineAudioStore: offlineAudioStore,
-            conversionService: conversionService
+            conversionService: conversionService,
+            macNavigationSelection: macNavigationSelectionOrNil,
+            onOpenDictionarySearch: {
+#if os(macOS)
+                navigationModel.showDictionary()
+#else
+                selectedIOSTab = .dictionary
+#endif
+            }
         )
         .tabItem {
             Label(appLanguageManager.localized(.tabBookmarks), systemImage: "bookmark")
         }
-        .tag(AppTab.bookmarks)
+        .tag(IOSAppTab.bookmarks)
     }
 
     private var settingsTab: some View {
@@ -141,19 +161,16 @@ public struct TaigiDictAppRootView: View {
             settingsStore: settingsStore,
             dictionarySourceStore: dictionarySourceStore,
             offlineAudioStore: offlineAudioStore,
-            initialSettings: appSettings
+            initialSettings: settingsSnapshot
         ) {
-            Task { @MainActor in
-                await viewModel.resetAfterMaintenance()
-                initializationViewModel.retry()
-            }
+            onMaintenanceCompleted()
         } onSettingsChanged: { settings in
-            appSettings = settings
+            onSettingsChanged(settings)
         }
         .tabItem {
             Label(appLanguageManager.localized(.tabSettings), systemImage: "gearshape")
         }
-        .tag(AppTab.settings)
+        .tag(IOSAppTab.settings)
     }
 
     private var appLocale: AppLocale {
@@ -166,7 +183,7 @@ public struct TaigiDictAppRootView: View {
         }
 
         hasLoadedAppSettings = true
-        appSettings = await settingsStore.load()
+        onSettingsChanged(await settingsStore.load())
     }
 
     private func syncAppLocaleWithSystem() {
@@ -186,23 +203,47 @@ public struct TaigiDictAppRootView: View {
 
         return OfflineAudioStore(storage: storage)
     }
+
+#if os(macOS)
+    private var macSectionSelection: Binding<MacNavigationSection> {
+        Binding(
+            get: { navigationModel.selectedSection },
+            set: { navigationModel.selectedSection = $0 }
+        )
+    }
+
+    private var macNavigationSelectionOrNil: Binding<MacNavigationSection>? {
+        macSectionSelection
+    }
+
+    private var macWindowContent: some View {
+        Group {
+            switch navigationModel.selectedSection {
+            case .dictionary:
+                dictionaryTab
+            case .bookmarks:
+                bookmarksTab
+            }
+        }
+    }
+#else
+    private var macNavigationSelectionOrNil: Binding<MacNavigationSection>? {
+        nil
+    }
+#endif
 }
 
 public final class AppNavigationModel: ObservableObject {
-    @Published var selectedTab: AppTab = .dictionary
+    @Published var selectedSection: MacNavigationSection = .dictionary
 
     public init() {}
 
     public func showDictionary() {
-        selectedTab = .dictionary
+        selectedSection = .dictionary
     }
 
     public func showBookmarks() {
-        selectedTab = .bookmarks
-    }
-
-    public func showSettings() {
-        selectedTab = .settings
+        selectedSection = .bookmarks
     }
 }
 
@@ -256,7 +297,12 @@ private struct MacWindowToolbarConfigurator: NSViewRepresentable {
 }
 #endif
 
-enum AppTab: Hashable {
+public enum MacNavigationSection: Hashable {
+    case dictionary
+    case bookmarks
+}
+
+private enum IOSAppTab: Hashable {
     case dictionary
     case bookmarks
     case settings

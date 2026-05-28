@@ -1,10 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
     "%lld" : {
 
     },
     "%lld." : {
+
+    },
+    "A" : {
 
     },
     "aboutAppDescription" : {
@@ -1245,6 +1251,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "完成選取"
+          }
+        }
+      }
+    },
+    "bookmarksEmptyAction" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go to Dictionary Search"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前往搜索词条"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前往搜尋詞條"
           }
         }
       }
@@ -2589,6 +2618,29 @@
         }
       }
     },
+    "menuGo" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前往"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前往"
+          }
+        }
+      }
+    },
     "noAudioAvailable" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3259,6 +3311,29 @@
         }
       }
     },
+    "settingsGeneralTab" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "General"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一般"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一般"
+          }
+        }
+      }
+    },
     "settingsInterfaceLanguageLabel" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3393,6 +3468,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "參考資料"
+          }
+        }
+      }
+    },
+    "settingsResourcesTab" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resources"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "资源"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "資源"
           }
         }
       }
