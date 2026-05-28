@@ -7,7 +7,7 @@ final class DictionarySearchPresentationTests: XCTestCase {
         XCTAssertEqual(
             DictionarySearchPresentation.resolve(
                 horizontalSizeClass: .regular,
-                prefersDesktopSplit: false
+                prefersDesktopLayout: false
             ),
             .regularSplit
         )
@@ -17,7 +17,7 @@ final class DictionarySearchPresentationTests: XCTestCase {
         XCTAssertEqual(
             DictionarySearchPresentation.resolve(
                 horizontalSizeClass: .compact,
-                prefersDesktopSplit: false
+                prefersDesktopLayout: false
             ),
             .compactStack
         )
@@ -27,19 +27,45 @@ final class DictionarySearchPresentationTests: XCTestCase {
         XCTAssertEqual(
             DictionarySearchPresentation.resolve(
                 horizontalSizeClass: nil,
-                prefersDesktopSplit: false
+                prefersDesktopLayout: false
             ),
             .compactStack
         )
     }
 
-    func testMacOSPrefersSplitPresentationWithoutSizeClass() {
+    func testMacOSPrefersSinglePanePresentationWithoutQueryResults() {
         XCTAssertEqual(
             DictionarySearchPresentation.resolve(
                 horizontalSizeClass: nil,
-                prefersDesktopSplit: true
+                prefersDesktopLayout: true,
+                isSearching: false,
+                hasResults: false
             ),
-            .regularSplit
+            .desktopSinglePane
+        )
+    }
+
+    func testMacOSUsesSplitPresentationWhileSearching() {
+        XCTAssertEqual(
+            DictionarySearchPresentation.resolve(
+                horizontalSizeClass: nil,
+                prefersDesktopLayout: true,
+                isSearching: true,
+                hasResults: false
+            ),
+            .desktopResultsSplit
+        )
+    }
+
+    func testMacOSUsesSplitPresentationWhenResultsExist() {
+        XCTAssertEqual(
+            DictionarySearchPresentation.resolve(
+                horizontalSizeClass: nil,
+                prefersDesktopLayout: true,
+                isSearching: false,
+                hasResults: true
+            ),
+            .desktopResultsSplit
         )
     }
 

@@ -38,12 +38,19 @@ public struct BookmarksScreen: View {
     @ViewBuilder
     private func bookmarksContainer(locale: AppLocale) -> some View {
 #if os(macOS)
-        NavigationSplitView {
-            bookmarksRoot(locale: locale)
-        } detail: {
-            bookmarksDetail(locale: locale)
+        switch BookmarksPresentation.resolve(hasSelection: selectedBookmarkEntry != nil) {
+        case .desktopSinglePane:
+            NavigationStack {
+                bookmarksRoot(locale: locale)
+            }
+        case .desktopResultsSplit:
+            NavigationSplitView {
+                bookmarksRoot(locale: locale)
+            } detail: {
+                bookmarksDetail(locale: locale)
+            }
+            .navigationSplitViewStyle(.balanced)
         }
-        .navigationSplitViewStyle(.balanced)
 #else
         NavigationStack {
             bookmarksRoot(locale: locale)
@@ -379,6 +386,30 @@ public struct BookmarksScreen: View {
             selectedEntryIDs = [nextPrimarySelection]
             primarySelectedEntryID = nextPrimarySelection
         }
+#endif
+    }
+}
+
+enum BookmarksPresentation: Equatable {
+    case desktopSinglePane
+    case desktopResultsSplit
+
+    static func resolve(
+        hasSelection: Bool,
+        prefersDesktopLayout: Bool = Self.prefersDesktopLayout
+    ) -> BookmarksPresentation {
+        if prefersDesktopLayout, hasSelection {
+            return .desktopResultsSplit
+        }
+
+        return .desktopSinglePane
+    }
+
+    private static var prefersDesktopLayout: Bool {
+#if os(macOS)
+        true
+#else
+        false
 #endif
     }
 }

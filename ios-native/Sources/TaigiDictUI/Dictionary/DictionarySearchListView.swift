@@ -99,13 +99,7 @@ struct DictionarySearchListView: View {
         }
         .animation(.easeOut(duration: 0.12), value: viewModel.isSearching)
         .animation(.easeOut(duration: 0.12), value: viewModel.results.isEmpty)
-        .searchable(text: $viewModel.searchText, prompt: AppLocalizer.text(.searchPrompt, locale: appLocale))
-        .onChange(of: viewModel.searchText) { _, _ in
-            viewModel.scheduleSearch()
-        }
-        .onSubmit(of: .search) {
-            viewModel.submitSearch()
-        }
+        .dictionarySearchInput(viewModel: viewModel, locale: appLocale)
     }
 }
 
@@ -118,7 +112,7 @@ enum DictionarySearchStartPresentation: Equatable {
     }
 }
 
-private struct SearchResultSkeletonRow: View {
+struct SearchResultSkeletonRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             RoundedRectangle(cornerRadius: 5)

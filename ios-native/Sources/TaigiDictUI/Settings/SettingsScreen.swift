@@ -36,117 +36,11 @@ public struct SettingsScreen: View {
         let wordAudioTitle = AppLocalizer.text(.settingsWordAudio, locale: appLocale)
         let sentenceAudioTitle = AppLocalizer.text(.settingsSentenceAudio, locale: appLocale)
         NavigationStack {
-            Form {
-                Section(AppLocalizer.text(.settingsDisplayLanguageSection, locale: appLocale)) {
-                    Picker(appLanguageManager.localized(.settingsInterfaceLanguageLabel), selection: Binding(
-                        get: { appLanguageManager.selectedLanguage },
-                        set: { language in
-                            appLanguageManager.setLanguage(language)
-                        }
-                    )) {
-                        ForEach(AppLanguage.allCases, id: \.self) { language in
-                            Text(appLanguageManager.displayName(for: language))
-                                .accessibilityIdentifier(language.settingsAccessibilityIdentifier)
-                                .tag(language)
-                        }
-                    }
-                    .accessibilityIdentifier("settings.interfaceLanguagePicker")
-
-                    Picker(AppLocalizer.text(.settingsThemeLabel, locale: appLocale), selection: Binding(
-                        get: { viewModel.selectedThemePreference },
-                        set: { preference in
-                            Task {
-                                await viewModel.setThemePreference(preference)
-                                onSettingsChanged(viewModel.currentSettingsSnapshot)
-                            }
-                        }
-                    )) {
-                        ForEach(AppThemePreference.allCases, id: \.self) { preference in
-                            Text(preference.displayName(in: appLocale))
-                                .tag(preference)
-                        }
-                    }
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        LabeledContent(AppLocalizer.text(.settingsReadingTextScaleLabel, locale: appLocale)) {
-                            Text(viewModel.readingTextScale.displayScaleLabel(locale: appLocale))
-                                .monospacedDigit()
-                        }
-
-                        Slider(
-                            value: Binding(
-                                get: { viewModel.readingTextScale },
-                                set: { value in
-                                    Task {
-                                        await viewModel.setReadingTextScale(value)
-                                        onSettingsChanged(viewModel.currentSettingsSnapshot)
-                                    }
-                                }
-                            ),
-                            in: viewModel.minReadingTextScale...viewModel.maxReadingTextScale,
-                            step: (viewModel.maxReadingTextScale - viewModel.minReadingTextScale) / Double(viewModel.readingTextScaleDivisions)
-                        )
-                    }
-                }
-
-                Section(AppLocalizer.text(.settingsDataAndInfoSection, locale: appLocale)) {
-                    NavigationLink {
-                        AdvancedSettingsScreen(viewModel: viewModel) {
-                            onMaintenanceCompleted()
-                        }
-                    } label: {
-                        Label(AppLocalizer.text(.settingsAdvanced, locale: appLocale), systemImage: "wrench.and.screwdriver")
-                    }
-
-                    NavigationLink {
-                        AboutScreen()
-                    } label: {
-                        Label(AppLocalizer.text(.settingsAbout, locale: appLocale), systemImage: "info.circle")
-                    }
-
-                    NavigationLink {
-                        ReferenceArticleListScreen()
-                    } label: {
-                        Label(AppLocalizer.text(.settingsReferences, locale: appLocale), systemImage: "text.book.closed")
-                    }
-                }
-
-                if viewModel.supportsDictionarySourceResources {
-                    Section(AppLocalizer.text(.settingsDictionaryResourcesSection, locale: appLocale)) {
-                        DictionarySourceResourceRow(
-                            title: AppLocalizer.text(.settingsDictionarySource, locale: appLocale),
-                            locale: appLocale,
-                            snapshot: viewModel.dictionarySourceSnapshot,
-                            isSnapshotLoading: false,
-                            isRunningAction: viewModel.isDictionarySourceActionRunning
-                        ) { action in
-                            handleDictionarySourceAction(action)
-                        }
-                    }
-                }
-
-                Section(AppLocalizer.text(.settingsOfflineAudioSection, locale: appLocale)) {
-                    AudioArchiveResourceRow(
-                        title: wordAudioTitle,
-                        locale: appLocale,
-                        snapshot: viewModel.snapshot(for: .word),
-                        isSnapshotLoading: !viewModel.hasLoadedAudioSnapshots,
-                        isRunningAction: viewModel.isAudioActionRunning(for: .word)
-                    ) { action in
-                        handleAudioAction(action, for: .word, title: wordAudioTitle)
-                    }
-
-                    AudioArchiveResourceRow(
-                        title: sentenceAudioTitle,
-                        locale: appLocale,
-                        snapshot: viewModel.snapshot(for: .sentence),
-                        isSnapshotLoading: !viewModel.hasLoadedAudioSnapshots,
-                        isRunningAction: viewModel.isAudioActionRunning(for: .sentence)
-                    ) { action in
-                        handleAudioAction(action, for: .sentence, title: sentenceAudioTitle)
-                    }
-                }
-            }
+            settingsContent(
+                locale: appLocale,
+                wordAudioTitle: wordAudioTitle,
+                sentenceAudioTitle: sentenceAudioTitle
+            )
             .navigationTitle(AppLocalizer.text(.settingsTitle, locale: appLocale))
         }
         .task {
@@ -212,6 +106,272 @@ public struct SettingsScreen: View {
             )
         }
     }
+
+    @ViewBuilder
+    private func settingsContent(
+        locale: AppLocale,
+        wordAudioTitle: String,
+        sentenceAudioTitle: String
+    ) -> some View {
+#if os(macOS)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                settingsSectionCard(title: AppLocalizer.text(.settingsDisplayLanguageSection, locale: locale)) {
+                    settingsPickerRow(title: appLanguageManager.localized(.settingsInterfaceLanguageLabel)) {
+                        interfaceLanguagePicker
+                    }
+                    settingsPickerRow(title: AppLocalizer.text(.settingsThemeLabel, locale: locale)) {
+                        themePicker(locale: locale)
+                    }
+                    readingTextScaleControl(locale: locale)
+                }
+
+                settingsSectionCard(title: AppLocalizer.text(.settingsDataAndInfoSection, locale: locale)) {
+                    settingsNavigationRow(
+                        title: AppLocalizer.text(.settingsAdvanced, locale: locale),
+                        systemImage: "wrench.and.screwdriver"
+                    ) {
+                        AdvancedSettingsScreen(viewModel: viewModel) {
+                            onMaintenanceCompleted()
+                        }
+                    }
+                    settingsNavigationRow(
+                        title: AppLocalizer.text(.settingsAbout, locale: locale),
+                        systemImage: "info.circle"
+                    ) {
+                        AboutScreen()
+                    }
+                    settingsNavigationRow(
+                        title: AppLocalizer.text(.settingsReferences, locale: locale),
+                        systemImage: "text.book.closed"
+                    ) {
+                        ReferenceArticleListScreen()
+                    }
+                }
+
+                if viewModel.supportsDictionarySourceResources {
+                    settingsSectionCard(title: AppLocalizer.text(.settingsDictionaryResourcesSection, locale: locale)) {
+                        DictionarySourceResourceRow(
+                            title: AppLocalizer.text(.settingsDictionarySource, locale: locale),
+                            locale: locale,
+                            snapshot: viewModel.dictionarySourceSnapshot,
+                            isSnapshotLoading: false,
+                            isRunningAction: viewModel.isDictionarySourceActionRunning
+                        ) { action in
+                            handleDictionarySourceAction(action)
+                        }
+                    }
+                }
+
+                settingsSectionCard(title: AppLocalizer.text(.settingsOfflineAudioSection, locale: locale)) {
+                    AudioArchiveResourceRow(
+                        title: wordAudioTitle,
+                        locale: locale,
+                        snapshot: viewModel.snapshot(for: .word),
+                        isSnapshotLoading: !viewModel.hasLoadedAudioSnapshots,
+                        isRunningAction: viewModel.isAudioActionRunning(for: .word)
+                    ) { action in
+                        handleAudioAction(action, for: .word, title: wordAudioTitle)
+                    }
+
+                    Divider()
+
+                    AudioArchiveResourceRow(
+                        title: sentenceAudioTitle,
+                        locale: locale,
+                        snapshot: viewModel.snapshot(for: .sentence),
+                        isSnapshotLoading: !viewModel.hasLoadedAudioSnapshots,
+                        isRunningAction: viewModel.isAudioActionRunning(for: .sentence)
+                    ) { action in
+                        handleAudioAction(action, for: .sentence, title: sentenceAudioTitle)
+                    }
+                }
+            }
+            .frame(maxWidth: 760, alignment: .leading)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 20)
+            .frame(maxWidth: .infinity, alignment: .top)
+        }
+        .scrollContentBackground(.hidden)
+#else
+        Form {
+            Section(AppLocalizer.text(.settingsDisplayLanguageSection, locale: locale)) {
+                interfaceLanguagePicker
+                themePicker(locale: locale)
+                readingTextScaleControl(locale: locale)
+            }
+
+            Section(AppLocalizer.text(.settingsDataAndInfoSection, locale: locale)) {
+                NavigationLink {
+                    AdvancedSettingsScreen(viewModel: viewModel) {
+                        onMaintenanceCompleted()
+                    }
+                } label: {
+                    Label(AppLocalizer.text(.settingsAdvanced, locale: locale), systemImage: "wrench.and.screwdriver")
+                }
+
+                NavigationLink {
+                    AboutScreen()
+                } label: {
+                    Label(AppLocalizer.text(.settingsAbout, locale: locale), systemImage: "info.circle")
+                }
+
+                NavigationLink {
+                    ReferenceArticleListScreen()
+                } label: {
+                    Label(AppLocalizer.text(.settingsReferences, locale: locale), systemImage: "text.book.closed")
+                }
+            }
+
+            if viewModel.supportsDictionarySourceResources {
+                Section(AppLocalizer.text(.settingsDictionaryResourcesSection, locale: locale)) {
+                    DictionarySourceResourceRow(
+                        title: AppLocalizer.text(.settingsDictionarySource, locale: locale),
+                        locale: locale,
+                        snapshot: viewModel.dictionarySourceSnapshot,
+                        isSnapshotLoading: false,
+                        isRunningAction: viewModel.isDictionarySourceActionRunning
+                    ) { action in
+                        handleDictionarySourceAction(action)
+                    }
+                }
+            }
+
+            Section(AppLocalizer.text(.settingsOfflineAudioSection, locale: locale)) {
+                AudioArchiveResourceRow(
+                    title: wordAudioTitle,
+                    locale: locale,
+                    snapshot: viewModel.snapshot(for: .word),
+                    isSnapshotLoading: !viewModel.hasLoadedAudioSnapshots,
+                    isRunningAction: viewModel.isAudioActionRunning(for: .word)
+                ) { action in
+                    handleAudioAction(action, for: .word, title: wordAudioTitle)
+                }
+
+                AudioArchiveResourceRow(
+                    title: sentenceAudioTitle,
+                    locale: locale,
+                    snapshot: viewModel.snapshot(for: .sentence),
+                    isSnapshotLoading: !viewModel.hasLoadedAudioSnapshots,
+                    isRunningAction: viewModel.isAudioActionRunning(for: .sentence)
+                ) { action in
+                    handleAudioAction(action, for: .sentence, title: sentenceAudioTitle)
+                }
+            }
+        }
+#endif
+    }
+
+    private var interfaceLanguagePicker: some View {
+        Picker(appLanguageManager.localized(.settingsInterfaceLanguageLabel), selection: Binding(
+            get: { appLanguageManager.selectedLanguage },
+            set: { language in
+                appLanguageManager.setLanguage(language)
+            }
+        )) {
+            ForEach(AppLanguage.allCases, id: \.self) { language in
+                Text(appLanguageManager.displayName(for: language))
+                    .accessibilityIdentifier(language.settingsAccessibilityIdentifier)
+                    .tag(language)
+            }
+        }
+        .accessibilityIdentifier("settings.interfaceLanguagePicker")
+    }
+
+    private func themePicker(locale: AppLocale) -> some View {
+        Picker(AppLocalizer.text(.settingsThemeLabel, locale: locale), selection: Binding(
+            get: { viewModel.selectedThemePreference },
+            set: { preference in
+                Task {
+                    await viewModel.setThemePreference(preference)
+                    onSettingsChanged(viewModel.currentSettingsSnapshot)
+                }
+            }
+        )) {
+            ForEach(AppThemePreference.allCases, id: \.self) { preference in
+                Text(preference.displayName(in: locale))
+                    .tag(preference)
+            }
+        }
+    }
+
+    private func readingTextScaleControl(locale: AppLocale) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text(AppLocalizer.text(.settingsReadingTextScaleLabel, locale: locale))
+                Spacer()
+                Text(viewModel.readingTextScale.displayScaleLabel(locale: locale))
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+            }
+
+            Slider(
+                value: Binding(
+                    get: { viewModel.readingTextScale },
+                    set: { value in
+                        Task {
+                            await viewModel.setReadingTextScale(value)
+                            onSettingsChanged(viewModel.currentSettingsSnapshot)
+                        }
+                    }
+                ),
+                in: viewModel.minReadingTextScale...viewModel.maxReadingTextScale,
+                step: (viewModel.maxReadingTextScale - viewModel.minReadingTextScale) / Double(viewModel.readingTextScaleDivisions)
+            )
+        }
+    }
+
+#if os(macOS)
+    private func settingsSectionCard<Content: View>(
+        title: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        GroupBox {
+            VStack(alignment: .leading, spacing: 14) {
+                content()
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        } label: {
+            Text(title)
+                .font(.headline)
+        }
+    }
+
+    private func settingsPickerRow<Content: View>(
+        title: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        HStack(alignment: .center, spacing: 16) {
+            Text(title)
+                .frame(width: 96, alignment: .leading)
+
+            content()
+                .frame(maxWidth: 260, alignment: .leading)
+
+            Spacer(minLength: 0)
+        }
+    }
+
+    private func settingsNavigationRow<Destination: View>(
+        title: String,
+        systemImage: String,
+        @ViewBuilder destination: () -> Destination
+    ) -> some View {
+        NavigationLink {
+            destination()
+        } label: {
+            HStack(spacing: 10) {
+                Label(title, systemImage: systemImage)
+                Spacer(minLength: 12)
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+#endif
 
     private func handleDictionarySourceAction(_ action: SettingsViewModel.DictionarySourceAction) {
         Task {
