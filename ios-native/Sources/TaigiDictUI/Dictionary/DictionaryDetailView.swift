@@ -1,8 +1,5 @@
 import SwiftUI
 import TaigiDictCore
-#if os(macOS)
-import AppKit
-#endif
 
 struct DictionaryDetailView: View {
     var sourceEntry: DictionaryEntry?
@@ -318,92 +315,6 @@ struct DictionaryDetailView: View {
     }
 }
 
-#if os(macOS)
-private struct MacDictionaryToolbarActions: View {
-    let entry: DictionaryEntry
-    let bookmarkStore: (any BookmarksStoreProtocol)?
-    let isBookmarked: Bool
-    let toggleBookmark: (DictionaryEntry) -> Void
-    let appLocale: AppLocale
-
-    var body: some View {
-        ControlGroup {
-            if bookmarkStore != nil {
-                Button {
-                    toggleBookmark(entry)
-                } label: {
-                    Label(
-                        isBookmarked
-                            ? AppLocalizer.text(.bookmarksRemove, locale: appLocale)
-                            : AppLocalizer.text(.bookmarksAdd, locale: appLocale),
-                        systemImage: isBookmarked ? "bookmark.fill" : "bookmark"
-                    )
-                }
-            }
-
-            MacDictionaryShareButton(
-                shareText: WordDetailViewModel.shareText(for: entry),
-                appLocale: appLocale
-            )
-        }
-        .controlSize(.large)
-    }
-}
-
-private struct MacDictionaryShareButton: View {
-    let shareText: String
-    let appLocale: AppLocale
-
-    @State private var isPresentingSharePicker = false
-
-    var body: some View {
-        Button {
-            isPresentingSharePicker = true
-        } label: {
-            Label(AppLocalizer.text(.share, locale: appLocale), systemImage: "square.and.arrow.up")
-        }
-        .background(
-            MacSharingServicePresenter(
-                isPresented: $isPresentingSharePicker,
-                items: [shareText]
-            )
-            .frame(width: 0, height: 0)
-        )
-    }
-}
-
-private struct MacSharingServicePresenter: NSViewRepresentable {
-    @Binding var isPresented: Bool
-    let items: [Any]
-
-    func makeNSView(context: Context) -> NSView {
-        NSView(frame: .zero)
-    }
-
-    func updateNSView(_ nsView: NSView, context: Context) {
-        guard isPresented else {
-            return
-        }
-
-        context.coordinator.present(from: nsView, items: items)
-        DispatchQueue.main.async {
-            isPresented = false
-        }
-    }
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator()
-    }
-
-    final class Coordinator {
-        func present(from view: NSView, items: [Any]) {
-            let picker = NSSharingServicePicker(items: items)
-            picker.show(relativeTo: view.bounds, of: view, preferredEdge: .minY)
-        }
-    }
-}
-#endif
-
 private extension DictionaryEntry {
     var hasDisplayableDetailContent: Bool {
         senses.contains { sense in
@@ -434,19 +345,7 @@ private extension View {
         toggleBookmark: @escaping (DictionaryEntry) -> Void
     ) -> some View {
 #if os(macOS)
-        toolbar {
-            if let displayedEntry {
-                ToolbarItem(placement: .primaryAction) {
-                    MacDictionaryToolbarActions(
-                        entry: displayedEntry,
-                        bookmarkStore: bookmarkStore,
-                        isBookmarked: isBookmarked,
-                        toggleBookmark: toggleBookmark,
-                        appLocale: appLocale
-                    )
-                }
-            }
-        }
+        self
 #else
         toolbar {
             if let displayedEntry {

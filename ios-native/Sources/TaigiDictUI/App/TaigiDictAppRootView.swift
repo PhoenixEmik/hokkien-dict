@@ -3,6 +3,9 @@ import TaigiDictCore
 #if os(macOS)
 import AppKit
 #endif
+#if os(macOS)
+import AppKit
+#endif
 
 public struct TaigiDictAppRootView: View {
     @Environment(\.locale) private var locale
@@ -270,6 +273,7 @@ private struct MacDictionaryWindowContent: View {
     @Environment(\.locale) private var locale
     @State private var selectedBookmarkIDs: Set<Int64> = []
     @State private var primarySelectedBookmarkID: Int64?
+    @State private var isToolbarEntryBookmarked = false
 
     let bookmarksViewModel: BookmarksViewModel
     let bookmarkStore: BookmarkStore
@@ -316,6 +320,15 @@ private struct MacDictionaryWindowContent: View {
         bookmarksViewModel.entries.map(\.id)
     }
 
+    private var toolbarEntry: DictionaryEntry? {
+        switch selection {
+        case .dictionary:
+            dictionaryViewModel.selectedEntry
+        case .bookmarks:
+            selectedBookmarkEntry
+        }
+    }
+
     var body: some View {
         NavigationSplitView {
             sidebarContent
@@ -323,7 +336,7 @@ private struct MacDictionaryWindowContent: View {
         } detail: {
             detailContent
         }
-        .navigationTitle(windowTitle)
+        .navigationTitle("")
         .navigationSplitViewStyle(.balanced)
         .searchable(
             text: searchBinding,
@@ -350,24 +363,49 @@ private struct MacDictionaryWindowContent: View {
                     nextScale: settingsSnapshot.readingTextScale + readingTextScaleStep,
                     disabled: settingsSnapshot.readingTextScale >= AppSettingsSnapshot.maxReadingTextScale
                 )
+
+                MacDictionaryToolbarActions(
+                    entry: toolbarEntry,
+                    isBookmarked: isToolbarEntryBookmarked,
+                    appLocale: appLocale,
+                    toggleBookmark: toggleToolbarBookmark
+                )
             }
         }
         .task {
             await bookmarksViewModel.load()
             syncBookmarkSelection()
+            await refreshToolbarBookmarkState()
         }
         .onChange(of: selection) { _, newValue in
             guard newValue == .bookmarks else {
+                Task {
+                    await refreshToolbarBookmarkState()
+                }
                 return
             }
 
             Task {
                 await bookmarksViewModel.load()
                 syncBookmarkSelection()
+                await refreshToolbarBookmarkState()
             }
         }
         .onChange(of: bookmarksEntryIDsSignature) { _, _ in
             syncBookmarkSelection()
+            Task {
+                await refreshToolbarBookmarkState()
+            }
+        }
+        .onChange(of: dictionaryViewModel.selectedEntry?.id) { _, _ in
+            Task {
+                await refreshToolbarBookmarkState()
+            }
+        }
+        .onChange(of: primarySelectedBookmarkID) { _, _ in
+            Task {
+                await refreshToolbarBookmarkState()
+            }
         }
     }
 
@@ -474,15 +512,6 @@ private struct MacDictionaryWindowContent: View {
         }
     }
 
-    private var windowTitle: String {
-        switch selection {
-        case .dictionary:
-            AppLocalizer.text(.dictionaryTitle, locale: appLocale)
-        case .bookmarks:
-            AppLocalizer.text(.bookmarksTitle, locale: appLocale)
-        }
-    }
-
     private var readingTextScaleStep: Double {
         (AppSettingsSnapshot.maxReadingTextScale - AppSettingsSnapshot.minReadingTextScale)
             / Double(AppSettingsSnapshot.readingTextScaleDivisions)
@@ -527,6 +556,7 @@ private struct MacDictionaryWindowContent: View {
         Task {
             await bookmarksViewModel.load()
             syncBookmarkSelection()
+            await refreshToolbarBookmarkState()
         }
     }
 
@@ -534,6 +564,38 @@ private struct MacDictionaryWindowContent: View {
         selection = .dictionary
         Task {
             await dictionaryViewModel.openLinkedWord(word)
+            await refreshToolbarBookmarkState()
+        }
+    }
+
+    private func toggleToolbarBookmark() {
+        guard let entry = toolbarEntry else {
+            return
+        }
+
+        Task {
+            let bookmarked = await bookmarkStore.toggleBookmark(entryID: entry.id)
+            await MainActor.run {
+                isToolbarEntryBookmarked = bookmarked
+            }
+            await bookmarksViewModel.load()
+            await MainActor.run {
+                syncBookmarkSelection()
+            }
+        }
+    }
+
+    private func refreshToolbarBookmarkState() async {
+        guard let entry = toolbarEntry else {
+            await MainActor.run {
+                isToolbarEntryBookmarked = false
+            }
+            return
+        }
+
+        let bookmarked = await bookmarkStore.isBookmarked(entry.id)
+        await MainActor.run {
+            isToolbarEntryBookmarked = bookmarked
         }
     }
 
@@ -557,6 +619,91 @@ private struct MacDictionaryWindowContent: View {
         }
 
         primarySelectedBookmarkID = nil
+    }
+}
+
+private struct MacDictionaryToolbarActions: View {
+    let entry: DictionaryEntry?
+    let isBookmarked: Bool
+    let appLocale: AppLocale
+    let toggleBookmark: () -> Void
+
+    var body: some View {
+        ControlGroup {
+            Button {
+                toggleBookmark()
+            } label: {
+                Label(
+                    isBookmarked
+                        ? AppLocalizer.text(.bookmarksRemove, locale: appLocale)
+                        : AppLocalizer.text(.bookmarksAdd, locale: appLocale),
+                    systemImage: isBookmarked ? "bookmark.fill" : "bookmark"
+                )
+            }
+            .disabled(entry == nil)
+
+            MacDictionaryShareButton(
+                shareText: entry.map(WordDetailViewModel.shareText(for:)) ?? "",
+                appLocale: appLocale,
+                isEnabled: entry != nil
+            )
+        }
+        .controlSize(.large)
+    }
+}
+
+private struct MacDictionaryShareButton: View {
+    let shareText: String
+    let appLocale: AppLocale
+    let isEnabled: Bool
+
+    @State private var isPresentingSharePicker = false
+
+    var body: some View {
+        Button {
+            isPresentingSharePicker = true
+        } label: {
+            Label(AppLocalizer.text(.share, locale: appLocale), systemImage: "square.and.arrow.up")
+        }
+        .disabled(!isEnabled)
+        .background(
+            MacSharingServicePresenter(
+                isPresented: $isPresentingSharePicker,
+                items: [shareText]
+            )
+            .frame(width: 0, height: 0)
+        )
+    }
+}
+
+private struct MacSharingServicePresenter: NSViewRepresentable {
+    @Binding var isPresented: Bool
+    let items: [Any]
+
+    func makeNSView(context: Context) -> NSView {
+        NSView(frame: .zero)
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        guard isPresented else {
+            return
+        }
+
+        context.coordinator.present(from: nsView, items: items)
+        DispatchQueue.main.async {
+            isPresented = false
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    final class Coordinator {
+        func present(from view: NSView, items: [Any]) {
+            let picker = NSSharingServicePicker(items: items)
+            picker.show(relativeTo: view.bounds, of: view, preferredEdge: .minY)
+        }
     }
 }
 
