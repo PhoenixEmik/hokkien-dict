@@ -226,7 +226,7 @@ public struct SettingsScreen: View {
             Section {
                 if viewModel.supportsDataMaintenance {
                     LabeledContent(AppLocalizer.text(.advancedMaintenanceSection, locale: locale)) {
-                        HStack(spacing: 8) {
+                        ControlGroup {
                             Button(AppLocalizer.text(.advancedRebuild, locale: locale)) {
                                 Task {
                                     if await viewModel.run(.rebuild) {
@@ -243,6 +243,7 @@ public struct SettingsScreen: View {
                             .controlSize(.small)
                             .disabled(viewModel.isRunningAction)
                         }
+                        .controlSize(.small)
                     }
                 } else {
                     LabeledContent(AppLocalizer.text(.advancedMaintenanceSection, locale: locale)) {

@@ -82,6 +82,8 @@ struct TaigiDictNativeApp: App {
             }
             .environmentObject(appLanguageManager)
         }
+        .defaultSize(width: 560, height: 430)
+        .windowResizability(.contentSize)
 
         Window("", id: AboutWindow.aboutWindowID) {
             MacAboutWindowView()
