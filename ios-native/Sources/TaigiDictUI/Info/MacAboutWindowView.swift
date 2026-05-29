@@ -7,7 +7,6 @@ public struct MacAboutWindowView: View {
     private let repositoryURL = URL(string: "https://github.com/PhoenixEmik/taigi-dict")!
     private let privacyURL = URL(string: "https://github.com/PhoenixEmik/taigi-dict/blob/main/PRIVACY_POLICY.md")!
     private let licenseWindowID = "license-window"
-    private let referenceArticlesWindowID = "reference-articles"
 
     @Environment(\.locale) private var locale
     @Environment(\.openWindow) private var openWindow
@@ -56,7 +55,7 @@ public struct MacAboutWindowView: View {
                 }
                 LinkRow(title: AppLocalizer.text(.aboutPrivacy, locale: appLocale), destination: privacyURL)
                 WindowLinkRow(title: AppLocalizer.text(.settingsReferences, locale: appLocale)) {
-                    openWindow(id: referenceArticlesWindowID)
+                    openWindow(id: ReferenceArticleViewerWindow.windowID)
                 }
             }
             .padding(.horizontal, 32)

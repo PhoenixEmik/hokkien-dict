@@ -185,23 +185,16 @@ public struct SettingsScreen: View {
         TabView {
             macSettingsTabContainer {
                 Form {
-                    Section(AppLocalizer.text(.settingsDisplayLanguageSection, locale: locale)) {
-                        LabeledContent(appLanguageManager.localized(.settingsInterfaceLanguageLabel)) {
-                            interfaceLanguagePicker
-                                .labelsHidden()
-                                .pickerStyle(.menu)
-                        }
+                    interfaceLanguagePicker
+                        .pickerStyle(.menu)
 
-                        LabeledContent(AppLocalizer.text(.settingsThemeLabel, locale: locale)) {
-                            themePicker(locale: locale)
-                                .labelsHidden()
-                                .pickerStyle(.menu)
-                        }
+                    themePicker(locale: locale)
+                        .pickerStyle(.menu)
 
-                        readingTextScaleControl(locale: locale)
-                    }
+                    readingTextScaleControl(locale: locale)
                 }
-                .formStyle(.grouped)
+                .frame(width: 450)
+                .padding(30)
             }
             .tabItem {
                 Label(AppLocalizer.text(.settingsGeneralTab, locale: locale), systemImage: "gearshape")
@@ -231,7 +224,8 @@ public struct SettingsScreen: View {
                         }
                     }
                 }
-                .formStyle(.grouped)
+                .frame(width: 520)
+                .padding(30)
             }
             .tabItem {
                 Label(AppLocalizer.text(.settingsResourcesTab, locale: locale), systemImage: "internaldrive")
@@ -244,7 +238,7 @@ public struct SettingsScreen: View {
                 Label(AppLocalizer.text(.settingsAdvanced, locale: locale), systemImage: "wrench.and.screwdriver")
             }
         }
-        .frame(minWidth: 760, minHeight: 560)
+        .frame(width: 560, height: 520)
     }
 
     private func macSettingsTabContainer<Content: View>(@ViewBuilder content: () -> Content) -> some View {
@@ -313,13 +307,14 @@ public struct SettingsScreen: View {
                         .font(.title3.weight(.semibold))
                         .foregroundStyle(.secondary)
                 }
+                .controlSize(.regular)
 
                 Text(viewModel.readingTextScale.displayScaleLabel(locale: locale))
                     .font(.footnote)
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
             }
-            .frame(minWidth: 240, maxWidth: 300, alignment: .leading)
+            .frame(width: 240, alignment: .leading)
         }
 #else
         VStack(alignment: .leading, spacing: 10) {

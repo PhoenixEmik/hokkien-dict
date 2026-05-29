@@ -62,7 +62,7 @@ struct TaigiDictNativeApp: App {
             }
 
             ReferenceArticleCommands(
-                title: appLanguageManager.localized(.settingsReferences)
+                title: appLanguageManager.localized(.helpViewerTitle)
             )
 #endif
         }
@@ -98,13 +98,11 @@ struct TaigiDictNativeApp: App {
             .frame(minWidth: 640, minHeight: 480)
         }
 
-        Window(appLanguageManager.localized(.settingsReferences), id: ReferenceArticleWindow.referenceArticlesID) {
-            NavigationStack {
-                ReferenceArticleListScreen()
-            }
-            .environmentObject(appLanguageManager)
-            .frame(minWidth: 720, minHeight: 520)
+        Window(appLanguageManager.localized(.referenceTitle), id: ReferenceArticleViewerWindow.windowID) {
+            MacReferenceArticleViewer()
+                .environmentObject(appLanguageManager)
         }
+        .defaultSize(width: 800, height: 600)
 #endif
     }
 
@@ -132,10 +130,6 @@ private enum LicenseWindow {
     static let licenseWindowID = "license-window"
 }
 
-private enum ReferenceArticleWindow {
-    static let referenceArticlesID = "reference-articles"
-}
-
 private struct AboutWindowCommands: Commands {
     @Environment(\.openWindow) private var openWindow
     let title: String
@@ -154,11 +148,9 @@ private struct ReferenceArticleCommands: Commands {
     let title: String
 
     var body: some Commands {
-        CommandGroup(after: .help) {
-            Divider()
-
+        CommandGroup(replacing: .help) {
             Button(title) {
-                openWindow(id: ReferenceArticleWindow.referenceArticlesID)
+                openWindow(id: ReferenceArticleViewerWindow.windowID)
             }
         }
     }

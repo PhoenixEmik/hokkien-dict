@@ -175,6 +175,8 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case referenceTitle
     case referenceTaiLoTitle
     case referenceHanjiTitle
+    case helpViewerTitle
+    case referenceViewerDescription
 }
 
 enum AppLocalizer {
