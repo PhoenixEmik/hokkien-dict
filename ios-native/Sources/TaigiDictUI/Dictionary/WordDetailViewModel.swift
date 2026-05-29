@@ -50,6 +50,8 @@ public final class WordDetailViewModel {
             let openableWordsResult = try await resolveOpenableWords(from: resolvedEntry, locale: locale)
             openableWords = openableWordsResult.words
             localizedOpenableWordMap = openableWordsResult.wordMap
+        } catch is CancellationError {
+            errorMessage = nil
         } catch {
             entry = sourceEntry
             resolvedEntryID = sourceEntry.id

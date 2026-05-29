@@ -66,18 +66,18 @@ struct DictionaryDetailView: View {
                         description: Text(errorMessage)
                     )
                 }
-            } else if let entry = viewModel.entry {
+            } else if let entry = displayedEntry {
                 Section {
                     HStack(alignment: .center, spacing: 12) {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(entry.hanji)
-                                .font(.largeTitle.bold())
+                                .taigiReadingFont(.largeTitle, weight: .bold)
                             Text(entry.romanization)
-                                .font(.title3)
+                                .taigiReadingFont(.title3)
                                 .foregroundStyle(.secondary)
                             if !entry.type.isEmpty || !entry.category.isEmpty {
                                 Text([entry.type, entry.category].filter { !$0.isEmpty }.joined(separator: " · "))
-                                    .font(.subheadline)
+                                    .taigiReadingFont(.subheadline)
                                     .foregroundStyle(.secondary)
                             }
                         }
@@ -148,10 +148,10 @@ struct DictionaryDetailView: View {
                                         VStack(alignment: .leading, spacing: 4) {
                                             Text(example.hanji)
                                             Text(example.romanization)
-                                                .font(.subheadline)
+                                                .taigiReadingFont(.subheadline)
                                                 .foregroundStyle(.secondary)
                                             LinkedReferenceText(example.mandarin, openWord: openLinkedWord)
-                                                .font(.subheadline)
+                                                .taigiReadingFont(.subheadline)
                                                 .foregroundStyle(.secondary)
                                         }
 
@@ -475,7 +475,7 @@ private struct RelationshipSectionContent: View {
         if !visibleWords.isEmpty {
             VStack(alignment: .leading, spacing: 6) {
                 Text(title)
-                    .font(.caption)
+                    .taigiReadingFont(.caption)
                     .foregroundStyle(.secondary)
                 RelationshipRows(
                     words: visibleWords,

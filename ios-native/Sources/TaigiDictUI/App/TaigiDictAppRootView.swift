@@ -99,6 +99,7 @@ public struct TaigiDictAppRootView: View {
         }
         .preferredColorScheme(settingsSnapshot.themePreference.preferredColorScheme)
         .dynamicTypeSize(settingsSnapshot.readingTextScale.dynamicTypeSize)
+        .taigiReadingTextScale(settingsSnapshot.readingTextScale)
         .taigiMacWindowToolbarBaselineHidden()
     }
 
@@ -271,8 +272,9 @@ private struct MacDictionaryWindowContent: View {
     @Bindable var dictionaryViewModel: DictionarySearchViewModel
     @Binding var selection: MacNavigationSection
     @Environment(\.locale) private var locale
-    @State private var selectedBookmarkIDs: Set<Int64> = []
-    @State private var primarySelectedBookmarkID: Int64?
+    @State private var displayedSelection: MacNavigationSection
+    @State private var selectedEntryID: Int64?
+    @State private var displayedDetailEntry: DictionaryEntry?
     @State private var isToolbarEntryBookmarked = false
 
     let bookmarksViewModel: BookmarksViewModel
@@ -283,33 +285,39 @@ private struct MacDictionaryWindowContent: View {
     let settingsSnapshot: AppSettingsSnapshot
     let onSettingsChanged: (AppSettingsSnapshot) -> Void
 
+    init(
+        dictionaryViewModel: DictionarySearchViewModel,
+        selection: Binding<MacNavigationSection>,
+        bookmarksViewModel: BookmarksViewModel,
+        bookmarkStore: BookmarkStore,
+        offlineAudioStore: (any OfflineAudioManaging)?,
+        conversionService: (any ChineseConversionProviding)?,
+        settingsStore: any AppSettingsStoring,
+        settingsSnapshot: AppSettingsSnapshot,
+        onSettingsChanged: @escaping (AppSettingsSnapshot) -> Void
+    ) {
+        self.dictionaryViewModel = dictionaryViewModel
+        self._selection = selection
+        self.bookmarksViewModel = bookmarksViewModel
+        self.bookmarkStore = bookmarkStore
+        self.offlineAudioStore = offlineAudioStore
+        self.conversionService = conversionService
+        self.settingsStore = settingsStore
+        self.settingsSnapshot = settingsSnapshot
+        self.onSettingsChanged = onSettingsChanged
+        _displayedSelection = State(initialValue: selection.wrappedValue)
+    }
+
     private var appLocale: AppLocale {
         AppLocalizer.appLocale(from: locale)
-    }
-
-    private var selectedBookmarkEntry: DictionaryEntry? {
-        guard let selectedID = resolvedPrimarySelectedEntryID else {
-            return nil
-        }
-
-        return bookmarksViewModel.entries.first { $0.id == selectedID }
-    }
-
-    private var resolvedPrimarySelectedEntryID: Int64? {
-        if let primarySelectedBookmarkID,
-           selectedBookmarkIDs.contains(primarySelectedBookmarkID) {
-            return primarySelectedBookmarkID
-        }
-
-        return bookmarksViewModel.entries.first { selectedBookmarkIDs.contains($0.id) }?.id
     }
 
     private var searchBinding: Binding<String> {
         Binding(
             get: { dictionaryViewModel.searchText },
             set: { newValue in
-                if selection != .dictionary {
-                    selection = .dictionary
+                if displayedSelection != .dictionary {
+                    activateSection(.dictionary)
                 }
                 dictionaryViewModel.searchText = newValue
             }
@@ -321,12 +329,16 @@ private struct MacDictionaryWindowContent: View {
     }
 
     private var toolbarEntry: DictionaryEntry? {
-        switch selection {
-        case .dictionary:
-            dictionaryViewModel.selectedEntry
-        case .bookmarks:
-            selectedBookmarkEntry
-        }
+        displayedDetailEntry
+    }
+
+    private var filterBarSelection: Binding<MacNavigationSection> {
+        Binding(
+            get: { displayedSelection },
+            set: { newValue in
+                activateSection(newValue)
+            }
+        )
     }
 
     var body: some View {
@@ -374,35 +386,38 @@ private struct MacDictionaryWindowContent: View {
         }
         .task {
             await bookmarksViewModel.load()
-            syncBookmarkSelection()
+            syncSelection(for: displayedSelection, preserveCurrentSelection: false)
             await refreshToolbarBookmarkState()
         }
         .onChange(of: selection) { _, newValue in
-            guard newValue == .bookmarks else {
-                Task {
-                    await refreshToolbarBookmarkState()
-                }
+            activateSection(newValue, updateNavigationSelection: false)
+        }
+        .onChange(of: dictionaryResultIDsSignature) { _, _ in
+            guard displayedSelection == .dictionary else {
                 return
             }
 
+            syncSelection(for: .dictionary, preserveCurrentSelection: true)
             Task {
-                await bookmarksViewModel.load()
-                syncBookmarkSelection()
                 await refreshToolbarBookmarkState()
             }
         }
         .onChange(of: bookmarksEntryIDsSignature) { _, _ in
-            syncBookmarkSelection()
+            guard displayedSelection == .bookmarks else {
+                return
+            }
+
+            syncSelection(for: .bookmarks, preserveCurrentSelection: true)
             Task {
                 await refreshToolbarBookmarkState()
             }
         }
         .onChange(of: dictionaryViewModel.selectedEntry?.id) { _, _ in
-            Task {
-                await refreshToolbarBookmarkState()
+            guard displayedSelection == .dictionary else {
+                return
             }
-        }
-        .onChange(of: primarySelectedBookmarkID) { _, _ in
+
+            syncSelection(for: .dictionary, preserveCurrentSelection: false)
             Task {
                 await refreshToolbarBookmarkState()
             }
@@ -411,17 +426,18 @@ private struct MacDictionaryWindowContent: View {
 
     @ViewBuilder
     private var sidebarContent: some View {
-        switch selection {
+        switch displayedSelection {
         case .dictionary:
             DictionarySearchListView(
                 viewModel: dictionaryViewModel,
                 showsSelection: true,
-                startPresentation: .historyOnly
+                startPresentation: .historyOnly,
+                selectedEntryID: $selectedEntryID
             )
         case .bookmarks:
             MacBookmarksListView(
                 viewModel: bookmarksViewModel,
-                selectedEntryIDs: $selectedBookmarkIDs,
+                selectedEntryID: $selectedEntryID,
                 locale: appLocale,
                 removeBookmarks: removeBookmarks
             )
@@ -430,13 +446,13 @@ private struct MacDictionaryWindowContent: View {
 
     private var detailContent: some View {
         VStack(spacing: 0) {
-            MacNavigationFilterBar(selection: $selection, locale: appLocale)
+            MacNavigationFilterBar(selection: filterBarSelection, locale: appLocale)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
             Divider()
 
             Group {
-                switch selection {
+                switch displayedSelection {
                 case .dictionary:
                     dictionaryDetailContent
                 case .bookmarks:
@@ -449,7 +465,7 @@ private struct MacDictionaryWindowContent: View {
 
     @ViewBuilder
     private var dictionaryDetailContent: some View {
-        if let entry = dictionaryViewModel.selectedEntry {
+        if let entry = displayedDetailEntry {
             DictionaryDetailView(
                 entry: entry,
                 library: dictionaryViewModel.library,
@@ -458,21 +474,6 @@ private struct MacDictionaryWindowContent: View {
                 conversionService: conversionService,
                 onBookmarkChanged: reloadBookmarks,
                 onOpenLinkedWord: openLinkedDictionaryWord
-            )
-        } else if dictionaryViewModel.normalizedQuery.isEmpty {
-            MacDetailEmptyState(
-                title: AppLocalizer.text(.searchStartTitle, locale: appLocale),
-                systemImage: "text.magnifyingglass",
-                description: AppLocalizer.text(.searchStartDetailDescription, locale: appLocale)
-            )
-        } else if dictionaryViewModel.isSearching {
-            ProgressView(AppLocalizer.text(.searching, locale: appLocale))
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else if dictionaryViewModel.results.isEmpty {
-            ContentUnavailableView(
-                AppLocalizer.text(.noResultTitle, locale: appLocale),
-                systemImage: "magnifyingglass",
-                description: Text(AppLocalizer.text(.noResultDescription, locale: appLocale))
             )
         } else {
             MacDetailEmptyState(
@@ -485,9 +486,9 @@ private struct MacDictionaryWindowContent: View {
 
     @ViewBuilder
     private var bookmarksDetailContent: some View {
-        if let selectedBookmarkEntry {
+        if let displayedDetailEntry {
             DictionaryDetailView(
-                entry: selectedBookmarkEntry,
+                entry: displayedDetailEntry,
                 library: dictionaryViewModel.library,
                 bookmarkStore: bookmarkStore,
                 offlineAudioStore: offlineAudioStore,
@@ -496,19 +497,11 @@ private struct MacDictionaryWindowContent: View {
                 onOpenLinkedWord: openLinkedDictionaryWord
             )
         } else {
-            ContentUnavailableView {
-                Label(
-                    AppLocalizer.text(.bookmarksEmptyTitle, locale: appLocale),
-                    systemImage: "bookmark"
-                )
-            } description: {
-                Text(AppLocalizer.text(.bookmarksEmptyDescription, locale: appLocale))
-            } actions: {
-                Button(AppLocalizer.text(.bookmarksEmptyAction, locale: appLocale)) {
-                    selection = .dictionary
-                }
-                .buttonStyle(.borderedProminent)
-            }
+            MacDetailEmptyState(
+                title: AppLocalizer.text(.bookmarksEmptyTitle, locale: appLocale),
+                systemImage: "bookmark",
+                description: AppLocalizer.text(.bookmarksEmptyDescription, locale: appLocale)
+            )
         }
     }
 
@@ -548,20 +541,20 @@ private struct MacDictionaryWindowContent: View {
     private func removeBookmarks(_ entryIDs: Set<Int64>) {
         Task {
             await bookmarksViewModel.removeBookmarks(entryIDs: entryIDs)
-            syncBookmarkSelection()
+            syncSelection(for: .bookmarks, preserveCurrentSelection: true)
         }
     }
 
     private func reloadBookmarks() {
         Task {
             await bookmarksViewModel.load()
-            syncBookmarkSelection()
+            syncSelection(for: displayedSelection, preserveCurrentSelection: true)
             await refreshToolbarBookmarkState()
         }
     }
 
     private func openLinkedDictionaryWord(_ word: String) {
-        selection = .dictionary
+        activateSection(.dictionary)
         Task {
             await dictionaryViewModel.openLinkedWord(word)
             await refreshToolbarBookmarkState()
@@ -580,7 +573,7 @@ private struct MacDictionaryWindowContent: View {
             }
             await bookmarksViewModel.load()
             await MainActor.run {
-                syncBookmarkSelection()
+                syncSelection(for: displayedSelection, preserveCurrentSelection: true)
             }
         }
     }
@@ -599,26 +592,98 @@ private struct MacDictionaryWindowContent: View {
         }
     }
 
-    private func syncBookmarkSelection() {
-        let validIDs = Set(bookmarksEntryIDsSignature)
-        selectedBookmarkIDs = selectedBookmarkIDs.intersection(validIDs)
+    private var dictionaryResultIDsSignature: [Int64] {
+        dictionaryViewModel.results.map(\.id)
+    }
 
-        if let primarySelectedBookmarkID, validIDs.contains(primarySelectedBookmarkID) {
+    private func entries(for section: MacNavigationSection) -> [DictionaryEntry] {
+        switch section {
+        case .dictionary:
+            dictionaryViewModel.results
+        case .bookmarks:
+            bookmarksViewModel.entries
+        }
+    }
+
+    private func syncSelection(
+        for section: MacNavigationSection,
+        preserveCurrentSelection: Bool
+    ) {
+        let entries = entries(for: section)
+        let validCurrentSelection = preserveCurrentSelection
+            ? selectedEntryID.flatMap { selectedID in
+                entries.contains(where: { $0.id == selectedID }) ? selectedID : nil
+            }
+            : nil
+
+        let nextSelectedID = validCurrentSelection
+            ?? currentPreferredSelectionID(for: section)
+            ?? entries.first?.id
+
+        selectedEntryID = nextSelectedID
+        displayedDetailEntry = nextSelectedID.flatMap { selectedID in
+            entries.first(where: { $0.id == selectedID })
+        }
+
+        guard section == .dictionary else {
             return
         }
 
-        if let firstSelected = selectedBookmarkIDs.first {
-            primarySelectedBookmarkID = firstSelected
+        if let nextSelectedID,
+           let matchedEntry = dictionaryViewModel.results.first(where: { $0.id == nextSelectedID }) {
+            dictionaryViewModel.selectedEntry = matchedEntry
+            dictionaryViewModel.detailEntry = matchedEntry
+        } else {
+            dictionaryViewModel.selectedEntry = nil
+            dictionaryViewModel.detailEntry = nil
+        }
+    }
+
+    private func currentPreferredSelectionID(for section: MacNavigationSection) -> Int64? {
+        switch section {
+        case .dictionary:
+            dictionaryViewModel.selectedEntry?.id
+        case .bookmarks:
+            bookmarksViewModel.entries.first?.id
+        }
+    }
+
+    private func activateSection(
+        _ newSection: MacNavigationSection,
+        updateNavigationSelection: Bool = true
+    ) {
+        guard newSection != displayedSelection else {
+            if updateNavigationSelection, selection != newSection {
+                selection = newSection
+            }
             return
         }
 
-        if let firstEntry = bookmarksViewModel.entries.first {
-            primarySelectedBookmarkID = firstEntry.id
-            selectedBookmarkIDs = [firstEntry.id]
-            return
+        switch newSection {
+        case .dictionary:
+            syncSelection(for: .dictionary, preserveCurrentSelection: false)
+            displayedSelection = .dictionary
+            if updateNavigationSelection {
+                selection = .dictionary
+            }
+            Task {
+                await refreshToolbarBookmarkState()
+            }
+        case .bookmarks:
+            Task {
+                if !bookmarksViewModel.hasLoaded {
+                    await bookmarksViewModel.load()
+                }
+                await MainActor.run {
+                    syncSelection(for: .bookmarks, preserveCurrentSelection: false)
+                    displayedSelection = .bookmarks
+                    if updateNavigationSelection {
+                        selection = .bookmarks
+                    }
+                }
+                await refreshToolbarBookmarkState()
+            }
         }
-
-        primarySelectedBookmarkID = nil
     }
 }
 
@@ -709,20 +774,32 @@ private struct MacSharingServicePresenter: NSViewRepresentable {
 
 private struct MacBookmarksListView: View {
     let viewModel: BookmarksViewModel
-    @Binding var selectedEntryIDs: Set<Int64>
+    @Binding var selectedEntryID: Int64?
     let locale: AppLocale
     let removeBookmarks: (Set<Int64>) -> Void
 
-    var body: some View {
-        List(selection: $selectedEntryIDs) {
-            if viewModel.isLoading {
-                Section {
-                    HStack {
-                        ProgressView()
-                        Text(AppLocalizer.text(.bookmarksLoading, locale: locale))
-                    }
+    private var selectionBinding: Binding<Set<Int64>> {
+        Binding(
+            get: {
+                guard let selectedEntryID else {
+                    return []
                 }
-            } else if let errorMessage = viewModel.errorMessage {
+                return Set([selectedEntryID])
+            },
+            set: { newValue in
+                if newValue.isEmpty,
+                   selectedEntryID != nil,
+                   !viewModel.entries.isEmpty {
+                    return
+                }
+                selectedEntryID = newValue.first
+            }
+        )
+    }
+
+    var body: some View {
+        List(selection: selectionBinding) {
+            if let errorMessage = viewModel.errorMessage {
                 Section {
                     ContentUnavailableView(
                         AppLocalizer.text(.loadingFailedTitle, locale: locale),

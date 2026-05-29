@@ -5,30 +5,52 @@ struct DictionarySearchListView: View {
     @Bindable var viewModel: DictionarySearchViewModel
     var showsSelection: Bool
     var startPresentation: DictionarySearchStartPresentation = .full
+    var selectedEntryID: Binding<Int64?>? = nil
     @Environment(\.locale) private var locale
 
     private var appLocale: AppLocale {
         AppLocalizer.appLocale(from: locale)
     }
 
-    private var selectedEntryID: Binding<Int64?> {
-        Binding(
+    private var selectedEntryIDBinding: Binding<Int64?> {
+        if let selectedEntryID {
+            return Binding(
+                get: { selectedEntryID.wrappedValue },
+                set: { newID in
+                    if newID == nil,
+                       selectedEntryID.wrappedValue != nil,
+                       !viewModel.results.isEmpty {
+                        return
+                    }
+                    selectedEntryID.wrappedValue = newID
+                    updateSelection(newID)
+                }
+            )
+        }
+
+        return Binding(
             get: { viewModel.selectedEntry?.id },
             set: { newID in
-                guard let newID else {
-                    viewModel.selectedEntry = nil
-                    return
-                }
-
-                if let matched = viewModel.results.first(where: { $0.id == newID }) {
-                    viewModel.select(matched)
-                }
+                updateSelection(newID)
             }
         )
     }
 
+    private func updateSelection(_ newID: Int64?) {
+        guard let newID else {
+            viewModel.selectedEntry = nil
+            viewModel.detailEntry = nil
+            return
+        }
+
+        if let matched = viewModel.results.first(where: { $0.id == newID }) {
+            viewModel.selectedEntry = matched
+            viewModel.detailEntry = matched
+        }
+    }
+
     var body: some View {
-        List(selection: showsSelection ? selectedEntryID : .constant(nil)) {
+        List(selection: showsSelection ? selectedEntryIDBinding : .constant(nil)) {
             if viewModel.isLoading {
                 Section {
                     HStack {

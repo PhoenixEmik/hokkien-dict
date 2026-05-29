@@ -6,6 +6,7 @@ import TaigiDictCore
 @Observable
 public final class BookmarksViewModel {
     public private(set) var isLoading = false
+    public private(set) var hasLoaded = false
     public private(set) var entries: [DictionaryEntry] = []
     public private(set) var errorMessage: String?
 
@@ -29,6 +30,7 @@ public final class BookmarksViewModel {
             errorMessage = error.userFacingMessage
         }
 
+        hasLoaded = true
         isLoading = false
     }
 

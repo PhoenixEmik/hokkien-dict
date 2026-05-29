@@ -40,6 +40,18 @@ final class WordDetailViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.resolvedEntryID, 3)
     }
 
+    func testPrepareCancellationDoesNotSurfaceAsLoadFailure() async {
+        let source = entry(id: 1, hanji: "辭典", romanization: "sû-tián", definition: "工具書")
+        let repository = CancellationDetailRepository(entries: [source])
+        let viewModel = WordDetailViewModel(library: DictionaryLibrary(repository: repository))
+
+        await viewModel.prepare(entry: source)
+
+        XCTAssertNil(viewModel.errorMessage)
+        XCTAssertEqual(viewModel.entry?.id, 1)
+        XCTAssertEqual(viewModel.resolvedEntryID, 1)
+    }
+
     func testClearResetsPreparedEntryState() async {
         let primary = entry(
             id: 1,
@@ -271,6 +283,41 @@ private actor MissingClipOfflineAudioManager: OfflineAudioManaging {
     func currentlyPlayingClipID() async -> String? {
         nil
     }
+}
+
+private actor CancellationDetailRepository: DictionaryRepositoryProtocol {
+    private let bundle: DictionaryBundle
+
+    init(entries: [DictionaryEntry]) {
+        bundle = DictionaryBundle(
+            entryCount: entries.count,
+            senseCount: entries.reduce(0) { $0 + $1.senses.count },
+            exampleCount: 0,
+            entries: entries
+        )
+    }
+
+    func loadBundle() async throws -> DictionaryBundle {
+        bundle
+    }
+
+    func search(_ rawQuery: String, limit: Int, offset: Int) async throws -> [DictionaryEntry] {
+        []
+    }
+
+    func findLinkedEntry(_ rawWord: String) async throws -> DictionaryEntry? {
+        throw CancellationError()
+    }
+
+    func entries(ids: [Int64]) async throws -> [DictionaryEntry] {
+        []
+    }
+
+    func entry(id: Int64) async throws -> DictionaryEntry? {
+        bundle.entries.first { $0.id == id }
+    }
+
+    func clearBundleCache() async {}
 }
 
 private actor InMemoryRepository: DictionaryRepositoryProtocol {

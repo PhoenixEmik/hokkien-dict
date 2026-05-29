@@ -40,17 +40,17 @@ struct DictionaryEntryRowView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(entry.hanji)
-                .font(.headline)
+                .taigiReadingFont(.headline, weight: .semibold)
                 .lineLimit(layoutStyle.hanjiLineLimit)
                 .truncationMode(.tail)
             Text(entry.romanization)
-                .font(.subheadline)
+                .taigiReadingFont(.subheadline)
                 .foregroundStyle(.secondary)
                 .lineLimit(layoutStyle.romanizationLineLimit)
                 .truncationMode(.tail)
             if !entry.briefSummary.isEmpty {
                 Text(entry.briefSummary)
-                    .font(.caption)
+                    .taigiReadingFont(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(layoutStyle.summaryLineLimit)
                     .truncationMode(.tail)
