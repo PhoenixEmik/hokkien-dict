@@ -56,6 +56,10 @@ struct TaigiDictNativeApp: App {
                 }
                 .keyboardShortcut("2", modifiers: [.command])
             }
+
+            ReferenceArticleCommands(
+                title: appLanguageManager.localized(.settingsReferences)
+            )
 #endif
         }
 
@@ -74,6 +78,14 @@ struct TaigiDictNativeApp: App {
             }
             .environmentObject(appLanguageManager)
         }
+
+        Window(appLanguageManager.localized(.settingsReferences), id: ReferenceArticleWindow.referenceArticlesID) {
+            NavigationStack {
+                ReferenceArticleListScreen()
+            }
+            .environmentObject(appLanguageManager)
+            .frame(minWidth: 720, minHeight: 520)
+        }
 #endif
     }
 
@@ -91,3 +103,24 @@ struct TaigiDictNativeApp: App {
         return url
     }
 }
+
+#if os(macOS)
+private enum ReferenceArticleWindow {
+    static let referenceArticlesID = "reference-articles"
+}
+
+private struct ReferenceArticleCommands: Commands {
+    @Environment(\.openWindow) private var openWindow
+    let title: String
+
+    var body: some Commands {
+        CommandGroup(after: .help) {
+            Divider()
+
+            Button(title) {
+                openWindow(id: ReferenceArticleWindow.referenceArticlesID)
+            }
+        }
+    }
+}
+#endif

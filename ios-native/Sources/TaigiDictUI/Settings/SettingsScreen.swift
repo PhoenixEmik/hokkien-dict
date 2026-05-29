@@ -5,9 +5,6 @@ public struct SettingsScreen: View {
     @EnvironmentObject private var appLanguageManager: AppLanguageManager
     @State private var viewModel: SettingsViewModel
     @State private var pendingAudioRestart: PendingAudioRestart?
-#if os(macOS)
-    @State private var selectedReferenceKind: ReferenceArticleKind = .taiLo
-#endif
     @Environment(\.locale) private var locale
     private let onMaintenanceCompleted: () -> Void
     private let onSettingsChanged: (AppSettingsSnapshot) -> Void
@@ -238,30 +235,6 @@ public struct SettingsScreen: View {
             }
             .tabItem {
                 Label(AppLocalizer.text(.settingsResourcesTab, locale: locale), systemImage: "internaldrive")
-            }
-
-            macSettingsTabContainer {
-                VStack(alignment: .leading, spacing: 16) {
-                    Picker(AppLocalizer.text(.settingsReferences, locale: locale), selection: $selectedReferenceKind) {
-                        Text(AppLocalizer.text(.referenceTaiLoTitle, locale: locale))
-                            .tag(ReferenceArticleKind.taiLo)
-                        Text(AppLocalizer.text(.referenceHanjiTitle, locale: locale))
-                            .tag(ReferenceArticleKind.hanji)
-                    }
-                    .pickerStyle(.segmented)
-
-                    LocalizedReferenceArticleScreen(
-                        kind: selectedReferenceKind,
-                        fallbackTitle: selectedReferenceKind == .taiLo
-                            ? AppLocalizer.text(.referenceTaiLoTitle, locale: locale)
-                            : AppLocalizer.text(.referenceHanjiTitle, locale: locale)
-                    )
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-                .padding(20)
-            }
-            .tabItem {
-                Label(AppLocalizer.text(.settingsReferences, locale: locale), systemImage: "text.book.closed")
             }
 
             AdvancedSettingsScreen(viewModel: viewModel) {

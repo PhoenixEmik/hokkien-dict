@@ -54,14 +54,16 @@ private enum ReferenceArticleRepository {
     }
 }
 
-struct ReferenceArticleListScreen: View {
+public struct ReferenceArticleListScreen: View {
     @Environment(\.locale) private var locale
 
     private var appLocale: AppLocale {
         AppLocalizer.appLocale(from: locale)
     }
 
-    var body: some View {
+    public init() {}
+
+    public var body: some View {
         List {
             NavigationLink {
                 LocalizedReferenceArticleScreen(
