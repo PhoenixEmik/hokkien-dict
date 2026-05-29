@@ -1,7 +1,7 @@
 import SwiftUI
 import TaigiDictCore
 
-struct LicenseSummaryScreen: View {
+public struct LicenseSummaryScreen: View {
     private let ministryCopyrightURL = URL(string: "https://sutian.moe.edu.tw/zh-hant/piantsip/pankhuan-singbing/")!
 
     @Environment(\.locale) private var locale
@@ -10,7 +10,9 @@ struct LicenseSummaryScreen: View {
         AppLocalizer.appLocale(from: locale)
     }
 
-    var body: some View {
+    public init() {}
+
+    public var body: some View {
         List {
             Section(AppLocalizer.text(.licenseSummarySection, locale: appLocale)) {
                 LabeledContent {

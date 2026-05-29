@@ -1,0 +1,114 @@
+#if os(macOS)
+import AppKit
+import SwiftUI
+import TaigiDictCore
+
+public struct MacAboutWindowView: View {
+    private let repositoryURL = URL(string: "https://github.com/PhoenixEmik/taigi-dict")!
+    private let privacyURL = URL(string: "https://github.com/PhoenixEmik/taigi-dict/blob/main/PRIVACY_POLICY.md")!
+    private let licenseWindowID = "license-window"
+    private let referenceArticlesWindowID = "reference-articles"
+
+    @Environment(\.locale) private var locale
+    @Environment(\.openWindow) private var openWindow
+
+    private var appLocale: AppLocale {
+        AppLocalizer.appLocale(from: locale)
+    }
+
+    public init() {}
+
+    public var body: some View {
+        VStack(spacing: 0) {
+            VStack(spacing: 12) {
+                Image(nsImage: NSApplication.shared.applicationIconImage)
+                    .resizable()
+                    .interpolation(.high)
+                    .frame(width: 88, height: 88)
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+
+                VStack(spacing: 4) {
+                    Text(AppLocalizer.text(.aboutAppSection, locale: appLocale))
+                        .font(.title2.weight(.semibold))
+
+                    Text("\(AppLocalizer.text(.aboutVersion, locale: appLocale)) \(appVersion)")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                VStack(spacing: 3) {
+                    Text("\(AppLocalizer.text(.aboutAuthor, locale: appLocale))：PhoenixEmik")
+                    Text("Copyright © 2026 PhoenixEmik")
+                }
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.top, 28)
+            .padding(.horizontal, 32)
+
+            Spacer(minLength: 24)
+
+            VStack(spacing: 10) {
+                LinkRow(title: AppLocalizer.text(.aboutGitHub, locale: appLocale), destination: repositoryURL)
+                WindowLinkRow(title: AppLocalizer.text(.settingsLicenses, locale: appLocale)) {
+                    openWindow(id: licenseWindowID)
+                }
+                LinkRow(title: AppLocalizer.text(.aboutPrivacy, locale: appLocale), destination: privacyURL)
+                WindowLinkRow(title: AppLocalizer.text(.settingsReferences, locale: appLocale)) {
+                    openWindow(id: referenceArticlesWindowID)
+                }
+            }
+            .padding(.horizontal, 32)
+            .padding(.bottom, 28)
+        }
+        .frame(width: 420, height: 360)
+        .background(Color(nsColor: .windowBackgroundColor))
+    }
+
+    private var appVersion: String {
+        if let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
+           !version.isEmpty {
+            return version
+        }
+
+        return AppLocalizer.text(.aboutVersionValue, locale: appLocale)
+    }
+}
+
+private struct LinkRow: View {
+    let title: String
+    let destination: URL
+
+    var body: some View {
+        Link(destination: destination) {
+            HStack(spacing: 6) {
+                Text(title)
+                Image(systemName: "arrow.up.right")
+                    .font(.caption)
+            }
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct WindowLinkRow: View {
+    let title: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+#endif

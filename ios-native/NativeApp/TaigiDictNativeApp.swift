@@ -45,6 +45,10 @@ struct TaigiDictNativeApp: App {
 #if os(macOS)
             SidebarCommands()
 
+            AboutWindowCommands(
+                title: appLanguageManager.localized(.aboutTitle)
+            )
+
             CommandMenu(appLanguageManager.localized(.menuGo)) {
                 Button(appLanguageManager.localized(.tabDictionary)) {
                     navigationModel.showDictionary()
@@ -79,6 +83,21 @@ struct TaigiDictNativeApp: App {
             .environmentObject(appLanguageManager)
         }
 
+        Window("", id: AboutWindow.aboutWindowID) {
+            MacAboutWindowView()
+                .environmentObject(appLanguageManager)
+        }
+        .windowResizability(.contentSize)
+        .windowStyle(.hiddenTitleBar)
+
+        Window(appLanguageManager.localized(.settingsLicenses), id: LicenseWindow.licenseWindowID) {
+            NavigationStack {
+                LicenseSummaryScreen()
+            }
+            .environmentObject(appLanguageManager)
+            .frame(minWidth: 640, minHeight: 480)
+        }
+
         Window(appLanguageManager.localized(.settingsReferences), id: ReferenceArticleWindow.referenceArticlesID) {
             NavigationStack {
                 ReferenceArticleListScreen()
@@ -105,8 +124,29 @@ struct TaigiDictNativeApp: App {
 }
 
 #if os(macOS)
+private enum AboutWindow {
+    static let aboutWindowID = "about-window"
+}
+
+private enum LicenseWindow {
+    static let licenseWindowID = "license-window"
+}
+
 private enum ReferenceArticleWindow {
     static let referenceArticlesID = "reference-articles"
+}
+
+private struct AboutWindowCommands: Commands {
+    @Environment(\.openWindow) private var openWindow
+    let title: String
+
+    var body: some Commands {
+        CommandGroup(replacing: .appInfo) {
+            Button(title) {
+                openWindow(id: AboutWindow.aboutWindowID)
+            }
+        }
+    }
 }
 
 private struct ReferenceArticleCommands: Commands {
