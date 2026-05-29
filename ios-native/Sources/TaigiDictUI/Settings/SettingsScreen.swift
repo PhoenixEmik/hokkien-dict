@@ -193,6 +193,8 @@ public struct SettingsScreen: View {
                 readingTextScaleControl(locale: locale)
             } header: {
                 settingsSectionHeader(AppLocalizer.text(.settingsGeneralTab, locale: locale))
+            } footer: {
+                settingsSectionDivider
             }
 
             Section {
@@ -217,12 +219,14 @@ public struct SettingsScreen: View {
                 }
             } header: {
                 settingsSectionHeader(AppLocalizer.text(.settingsResourcesTab, locale: locale))
+            } footer: {
+                settingsSectionDivider
             }
 
             Section {
                 if viewModel.supportsDataMaintenance {
                     LabeledContent(AppLocalizer.text(.advancedMaintenanceSection, locale: locale)) {
-                        HStack(spacing: 10) {
+                        HStack(spacing: 8) {
                             Button(AppLocalizer.text(.advancedRebuild, locale: locale)) {
                                 Task {
                                     if await viewModel.run(.rebuild) {
@@ -230,11 +234,13 @@ public struct SettingsScreen: View {
                                     }
                                 }
                             }
+                            .controlSize(.small)
                             .disabled(viewModel.isRunningAction)
 
                             Button(AppLocalizer.text(.advancedClear, locale: locale), role: .destructive) {
                                 viewModel.requestClearConfirmation()
                             }
+                            .controlSize(.small)
                             .disabled(viewModel.isRunningAction)
                         }
                     }
@@ -246,17 +252,17 @@ public struct SettingsScreen: View {
                 }
 
                 if let summary = viewModel.librarySummary {
-                    LabeledContent(AppLocalizer.text(.advancedEntryCount, locale: locale), value: "\(summary.entryCount)")
-                    LabeledContent(AppLocalizer.text(.advancedSenseCount, locale: locale), value: "\(summary.senseCount)")
-                    LabeledContent(AppLocalizer.text(.advancedExampleCount, locale: locale), value: "\(summary.exampleCount)")
+                    macSettingsValueRow(AppLocalizer.text(.advancedEntryCount, locale: locale), value: "\(summary.entryCount)", monospaced: true)
+                    macSettingsValueRow(AppLocalizer.text(.advancedSenseCount, locale: locale), value: "\(summary.senseCount)", monospaced: true)
+                    macSettingsValueRow(AppLocalizer.text(.advancedExampleCount, locale: locale), value: "\(summary.exampleCount)", monospaced: true)
                 }
 
                 if let builtAt = viewModel.metadataBuiltAtDisplay {
-                    LabeledContent(AppLocalizer.text(.advancedBuiltAt, locale: locale), value: builtAt)
+                    macSettingsValueRow(AppLocalizer.text(.advancedBuiltAt, locale: locale), value: builtAt)
                 }
 
                 if let sourceModifiedAt = viewModel.metadataSourceModifiedAtDisplay {
-                    LabeledContent(AppLocalizer.text(.advancedSourceUpdated, locale: locale), value: sourceModifiedAt)
+                    macSettingsValueRow(AppLocalizer.text(.advancedSourceUpdated, locale: locale), value: sourceModifiedAt)
                 }
 
                 if viewModel.isRunningAction {
@@ -290,16 +296,36 @@ public struct SettingsScreen: View {
             }
         }
         .formStyle(.columns)
-        .frame(width: 520)
-        .padding(28)
+        .frame(width: 450)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 22)
     }
 
     private func settingsSectionHeader(_ title: String) -> some View {
         Text(title)
-            .font(.title3.weight(.semibold))
+            .font(.caption2.weight(.semibold))
             .textCase(nil)
-            .foregroundStyle(.primary)
-            .padding(.top, 6)
+            .foregroundStyle(.secondary)
+            .padding(.top, 2)
+            .padding(.bottom, 2)
+    }
+
+    private var settingsSectionDivider: some View {
+        Divider()
+            .padding(.top, 10)
+    }
+
+    private func macSettingsValueRow(_ title: String, value: String, monospaced: Bool = false) -> some View {
+        LabeledContent(title) {
+            if monospaced {
+                Text(value)
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+            } else {
+                Text(value)
+                    .foregroundStyle(.secondary)
+            }
+        }
     }
 #endif
 
@@ -340,6 +366,10 @@ public struct SettingsScreen: View {
 #if os(macOS)
         LabeledContent(AppLocalizer.text(.settingsReadingTextScaleLabel, locale: locale)) {
             HStack(spacing: 12) {
+                Image(systemName: "textformat.size.smaller")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+
                 Slider(
                     value: Binding(
                         get: { viewModel.readingTextScale },
@@ -356,15 +386,19 @@ public struct SettingsScreen: View {
                     EmptyView()
                 }
                 .controlSize(.regular)
-                .frame(width: 210)
+                .frame(width: 170)
 
                 Text(viewModel.readingTextScale.displayScaleLabel(locale: locale))
-                    .font(.body)
+                    .font(.subheadline)
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
-                    .frame(width: 52, alignment: .trailing)
+                    .frame(width: 48, alignment: .trailing)
+
+                Image(systemName: "textformat.size.larger")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(.secondary)
             }
-            .frame(width: 250, alignment: .leading)
+            .frame(width: 270, alignment: .leading)
         }
 #else
         VStack(alignment: .leading, spacing: 10) {
@@ -451,18 +485,22 @@ private struct AudioArchiveResourceRow: View {
     var body: some View {
 #if os(macOS)
         LabeledContent(title) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 10) {
-                    Text(snapshotDescription)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .layoutPriority(1)
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(alignment: .firstTextBaseline, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(snapshotDescription)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .layoutPriority(1)
 
-                    if isSnapshotLoading || isRunningAction {
-                        ProgressView()
-                            .controlSize(.small)
+                        if isSnapshotLoading || isRunningAction {
+                            ProgressView()
+                                .controlSize(.small)
+                        }
                     }
+
+                    Spacer(minLength: 8)
 
                     ResourceActionControl(
                         locale: locale,
@@ -476,7 +514,7 @@ private struct AudioArchiveResourceRow: View {
 
                 if let progress = progressValue {
                     ProgressView(value: progress)
-                        .frame(width: 220, alignment: .leading)
+                        .frame(width: 160, alignment: .leading)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -552,7 +590,7 @@ private struct ResourceActionControl<Action: Hashable>: View {
                 Button(buttonTitle(action)) {
                     runAction(action)
                 }
-                .controlSize(.small)
+                .controlSize(.mini)
                 .fixedSize()
             }
         }
