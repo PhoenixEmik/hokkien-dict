@@ -422,6 +422,30 @@ private struct MacDictionaryWindowContent: View {
                 await refreshToolbarBookmarkState()
             }
         }
+        .onChange(of: selectedEntryID) { _, newID in
+            guard let newID else {
+                return
+            }
+
+            switch displayedSelection {
+            case .dictionary:
+                guard let matchedEntry = dictionaryViewModel.results.first(where: { $0.id == newID }) else {
+                    return
+                }
+                displayedDetailEntry = matchedEntry
+                dictionaryViewModel.selectedEntry = matchedEntry
+                dictionaryViewModel.detailEntry = matchedEntry
+            case .bookmarks:
+                guard let matchedEntry = bookmarksViewModel.entries.first(where: { $0.id == newID }) else {
+                    return
+                }
+                displayedDetailEntry = matchedEntry
+            }
+
+            Task {
+                await refreshToolbarBookmarkState()
+            }
+        }
     }
 
     @ViewBuilder
