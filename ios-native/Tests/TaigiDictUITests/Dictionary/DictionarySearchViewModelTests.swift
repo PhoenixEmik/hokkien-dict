@@ -188,6 +188,24 @@ final class DictionarySearchViewModelTests: XCTestCase {
         XCTAssertEqual(persisted, ["sû-tián"])
     }
 
+    func testOpenLinkedWordRefreshesResultsAndSelection() async {
+        let repository = InMemoryRepository(entries: [
+            entry(id: 1, hanji: "自己", romanization: "ka-kī", definition: "本身"),
+            entry(id: 2, hanji: "家己人", romanization: "ka-kī-lâng", definition: "自己人"),
+        ])
+        let viewModel = DictionarySearchViewModel(
+            repository: repository,
+            searchHistoryStore: TestSearchHistoryStore()
+        )
+        await viewModel.load()
+
+        await viewModel.openLinkedWord("家己人")
+
+        XCTAssertEqual(viewModel.searchText, "家己人")
+        XCTAssertEqual(viewModel.results.map(\.id), [2])
+        XCTAssertEqual(viewModel.selectedEntry?.id, 2)
+    }
+
     func testClearSearchHistoryAlsoClearsStore() async {
         let repository = InMemoryRepository(entries: [])
         let historyStore = TestSearchHistoryStore(initialValues: ["辭典", "字典"])

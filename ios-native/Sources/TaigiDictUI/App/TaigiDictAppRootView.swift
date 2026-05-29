@@ -418,7 +418,8 @@ private struct MacDictionaryWindowContent: View {
                 bookmarkStore: bookmarkStore,
                 offlineAudioStore: offlineAudioStore,
                 conversionService: conversionService,
-                onBookmarkChanged: reloadBookmarks
+                onBookmarkChanged: reloadBookmarks,
+                onOpenLinkedWord: openLinkedDictionaryWord
             )
         } else if dictionaryViewModel.normalizedQuery.isEmpty {
             MacDetailEmptyState(
@@ -453,7 +454,8 @@ private struct MacDictionaryWindowContent: View {
                 bookmarkStore: bookmarkStore,
                 offlineAudioStore: offlineAudioStore,
                 conversionService: conversionService,
-                onBookmarkChanged: reloadBookmarks
+                onBookmarkChanged: reloadBookmarks,
+                onOpenLinkedWord: openLinkedDictionaryWord
             )
         } else {
             ContentUnavailableView {
@@ -525,6 +527,13 @@ private struct MacDictionaryWindowContent: View {
         Task {
             await bookmarksViewModel.load()
             syncBookmarkSelection()
+        }
+    }
+
+    private func openLinkedDictionaryWord(_ word: String) {
+        selection = .dictionary
+        Task {
+            await dictionaryViewModel.openLinkedWord(word)
         }
     }
 

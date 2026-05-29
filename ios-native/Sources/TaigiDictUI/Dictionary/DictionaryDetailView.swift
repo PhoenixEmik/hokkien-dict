@@ -12,6 +12,7 @@ struct DictionaryDetailView: View {
     private let offlineAudioStore: (any OfflineAudioManaging)?
     private let conversionService: (any ChineseConversionProviding)?
     private let onBookmarkChanged: (() -> Void)?
+    private let onOpenLinkedWord: ((String) -> Void)?
 
     @State private var viewModel: WordDetailViewModel
     @State private var isBookmarked = false
@@ -23,7 +24,8 @@ struct DictionaryDetailView: View {
         bookmarkStore: (any BookmarksStoreProtocol)? = nil,
         offlineAudioStore: (any OfflineAudioManaging)? = nil,
         conversionService: (any ChineseConversionProviding)? = nil,
-        onBookmarkChanged: (() -> Void)? = nil
+        onBookmarkChanged: (() -> Void)? = nil,
+        onOpenLinkedWord: ((String) -> Void)? = nil
     ) {
         self.sourceEntry = entry
         self.library = library
@@ -31,6 +33,7 @@ struct DictionaryDetailView: View {
         self.offlineAudioStore = offlineAudioStore
         self.conversionService = conversionService
         self.onBookmarkChanged = onBookmarkChanged
+        self.onOpenLinkedWord = onOpenLinkedWord
         _viewModel = State(
             initialValue: WordDetailViewModel(
                 library: library,
@@ -265,6 +268,11 @@ struct DictionaryDetailView: View {
     }
 
     private func openLinkedWord(_ word: String) {
+        if let onOpenLinkedWord {
+            onOpenLinkedWord(word)
+            return
+        }
+
         Task {
             guard let linkedEntry = await viewModel.linkedEntry(for: word, locale: appLocale) else {
                 return

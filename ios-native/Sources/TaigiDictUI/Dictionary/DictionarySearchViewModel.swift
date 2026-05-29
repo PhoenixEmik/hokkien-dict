@@ -131,6 +131,13 @@ public final class DictionarySearchViewModel {
         submitSearch()
     }
 
+    public func openLinkedWord(_ word: String) async {
+        searchTask?.cancel()
+        let generation = nextSearchGeneration()
+        searchText = word
+        await runSearch(word, saveHistory: false, generation: generation)
+    }
+
     public func clearSearchHistory() async {
         searchHistory = []
         await searchHistoryStore.clear()
