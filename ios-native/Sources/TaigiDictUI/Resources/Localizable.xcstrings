@@ -23,9 +23,6 @@
     "%lld." : {
 
     },
-    "A" : {
-
-    },
     "aboutAppDescription" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1875,6 +1872,29 @@
     "GRDB.swift" : {
 
     },
+    "helpViewerTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TaigiDict Help"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "台语辞典辅助说明"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "台語辭典輔助說明"
+          }
+        }
+      }
+    },
     "initializationFailedTitle" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2840,29 +2860,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "參考資料"
-          }
-        }
-      }
-    },
-    "helpViewerTitle" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TaigiDict Help"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "台语辞典辅助说明"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "台語辭典輔助說明"
           }
         }
       }

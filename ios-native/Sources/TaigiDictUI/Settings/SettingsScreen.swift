@@ -182,68 +182,124 @@ public struct SettingsScreen: View {
         wordAudioTitle: String,
         sentenceAudioTitle: String
     ) -> some View {
-        TabView {
-            macSettingsTabContainer {
-                Form {
-                    interfaceLanguagePicker
-                        .pickerStyle(.menu)
+        Form {
+            Section {
+                interfaceLanguagePicker
+                    .pickerStyle(.menu)
 
-                    themePicker(locale: locale)
-                        .pickerStyle(.menu)
+                themePicker(locale: locale)
+                    .pickerStyle(.menu)
 
-                    readingTextScaleControl(locale: locale)
+                readingTextScaleControl(locale: locale)
+            } header: {
+                settingsSectionHeader(AppLocalizer.text(.settingsGeneralTab, locale: locale))
+            }
+
+            Section {
+                AudioArchiveResourceRow(
+                    title: wordAudioTitle,
+                    locale: locale,
+                    snapshot: viewModel.snapshot(for: .word),
+                    isSnapshotLoading: !viewModel.hasLoadedAudioSnapshots,
+                    isRunningAction: viewModel.isAudioActionRunning(for: .word)
+                ) { action in
+                    handleAudioAction(action, for: .word, title: wordAudioTitle)
                 }
-                .frame(width: 450)
-                .padding(30)
-            }
-            .tabItem {
-                Label(AppLocalizer.text(.settingsGeneralTab, locale: locale), systemImage: "gearshape")
+
+                AudioArchiveResourceRow(
+                    title: sentenceAudioTitle,
+                    locale: locale,
+                    snapshot: viewModel.snapshot(for: .sentence),
+                    isSnapshotLoading: !viewModel.hasLoadedAudioSnapshots,
+                    isRunningAction: viewModel.isAudioActionRunning(for: .sentence)
+                ) { action in
+                    handleAudioAction(action, for: .sentence, title: sentenceAudioTitle)
+                }
+            } header: {
+                settingsSectionHeader(AppLocalizer.text(.settingsResourcesTab, locale: locale))
             }
 
-            macSettingsTabContainer {
-                Form {
-                    Section(AppLocalizer.text(.settingsOfflineAudioSection, locale: locale)) {
-                        AudioArchiveResourceRow(
-                            title: wordAudioTitle,
-                            locale: locale,
-                            snapshot: viewModel.snapshot(for: .word),
-                            isSnapshotLoading: !viewModel.hasLoadedAudioSnapshots,
-                            isRunningAction: viewModel.isAudioActionRunning(for: .word)
-                        ) { action in
-                            handleAudioAction(action, for: .word, title: wordAudioTitle)
+            Section {
+                if viewModel.supportsDataMaintenance {
+                    LabeledContent(AppLocalizer.text(.advancedMaintenanceSection, locale: locale)) {
+                        HStack(spacing: 10) {
+                            Button(AppLocalizer.text(.advancedRebuild, locale: locale)) {
+                                Task {
+                                    if await viewModel.run(.rebuild) {
+                                        onMaintenanceCompleted()
+                                    }
+                                }
+                            }
+                            .disabled(viewModel.isRunningAction)
+
+                            Button(AppLocalizer.text(.advancedClear, locale: locale), role: .destructive) {
+                                viewModel.requestClearConfirmation()
+                            }
+                            .disabled(viewModel.isRunningAction)
                         }
+                    }
+                } else {
+                    LabeledContent(AppLocalizer.text(.advancedMaintenanceSection, locale: locale)) {
+                        Text(AppLocalizer.text(.advancedMaintenanceUnsupported, locale: locale))
+                            .foregroundStyle(.secondary)
+                    }
+                }
 
-                        AudioArchiveResourceRow(
-                            title: sentenceAudioTitle,
-                            locale: locale,
-                            snapshot: viewModel.snapshot(for: .sentence),
-                            isSnapshotLoading: !viewModel.hasLoadedAudioSnapshots,
-                            isRunningAction: viewModel.isAudioActionRunning(for: .sentence)
-                        ) { action in
-                            handleAudioAction(action, for: .sentence, title: sentenceAudioTitle)
+                if let summary = viewModel.librarySummary {
+                    LabeledContent(AppLocalizer.text(.advancedEntryCount, locale: locale), value: "\(summary.entryCount)")
+                    LabeledContent(AppLocalizer.text(.advancedSenseCount, locale: locale), value: "\(summary.senseCount)")
+                    LabeledContent(AppLocalizer.text(.advancedExampleCount, locale: locale), value: "\(summary.exampleCount)")
+                }
+
+                if let builtAt = viewModel.metadataBuiltAtDisplay {
+                    LabeledContent(AppLocalizer.text(.advancedBuiltAt, locale: locale), value: builtAt)
+                }
+
+                if let sourceModifiedAt = viewModel.metadataSourceModifiedAtDisplay {
+                    LabeledContent(AppLocalizer.text(.advancedSourceUpdated, locale: locale), value: sourceModifiedAt)
+                }
+
+                if viewModel.isRunningAction {
+                    LabeledContent(AppLocalizer.text(.advancedStatusSection, locale: locale)) {
+                        HStack(spacing: 8) {
+                            ProgressView()
+                                .controlSize(.small)
+                            Text(AppLocalizer.text(.advancedRunning, locale: locale))
+                                .foregroundStyle(.secondary)
                         }
                     }
                 }
-                .frame(width: 520)
-                .padding(30)
-            }
-            .tabItem {
-                Label(AppLocalizer.text(.settingsResourcesTab, locale: locale), systemImage: "internaldrive")
-            }
 
-            AdvancedSettingsScreen(viewModel: viewModel) {
-                onMaintenanceCompleted()
-            }
-            .tabItem {
-                Label(AppLocalizer.text(.settingsAdvanced, locale: locale), systemImage: "wrench.and.screwdriver")
+                if let statusMessageKey = viewModel.statusMessageKey {
+                    LabeledContent(AppLocalizer.text(.advancedStatusSection, locale: locale)) {
+                        Label(AppLocalizer.text(statusMessageKey, locale: locale), systemImage: "checkmark.circle.fill")
+                            .labelStyle(.titleAndIcon)
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(.tint)
+                    }
+                }
+
+                if let errorMessage = viewModel.errorMessage {
+                    LabeledContent(AppLocalizer.text(.advancedFailedTitle, locale: locale)) {
+                        Text(errorMessage)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            } header: {
+                settingsSectionHeader(AppLocalizer.text(.settingsAdvanced, locale: locale))
             }
         }
-        .frame(width: 560, height: 520)
+        .formStyle(.columns)
+        .frame(width: 520)
+        .padding(28)
     }
 
-    private func macSettingsTabContainer<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        content()
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    private func settingsSectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.title3.weight(.semibold))
+            .textCase(nil)
+            .foregroundStyle(.primary)
+            .padding(.top, 6)
     }
 #endif
 
@@ -283,7 +339,7 @@ public struct SettingsScreen: View {
     private func readingTextScaleControl(locale: AppLocale) -> some View {
 #if os(macOS)
         LabeledContent(AppLocalizer.text(.settingsReadingTextScaleLabel, locale: locale)) {
-            VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 12) {
                 Slider(
                     value: Binding(
                         get: { viewModel.readingTextScale },
@@ -298,23 +354,17 @@ public struct SettingsScreen: View {
                     step: (viewModel.maxReadingTextScale - viewModel.minReadingTextScale) / Double(viewModel.readingTextScaleDivisions)
                 ) {
                     EmptyView()
-                } minimumValueLabel: {
-                    Text("A")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                } maximumValueLabel: {
-                    Text("A")
-                        .font(.title3.weight(.semibold))
-                        .foregroundStyle(.secondary)
                 }
                 .controlSize(.regular)
+                .frame(width: 210)
 
                 Text(viewModel.readingTextScale.displayScaleLabel(locale: locale))
-                    .font(.footnote)
+                    .font(.body)
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
+                    .frame(width: 52, alignment: .trailing)
             }
-            .frame(width: 240, alignment: .leading)
+            .frame(width: 250, alignment: .leading)
         }
 #else
         VStack(alignment: .leading, spacing: 10) {
@@ -399,6 +449,39 @@ private struct AudioArchiveResourceRow: View {
     let runAction: (SettingsViewModel.AudioResourceAction) -> Void
 
     var body: some View {
+#if os(macOS)
+        LabeledContent(title) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 10) {
+                    Text(snapshotDescription)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .layoutPriority(1)
+
+                    if isSnapshotLoading || isRunningAction {
+                        ProgressView()
+                            .controlSize(.small)
+                    }
+
+                    ResourceActionControl(
+                        locale: locale,
+                        isDisabled: isSnapshotLoading || isRunningAction,
+                        actions: availableActions,
+                        buttonTitle: { $0.buttonTitle(locale: locale) },
+                        systemImage: \.systemImage,
+                        runAction: runAction
+                    )
+                }
+
+                if let progress = progressValue {
+                    ProgressView(value: progress)
+                        .frame(width: 220, alignment: .leading)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+#else
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
@@ -430,6 +513,7 @@ private struct AudioArchiveResourceRow: View {
             }
         }
         .padding(.vertical, 4)
+#endif
     }
 
     private var availableActions: [SettingsViewModel.AudioResourceAction] {
@@ -465,11 +549,11 @@ private struct ResourceActionControl<Action: Hashable>: View {
 #if os(macOS)
         HStack(spacing: 8) {
             ForEach(actions, id: \.self) { action in
-                Button(buttonTitle(action), systemImage: systemImage(action)) {
+                Button(buttonTitle(action)) {
                     runAction(action)
                 }
-                .buttonStyle(.bordered)
                 .controlSize(.small)
+                .fixedSize()
             }
         }
         .disabled(isDisabled || actions.isEmpty)
