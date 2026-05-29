@@ -19,6 +19,7 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case searchStartDescription
     case searchHistoryTitle
     case clearSearchHistory
+    case searchHistoryClearConfirmTitle
     case detailLoadFailedTitle
     case detailAlternativePronunciationsTitle
     case detailContractedPronunciationsTitle

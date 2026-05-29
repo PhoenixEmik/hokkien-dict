@@ -68,36 +68,34 @@ struct DictionaryDetailView: View {
                 }
             } else if let entry = displayedEntry {
                 Section {
-                    HStack(alignment: .center, spacing: 12) {
-                        VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(alignment: .firstTextBaseline, spacing: 10) {
                             Text(entry.hanji)
                                 .taigiReadingFont(.largeTitle, weight: .bold)
-                            Text(entry.romanization)
-                                .taigiReadingFont(.title3)
-                                .foregroundStyle(.secondary)
-                            if !entry.type.isEmpty || !entry.category.isEmpty {
-                                Text([entry.type, entry.category].filter { !$0.isEmpty }.joined(separator: " · "))
-                                    .taigiReadingFont(.subheadline)
-                                    .foregroundStyle(.secondary)
+
+                            if !entry.audioID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                Button {
+                                    Task {
+                                        await viewModel.playWordAudio()
+                                    }
+                                } label: {
+                                    Image(systemName: "speaker.wave.2.fill")
+                                        .font(.title2)
+                                }
+                                .buttonStyle(.borderless)
+                                .accessibilityLabel(AppLocalizer.text(.playWordAudio, locale: appLocale))
                             }
                         }
-                        .accessibilityElement(children: .combine)
-
-                        Spacer(minLength: 0)
-
-                        if !entry.audioID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                            Button {
-                                Task {
-                                    await viewModel.playWordAudio()
-                                }
-                            } label: {
-                                Image(systemName: "speaker.wave.2.fill")
-                                    .font(.title2)
-                            }
-                            .buttonStyle(.borderless)
-                            .accessibilityLabel(AppLocalizer.text(.playWordAudio, locale: appLocale))
+                        Text(entry.romanization)
+                            .taigiReadingFont(.title3)
+                            .foregroundStyle(.secondary)
+                        if !entry.type.isEmpty || !entry.category.isEmpty {
+                            Text([entry.type, entry.category].filter { !$0.isEmpty }.joined(separator: " · "))
+                                .taigiReadingFont(.subheadline)
+                                .foregroundStyle(.secondary)
                         }
                     }
+                    .accessibilityElement(children: .combine)
                 }
 
                 if entry.hasDisplayableDetailContent {
@@ -144,18 +142,8 @@ struct DictionaryDetailView: View {
 
                             ForEach(Array(sense.examples.enumerated()), id: \.offset) { _, example in
                                 VStack(alignment: .leading, spacing: 6) {
-                                    HStack(alignment: .top, spacing: 12) {
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text(example.hanji)
-                                            Text(example.romanization)
-                                                .taigiReadingFont(.subheadline)
-                                                .foregroundStyle(.secondary)
-                                            LinkedReferenceText(example.mandarin, openWord: openLinkedWord)
-                                                .taigiReadingFont(.subheadline)
-                                                .foregroundStyle(.secondary)
-                                        }
-
-                                        Spacer(minLength: 0)
+                                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                        Text(example.hanji)
 
                                         if !example.audioID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                                             Button {
@@ -170,6 +158,13 @@ struct DictionaryDetailView: View {
                                             .accessibilityLabel(AppLocalizer.text(.playExampleAudio, locale: appLocale))
                                         }
                                     }
+
+                                    Text(example.romanization)
+                                        .taigiReadingFont(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                    LinkedReferenceText(example.mandarin, openWord: openLinkedWord)
+                                        .taigiReadingFont(.subheadline)
+                                        .foregroundStyle(.secondary)
                                 }
                                 .accessibilityElement(children: .combine)
                             }

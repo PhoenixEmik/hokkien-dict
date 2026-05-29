@@ -30,9 +30,46 @@ struct SearchHistoryContentView: View {
     var locale: AppLocale
     var applyHistory: (String) -> Void
     var clearHistory: () -> Void
+    @State private var isPresentingClearConfirmation = false
 
     var body: some View {
         if !history.isEmpty {
+#if os(macOS)
+            Group {
+                Section {
+                    ForEach(history, id: \.self) { query in
+                        Button {
+                            applyHistory(query)
+                        } label: {
+                            Label(query, systemImage: "clock.arrow.circlepath")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                } header: {
+                    HStack(spacing: 8) {
+                        Text(AppLocalizer.text(.searchHistoryTitle, locale: locale))
+                        Spacer(minLength: 0)
+                        Button(AppLocalizer.text(.clearSearchHistory, locale: locale)) {
+                            isPresentingClearConfirmation = true
+                        }
+                        .buttonStyle(.plain)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .alert(
+                AppLocalizer.text(.searchHistoryClearConfirmTitle, locale: locale),
+                isPresented: $isPresentingClearConfirmation
+            ) {
+                Button(AppLocalizer.text(.commonCancel, locale: locale), role: .cancel) {}
+                Button(AppLocalizer.text(.clearSearchHistory, locale: locale), role: .destructive) {
+                    clearHistory()
+                }
+            }
+#else
             Section {
                 ForEach(history, id: \.self) { query in
                     Button {
@@ -47,6 +84,7 @@ struct SearchHistoryContentView: View {
             } header: {
                 Text(AppLocalizer.text(.searchHistoryTitle, locale: locale))
             }
+#endif
         }
     }
 }

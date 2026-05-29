@@ -1485,6 +1485,29 @@
         }
       }
     },
+    "searchHistoryClearConfirmTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear all search history?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确定要清除所有搜索纪录吗？"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確定要清除所有搜尋紀錄嗎？"
+          }
+        }
+      }
+    },
     "commonCancel" : {
       "extractionState" : "stale",
       "localizations" : {
