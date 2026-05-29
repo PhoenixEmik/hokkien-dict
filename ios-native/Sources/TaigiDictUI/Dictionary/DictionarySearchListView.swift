@@ -110,6 +110,14 @@ struct DictionarySearchListView: View {
                         if showsSelection {
                             DictionaryEntryRowView(entry: entry, layoutStyle: .sidebarCompact)
                                 .tag(entry.id)
+#if os(macOS)
+                                .contentShape(Rectangle())
+                                .simultaneousGesture(
+                                    TapGesture().onEnded {
+                                        viewModel.select(entry)
+                                    }
+                                )
+#endif
                         } else {
                             Button {
                                 viewModel.select(entry)
