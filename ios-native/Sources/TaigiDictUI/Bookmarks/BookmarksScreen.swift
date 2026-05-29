@@ -447,7 +447,7 @@ private extension View {
                     }
                     .labelsHidden()
                     .pickerStyle(.segmented)
-                    .frame(width: 220)
+                    .frame(width: 160)
                 }
             }
         }

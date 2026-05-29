@@ -148,6 +148,7 @@ private extension View {
                 get: { viewModel.searchText },
                 set: { viewModel.searchText = $0 }
             ),
+            placement: .sidebar,
             prompt: AppLocalizer.text(.searchPrompt, locale: locale)
         )
         .onChange(of: viewModel.searchText) { _, _ in
