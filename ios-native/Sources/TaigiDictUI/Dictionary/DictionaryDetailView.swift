@@ -11,6 +11,7 @@ struct DictionaryDetailView: View {
     private let bookmarkStore: (any BookmarksStoreProtocol)?
     private let offlineAudioStore: (any OfflineAudioManaging)?
     private let conversionService: (any ChineseConversionProviding)?
+    private let onBookmarkChanged: (() -> Void)?
 
     @State private var viewModel: WordDetailViewModel
     @State private var isBookmarked = false
@@ -21,13 +22,15 @@ struct DictionaryDetailView: View {
         library: DictionaryLibrary,
         bookmarkStore: (any BookmarksStoreProtocol)? = nil,
         offlineAudioStore: (any OfflineAudioManaging)? = nil,
-        conversionService: (any ChineseConversionProviding)? = nil
+        conversionService: (any ChineseConversionProviding)? = nil,
+        onBookmarkChanged: (() -> Void)? = nil
     ) {
         self.sourceEntry = entry
         self.library = library
         self.bookmarkStore = bookmarkStore
         self.offlineAudioStore = offlineAudioStore
         self.conversionService = conversionService
+        self.onBookmarkChanged = onBookmarkChanged
         _viewModel = State(
             initialValue: WordDetailViewModel(
                 library: library,
@@ -279,6 +282,7 @@ struct DictionaryDetailView: View {
             let bookmarked = await bookmarkStore.toggleBookmark(entryID: entry.id)
             await MainActor.run {
                 isBookmarked = bookmarked
+                onBookmarkChanged?()
             }
         }
     }

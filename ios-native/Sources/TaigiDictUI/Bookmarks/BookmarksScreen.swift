@@ -49,10 +49,6 @@ public struct BookmarksScreen: View {
             NavigationStack {
                 bookmarksRoot(locale: locale)
             }
-            .macMainNavigationToolbar(
-                selection: macNavigationSelection,
-                locale: locale
-            )
         case .desktopResultsSplit:
             NavigationSplitView {
                 bookmarksRoot(locale: locale)
@@ -60,10 +56,6 @@ public struct BookmarksScreen: View {
                 bookmarksDetail(locale: locale)
             }
             .navigationSplitViewStyle(.balanced)
-            .macMainNavigationToolbar(
-                selection: macNavigationSelection,
-                locale: locale
-            )
         }
 #else
         NavigationStack {
@@ -425,34 +417,6 @@ public struct BookmarksScreen: View {
             selectedEntryIDs = [nextPrimarySelection]
             primarySelectedEntryID = nextPrimarySelection
         }
-#endif
-    }
-}
-
-private extension View {
-    @ViewBuilder
-    func macMainNavigationToolbar(
-        selection: Binding<MacNavigationSection>?,
-        locale: AppLocale
-    ) -> some View {
-#if os(macOS)
-        toolbar {
-            if let selection {
-                ToolbarItem(placement: .principal) {
-                    Picker("", selection: selection) {
-                        Text(AppLocalizer.text(.tabDictionary, locale: locale))
-                            .tag(MacNavigationSection.dictionary)
-                        Text(AppLocalizer.text(.tabBookmarks, locale: locale))
-                            .tag(MacNavigationSection.bookmarks)
-                    }
-                    .labelsHidden()
-                    .pickerStyle(.segmented)
-                    .frame(width: 160)
-                }
-            }
-        }
-#else
-        self
 #endif
     }
 }

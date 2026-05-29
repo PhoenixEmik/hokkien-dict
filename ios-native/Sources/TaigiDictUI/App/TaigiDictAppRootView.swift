@@ -10,7 +10,8 @@ public struct TaigiDictAppRootView: View {
     @ObservedObject private var navigationModel: AppNavigationModel
     @State private var viewModel: DictionarySearchViewModel
     @State private var initializationViewModel = InitializationViewModel()
-    @State private var bookmarkStore = BookmarkStore()
+    @State private var bookmarkStore: BookmarkStore
+    @State private var bookmarksViewModel: BookmarksViewModel
     @State private var offlineAudioStore: OfflineAudioStore
     @State private var hasLoadedAppSettings = false
     @State private var selectedIOSTab: IOSAppTab = .dictionary
@@ -36,13 +37,20 @@ public struct TaigiDictAppRootView: View {
         onSettingsChanged: @escaping (AppSettingsSnapshot) -> Void = { _ in }
     ) {
         let conversionService = Self.makeChineseConversionService()
+        let searchViewModel = DictionarySearchViewModel(
+            repository: repository,
+            conversionService: conversionService
+        )
+        let bookmarkStore = BookmarkStore()
         self.conversionService = conversionService
         self.dictionarySourceStore = dictionarySourceStore
         _appLanguageManager = StateObject(wrappedValue: appLanguageManager ?? AppLanguageManager())
         self.navigationModel = navigationModel
-        _viewModel = State(initialValue: DictionarySearchViewModel(
-            repository: repository,
-            conversionService: conversionService
+        _viewModel = State(initialValue: searchViewModel)
+        _bookmarkStore = State(initialValue: bookmarkStore)
+        _bookmarksViewModel = State(initialValue: BookmarksViewModel(
+            library: searchViewModel.library,
+            bookmarkStore: bookmarkStore
         ))
         _offlineAudioStore = State(initialValue: Self.makeOfflineAudioStore())
         self.settingsStore = settingsStore
@@ -69,6 +77,11 @@ public struct TaigiDictAppRootView: View {
             await loadAppSettingsIfNeeded()
             syncAppLocaleWithSystem()
         }
+#if os(macOS)
+        .task {
+            await bookmarksViewModel.load()
+        }
+#endif
         .onChange(of: maintenanceToken) { _, _ in
             Task { @MainActor in
                 await viewModel.resetAfterMaintenance()
@@ -217,14 +230,17 @@ public struct TaigiDictAppRootView: View {
     }
 
     private var macWindowContent: some View {
-        Group {
-            switch navigationModel.selectedSection {
-            case .dictionary:
-                dictionaryTab
-            case .bookmarks:
-                bookmarksTab
-            }
-        }
+        MacDictionaryWindowContent(
+            dictionaryViewModel: viewModel,
+            selection: macSectionSelection,
+            bookmarksViewModel: bookmarksViewModel,
+            bookmarkStore: bookmarkStore,
+            offlineAudioStore: offlineAudioStore,
+            conversionService: conversionService,
+            settingsStore: settingsStore,
+            settingsSnapshot: settingsSnapshot,
+            onSettingsChanged: onSettingsChanged
+        )
     }
 #else
     private var macNavigationSelectionOrNil: Binding<MacNavigationSection>? {
@@ -246,6 +262,397 @@ public final class AppNavigationModel: ObservableObject {
         selectedSection = .bookmarks
     }
 }
+
+#if os(macOS)
+private struct MacDictionaryWindowContent: View {
+    @Bindable var dictionaryViewModel: DictionarySearchViewModel
+    @Binding var selection: MacNavigationSection
+    @Environment(\.locale) private var locale
+    @State private var selectedBookmarkIDs: Set<Int64> = []
+    @State private var primarySelectedBookmarkID: Int64?
+
+    let bookmarksViewModel: BookmarksViewModel
+    let bookmarkStore: BookmarkStore
+    let offlineAudioStore: (any OfflineAudioManaging)?
+    let conversionService: (any ChineseConversionProviding)?
+    let settingsStore: any AppSettingsStoring
+    let settingsSnapshot: AppSettingsSnapshot
+    let onSettingsChanged: (AppSettingsSnapshot) -> Void
+
+    private var appLocale: AppLocale {
+        AppLocalizer.appLocale(from: locale)
+    }
+
+    private var selectedBookmarkEntry: DictionaryEntry? {
+        guard let selectedID = resolvedPrimarySelectedEntryID else {
+            return nil
+        }
+
+        return bookmarksViewModel.entries.first { $0.id == selectedID }
+    }
+
+    private var resolvedPrimarySelectedEntryID: Int64? {
+        if let primarySelectedBookmarkID,
+           selectedBookmarkIDs.contains(primarySelectedBookmarkID) {
+            return primarySelectedBookmarkID
+        }
+
+        return bookmarksViewModel.entries.first { selectedBookmarkIDs.contains($0.id) }?.id
+    }
+
+    private var searchBinding: Binding<String> {
+        Binding(
+            get: { dictionaryViewModel.searchText },
+            set: { newValue in
+                if selection != .dictionary {
+                    selection = .dictionary
+                }
+                dictionaryViewModel.searchText = newValue
+            }
+        )
+    }
+
+    private var bookmarksEntryIDsSignature: [Int64] {
+        bookmarksViewModel.entries.map(\.id)
+    }
+
+    var body: some View {
+        NavigationSplitView {
+            sidebarContent
+                .frame(minWidth: 280, idealWidth: 320)
+        } detail: {
+            detailContent
+        }
+        .navigationTitle(windowTitle)
+        .navigationSplitViewStyle(.balanced)
+        .searchable(
+            text: searchBinding,
+            placement: .toolbar,
+            prompt: AppLocalizer.text(.searchPrompt, locale: appLocale)
+        )
+        .onChange(of: dictionaryViewModel.searchText) { _, _ in
+            dictionaryViewModel.scheduleSearch()
+        }
+        .onSubmit(of: .search) {
+            dictionaryViewModel.submitSearch()
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .primaryAction) {
+                textScaleButton(
+                    systemImage: "textformat.size.smaller",
+                    label: AppLocalizer.text(.settingsReadingTextScaleLabel, locale: appLocale),
+                    nextScale: settingsSnapshot.readingTextScale - readingTextScaleStep,
+                    disabled: settingsSnapshot.readingTextScale <= AppSettingsSnapshot.minReadingTextScale
+                )
+                textScaleButton(
+                    systemImage: "textformat.size.larger",
+                    label: AppLocalizer.text(.settingsReadingTextScaleLabel, locale: appLocale),
+                    nextScale: settingsSnapshot.readingTextScale + readingTextScaleStep,
+                    disabled: settingsSnapshot.readingTextScale >= AppSettingsSnapshot.maxReadingTextScale
+                )
+            }
+        }
+        .task {
+            await bookmarksViewModel.load()
+            syncBookmarkSelection()
+        }
+        .onChange(of: selection) { _, newValue in
+            guard newValue == .bookmarks else {
+                return
+            }
+
+            Task {
+                await bookmarksViewModel.load()
+                syncBookmarkSelection()
+            }
+        }
+        .onChange(of: bookmarksEntryIDsSignature) { _, _ in
+            syncBookmarkSelection()
+        }
+    }
+
+    @ViewBuilder
+    private var sidebarContent: some View {
+        switch selection {
+        case .dictionary:
+            DictionarySearchListView(
+                viewModel: dictionaryViewModel,
+                showsSelection: true,
+                startPresentation: .historyOnly
+            )
+        case .bookmarks:
+            MacBookmarksListView(
+                viewModel: bookmarksViewModel,
+                selectedEntryIDs: $selectedBookmarkIDs,
+                locale: appLocale,
+                removeBookmarks: removeBookmarks
+            )
+        }
+    }
+
+    private var detailContent: some View {
+        VStack(spacing: 0) {
+            MacNavigationFilterBar(selection: $selection, locale: appLocale)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+            Divider()
+
+            Group {
+                switch selection {
+                case .dictionary:
+                    dictionaryDetailContent
+                case .bookmarks:
+                    bookmarksDetailContent
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+
+    @ViewBuilder
+    private var dictionaryDetailContent: some View {
+        if let entry = dictionaryViewModel.selectedEntry {
+            DictionaryDetailView(
+                entry: entry,
+                library: dictionaryViewModel.library,
+                bookmarkStore: bookmarkStore,
+                offlineAudioStore: offlineAudioStore,
+                conversionService: conversionService,
+                onBookmarkChanged: reloadBookmarks
+            )
+        } else if dictionaryViewModel.normalizedQuery.isEmpty {
+            MacDetailEmptyState(
+                title: AppLocalizer.text(.searchStartTitle, locale: appLocale),
+                systemImage: "text.magnifyingglass",
+                description: AppLocalizer.text(.searchStartDetailDescription, locale: appLocale)
+            )
+        } else if dictionaryViewModel.isSearching {
+            ProgressView(AppLocalizer.text(.searching, locale: appLocale))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else if dictionaryViewModel.results.isEmpty {
+            ContentUnavailableView(
+                AppLocalizer.text(.noResultTitle, locale: appLocale),
+                systemImage: "magnifyingglass",
+                description: Text(AppLocalizer.text(.noResultDescription, locale: appLocale))
+            )
+        } else {
+            MacDetailEmptyState(
+                title: AppLocalizer.text(.searchStartTitle, locale: appLocale),
+                systemImage: "text.magnifyingglass",
+                description: AppLocalizer.text(.searchStartDetailDescription, locale: appLocale)
+            )
+        }
+    }
+
+    @ViewBuilder
+    private var bookmarksDetailContent: some View {
+        if let selectedBookmarkEntry {
+            DictionaryDetailView(
+                entry: selectedBookmarkEntry,
+                library: dictionaryViewModel.library,
+                bookmarkStore: bookmarkStore,
+                offlineAudioStore: offlineAudioStore,
+                conversionService: conversionService,
+                onBookmarkChanged: reloadBookmarks
+            )
+        } else {
+            ContentUnavailableView {
+                Label(
+                    AppLocalizer.text(.bookmarksEmptyTitle, locale: appLocale),
+                    systemImage: "bookmark"
+                )
+            } description: {
+                Text(AppLocalizer.text(.bookmarksEmptyDescription, locale: appLocale))
+            } actions: {
+                Button(AppLocalizer.text(.bookmarksEmptyAction, locale: appLocale)) {
+                    selection = .dictionary
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+    }
+
+    private var windowTitle: String {
+        switch selection {
+        case .dictionary:
+            AppLocalizer.text(.dictionaryTitle, locale: appLocale)
+        case .bookmarks:
+            AppLocalizer.text(.bookmarksTitle, locale: appLocale)
+        }
+    }
+
+    private var readingTextScaleStep: Double {
+        (AppSettingsSnapshot.maxReadingTextScale - AppSettingsSnapshot.minReadingTextScale)
+            / Double(AppSettingsSnapshot.readingTextScaleDivisions)
+    }
+
+    @ViewBuilder
+    private func textScaleButton(
+        systemImage: String,
+        label: String,
+        nextScale: Double,
+        disabled: Bool
+    ) -> some View {
+        Button {
+            Task {
+                await updateReadingTextScale(nextScale)
+            }
+        } label: {
+            Image(systemName: systemImage)
+        }
+        .help(label)
+        .disabled(disabled)
+    }
+
+    private func updateReadingTextScale(_ value: Double) async {
+        let snapped = AppSettingsSnapshot.snapReadingTextScale(value)
+        await settingsStore.setReadingTextScale(snapped)
+        var nextSettings = settingsSnapshot
+        nextSettings.readingTextScale = snapped
+        await MainActor.run {
+            onSettingsChanged(nextSettings)
+        }
+    }
+
+    private func removeBookmarks(_ entryIDs: Set<Int64>) {
+        Task {
+            await bookmarksViewModel.removeBookmarks(entryIDs: entryIDs)
+            syncBookmarkSelection()
+        }
+    }
+
+    private func reloadBookmarks() {
+        Task {
+            await bookmarksViewModel.load()
+            syncBookmarkSelection()
+        }
+    }
+
+    private func syncBookmarkSelection() {
+        let validIDs = Set(bookmarksEntryIDsSignature)
+        selectedBookmarkIDs = selectedBookmarkIDs.intersection(validIDs)
+
+        if let primarySelectedBookmarkID, validIDs.contains(primarySelectedBookmarkID) {
+            return
+        }
+
+        if let firstSelected = selectedBookmarkIDs.first {
+            primarySelectedBookmarkID = firstSelected
+            return
+        }
+
+        if let firstEntry = bookmarksViewModel.entries.first {
+            primarySelectedBookmarkID = firstEntry.id
+            selectedBookmarkIDs = [firstEntry.id]
+            return
+        }
+
+        primarySelectedBookmarkID = nil
+    }
+}
+
+private struct MacBookmarksListView: View {
+    let viewModel: BookmarksViewModel
+    @Binding var selectedEntryIDs: Set<Int64>
+    let locale: AppLocale
+    let removeBookmarks: (Set<Int64>) -> Void
+
+    var body: some View {
+        List(selection: $selectedEntryIDs) {
+            if viewModel.isLoading {
+                Section {
+                    HStack {
+                        ProgressView()
+                        Text(AppLocalizer.text(.bookmarksLoading, locale: locale))
+                    }
+                }
+            } else if let errorMessage = viewModel.errorMessage {
+                Section {
+                    ContentUnavailableView(
+                        AppLocalizer.text(.loadingFailedTitle, locale: locale),
+                        systemImage: "exclamationmark.triangle",
+                        description: Text(errorMessage)
+                    )
+                }
+            } else {
+                Section(AppLocalizer.text(.bookmarksSectionSaved, locale: locale)) {
+                    ForEach(viewModel.entries) { entry in
+                        DictionaryEntryRowView(entry: entry, layoutStyle: .sidebarCompact)
+                            .tag(entry.id)
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    removeBookmarks(Set([entry.id]))
+                                } label: {
+                                    Label(AppLocalizer.text(.commonDelete, locale: locale), systemImage: "trash")
+                                }
+
+                                ShareLink(item: WordDetailViewModel.shareText(for: entry)) {
+                                    Label(AppLocalizer.text(.share, locale: locale), systemImage: "square.and.arrow.up")
+                                }
+                            }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private struct MacNavigationFilterBar: View {
+    @Binding var selection: MacNavigationSection
+    let locale: AppLocale
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                filterButton(
+                    title: AppLocalizer.text(.tabDictionary, locale: locale),
+                    section: .dictionary
+                )
+                filterButton(
+                    title: AppLocalizer.text(.tabBookmarks, locale: locale),
+                    section: .bookmarks
+                )
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .scrollClipDisabled()
+    }
+
+    @ViewBuilder
+    private func filterButton(title: String, section: MacNavigationSection) -> some View {
+        Button {
+            selection = section
+        } label: {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(selection == section ? .primary : .secondary)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    Capsule()
+                        .fill(selection == section ? Color.accentColor.opacity(0.12) : Color.clear)
+                )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct MacDetailEmptyState: View {
+    let title: String
+    let systemImage: String
+    let description: String
+
+    var body: some View {
+        ContentUnavailableView(
+            title,
+            systemImage: systemImage,
+            description: Text(description)
+        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(24)
+    }
+}
+#endif
 
 private extension View {
     @ViewBuilder

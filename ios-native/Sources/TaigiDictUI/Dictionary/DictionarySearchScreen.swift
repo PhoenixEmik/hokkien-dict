@@ -59,10 +59,6 @@ public struct DictionarySearchScreen: View {
                 )
             }
             .navigationSplitViewStyle(.balanced)
-            .macMainNavigationToolbar(
-                selection: macNavigationSelection,
-                locale: appLocale
-            )
         case .regularSplit:
             NavigationSplitView {
                 DictionarySearchListView(
@@ -294,34 +290,6 @@ extension View {
         .onSubmit(of: .search) {
             viewModel.submitSearch()
         }
-#endif
-    }
-}
-
-private extension View {
-    @ViewBuilder
-    func macMainNavigationToolbar(
-        selection: Binding<MacNavigationSection>?,
-        locale: AppLocale
-    ) -> some View {
-#if os(macOS)
-        toolbar {
-            if let selection {
-                ToolbarItem(placement: .principal) {
-                    Picker("", selection: selection) {
-                        Text(AppLocalizer.text(.tabDictionary, locale: locale))
-                            .tag(MacNavigationSection.dictionary)
-                        Text(AppLocalizer.text(.tabBookmarks, locale: locale))
-                            .tag(MacNavigationSection.bookmarks)
-                    }
-                    .labelsHidden()
-                    .pickerStyle(.segmented)
-                    .frame(width: 160)
-                }
-            }
-        }
-#else
-        self
 #endif
     }
 }
