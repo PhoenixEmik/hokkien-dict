@@ -536,7 +536,7 @@ private struct RelationshipChip: View {
                 .taigiReadingFont(.subheadline)
         }
         .buttonStyle(.bordered)
-        .controlSize(.mini)
+        .controlSize(.small)
         .disabled(!isOpenable)
     }
 }
