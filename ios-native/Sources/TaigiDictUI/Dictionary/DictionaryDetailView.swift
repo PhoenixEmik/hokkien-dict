@@ -121,9 +121,14 @@ struct DictionaryDetailView: View {
                     )
 
                     ForEach(Array(entry.senses.enumerated()), id: \.offset) { _, sense in
-                        Section(sense.partOfSpeech.isEmpty ? AppLocalizer.text(.definitionFallbackTitle, locale: appLocale) : sense.partOfSpeech) {
+                        let headerTitle = sense.partOfSpeech.isEmpty
+                            ? AppLocalizer.text(.definitionFallbackTitle, locale: appLocale)
+                            : sense.partOfSpeech
+
+                        Section {
                             if !sense.definition.isEmpty {
                                 LinkedReferenceText(sense.definition, openWord: openLinkedWord)
+                                    .taigiReadingFont(.body)
                             }
 
                             RelationshipSectionContent(
@@ -144,6 +149,7 @@ struct DictionaryDetailView: View {
                                 VStack(alignment: .leading, spacing: 6) {
                                     HStack(alignment: .firstTextBaseline, spacing: 8) {
                                         Text(example.hanji)
+                                            .taigiReadingFont(.body)
 
                                         if !example.audioID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                                             Button {
@@ -168,6 +174,8 @@ struct DictionaryDetailView: View {
                                 }
                                 .accessibilityElement(children: .combine)
                             }
+                        } header: {
+                            DetailSectionHeader(headerTitle)
                         }
                     }
 
@@ -192,9 +200,12 @@ struct DictionaryDetailView: View {
                         values: entry.vocabularyComparisons
                     )
                 } else if !entry.briefSummary.isEmpty {
-                    Section(AppLocalizer.text(.definitionFallbackTitle, locale: appLocale)) {
+                    Section {
                         Text(entry.briefSummary)
+                            .taigiReadingFont(.body)
                             .foregroundStyle(.secondary)
+                    } header: {
+                        DetailSectionHeader(AppLocalizer.text(.definitionFallbackTitle, locale: appLocale))
                     }
                 }
             } else {
@@ -373,12 +384,14 @@ private struct RelationshipSection: View {
     var body: some View {
         let visibleWords = normalizedWords
         if !visibleWords.isEmpty {
-            Section(title) {
+            Section {
                 RelationshipRows(
                     words: visibleWords,
                     openableWords: openableWords,
                     openWord: openWord
                 )
+            } header: {
+                DetailSectionHeader(title)
             }
         }
     }
@@ -420,6 +433,7 @@ private struct LinkedReferenceText: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .taigiReadingFont(.body)
     }
 }
 
@@ -519,9 +533,10 @@ private struct RelationshipChip: View {
             }
         } label: {
             Text(word)
+                .taigiReadingFont(.subheadline)
         }
         .buttonStyle(.bordered)
-        .controlSize(.small)
+        .controlSize(.mini)
         .disabled(!isOpenable)
     }
 }
@@ -612,11 +627,29 @@ private struct DetailStringListSection: View {
         let visibleValues = values.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
         if !visibleValues.isEmpty {
-            Section(title) {
+            Section {
                 ForEach(visibleValues, id: \.self) { value in
                     Text(value)
+                        .taigiReadingFont(.body)
                 }
+            } header: {
+                DetailSectionHeader(title)
             }
         }
+    }
+}
+
+private struct DetailSectionHeader: View {
+    let title: String
+
+    init(_ title: String) {
+        self.title = title
+    }
+
+    var body: some View {
+        Text(title)
+            .taigiReadingFont(.subheadline, weight: .semibold)
+            .foregroundStyle(.secondary)
+            .textCase(nil)
     }
 }
