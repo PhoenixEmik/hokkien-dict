@@ -63,57 +63,45 @@ public struct LicenseSummaryScreen: View {
 
 #if os(macOS)
     private var macLicenseContent: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                Text(AppLocalizer.text(.licenseTitle, locale: appLocale))
-                    .font(.title3.weight(.semibold))
+        List {
+            Section(AppLocalizer.text(.licenseSummarySection, locale: appLocale)) {
+                macLicenseRow(
+                    title: AppLocalizer.text(.licenseAppCode, locale: appLocale),
+                    systemImage: "chevron.left.forwardslash.chevron.right",
+                    value: AppLocalizer.text(.licenseAppCodeDescription, locale: appLocale)
+                )
 
-                VStack(alignment: .leading, spacing: 10) {
-                    macLicenseRow(
-                        title: AppLocalizer.text(.licenseAppCode, locale: appLocale),
-                        systemImage: "chevron.left.forwardslash.chevron.right",
-                        value: AppLocalizer.text(.licenseAppCodeDescription, locale: appLocale)
-                    )
+                macLicenseRow(
+                    title: AppLocalizer.text(.licenseData, locale: appLocale),
+                    systemImage: "book.closed",
+                    value: AppLocalizer.text(.licenseDataDescription, locale: appLocale)
+                )
 
-                    macLicenseRow(
-                        title: AppLocalizer.text(.licenseData, locale: appLocale),
-                        systemImage: "book.closed",
-                        value: AppLocalizer.text(.licenseDataDescription, locale: appLocale)
-                    )
+                macLicenseRow(
+                    title: AppLocalizer.text(.licenseAudio, locale: appLocale),
+                    systemImage: "speaker.wave.2",
+                    value: AppLocalizer.text(.licenseAudioDescription, locale: appLocale)
+                )
 
-                    macLicenseRow(
-                        title: AppLocalizer.text(.licenseAudio, locale: appLocale),
-                        systemImage: "speaker.wave.2",
-                        value: AppLocalizer.text(.licenseAudioDescription, locale: appLocale)
-                    )
-                }
-
-                Divider()
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Link(
-                        AppLocalizer.text(.licenseMinistryCopyright, locale: appLocale),
-                        destination: ministryCopyrightURL
-                    )
-
-                    NavigationLink {
-                        LicenseOverviewScreen()
-                    } label: {
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(AppLocalizer.text(.licenseThirdParty, locale: appLocale))
-                            Text(AppLocalizer.text(.licenseViewThirdParty, locale: appLocale))
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .buttonStyle(.plain)
+                Link(destination: ministryCopyrightURL) {
+                    Label(AppLocalizer.text(.licenseMinistryCopyright, locale: appLocale), systemImage: "c.circle")
                 }
             }
-            .frame(width: 390, alignment: .leading)
-            .padding(18)
-            .fixedSize(horizontal: false, vertical: true)
+
+            Section(AppLocalizer.text(.licenseThirdParty, locale: appLocale)) {
+                NavigationLink {
+                    LicenseOverviewScreen()
+                } label: {
+                    LabeledContent {
+                        Text(AppLocalizer.text(.licenseViewThirdParty, locale: appLocale))
+                            .foregroundStyle(.secondary)
+                    } label: {
+                        Label(AppLocalizer.text(.licenseThirdParty, locale: appLocale), systemImage: "shippingbox")
+                    }
+                }
+            }
         }
-        .scrollIndicators(.hidden)
+        .listStyle(.inset)
         .navigationTitle(AppLocalizer.text(.licenseTitle, locale: appLocale))
     }
 

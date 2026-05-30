@@ -30,6 +30,7 @@ struct LicenseOverviewScreen: View {
                 }
             }
         }
+        .listStyle(.inset)
         .navigationTitle(AppLocalizer.text(.licenseOverviewTitle, locale: appLocale))
     }
 
