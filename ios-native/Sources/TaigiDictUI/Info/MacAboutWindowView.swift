@@ -48,14 +48,26 @@ public struct MacAboutWindowView: View {
 
             Spacer(minLength: 24)
 
-            VStack(spacing: 10) {
-                LinkRow(title: AppLocalizer.text(.aboutGitHub, locale: appLocale), destination: repositoryURL)
-                WindowLinkRow(title: AppLocalizer.text(.settingsLicenses, locale: appLocale)) {
-                    openWindow(id: licenseWindowID)
+            VStack(spacing: 14) {
+                HStack(spacing: 10) {
+                    Button(AppLocalizer.text(.settingsLicenses, locale: appLocale)) {
+                        openWindow(id: licenseWindowID)
+                    }
+
+                    Button(AppLocalizer.text(.settingsReferences, locale: appLocale)) {
+                        openWindow(id: ReferenceArticleViewerWindow.windowID)
+                    }
                 }
-                LinkRow(title: AppLocalizer.text(.aboutPrivacy, locale: appLocale), destination: privacyURL)
-                WindowLinkRow(title: AppLocalizer.text(.settingsReferences, locale: appLocale)) {
-                    openWindow(id: ReferenceArticleViewerWindow.windowID)
+                .controlSize(.regular)
+
+                HStack(spacing: 8) {
+                    LinkRow(title: AppLocalizer.text(.aboutGitHub, locale: appLocale), destination: repositoryURL)
+
+                    Text("|")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+
+                    LinkRow(title: AppLocalizer.text(.aboutPrivacy, locale: appLocale), destination: privacyURL)
                 }
             }
             .padding(.horizontal, 32)
@@ -81,31 +93,13 @@ private struct LinkRow: View {
 
     var body: some View {
         Link(destination: destination) {
-            HStack(spacing: 6) {
+            HStack(spacing: 4) {
                 Text(title)
                 Image(systemName: "arrow.up.right")
-                    .font(.caption)
+                    .font(.caption2)
             }
-            .font(.subheadline)
+            .font(.footnote)
             .foregroundStyle(.secondary)
-            .frame(maxWidth: .infinity, alignment: .center)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-private struct WindowLinkRow: View {
-    let title: String
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .center)
-                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }

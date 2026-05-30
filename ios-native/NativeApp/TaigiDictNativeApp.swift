@@ -97,8 +97,9 @@ struct TaigiDictNativeApp: App {
                 LicenseSummaryScreen()
             }
             .environmentObject(appLanguageManager)
-            .frame(minWidth: 640, minHeight: 480)
         }
+        .defaultSize(width: 460, height: 340)
+        .windowResizability(.contentSize)
 
         Window(appLanguageManager.localized(.referenceTitle), id: ReferenceArticleViewerWindow.windowID) {
             MacReferenceArticleViewer()

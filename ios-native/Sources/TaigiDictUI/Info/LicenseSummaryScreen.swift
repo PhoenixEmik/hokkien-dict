@@ -13,6 +13,9 @@ public struct LicenseSummaryScreen: View {
     public init() {}
 
     public var body: some View {
+#if os(macOS)
+        macLicenseContent
+#else
         List {
             Section(AppLocalizer.text(.licenseSummarySection, locale: appLocale)) {
                 LabeledContent {
@@ -55,5 +58,70 @@ public struct LicenseSummaryScreen: View {
             }
         }
         .navigationTitle(AppLocalizer.text(.licenseTitle, locale: appLocale))
+#endif
     }
+
+#if os(macOS)
+    private var macLicenseContent: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                Text(AppLocalizer.text(.licenseTitle, locale: appLocale))
+                    .font(.title2.weight(.semibold))
+
+                VStack(alignment: .leading, spacing: 12) {
+                    macLicenseRow(
+                        title: AppLocalizer.text(.licenseAppCode, locale: appLocale),
+                        systemImage: "chevron.left.forwardslash.chevron.right",
+                        value: AppLocalizer.text(.licenseAppCodeDescription, locale: appLocale)
+                    )
+
+                    macLicenseRow(
+                        title: AppLocalizer.text(.licenseData, locale: appLocale),
+                        systemImage: "book.closed",
+                        value: AppLocalizer.text(.licenseDataDescription, locale: appLocale)
+                    )
+
+                    macLicenseRow(
+                        title: AppLocalizer.text(.licenseAudio, locale: appLocale),
+                        systemImage: "speaker.wave.2",
+                        value: AppLocalizer.text(.licenseAudioDescription, locale: appLocale)
+                    )
+                }
+
+                Divider()
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Link(
+                        AppLocalizer.text(.licenseMinistryCopyright, locale: appLocale),
+                        destination: ministryCopyrightURL
+                    )
+
+                    NavigationLink {
+                        LicenseOverviewScreen()
+                    } label: {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(AppLocalizer.text(.licenseThirdParty, locale: appLocale))
+                            Text(AppLocalizer.text(.licenseViewThirdParty, locale: appLocale))
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .frame(maxWidth: 420, alignment: .leading)
+            .padding(20)
+        }
+        .navigationTitle(AppLocalizer.text(.licenseTitle, locale: appLocale))
+    }
+
+    private func macLicenseRow(title: String, systemImage: String, value: String) -> some View {
+        LabeledContent {
+            Text(value)
+                .foregroundStyle(.secondary)
+        } label: {
+            Label(title, systemImage: systemImage)
+        }
+    }
+#endif
 }

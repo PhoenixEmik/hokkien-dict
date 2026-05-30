@@ -23,6 +23,9 @@
     "%lld." : {
 
     },
+    "|" : {
+
+    },
     "aboutAppDescription" : {
       "extractionState" : "stale",
       "localizations" : {
