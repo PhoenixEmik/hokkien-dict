@@ -297,33 +297,35 @@ public struct SettingsScreen: View {
             }
         }
         .formStyle(.columns)
-        .frame(width: 450)
-        .padding(.horizontal, 24)
-        .padding(.vertical, 22)
+        .frame(width: 470)
+        .padding(.horizontal, 28)
+        .padding(.vertical, 24)
     }
 
     private func settingsSectionHeader(_ title: String) -> some View {
         Text(title)
-            .font(.caption2.weight(.semibold))
+            .font(.footnote.weight(.semibold))
             .textCase(nil)
             .foregroundStyle(.secondary)
-            .padding(.top, 2)
-            .padding(.bottom, 2)
+            .padding(.top, 4)
+            .padding(.bottom, 4)
     }
 
     private var settingsSectionDivider: some View {
         Divider()
-            .padding(.top, 10)
+            .padding(.top, 12)
     }
 
     private func macSettingsValueRow(_ title: String, value: String, monospaced: Bool = false) -> some View {
         LabeledContent(title) {
             if monospaced {
                 Text(value)
+                    .font(.body)
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
             } else {
                 Text(value)
+                    .font(.body)
                     .foregroundStyle(.secondary)
             }
         }
@@ -367,10 +369,6 @@ public struct SettingsScreen: View {
 #if os(macOS)
         LabeledContent(AppLocalizer.text(.settingsReadingTextScaleLabel, locale: locale)) {
             HStack(spacing: 12) {
-                Image(systemName: "textformat.size.smaller")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-
                 Slider(
                     value: Binding(
                         get: { viewModel.readingTextScale },
@@ -387,19 +385,15 @@ public struct SettingsScreen: View {
                     EmptyView()
                 }
                 .controlSize(.regular)
-                .frame(width: 170)
+                .frame(width: 220)
 
                 Text(viewModel.readingTextScale.displayScaleLabel(locale: locale))
-                    .font(.subheadline)
+                    .font(.body)
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
-                    .frame(width: 48, alignment: .trailing)
-
-                Image(systemName: "textformat.size.larger")
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .frame(width: 52, alignment: .trailing)
             }
-            .frame(width: 270, alignment: .leading)
+            .frame(width: 284, alignment: .leading)
         }
 #else
         VStack(alignment: .leading, spacing: 10) {
@@ -486,7 +480,7 @@ private struct AudioArchiveResourceRow: View {
     var body: some View {
 #if os(macOS)
         LabeledContent(title) {
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .firstTextBaseline, spacing: 12) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(snapshotDescription)
@@ -591,7 +585,7 @@ private struct ResourceActionControl<Action: Hashable>: View {
                 Button(buttonTitle(action)) {
                     runAction(action)
                 }
-                .controlSize(.mini)
+                .controlSize(.small)
                 .fixedSize()
             }
         }
