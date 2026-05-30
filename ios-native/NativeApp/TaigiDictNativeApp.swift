@@ -98,7 +98,7 @@ struct TaigiDictNativeApp: App {
             }
             .environmentObject(appLanguageManager)
         }
-        .defaultSize(width: 460, height: 340)
+        .defaultSize(width: 430, height: 300)
         .windowResizability(.contentSize)
 
         Window(appLanguageManager.localized(.referenceTitle), id: ReferenceArticleViewerWindow.windowID) {

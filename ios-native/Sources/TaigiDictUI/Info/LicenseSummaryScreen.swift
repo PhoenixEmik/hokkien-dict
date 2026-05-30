@@ -64,11 +64,11 @@ public struct LicenseSummaryScreen: View {
 #if os(macOS)
     private var macLicenseContent: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 16) {
                 Text(AppLocalizer.text(.licenseTitle, locale: appLocale))
-                    .font(.title2.weight(.semibold))
+                    .font(.title3.weight(.semibold))
 
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 10) {
                     macLicenseRow(
                         title: AppLocalizer.text(.licenseAppCode, locale: appLocale),
                         systemImage: "chevron.left.forwardslash.chevron.right",
@@ -90,7 +90,7 @@ public struct LicenseSummaryScreen: View {
 
                 Divider()
 
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 8) {
                     Link(
                         AppLocalizer.text(.licenseMinistryCopyright, locale: appLocale),
                         destination: ministryCopyrightURL
@@ -109,9 +109,11 @@ public struct LicenseSummaryScreen: View {
                     .buttonStyle(.plain)
                 }
             }
-            .frame(maxWidth: 420, alignment: .leading)
-            .padding(20)
+            .frame(width: 390, alignment: .leading)
+            .padding(18)
+            .fixedSize(horizontal: false, vertical: true)
         }
+        .scrollIndicators(.hidden)
         .navigationTitle(AppLocalizer.text(.licenseTitle, locale: appLocale))
     }
 
