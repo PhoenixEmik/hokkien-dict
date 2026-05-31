@@ -5,11 +5,13 @@ import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
@@ -841,8 +843,10 @@ private fun DictionaryDetailRelationshipContent(
         ) {
             values.forEach { value ->
                 FilledTonalButton(
+                    modifier = Modifier.defaultMinSize(minHeight = 36.dp),
                     onClick = { onOpenLinkedWord(value) },
                     enabled = openableLinkedWords.contains(value),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
                 ) {
                     DictionaryFallbackText(
                         text = value,
