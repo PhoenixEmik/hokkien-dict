@@ -124,19 +124,12 @@ class RoomDictionaryRepository(
         }
 
         val candidates = search(rawWord, ROOM_DEFAULT_SEARCH_LIMIT)
-        candidates.firstOrNull { candidate ->
-            candidate.hanji.trim() == rawWord.trim()
-        } ?: candidates.firstOrNull { candidate ->
-            candidate.variantChars.any { matchesLinkedWord(it, normalizedWord) } ||
-                candidate.wordSynonyms.any { matchesLinkedWord(it, normalizedWord) } ||
-                candidate.wordAntonyms.any { matchesLinkedWord(it, normalizedWord) } ||
-                candidate.senses.any { sense ->
-                    sense.definitionSynonyms.any { matchesLinkedWord(it, normalizedWord) } ||
-                        sense.definitionAntonyms.any { matchesLinkedWord(it, normalizedWord) }
-                }
-        } ?: candidates.firstOrNull { candidate ->
-            matchesLinkedWord(candidate.romanization, normalizedWord)
-        }
+        LinkedEntrySelection.select(
+            candidates = candidates,
+            rawWord = rawWord,
+            normalizedWord = normalizedWord,
+            matchesLinkedWord = ::matchesLinkedWord,
+        )
     }
 
     override fun close() {

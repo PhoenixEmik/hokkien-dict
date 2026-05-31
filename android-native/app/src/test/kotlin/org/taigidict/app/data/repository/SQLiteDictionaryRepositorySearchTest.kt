@@ -86,6 +86,21 @@ class SQLiteDictionaryRepositorySearchTest {
         assertEquals(3L, repository.findLinkedEntry("ji tian")?.id)
     }
 
+    @Test
+    fun findLinkedEntry_prefersRegularHeadwordOverAppendixForExactHanjiMatches() {
+        val tempDirectory = createTempDirectory(prefix = "dict-linked-headword-priority-").toFile()
+        val databaseFile = File(tempDirectory, "dictionary.sqlite")
+        val jsonl = """
+            {"id":1,"type":"主詞目","hanji":"白","romanization":"【白】pe̍h","category":"顏色、氣味","audio":"","hokkienSearch":"白 白 peh 顏色 氣味","mandarinSearch":"白色","senses":[{"partOfSpeech":"名詞","definition":"顏色名。","definitionSynonyms":[],"definitionAntonyms":["烏"],"examples":[]}]}
+            {"id":2,"type":"主詞目","hanji":"白","romanization":"【文】pi̍k","category":"性質、程度","audio":"","hokkienSearch":"白 文 pik 性質 程度","mandarinSearch":"清白","senses":[{"partOfSpeech":"形容詞","definition":"清楚。","examples":[]}]}
+            {"id":3,"type":"附錄","hanji":"白","romanization":"Pe̍h","category":"全部,五畫","audio":"","hokkienSearch":"白 peh 全部 五畫","mandarinSearch":"附錄 百家姓","senses":[{"partOfSpeech":"","definition":"附錄－百家姓","examples":[]}]}
+            {"id":4,"type":"主詞目","hanji":"烏","romanization":"oo","category":"顏色、氣味","audio":"","hokkienSearch":"烏 oo 顏色 氣味","mandarinSearch":"黑色","senses":[{"partOfSpeech":"名詞","definition":"顏色名。","definitionSynonyms":[],"definitionAntonyms":["白"],"examples":[]}]}
+        """.trimIndent()
+        val repository = importRepository(databaseFile, jsonl, entryCount = 4, senseCount = 4)
+
+        assertEquals(1L, repository.findLinkedEntry("白")?.id)
+    }
+
     private fun importRepository(
         databaseFile: File,
         jsonl: String,

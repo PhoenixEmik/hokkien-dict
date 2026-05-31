@@ -83,19 +83,12 @@ class SQLiteDictionaryRepository(
             return null
         }
 
-        return candidates.firstOrNull { candidate ->
-            candidate.hanji.trim() == rawWord.trim()
-        } ?: candidates.firstOrNull { candidate ->
-            candidate.variantChars.any { matchesLinkedWord(it, normalizedWord) } ||
-                candidate.wordSynonyms.any { matchesLinkedWord(it, normalizedWord) } ||
-                candidate.wordAntonyms.any { matchesLinkedWord(it, normalizedWord) } ||
-                candidate.senses.any { sense ->
-                    sense.definitionSynonyms.any { matchesLinkedWord(it, normalizedWord) } ||
-                        sense.definitionAntonyms.any { matchesLinkedWord(it, normalizedWord) }
-                }
-        } ?: candidates.firstOrNull { candidate ->
-            matchesLinkedWord(candidate.romanization, normalizedWord)
-        }
+        return LinkedEntrySelection.select(
+            candidates = candidates,
+            rawWord = rawWord,
+            normalizedWord = normalizedWord,
+            matchesLinkedWord = ::matchesLinkedWord,
+        )
     }
 
     private fun searchOrderedIds(
