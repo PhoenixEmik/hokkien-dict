@@ -26,10 +26,10 @@ import androidx.compose.material.icons.outlined.Bookmark
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -786,8 +786,8 @@ private fun DictionaryDetailRelationshipSection(
     val scaledLabelStyle = MaterialTheme.typography.labelLarge.copy(
         fontSize = MaterialTheme.typography.labelLarge.fontSize * readingTextScale.toFloat(),
     )
-    val scaledChipStyle = MaterialTheme.typography.bodySmall.copy(
-        fontSize = MaterialTheme.typography.bodySmall.fontSize * readingTextScale.toFloat(),
+    val scaledButtonStyle = MaterialTheme.typography.bodyMedium.copy(
+        fontSize = MaterialTheme.typography.bodyMedium.fontSize * readingTextScale.toFloat(),
     )
 
     val content: @Composable () -> Unit = {
@@ -797,7 +797,7 @@ private fun DictionaryDetailRelationshipSection(
             openableLinkedWords = openableLinkedWords,
             onOpenLinkedWord = onOpenLinkedWord,
             labelStyle = scaledLabelStyle,
-            chipStyle = scaledChipStyle,
+            buttonStyle = scaledButtonStyle,
         )
     }
 
@@ -827,7 +827,7 @@ private fun DictionaryDetailRelationshipContent(
     openableLinkedWords: Set<String>,
     onOpenLinkedWord: (String) -> Unit,
     labelStyle: TextStyle,
-    chipStyle: TextStyle,
+    buttonStyle: TextStyle,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(
@@ -840,16 +840,15 @@ private fun DictionaryDetailRelationshipContent(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             values.forEach { value ->
-                AssistChip(
+                FilledTonalButton(
                     onClick = { onOpenLinkedWord(value) },
                     enabled = openableLinkedWords.contains(value),
-                    label = {
-                        DictionaryFallbackText(
-                            text = value,
-                            style = chipStyle,
-                        )
-                    },
-                )
+                ) {
+                    DictionaryFallbackText(
+                        text = value,
+                        style = buttonStyle,
+                    )
+                }
             }
         }
     }
