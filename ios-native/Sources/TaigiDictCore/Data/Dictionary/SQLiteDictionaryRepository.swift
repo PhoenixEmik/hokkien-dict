@@ -68,9 +68,13 @@ public actor SQLiteDictionaryRepository: DictionaryRepositoryProtocol {
     }
 
     public func findLinkedEntry(_ rawWord: String) async throws -> DictionaryEntry? {
+        try await findLinkedEntries(rawWord).first
+    }
+
+    public func findLinkedEntries(_ rawWord: String) async throws -> [DictionaryEntry] {
         let query = TextNormalization.normalizeQuery(rawWord)
         guard !query.isEmpty else {
-            return nil
+            return []
         }
 
         let dbQueue = try tryDatabaseQueue()
@@ -93,23 +97,24 @@ public actor SQLiteDictionaryRepository: DictionaryRepositoryProtocol {
             )
 
             let entries = try Self.fetchEntries(ids: candidateIDs, from: db)
-            var romanizationMatch: DictionaryEntry?
-
-            for entry in entries {
-                if TextNormalization.normalizeQuery(entry.hanji) == query {
-                    return entry
-                }
-
-                if entry.variantChars.contains(where: { TextNormalization.normalizeQuery($0) == query }) {
-                    return entry
-                }
-
-                if romanizationMatch == nil, TextNormalization.normalizeQuery(entry.romanization) == query {
-                    romanizationMatch = entry
-                }
+            let exactHanjiMatches = entries.filter {
+                TextNormalization.normalizeQuery($0.hanji) == query
+            }
+            if !exactHanjiMatches.isEmpty {
+                return Self.preferredLinkedEntries(from: exactHanjiMatches)
             }
 
-            return romanizationMatch
+            let variantMatches = entries.filter {
+                $0.variantChars.contains(where: { TextNormalization.normalizeQuery($0) == query })
+            }
+            if !variantMatches.isEmpty {
+                return Self.preferredLinkedEntries(from: variantMatches)
+            }
+
+            let romanizationMatches = entries.filter {
+                TextNormalization.normalizeQuery($0.romanization) == query
+            }
+            return Self.preferredLinkedEntries(from: romanizationMatches)
         }
     }
 
@@ -283,6 +288,31 @@ public actor SQLiteDictionaryRepository: DictionaryRepositoryProtocol {
                 hokkienSearch: row["hokkien_search"],
                 mandarinSearch: row["mandarin_search"]
             )
+        }
+    }
+
+    private static func preferredLinkedEntry(from entries: [DictionaryEntry]) -> DictionaryEntry? {
+        preferredLinkedEntries(from: entries).first
+    }
+
+    private static func preferredLinkedEntries(from entries: [DictionaryEntry]) -> [DictionaryEntry] {
+        entries.sorted { lhs, rhs in
+            linkedEntryPriority(lhs) < linkedEntryPriority(rhs)
+        }
+    }
+
+    private static func linkedEntryPriority(_ entry: DictionaryEntry) -> (Int, Int64) {
+        (
+            entryHasDisplayableSense(entry) ? 0 : (entry.aliasTargetEntryID != nil ? 1 : 2),
+            entry.id
+        )
+    }
+
+    private static func entryHasDisplayableSense(_ entry: DictionaryEntry) -> Bool {
+        entry.senses.contains { sense in
+            !sense.partOfSpeech.isEmpty ||
+            !sense.definition.isEmpty ||
+            !sense.examples.isEmpty
         }
     }
 

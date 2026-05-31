@@ -528,16 +528,14 @@ private struct RelationshipChip: View {
 
     var body: some View {
         Button {
-            if isOpenable {
-                openWord(word)
-            }
+            openWord(word)
         } label: {
             Text(word)
                 .taigiReadingFont(.subheadline)
         }
         .buttonStyle(.bordered)
         .controlSize(.small)
-        .disabled(!isOpenable)
+        .opacity(isOpenable ? 1 : 0.92)
     }
 }
 

@@ -31,6 +31,17 @@ final class SQLiteDictionaryRepositoryTests: XCTestCase {
         XCTAssertEqual(requestedEntries.map(\.id), [3, 1, 2])
     }
 
+    func testSQLiteRepositoryPrefersDisplayableExactMatchOverEmptyDuplicate() async throws {
+        let databaseURL = try makeDatabaseURL()
+        try buildDatabase(at: databaseURL, entriesData: duplicateLinkedEntriesData(), entryCount: 3, senseCount: 2, exampleCount: 0)
+
+        let repository = SQLiteDictionaryRepository(databaseURL: databaseURL)
+
+        let exactMatch = try await repository.findLinkedEntry("白")
+
+        XCTAssertEqual(exactMatch?.id, 2)
+    }
+
     private func buildDatabase(
         at url: URL,
         entriesData: Data,
@@ -77,6 +88,16 @@ final class SQLiteDictionaryRepositoryTests: XCTestCase {
             {"id":1,"type":"","hanji":"母","romanization":"bo","category":"","audio":"","hokkienSearch":"母 bo","mandarinSearch":"母親","senses":[{"partOfSpeech":"","definition":"母親","examples":[]}]}
             {"id":2,"type":"","hanji":"無","romanization":"bo","category":"","audio":"","hokkienSearch":"無 bo","mandarinSearch":"沒有","variantChars":["毋"],"senses":[{"partOfSpeech":"","definition":"沒有","examples":[]}]}
             {"id":3,"type":"","hanji":"母仔","romanization":"bo-a","category":"","audio":"","hokkienSearch":"母仔 bo a","mandarinSearch":"雌性","senses":[{"partOfSpeech":"","definition":"雌性","examples":[]}]}
+            """.utf8
+        )
+    }
+
+    private func duplicateLinkedEntriesData() -> Data {
+        Data(
+            """
+            {"id":1,"type":"","hanji":"白","romanization":"pe̍h","category":"","audio":"","hokkienSearch":"白 peh","mandarinSearch":"","senses":[]}
+            {"id":2,"type":"","hanji":"白","romanization":"pe̍h","category":"","audio":"","hokkienSearch":"白 peh","mandarinSearch":"白色","senses":[{"partOfSpeech":"","definition":"白色","examples":[]}]}
+            {"id":3,"type":"","hanji":"烏","romanization":"oo","category":"","audio":"","hokkienSearch":"烏 oo","mandarinSearch":"黑色","senses":[{"partOfSpeech":"","definition":"黑色","examples":[]}]}
             """.utf8
         )
     }

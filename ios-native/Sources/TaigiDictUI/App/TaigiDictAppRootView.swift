@@ -581,6 +581,9 @@ private struct MacDictionaryWindowContent: View {
         activateSection(.dictionary)
         Task {
             await dictionaryViewModel.openLinkedWord(word)
+            await MainActor.run {
+                syncSelection(for: .dictionary, preserveCurrentSelection: false)
+            }
             await refreshToolbarBookmarkState()
         }
     }

@@ -31,27 +31,57 @@ public actor InMemoryDictionaryRepository {
     }
 
     public func findLinkedEntry(_ rawWord: String) -> DictionaryEntry? {
+        findLinkedEntries(rawWord).first
+    }
+
+    public func findLinkedEntries(_ rawWord: String) -> [DictionaryEntry] {
         let query = TextNormalization.normalizeQuery(rawWord)
         guard !query.isEmpty, !bundle.isDatabaseBacked else {
-            return nil
+            return []
         }
 
-        var romanizationMatch: DictionaryEntry?
-
-        for entry in bundle.entries {
-            if TextNormalization.normalizeQuery(entry.hanji) == query {
-                return entry
-            }
-
-            if entry.variantChars.contains(where: { TextNormalization.normalizeQuery($0) == query }) {
-                return entry
-            }
-
-            if romanizationMatch == nil, TextNormalization.normalizeQuery(entry.romanization) == query {
-                romanizationMatch = entry
-            }
+        let exactHanjiMatches = bundle.entries.filter {
+            TextNormalization.normalizeQuery($0.hanji) == query
+        }
+        if !exactHanjiMatches.isEmpty {
+            return preferredLinkedEntries(from: exactHanjiMatches)
         }
 
-        return romanizationMatch
+        let variantMatches = bundle.entries.filter {
+            $0.variantChars.contains(where: { TextNormalization.normalizeQuery($0) == query })
+        }
+        if !variantMatches.isEmpty {
+            return preferredLinkedEntries(from: variantMatches)
+        }
+
+        let romanizationMatches = bundle.entries.filter {
+            TextNormalization.normalizeQuery($0.romanization) == query
+        }
+        return preferredLinkedEntries(from: romanizationMatches)
+    }
+
+    private func preferredLinkedEntry(from entries: [DictionaryEntry]) -> DictionaryEntry? {
+        preferredLinkedEntries(from: entries).first
+    }
+
+    private func preferredLinkedEntries(from entries: [DictionaryEntry]) -> [DictionaryEntry] {
+        entries.sorted { lhs, rhs in
+            linkedEntryPriority(lhs) < linkedEntryPriority(rhs)
+        }
+    }
+
+    private func linkedEntryPriority(_ entry: DictionaryEntry) -> (Int, Int64) {
+        (
+            entryHasDisplayableSense(entry) ? 0 : (entry.aliasTargetEntryID != nil ? 1 : 2),
+            entry.id
+        )
+    }
+
+    private func entryHasDisplayableSense(_ entry: DictionaryEntry) -> Bool {
+        entry.senses.contains { sense in
+            !sense.partOfSpeech.isEmpty ||
+            !sense.definition.isEmpty ||
+            !sense.examples.isEmpty
+        }
     }
 }

@@ -56,6 +56,11 @@ public actor InstalledDictionaryRepository: DictionaryRepositoryProtocol {
         return try await repository.findLinkedEntry(rawWord)
     }
 
+    public func findLinkedEntries(_ rawWord: String) async throws -> [DictionaryEntry] {
+        try await prepareInstalledPackage(onProgress: nil)
+        return try await repository.findLinkedEntries(rawWord)
+    }
+
     public func entries(ids: [Int64]) async throws -> [DictionaryEntry] {
         try await prepareInstalledPackage(onProgress: nil)
         return try await repository.entries(ids: ids)

@@ -40,6 +40,46 @@ final class DictionarySearchServiceTests: XCTestCase {
         XCTAssertNil(missingMatch)
     }
 
+    func testInMemoryLinkedLookupPrefersDisplayableExactMatchOverEmptyDuplicate() async {
+        let bundle = DictionaryBundle(
+            entryCount: 3,
+            senseCount: 1,
+            exampleCount: 0,
+            entries: [
+                DictionaryEntry(
+                    id: 1,
+                    type: "",
+                    hanji: "白",
+                    romanization: "pe̍h",
+                    category: "",
+                    audioID: "",
+                    hokkienSearch: "白 peh",
+                    mandarinSearch: "",
+                    senses: []
+                ),
+                DictionaryEntry(
+                    id: 2,
+                    type: "",
+                    hanji: "白",
+                    romanization: "pe̍h",
+                    category: "",
+                    audioID: "",
+                    hokkienSearch: "白 peh",
+                    mandarinSearch: "白色",
+                    senses: [
+                        DictionarySense(partOfSpeech: "", definition: "白色")
+                    ]
+                ),
+                entry(id: 3, hanji: "烏", romanization: "oo", definition: "黑色"),
+            ]
+        )
+        let repository = InMemoryDictionaryRepository(bundle: bundle)
+
+        let exactMatch = await repository.findLinkedEntry("白")
+
+        XCTAssertEqual(exactMatch?.id, 2)
+    }
+
     func testEntriesByIdsPreservesUniqueRequestedOrder() async {
         let bundle = DictionaryBundle(
             entryCount: 3,

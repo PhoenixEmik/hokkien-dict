@@ -99,6 +99,10 @@ public actor DictionaryLibrary {
         try await repository.findLinkedEntry(word)
     }
 
+    public func findLinkedEntries(_ word: String) async throws -> [DictionaryEntry] {
+        try await repository.findLinkedEntries(word)
+    }
+
     public func entry(id: Int64) async throws -> DictionaryEntry? {
         try await repository.entry(id: id)
     }

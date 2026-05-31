@@ -63,17 +63,26 @@ public final class WordDetailViewModel {
         for word: String,
         locale: AppLocale = .traditionalChinese
     ) async -> DictionaryEntry? {
-        guard openableWords.contains(word) else {
-            return nil
-        }
-
         let sourceWord = localizedOpenableWordMap[word] ?? word
-        let normalizedWord = await DictionaryDisplayLocalization.normalizeLookupWord(
-            sourceWord,
-            locale: locale,
-            converter: conversionService
-        )
-        return try? await library.findLinkedEntry(normalizedWord)
+        for candidate in linkedLookupCandidates(for: sourceWord) {
+            let normalizedWord = await DictionaryDisplayLocalization.normalizeLookupWord(
+                candidate,
+                locale: locale,
+                converter: conversionService
+            )
+            guard let resolvedLinkedEntry = try? await resolvedLinkedEntries(for: normalizedWord)
+                .first(where: { linkedEntry in
+                    guard let currentEntryID = entry?.id else {
+                        return hasDisplayableSense(linkedEntry)
+                    }
+                    return linkedEntry.id != currentEntryID && hasDisplayableSense(linkedEntry)
+                }) else {
+                    continue
+                }
+
+            return resolvedLinkedEntry
+        }
+        return nil
     }
 
     public func shareText() -> String {
@@ -193,19 +202,28 @@ public final class WordDetailViewModel {
         var openable = Set<String>()
         var wordMap: [String: String] = [:]
         for word in words.values {
-            guard let linkedEntry = try await library.findLinkedEntry(word) else {
+            var foundDisplayableTarget = false
+            for candidate in linkedLookupCandidates(for: word) {
+                let linkedEntries = try await resolvedLinkedEntries(for: candidate)
+                if linkedEntries.contains(where: { linkedEntry in
+                    linkedEntry.id != entry.id && hasDisplayableSense(linkedEntry)
+                }) {
+                    foundDisplayableTarget = true
+                    break
+                }
+            }
+
+            guard foundDisplayableTarget else {
                 continue
             }
 
-            if linkedEntry.id != entry.id, hasDisplayableSense(linkedEntry) {
-                let displayWord = await DictionaryDisplayLocalization.translateEntryWord(
-                    word,
-                    locale: locale,
-                    converter: conversionService
-                )
-                openable.insert(displayWord)
-                wordMap[displayWord] = word
-            }
+            let displayWord = await DictionaryDisplayLocalization.translateEntryWord(
+                word,
+                locale: locale,
+                converter: conversionService
+            )
+            openable.insert(displayWord)
+            wordMap[displayWord] = word
         }
 
         return (openable, wordMap)
@@ -217,6 +235,41 @@ public final class WordDetailViewModel {
                 || !sense.definition.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                 || !sense.examples.isEmpty
         }
+    }
+
+    private func linkedLookupCandidates(for word: String) -> [String] {
+        let trimmed = word.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return []
+        }
+
+        let stripped = trimmed.replacingOccurrences(
+            of: #"\s*[【\[\(（].*?[】\]\)）]\s*"#,
+            with: "",
+            options: .regularExpression
+        )
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        var candidates = [trimmed]
+        if !stripped.isEmpty, stripped != trimmed {
+            candidates.append(stripped)
+        }
+        return candidates
+    }
+
+    private func resolvedLinkedEntries(for word: String) async throws -> [DictionaryEntry] {
+        let linkedEntries = try await library.findLinkedEntries(word)
+        var resolvedEntries: [DictionaryEntry] = []
+        var seenIDs = Set<Int64>()
+
+        for linkedEntry in linkedEntries {
+            let resolvedEntry = try await resolveAliasChain(from: linkedEntry)
+            if seenIDs.insert(resolvedEntry.id).inserted {
+                resolvedEntries.append(resolvedEntry)
+            }
+        }
+
+        return resolvedEntries
     }
 }
 

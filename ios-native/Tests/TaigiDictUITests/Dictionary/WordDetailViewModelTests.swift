@@ -130,6 +130,130 @@ final class WordDetailViewModelTests: XCTestCase {
         XCTAssertNil(linkedEntry)
     }
 
+    func testPrepareOpensLinkedRelationshipWordWhenAliasTargetHasSenses() async {
+        let primary = entry(
+            id: 1,
+            hanji: "烏",
+            romanization: "oo",
+            wordAntonyms: ["白"]
+        )
+        let alias = entry(
+            id: 2,
+            hanji: "白",
+            romanization: "pe̍h",
+            aliasTargetEntryID: 3,
+            hasSenses: false
+        )
+        let target = entry(
+            id: 3,
+            hanji: "白",
+            romanization: "pe̍h",
+            definition: "白色。"
+        )
+        let repository = InMemoryRepository(entries: [primary, alias, target])
+        let viewModel = WordDetailViewModel(library: DictionaryLibrary(repository: repository))
+
+        await viewModel.prepare(entry: primary)
+
+        XCTAssertTrue(viewModel.openableWords.contains("白"))
+        let linkedEntry = await viewModel.linkedEntry(for: "白")
+        XCTAssertEqual(linkedEntry?.id, 3)
+    }
+
+    func testPrepareOpensLinkedRelationshipWordWithBracketAnnotation() async {
+        let primary = entry(
+            id: 1,
+            hanji: "烏",
+            romanization: "oo",
+            wordAntonyms: ["白【替】"]
+        )
+        let target = entry(
+            id: 2,
+            hanji: "白",
+            romanization: "pe̍h",
+            definition: "白色。"
+        )
+        let repository = InMemoryRepository(entries: [primary, target])
+        let viewModel = WordDetailViewModel(library: DictionaryLibrary(repository: repository))
+
+        await viewModel.prepare(entry: primary)
+
+        XCTAssertTrue(viewModel.openableWords.contains("白【替】"))
+        let linkedEntry = await viewModel.linkedEntry(for: "白【替】")
+        XCTAssertEqual(linkedEntry?.id, 2)
+    }
+
+    func testPrepareMarksLinkedWordOpenableWhenAnyExactCandidateIsDisplayable() async {
+        let primary = entry(
+            id: 1,
+            hanji: "烏",
+            romanization: "oo",
+            wordAntonyms: ["白"]
+        )
+        let emptyDuplicate = entry(
+            id: 2,
+            hanji: "白",
+            romanization: "pe̍h",
+            hasSenses: false
+        )
+        let displayableDuplicate = entry(
+            id: 3,
+            hanji: "白",
+            romanization: "pe̍h",
+            definition: "白色。"
+        )
+        let repository = InMemoryRepository(entries: [primary, emptyDuplicate, displayableDuplicate])
+        let viewModel = WordDetailViewModel(library: DictionaryLibrary(repository: repository))
+
+        await viewModel.prepare(entry: primary)
+
+        XCTAssertTrue(viewModel.openableWords.contains("白"))
+        let linkedEntry = await viewModel.linkedEntry(for: "白")
+        XCTAssertEqual(linkedEntry?.id, 3)
+    }
+
+    func testPrepareOpensActualPackageAntonymForWhiteAndBlack() async throws {
+        let packageRoot = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        let generatedDirectory = packageRoot.appendingPathComponent("Generated/Dictionary")
+        let manifestURL = generatedDirectory.appendingPathComponent("dictionary_manifest.json")
+        guard FileManager.default.fileExists(atPath: manifestURL.path) else {
+            throw XCTSkip("Generated dictionary package is not present.")
+        }
+
+        let repository = PackageDictionaryRepository(packageDirectory: generatedDirectory)
+        let library = DictionaryLibrary(repository: repository)
+        let whiteResults = try await repository.search("白", limit: 5, offset: 0)
+        let whiteEntry = try XCTUnwrap(whiteResults.first(where: { $0.id == 1850 }))
+        let viewModel = WordDetailViewModel(library: library)
+
+        await viewModel.prepare(entry: whiteEntry)
+
+        XCTAssertTrue(viewModel.openableWords.contains("烏"))
+        let linkedEntry = await viewModel.linkedEntry(for: "烏")
+        XCTAssertEqual(linkedEntry?.id, 6227)
+    }
+
+    func testPrepareOpensActualPackageAntonymForBlackAndWhite() async throws {
+        let packageRoot = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        let generatedDirectory = packageRoot.appendingPathComponent("Generated/Dictionary")
+        let manifestURL = generatedDirectory.appendingPathComponent("dictionary_manifest.json")
+        guard FileManager.default.fileExists(atPath: manifestURL.path) else {
+            throw XCTSkip("Generated dictionary package is not present.")
+        }
+
+        let repository = PackageDictionaryRepository(packageDirectory: generatedDirectory)
+        let library = DictionaryLibrary(repository: repository)
+        let blackResults = try await repository.search("烏", limit: 10, offset: 0)
+        let blackEntry = try XCTUnwrap(blackResults.first(where: { $0.id == 6227 }))
+        let viewModel = WordDetailViewModel(library: library)
+
+        await viewModel.prepare(entry: blackEntry)
+
+        XCTAssertTrue(viewModel.openableWords.contains("白"))
+        let linkedEntry = await viewModel.linkedEntry(for: "白")
+        XCTAssertEqual(linkedEntry?.id, 1850)
+    }
+
     func testPlayWordAudioSuccessClearsAudioAlert() async {
         let primary = entry(id: 10, hanji: "辭典", romanization: "sû-tián", definition: "工具書")
         var withAudio = primary

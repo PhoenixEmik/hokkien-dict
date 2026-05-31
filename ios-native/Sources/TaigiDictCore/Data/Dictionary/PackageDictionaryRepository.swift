@@ -42,6 +42,10 @@ public actor PackageDictionaryRepository: DictionaryRepositoryProtocol {
         try await repository().findLinkedEntry(rawWord)
     }
 
+    public func findLinkedEntries(_ rawWord: String) async throws -> [DictionaryEntry] {
+        try await repository().findLinkedEntries(rawWord)
+    }
+
     public func entries(ids: [Int64]) async throws -> [DictionaryEntry] {
         try await repository().entries(ids: ids)
     }

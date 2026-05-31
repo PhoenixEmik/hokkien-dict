@@ -35,6 +35,7 @@ public protocol DictionaryRepositoryProtocol: Sendable {
     ) async throws -> DictionaryBundle
     func search(_ rawQuery: String, limit: Int, offset: Int) async throws -> [DictionaryEntry]
     func findLinkedEntry(_ rawWord: String) async throws -> DictionaryEntry?
+    func findLinkedEntries(_ rawWord: String) async throws -> [DictionaryEntry]
     func entries(ids: [Int64]) async throws -> [DictionaryEntry]
     func entry(id: Int64) async throws -> DictionaryEntry?
     func metadata() async throws -> [String: String]?
@@ -77,6 +78,13 @@ public extension DictionaryRepositoryProtocol {
 
     func metadata() async throws -> [String: String]? {
         nil
+    }
+
+    func findLinkedEntries(_ rawWord: String) async throws -> [DictionaryEntry] {
+        if let entry = try await findLinkedEntry(rawWord) {
+            return [entry]
+        }
+        return []
     }
 
     func supportsLocalMaintenance() async -> Bool {
