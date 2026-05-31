@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
@@ -76,10 +77,13 @@ internal fun AdvancedSettingsScreen(
     uiState: SettingsUiState,
     @Suppress("UNUSED_PARAMETER")
     assetDirectory: String,
+    wordSnapshot: AudioArchiveDownloadSnapshot,
+    sentenceSnapshot: AudioArchiveDownloadSnapshot,
     modifier: Modifier = Modifier,
     onBack: () -> Unit,
     onRebuild: () -> Unit,
     onClear: () -> Unit,
+    onAudioArchiveAction: (DictionaryAudioArchiveType, AudioArchiveAction) -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     var lastShownStatus by remember { mutableStateOf<SettingsStatus?>(null) }
@@ -152,8 +156,11 @@ internal fun AdvancedSettingsScreen(
                 MaintenanceActionsCard(
                     uiState = uiState,
                     runningAction = uiState.runningAction,
+                    wordSnapshot = wordSnapshot,
+                    sentenceSnapshot = sentenceSnapshot,
                     onRebuild = onRebuild,
                     onClear = onClear,
+                    onAudioArchiveAction = onAudioArchiveAction,
                 )
             }
 
@@ -196,8 +203,11 @@ private fun AdvancedSectionHeader(text: String) {
 private fun MaintenanceActionsCard(
     uiState: SettingsUiState,
     runningAction: SettingsMaintenanceAction?,
+    wordSnapshot: AudioArchiveDownloadSnapshot,
+    sentenceSnapshot: AudioArchiveDownloadSnapshot,
     onRebuild: () -> Unit,
     onClear: () -> Unit,
+    onAudioArchiveAction: (DictionaryAudioArchiveType, AudioArchiveAction) -> Unit,
 ) {
     Card(colors = appCardColors()) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -254,6 +264,22 @@ private fun MaintenanceActionsCard(
                 },
             )
 
+            AppListDivider()
+
+            AudioArchiveMaintenanceRow(
+                type = DictionaryAudioArchiveType.Word,
+                snapshot = wordSnapshot,
+                onClick = { onAudioArchiveAction(DictionaryAudioArchiveType.Word, AudioArchiveAction.Redownload) },
+            )
+
+            AppListDivider()
+
+            AudioArchiveMaintenanceRow(
+                type = DictionaryAudioArchiveType.Sentence,
+                snapshot = sentenceSnapshot,
+                onClick = { onAudioArchiveAction(DictionaryAudioArchiveType.Sentence, AudioArchiveAction.Redownload) },
+            )
+
             if (uiState.isRunningMaintenance) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 Text(
@@ -269,6 +295,81 @@ private fun MaintenanceActionsCard(
             }
         }
     }
+}
+
+@Composable
+private fun AudioArchiveMaintenanceRow(
+    type: DictionaryAudioArchiveType,
+    snapshot: AudioArchiveDownloadSnapshot,
+    onClick: () -> Unit,
+) {
+    val context = LocalContext.current
+    val fileSize = Formatter.formatFileSize(context, type.archiveBytes)
+    val downloadedSize = Formatter.formatFileSize(context, snapshot.downloadedBytes)
+    val totalSize = Formatter.formatFileSize(
+        context,
+        if (snapshot.totalBytes > 0) snapshot.totalBytes else type.archiveBytes,
+    )
+    val title = when (type) {
+        DictionaryAudioArchiveType.Word -> stringResource(R.string.settings_redownload_word_audio)
+        DictionaryAudioArchiveType.Sentence -> stringResource(R.string.settings_redownload_sentence_audio)
+    }
+    val statusText = when (snapshot.state) {
+        AudioArchiveDownloadState.Idle -> stringResource(R.string.settings_audio_status_idle, fileSize)
+        AudioArchiveDownloadState.Downloading -> stringResource(
+            R.string.settings_audio_status_downloading,
+            downloadedSize,
+            totalSize,
+        )
+        AudioArchiveDownloadState.Paused -> stringResource(
+            R.string.settings_audio_status_paused,
+            downloadedSize,
+            totalSize,
+        )
+        AudioArchiveDownloadState.Completed -> null
+        AudioArchiveDownloadState.Failed -> stringResource(
+            R.string.settings_audio_status_failed,
+            snapshot.errorMessage ?: stringResource(R.string.unknown_error),
+        )
+    }
+    val isActionable = snapshot.state == AudioArchiveDownloadState.Completed ||
+        snapshot.state == AudioArchiveDownloadState.Failed
+
+    ListItem(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = isActionable, onClick = onClick),
+        colors = transparentListItemColors(),
+        leadingContent = {
+            Icon(
+                imageVector = Icons.Outlined.Refresh,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+            )
+        },
+        headlineContent = {
+            Text(text = title)
+        },
+        supportingContent = statusText?.let {
+            {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+        trailingContent = if (isActionable) {
+            {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        } else {
+            null
+        },
+    )
 }
 
 @Composable
@@ -360,6 +461,7 @@ private fun formatTimestampForDisplay(raw: String, locale: Locale): String {
 internal fun AudioArchiveResourceCard(
     type: DictionaryAudioArchiveType,
     snapshot: AudioArchiveDownloadSnapshot,
+    showRedownloadAction: Boolean = true,
     onAction: (AudioArchiveAction) -> Unit,
 ) {
     val context = LocalContext.current
@@ -391,7 +493,7 @@ internal fun AudioArchiveResourceCard(
             snapshot.errorMessage ?: stringResource(R.string.unknown_error),
         )
     }
-    val actions = availableActions(snapshot)
+    val actions = availableActions(snapshot, showRedownloadAction)
 
     Card(colors = appCardColors()) {
         ListItem(
@@ -409,17 +511,21 @@ internal fun AudioArchiveResourceCard(
                     )
                 }
             },
-            trailingContent = {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    actions.forEach { action ->
-                        IconButton(onClick = { onAction(action) }) {
-                            Icon(
-                                imageVector = action.icon(),
-                                contentDescription = action.label(),
-                            )
+            trailingContent = if (actions.isNotEmpty()) {
+                {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        actions.forEach { action ->
+                            IconButton(onClick = { onAction(action) }) {
+                                Icon(
+                                    imageVector = action.icon(),
+                                    contentDescription = action.label(),
+                                )
+                            }
                         }
                     }
                 }
+            } else {
+                null
             },
         )
         snapshot.progress?.let { progress ->
@@ -455,12 +561,23 @@ private fun AudioArchiveAction.icon(): ImageVector {
     }
 }
 
-private fun availableActions(snapshot: AudioArchiveDownloadSnapshot): List<AudioArchiveAction> {
+private fun availableActions(
+    snapshot: AudioArchiveDownloadSnapshot,
+    showRedownloadAction: Boolean,
+): List<AudioArchiveAction> {
     return when (snapshot.state) {
         AudioArchiveDownloadState.Idle -> listOf(AudioArchiveAction.Download)
         AudioArchiveDownloadState.Downloading -> listOf(AudioArchiveAction.Pause)
         AudioArchiveDownloadState.Paused -> listOf(AudioArchiveAction.Resume)
-        AudioArchiveDownloadState.Completed -> listOf(AudioArchiveAction.Redownload)
-        AudioArchiveDownloadState.Failed -> listOf(AudioArchiveAction.Redownload)
+        AudioArchiveDownloadState.Completed -> if (showRedownloadAction) {
+            listOf(AudioArchiveAction.Redownload)
+        } else {
+            emptyList()
+        }
+        AudioArchiveDownloadState.Failed -> if (showRedownloadAction) {
+            listOf(AudioArchiveAction.Redownload)
+        } else {
+            listOf(AudioArchiveAction.Download)
+        }
     }
 }

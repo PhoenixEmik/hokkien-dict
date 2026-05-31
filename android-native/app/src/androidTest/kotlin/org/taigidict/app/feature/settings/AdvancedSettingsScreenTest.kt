@@ -12,6 +12,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.taigidict.app.R
+import org.taigidict.app.data.audio.AudioArchiveDownloadSnapshot
+import org.taigidict.app.data.audio.AudioArchiveDownloadState
+import org.taigidict.app.data.audio.DictionaryAudioArchiveType
 import org.taigidict.app.domain.model.DictionaryBundle
 
 @RunWith(AndroidJUnit4::class)
@@ -39,9 +42,20 @@ class AdvancedSettingsScreenTest {
                         sourceModifiedAt = "2026-04-30 10:08",
                     ),
                     assetDirectory = "assets/data",
+                    wordSnapshot = AudioArchiveDownloadSnapshot(
+                        state = AudioArchiveDownloadState.Completed,
+                        downloadedBytes = DictionaryAudioArchiveType.Word.archiveBytes,
+                        totalBytes = DictionaryAudioArchiveType.Word.archiveBytes,
+                    ),
+                    sentenceSnapshot = AudioArchiveDownloadSnapshot(
+                        state = AudioArchiveDownloadState.Completed,
+                        downloadedBytes = DictionaryAudioArchiveType.Sentence.archiveBytes,
+                        totalBytes = DictionaryAudioArchiveType.Sentence.archiveBytes,
+                    ),
                     onBack = {},
                     onRebuild = {},
                     onClear = {},
+                    onAudioArchiveAction = { _, _ -> },
                 )
             }
         }
@@ -50,5 +64,7 @@ class AdvancedSettingsScreenTest {
         composeRule.onNodeWithText(context.getString(R.string.settings_dictionary_title)).assertIsDisplayed()
         composeRule.onNodeWithText(context.getString(R.string.settings_action_rebuild)).assertIsDisplayed()
         composeRule.onNodeWithText(context.getString(R.string.settings_action_clear)).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.settings_redownload_word_audio)).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.settings_redownload_sentence_audio)).assertIsDisplayed()
     }
 }

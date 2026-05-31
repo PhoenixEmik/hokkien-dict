@@ -158,6 +158,8 @@ fun SettingsScreen(
         modifier = modifier,
         assetDirectory = assetDirectory,
         uiState = uiState,
+        wordSnapshot = wordSnapshot,
+        sentenceSnapshot = sentenceSnapshot,
         onBackToMain = { route = SettingsRoute.Main },
         onBackFromLicenseInfo = { route = SettingsRoute.About },
         onBackFromThirdPartyLicenses = { route = SettingsRoute.LicenseInfo },
@@ -167,6 +169,19 @@ fun SettingsScreen(
         onOpenThirdPartyLicenseDetail = { selectedThirdPartyLicenseId = it },
         onRebuild = { pendingAction = SettingsDangerousAction.RebuildDatabase },
         onClear = { pendingAction = SettingsDangerousAction.ClearDatabase },
+        onAudioArchiveAction = { type, action ->
+            when (action) {
+                AudioArchiveAction.Download -> audioArchiveManager.startDownload(type)
+                AudioArchiveAction.Pause -> audioArchiveManager.pauseDownload(type)
+                AudioArchiveAction.Resume -> audioArchiveManager.resumeDownload(type)
+                AudioArchiveAction.Redownload -> {
+                    pendingAction = when (type) {
+                        DictionaryAudioArchiveType.Word -> SettingsDangerousAction.RedownloadWordArchive
+                        DictionaryAudioArchiveType.Sentence -> SettingsDangerousAction.RedownloadSentenceArchive
+                    }
+                }
+            }
+        },
     )
     ConfirmDangerousActionDialog(
         pendingAction = pendingAction,
@@ -260,6 +275,7 @@ fun SettingsScreen(
                 AudioArchiveResourceCard(
                     type = type,
                     snapshot = snapshot,
+                    showRedownloadAction = false,
                     onAction = { action ->
                         when (action) {
                             AudioArchiveAction.Download -> audioArchiveManager.startDownload(type)
@@ -314,6 +330,8 @@ private fun renderRouteScreen(
     modifier: Modifier,
     assetDirectory: String,
     uiState: SettingsUiState,
+    wordSnapshot: AudioArchiveDownloadSnapshot,
+    sentenceSnapshot: AudioArchiveDownloadSnapshot,
     onBackToMain: () -> Unit,
     onBackFromLicenseInfo: () -> Unit,
     onBackFromThirdPartyLicenses: () -> Unit,
@@ -323,6 +341,7 @@ private fun renderRouteScreen(
     onOpenThirdPartyLicenseDetail: (String) -> Unit,
     onRebuild: () -> Unit,
     onClear: () -> Unit,
+    onAudioArchiveAction: (DictionaryAudioArchiveType, AudioArchiveAction) -> Unit,
 ): Boolean {
     return when (route) {
         SettingsRoute.Main -> false
@@ -365,10 +384,13 @@ private fun renderRouteScreen(
             AdvancedSettingsScreen(
                 uiState = uiState,
                 assetDirectory = assetDirectory,
+                wordSnapshot = wordSnapshot,
+                sentenceSnapshot = sentenceSnapshot,
                 modifier = modifier,
                 onBack = onBackToMain,
                 onRebuild = onRebuild,
                 onClear = onClear,
+                onAudioArchiveAction = onAudioArchiveAction,
             )
             true
         }

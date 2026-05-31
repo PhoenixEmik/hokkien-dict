@@ -63,6 +63,7 @@ class AudioArchiveResourceCardTest {
                         downloadedBytes = DictionaryAudioArchiveType.Word.archiveBytes,
                         totalBytes = DictionaryAudioArchiveType.Word.archiveBytes,
                     ),
+                    showRedownloadAction = true,
                     onAction = {},
                 )
             }
@@ -71,5 +72,29 @@ class AudioArchiveResourceCardTest {
         composeRule.onNodeWithContentDescription(
             context.getString(R.string.settings_audio_action_redownload),
         ).assertIsDisplayed()
+    }
+
+    @Test
+    fun completedState_hidesRedownloadActionWhenDisabled() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+
+        composeRule.setContent {
+            MaterialTheme {
+                AudioArchiveResourceCard(
+                    type = DictionaryAudioArchiveType.Word,
+                    snapshot = AudioArchiveDownloadSnapshot(
+                        state = AudioArchiveDownloadState.Completed,
+                        downloadedBytes = DictionaryAudioArchiveType.Word.archiveBytes,
+                        totalBytes = DictionaryAudioArchiveType.Word.archiveBytes,
+                    ),
+                    showRedownloadAction = false,
+                    onAction = {},
+                )
+            }
+        }
+
+        composeRule.onAllNodesWithContentDescription(
+            context.getString(R.string.settings_audio_action_redownload),
+        ).assertCountEquals(0)
     }
 }
