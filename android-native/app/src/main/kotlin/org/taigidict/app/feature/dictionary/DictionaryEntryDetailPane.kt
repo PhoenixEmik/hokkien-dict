@@ -366,34 +366,32 @@ private fun DictionaryEntryDetailContent(
                             ),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.Top,
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
                         ) {
-                            Column(
-                                modifier = Modifier.weight(1f),
-                                verticalArrangement = Arrangement.spacedBy(6.dp),
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp),
+                                itemVerticalAlignment = Alignment.CenterVertically,
                             ) {
                                 DictionaryFallbackText(
                                     text = entry.hanji,
                                     style = scaledHeadlineStyle,
                                 )
-                                if (entry.romanization.isNotBlank()) {
-                                    DictionaryFallbackText(
-                                        text = entry.romanization,
-                                        style = scaledTitleStyle,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
+                                AudioActionButton(
+                                    uiState = entryAudioUiState,
+                                    enabled = entry.audioId.isNotBlank(),
+                                    contentDescription = stringResource(R.string.dictionary_play_word_audio),
+                                    onClick = onPlayEntryAudio,
+                                )
                             }
-
-                            AudioActionButton(
-                                uiState = entryAudioUiState,
-                                enabled = entry.audioId.isNotBlank(),
-                                contentDescription = stringResource(R.string.dictionary_play_word_audio),
-                                onClick = onPlayEntryAudio,
-                            )
+                            if (entry.romanization.isNotBlank()) {
+                                DictionaryFallbackText(
+                                    text = entry.romanization,
+                                    style = scaledTitleStyle,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
                         }
 
                         val metadataLine = listOf(entry.type, entry.category)
@@ -734,44 +732,44 @@ private fun DictionaryExampleBlock(
         )
     }
 
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.Top,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            if (example.hanji.isNotBlank()) {
+        if (example.hanji.isNotBlank()) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                itemVerticalAlignment = Alignment.CenterVertically,
+            ) {
                 DictionaryFallbackText(
                     text = example.hanji,
                     style = scaledBodyLargeStyle,
                 )
-            }
-            if (example.romanization.isNotBlank()) {
-                DictionaryFallbackText(
-                    text = example.romanization,
-                    style = scaledBodyMediumStyle,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            if (example.mandarin.isNotBlank()) {
-                DictionaryFallbackText(
-                    text = example.mandarin,
-                    style = scaledBodySmallStyle,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                AudioActionButton(
+                    uiState = audioUiState,
+                    enabled = example.audioId.isNotBlank(),
+                    contentDescription = stringResource(R.string.dictionary_play_example_audio),
+                    onClick = { onPlayExampleAudio(example) },
                 )
             }
         }
-        AudioActionButton(
-            uiState = audioUiState,
-            enabled = example.audioId.isNotBlank(),
-            contentDescription = stringResource(R.string.dictionary_play_example_audio),
-            onClick = { onPlayExampleAudio(example) },
-        )
+        if (example.romanization.isNotBlank()) {
+            DictionaryFallbackText(
+                text = example.romanization,
+                style = scaledBodyMediumStyle,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        if (example.mandarin.isNotBlank()) {
+            DictionaryFallbackText(
+                text = example.mandarin,
+                style = scaledBodySmallStyle,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 
