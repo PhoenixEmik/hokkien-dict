@@ -19,7 +19,7 @@ struct MacLicenseBrowserView: View {
                 }
             }
             .listStyle(.sidebar)
-            .navigationSplitViewColumnWidth(min: 220, ideal: 260)
+            .navigationSplitViewColumnWidth(min: 190, ideal: 210, max: 235)
         } detail: {
             NavigationStack {
                 if let selection {
