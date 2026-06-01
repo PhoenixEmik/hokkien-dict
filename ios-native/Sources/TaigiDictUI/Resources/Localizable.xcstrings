@@ -3258,6 +3258,29 @@
         }
       }
     },
+    "settingsAdvancedDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inspect dictionary metadata and run maintenance actions for local data."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看词典资料，并执行本机数据维护操作。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看辭典資料，並執行本機資料維護操作。"
+          }
+        }
+      }
+    },
     "settingsClearConfirmBody" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3419,6 +3442,29 @@
         }
       }
     },
+    "settingsGeneralDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adjust interface language, appearance, and reading text size."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "调整界面语言、主题外观与阅读字级。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "調整介面語言、主題外觀與閱讀字級。"
+          }
+        }
+      }
+    },
     "settingsInterfaceLanguageLabel" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3576,6 +3622,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "資源"
+          }
+        }
+      }
+    },
+    "settingsResourcesDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage offline audio downloads and repair resource state when needed."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理离线音讯下载，并在需要时修复资源状态。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理離線音訊下載，並在需要時修復資源狀態。"
           }
         }
       }

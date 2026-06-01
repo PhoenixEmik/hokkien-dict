@@ -70,7 +70,9 @@ public enum AppLocalizedStringKey: String, CaseIterable {
 
     case settingsTitle
     case settingsGeneralTab
+    case settingsGeneralDescription
     case settingsResourcesTab
+    case settingsResourcesDescription
     case settingsDisplayLanguageSection
     case settingsInterfaceLanguageLabel
     case settingsThemeLabel
@@ -78,6 +80,7 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case settingsReadingTextScaleValueFormat
     case settingsDataAndInfoSection
     case settingsAdvanced
+    case settingsAdvancedDescription
     case settingsAbout
     case settingsLicenses
     case settingsReferences

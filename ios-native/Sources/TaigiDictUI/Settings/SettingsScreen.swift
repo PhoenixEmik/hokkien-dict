@@ -5,6 +5,7 @@ public struct SettingsScreen: View {
     @EnvironmentObject private var appLanguageManager: AppLanguageManager
     @State private var viewModel: SettingsViewModel
     @State private var pendingAudioRestart: PendingAudioRestart?
+    @State private var macSelectedSection: MacSettingsSection? = .general
     @Environment(\.locale) private var locale
     private let onMaintenanceCompleted: () -> Void
     private let onSettingsChanged: (AppSettingsSnapshot) -> Void
@@ -182,138 +183,259 @@ public struct SettingsScreen: View {
         wordAudioTitle: String,
         sentenceAudioTitle: String
     ) -> some View {
-        Form {
-            Section {
-                interfaceLanguagePicker
-                    .pickerStyle(.menu)
-
-                themePicker(locale: locale)
-                    .pickerStyle(.menu)
-
-                readingTextScaleControl(locale: locale)
-            } header: {
-                settingsSectionHeader(AppLocalizer.text(.settingsGeneralTab, locale: locale))
-            } footer: {
-                settingsSectionDivider
+        NavigationSplitView {
+            List(MacSettingsSection.allCases, selection: $macSelectedSection) { section in
+                Label(section.title(locale: locale), systemImage: section.systemImage)
+                    .tag(section)
             }
-
-            Section {
-                AudioArchiveResourceRow(
-                    title: wordAudioTitle,
-                    locale: locale,
-                    snapshot: viewModel.snapshot(for: .word),
-                    isSnapshotLoading: !viewModel.hasLoadedAudioSnapshots,
-                    isRunningAction: viewModel.isAudioActionRunning(for: .word)
-                ) { action in
-                    handleAudioAction(action, for: .word, title: wordAudioTitle)
+            .listStyle(.sidebar)
+            .navigationTitle(AppLocalizer.text(.settingsTitle, locale: locale))
+            .frame(minWidth: 260, idealWidth: 300)
+        } detail: {
+            switch macSelectedSection ?? .general {
+            case .general:
+                macSettingsDetail(section: .general, locale: locale) {
+                    macGeneralSettingsView(locale: locale)
                 }
-
-                AudioArchiveResourceRow(
-                    title: sentenceAudioTitle,
-                    locale: locale,
-                    snapshot: viewModel.snapshot(for: .sentence),
-                    isSnapshotLoading: !viewModel.hasLoadedAudioSnapshots,
-                    isRunningAction: viewModel.isAudioActionRunning(for: .sentence)
-                ) { action in
-                    handleAudioAction(action, for: .sentence, title: sentenceAudioTitle)
+            case .resources:
+                macSettingsDetail(section: .resources, locale: locale) {
+                    macResourcesSettingsView(
+                        locale: locale,
+                        wordAudioTitle: wordAudioTitle,
+                        sentenceAudioTitle: sentenceAudioTitle
+                    )
                 }
-            } header: {
-                settingsSectionHeader(AppLocalizer.text(.settingsResourcesTab, locale: locale))
-            } footer: {
-                settingsSectionDivider
+            case .advanced:
+                macSettingsDetail(section: .advanced, locale: locale) {
+                    macAdvancedSettingsView(locale: locale)
+                }
             }
+        }
+        .navigationTitle("")
+        .navigationSplitViewStyle(.balanced)
+    }
 
-            Section {
-                if viewModel.supportsDataMaintenance {
-                    LabeledContent(AppLocalizer.text(.advancedMaintenanceSection, locale: locale)) {
-                        ControlGroup {
-                            Button(AppLocalizer.text(.advancedRebuild, locale: locale)) {
-                                Task {
-                                    if await viewModel.run(.rebuild) {
-                                        onMaintenanceCompleted()
+    private func macSettingsDetail<Content: View>(
+        section: MacSettingsSection,
+        locale: AppLocale,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                content()
+            }
+            .frame(minWidth: 520, maxWidth: 720, alignment: .topLeading)
+            .padding(.horizontal, 28)
+            .padding(.vertical, 24)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    private func macGeneralSettingsView(locale: AppLocale) -> some View {
+        VStack(alignment: .leading, spacing: 24) {
+            MacSettingsPanel(
+                title: AppLocalizer.text(.settingsDisplayLanguageSection, locale: locale)
+            ) {
+                VStack(spacing: 0) {
+                    macSettingsPickerRow(
+                        title: AppLocalizer.text(.settingsInterfaceLanguageLabel, locale: locale),
+                        selection: selectedLanguageBinding
+                    ) {
+                        ForEach(AppLanguage.allCases, id: \.self) { language in
+                            Text(appLanguageManager.displayName(for: language))
+                                .tag(language)
+                        }
+                    }
+
+                    Divider()
+
+                    macSettingsPickerRow(
+                        title: AppLocalizer.text(.settingsThemeLabel, locale: locale),
+                        selection: themePreferenceBinding
+                    ) {
+                        ForEach(AppThemePreference.allCases, id: \.self) { preference in
+                            Text(preference.displayName(in: locale))
+                                .tag(preference)
+                        }
+                    }
+
+                    Divider()
+
+                    macReadingTextScaleRow(locale: locale)
+                }
+            }
+        }
+    }
+
+    private func macResourcesSettingsView(
+        locale: AppLocale,
+        wordAudioTitle: String,
+        sentenceAudioTitle: String
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 24) {
+            MacSettingsPanel(
+                title: AppLocalizer.text(.settingsOfflineAudioSection, locale: locale)
+            ) {
+                VStack(spacing: 0) {
+                    AudioArchiveResourceRow(
+                        title: wordAudioTitle,
+                        locale: locale,
+                        snapshot: viewModel.snapshot(for: .word),
+                        isSnapshotLoading: !viewModel.hasLoadedAudioSnapshots,
+                        isRunningAction: viewModel.isAudioActionRunning(for: .word)
+                    ) { action in
+                        handleAudioAction(action, for: .word, title: wordAudioTitle)
+                    }
+                    .padding(.vertical, 2)
+
+                    Divider()
+
+                    AudioArchiveResourceRow(
+                        title: sentenceAudioTitle,
+                        locale: locale,
+                        snapshot: viewModel.snapshot(for: .sentence),
+                        isSnapshotLoading: !viewModel.hasLoadedAudioSnapshots,
+                        isRunningAction: viewModel.isAudioActionRunning(for: .sentence)
+                    ) { action in
+                        handleAudioAction(action, for: .sentence, title: sentenceAudioTitle)
+                    }
+                    .padding(.vertical, 2)
+                }
+            }
+        }
+    }
+
+    private func macAdvancedSettingsView(locale: AppLocale) -> some View {
+        VStack(alignment: .leading, spacing: 24) {
+            MacSettingsPanel(
+                title: AppLocalizer.text(.advancedMaintenanceSection, locale: locale)
+            ) {
+                VStack(spacing: 0) {
+                    if viewModel.supportsDataMaintenance {
+                        LabeledContent(AppLocalizer.text(.advancedMaintenanceSection, locale: locale)) {
+                            ControlGroup {
+                                Button(AppLocalizer.text(.advancedRebuild, locale: locale)) {
+                                    Task {
+                                        if await viewModel.run(.rebuild) {
+                                            onMaintenanceCompleted()
+                                        }
                                     }
                                 }
-                            }
-                            .controlSize(.small)
-                            .disabled(viewModel.isRunningAction)
-
-                            Button(AppLocalizer.text(.advancedClear, locale: locale), role: .destructive) {
-                                viewModel.requestClearConfirmation()
-                            }
-                            .controlSize(.small)
-                            .disabled(viewModel.isRunningAction)
-                        }
-                        .controlSize(.small)
-                    }
-                } else {
-                    LabeledContent(AppLocalizer.text(.advancedMaintenanceSection, locale: locale)) {
-                        Text(AppLocalizer.text(.advancedMaintenanceUnsupported, locale: locale))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                if let summary = viewModel.librarySummary {
-                    macSettingsValueRow(AppLocalizer.text(.advancedEntryCount, locale: locale), value: "\(summary.entryCount)", monospaced: true)
-                    macSettingsValueRow(AppLocalizer.text(.advancedSenseCount, locale: locale), value: "\(summary.senseCount)", monospaced: true)
-                    macSettingsValueRow(AppLocalizer.text(.advancedExampleCount, locale: locale), value: "\(summary.exampleCount)", monospaced: true)
-                }
-
-                if let builtAt = viewModel.metadataBuiltAtDisplay {
-                    macSettingsValueRow(AppLocalizer.text(.advancedBuiltAt, locale: locale), value: builtAt)
-                }
-
-                if let sourceModifiedAt = viewModel.metadataSourceModifiedAtDisplay {
-                    macSettingsValueRow(AppLocalizer.text(.advancedSourceUpdated, locale: locale), value: sourceModifiedAt)
-                }
-
-                if viewModel.isRunningAction {
-                    LabeledContent(AppLocalizer.text(.advancedStatusSection, locale: locale)) {
-                        HStack(spacing: 8) {
-                            ProgressView()
                                 .controlSize(.small)
-                            Text(AppLocalizer.text(.advancedRunning, locale: locale))
+                                .buttonStyle(.bordered)
+                                .disabled(viewModel.isRunningAction)
+
+                                Button(AppLocalizer.text(.advancedClear, locale: locale), role: .destructive) {
+                                    viewModel.requestClearConfirmation()
+                                }
+                                .controlSize(.small)
+                                .buttonStyle(.bordered)
+                                .disabled(viewModel.isRunningAction)
+                            }
+                            .controlSize(.small)
+                        }
+                    } else {
+                        LabeledContent(AppLocalizer.text(.advancedMaintenanceSection, locale: locale)) {
+                            Text(AppLocalizer.text(.advancedMaintenanceUnsupported, locale: locale))
                                 .foregroundStyle(.secondary)
                         }
                     }
                 }
+            }
 
-                if let statusMessageKey = viewModel.statusMessageKey {
-                    LabeledContent(AppLocalizer.text(.advancedStatusSection, locale: locale)) {
-                        Label(AppLocalizer.text(statusMessageKey, locale: locale), systemImage: "checkmark.circle.fill")
-                            .labelStyle(.titleAndIcon)
-                            .symbolRenderingMode(.hierarchical)
-                            .foregroundStyle(.tint)
+            if viewModel.supportsDataMaintenance {
+                if let summary = viewModel.librarySummary {
+                    MacSettingsPanel(
+                        title: AppLocalizer.text(.advancedSummarySection, locale: locale)
+                    ) {
+                        VStack(spacing: 0) {
+                            macSettingsValueRow(AppLocalizer.text(.advancedEntryCount, locale: locale), value: "\(summary.entryCount)", monospaced: true)
+                            Divider()
+                            macSettingsValueRow(AppLocalizer.text(.advancedSenseCount, locale: locale), value: "\(summary.senseCount)", monospaced: true)
+                            Divider()
+                            macSettingsValueRow(AppLocalizer.text(.advancedExampleCount, locale: locale), value: "\(summary.exampleCount)", monospaced: true)
+                        }
                     }
                 }
 
-                if let errorMessage = viewModel.errorMessage {
-                    LabeledContent(AppLocalizer.text(.advancedFailedTitle, locale: locale)) {
-                        Text(errorMessage)
-                            .foregroundStyle(.secondary)
+                if viewModel.libraryMetadata != nil {
+                    MacSettingsPanel(
+                        title: AppLocalizer.text(.advancedSourceTimeSection, locale: locale)
+                    ) {
+                        VStack(spacing: 0) {
+                            if let builtAt = viewModel.metadataBuiltAtDisplay {
+                                macSettingsValueRow(AppLocalizer.text(.advancedBuiltAt, locale: locale), value: builtAt)
+                            }
+
+                            if let builtAt = viewModel.metadataBuiltAtDisplay,
+                               viewModel.metadataSourceModifiedAtDisplay != nil {
+                                Divider()
+                            }
+
+                            if let sourceModifiedAt = viewModel.metadataSourceModifiedAtDisplay {
+                                macSettingsValueRow(AppLocalizer.text(.advancedSourceUpdated, locale: locale), value: sourceModifiedAt)
+                            }
+                        }
                     }
                 }
-            } header: {
-                settingsSectionHeader(AppLocalizer.text(.settingsAdvanced, locale: locale))
+            } else if let summary = viewModel.librarySummary {
+                MacSettingsPanel(
+                    title: AppLocalizer.text(.advancedSummarySection, locale: locale)
+                ) {
+                    VStack(spacing: 0) {
+                        macSettingsValueRow(AppLocalizer.text(.advancedEntryCount, locale: locale), value: "\(summary.entryCount)", monospaced: true)
+                        Divider()
+                        macSettingsValueRow(AppLocalizer.text(.advancedSenseCount, locale: locale), value: "\(summary.senseCount)", monospaced: true)
+                        Divider()
+                        macSettingsValueRow(AppLocalizer.text(.advancedExampleCount, locale: locale), value: "\(summary.exampleCount)", monospaced: true)
+                    }
+                }
+            }
+
+            if viewModel.isRunningAction || viewModel.statusMessageKey != nil || viewModel.errorMessage != nil {
+                MacSettingsPanel(
+                    title: AppLocalizer.text(.advancedStatusSection, locale: locale)
+                ) {
+                    VStack(spacing: 0) {
+                        if viewModel.isRunningAction {
+                            LabeledContent(AppLocalizer.text(.advancedStatusSection, locale: locale)) {
+                                HStack(spacing: 8) {
+                                    ProgressView()
+                                        .controlSize(.small)
+                                    Text(AppLocalizer.text(.advancedRunning, locale: locale))
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+
+                        if viewModel.isRunningAction,
+                           (viewModel.statusMessageKey != nil || viewModel.errorMessage != nil) {
+                            Divider()
+                        }
+
+                        if let statusMessageKey = viewModel.statusMessageKey {
+                            LabeledContent(AppLocalizer.text(.advancedStatusSection, locale: locale)) {
+                                Label(AppLocalizer.text(statusMessageKey, locale: locale), systemImage: "checkmark.circle.fill")
+                                    .labelStyle(.titleAndIcon)
+                                    .symbolRenderingMode(.hierarchical)
+                                    .foregroundStyle(.tint)
+                            }
+                        }
+
+                        if viewModel.statusMessageKey != nil, viewModel.errorMessage != nil {
+                            Divider()
+                        }
+
+                        if let errorMessage = viewModel.errorMessage {
+                            LabeledContent(AppLocalizer.text(.advancedFailedTitle, locale: locale)) {
+                                Text(errorMessage)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
             }
         }
-        .formStyle(.columns)
-        .frame(width: 470)
-        .padding(.horizontal, 28)
-        .padding(.vertical, 24)
-    }
-
-    private func settingsSectionHeader(_ title: String) -> some View {
-        Text(title)
-            .font(.footnote.weight(.semibold))
-            .textCase(nil)
-            .foregroundStyle(.secondary)
-            .padding(.top, 4)
-            .padding(.bottom, 4)
-    }
-
-    private var settingsSectionDivider: some View {
-        Divider()
-            .padding(.top, 12)
     }
 
     private func macSettingsValueRow(_ title: String, value: String, monospaced: Bool = false) -> some View {
@@ -329,8 +451,30 @@ public struct SettingsScreen: View {
                     .foregroundStyle(.secondary)
             }
         }
+        .padding(.vertical, 2)
     }
 #endif
+
+    private var selectedLanguageBinding: Binding<AppLanguage> {
+        Binding(
+            get: { appLanguageManager.selectedLanguage },
+            set: { language in
+                appLanguageManager.setLanguage(language)
+            }
+        )
+    }
+
+    private var themePreferenceBinding: Binding<AppThemePreference> {
+        Binding(
+            get: { viewModel.selectedThemePreference },
+            set: { preference in
+                Task {
+                    await viewModel.setThemePreference(preference)
+                    onSettingsChanged(viewModel.currentSettingsSnapshot)
+                }
+            }
+        )
+    }
 
     private var interfaceLanguagePicker: some View {
         Picker(appLanguageManager.localized(.settingsInterfaceLanguageLabel), selection: Binding(
@@ -448,6 +592,142 @@ public struct SettingsScreen: View {
         }
     }
 }
+
+#if os(macOS)
+private enum MacSettingsSection: String, CaseIterable, Identifiable {
+    case general
+    case resources
+    case advanced
+
+    var id: String { rawValue }
+
+    func title(locale: AppLocale) -> String {
+        switch self {
+        case .general:
+            return AppLocalizer.text(.settingsGeneralTab, locale: locale)
+        case .resources:
+            return AppLocalizer.text(.settingsResourcesTab, locale: locale)
+        case .advanced:
+            return AppLocalizer.text(.settingsAdvanced, locale: locale)
+        }
+    }
+
+    func description(locale: AppLocale) -> String {
+        switch self {
+        case .general:
+            return AppLocalizer.text(.settingsGeneralDescription, locale: locale)
+        case .resources:
+            return AppLocalizer.text(.settingsResourcesDescription, locale: locale)
+        case .advanced:
+            return AppLocalizer.text(.settingsAdvancedDescription, locale: locale)
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .general:
+            return "gearshape"
+        case .resources:
+            return "externaldrive"
+        case .advanced:
+            return "slider.horizontal.3"
+        }
+    }
+}
+#endif
+
+#if os(macOS)
+private extension SettingsScreen {
+    func macSettingsPickerRow<SelectionValue: Hashable, Content: View>(
+        title: String,
+        selection: Binding<SelectionValue>,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        macSettingsRow(title: title) {
+            Picker("", selection: selection) {
+                content()
+            }
+            .labelsHidden()
+            .pickerStyle(.menu)
+            .frame(maxWidth: .infinity, alignment: .trailing)
+        }
+    }
+
+    func macReadingTextScaleRow(locale: AppLocale) -> some View {
+        macSettingsRow(title: AppLocalizer.text(.settingsReadingTextScaleLabel, locale: locale), alignment: .top) {
+            HStack(spacing: 12) {
+                Slider(
+                    value: Binding(
+                        get: { viewModel.readingTextScale },
+                        set: { value in
+                            Task {
+                                await viewModel.setReadingTextScale(value)
+                                onSettingsChanged(viewModel.currentSettingsSnapshot)
+                            }
+                        }
+                    ),
+                    in: viewModel.minReadingTextScale...viewModel.maxReadingTextScale,
+                    step: (viewModel.maxReadingTextScale - viewModel.minReadingTextScale) / Double(viewModel.readingTextScaleDivisions)
+                ) {
+                    EmptyView()
+                }
+                .controlSize(.regular)
+                .frame(width: 260)
+
+                Text(viewModel.readingTextScale.displayScaleLabel(locale: locale))
+                    .font(.body)
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+                    .frame(width: 52, alignment: .trailing)
+            }
+            .frame(maxWidth: .infinity, alignment: .trailing)
+        }
+    }
+
+    func macSettingsRow<Content: View>(
+        title: String,
+        alignment: VerticalAlignment = .center,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        HStack(alignment: alignment, spacing: 20) {
+            Text(title)
+                .frame(width: 170, alignment: .leading)
+
+            Spacer(minLength: 12)
+
+            content()
+                .frame(width: 360, alignment: .trailing)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+    }
+}
+
+private struct MacSettingsPanel<Content: View>: View {
+    let title: String
+    @ViewBuilder var content: () -> Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title)
+                .font(.headline)
+
+            VStack(spacing: 0) {
+                content()
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(Color(nsColor: .controlBackgroundColor))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(Color(nsColor: .separatorColor).opacity(0.22), lineWidth: 1)
+            )
+        }
+    }
+}
+#endif
 
 private struct PendingAudioRestart {
     let archiveType: AudioArchiveType

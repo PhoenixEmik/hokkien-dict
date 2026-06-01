@@ -49,6 +49,10 @@ struct TaigiDictNativeApp: App {
                 title: appLanguageManager.localized(.aboutTitle)
             )
 
+            SettingsWindowCommands(
+                title: appLanguageManager.localized(.settingsTitle)
+            )
+
             CommandMenu(appLanguageManager.localized(.menuGo)) {
                 Button(appLanguageManager.localized(.tabDictionary)) {
                     navigationModel.showDictionary()
@@ -68,7 +72,7 @@ struct TaigiDictNativeApp: App {
         }
 
 #if os(macOS)
-        Settings {
+        Window(appLanguageManager.localized(.settingsTitle), id: SettingsWindow.windowID) {
             SettingsScreen(
                 library: Self.settingsLibrary,
                 settingsStore: Self.settingsStore,
@@ -82,8 +86,7 @@ struct TaigiDictNativeApp: App {
             }
             .environmentObject(appLanguageManager)
         }
-        .defaultSize(width: 560, height: 430)
-        .windowResizability(.contentSize)
+        .defaultSize(width: 860, height: 620)
 
         Window("", id: AboutWindow.aboutWindowID) {
             MacAboutWindowView()
@@ -126,6 +129,10 @@ private enum AboutWindow {
     static let aboutWindowID = "about-window"
 }
 
+private enum SettingsWindow {
+    static let windowID = "settings-window"
+}
+
 private struct AboutWindowCommands: Commands {
     @Environment(\.openWindow) private var openWindow
     let title: String
@@ -135,6 +142,20 @@ private struct AboutWindowCommands: Commands {
             Button(title) {
                 openWindow(id: AboutWindow.aboutWindowID)
             }
+        }
+    }
+}
+
+private struct SettingsWindowCommands: Commands {
+    @Environment(\.openWindow) private var openWindow
+    let title: String
+
+    var body: some Commands {
+        CommandGroup(replacing: .appSettings) {
+            Button(title) {
+                openWindow(id: SettingsWindow.windowID)
+            }
+            .keyboardShortcut(",", modifiers: [.command])
         }
     }
 }
