@@ -42,6 +42,29 @@ final class SQLiteDictionaryRepositoryTests: XCTestCase {
         XCTAssertEqual(exactMatch?.id, 2)
     }
 
+    func testSQLiteRepositoryKeepsExamplesAttachedToTheirOriginalSenses() async throws {
+        let databaseURL = try makeDatabaseURL()
+        try buildDatabase(
+            at: databaseURL,
+            entriesData: multiSenseExamplesData(),
+            entryCount: 1,
+            senseCount: 3,
+            exampleCount: 3
+        )
+
+        let repository = SQLiteDictionaryRepository(databaseURL: databaseURL)
+        let fetchedEntry = try await repository.entry(id: 13522)
+        let entry = try XCTUnwrap(fetchedEntry)
+
+        XCTAssertEqual(entry.senses.count, 3)
+        XCTAssertEqual(entry.senses[0].definition, "遊玩。")
+        XCTAssertEqual(entry.senses[0].examples.map(\.hanji), ["你明仔載欲佮阮去𨑨迌無？"])
+        XCTAssertEqual(entry.senses[1].definition, "玩弄。")
+        XCTAssertEqual(entry.senses[1].examples.map(\.hanji), ["你對伊的感情是認真的抑是𨑨迌爾爾？"])
+        XCTAssertEqual(entry.senses[2].definition, "好玩的。")
+        XCTAssertEqual(entry.senses[2].examples.map(\.hanji), ["食𨑨迌"])
+    }
+
     private func buildDatabase(
         at url: URL,
         entriesData: Data,
@@ -98,6 +121,14 @@ final class SQLiteDictionaryRepositoryTests: XCTestCase {
             {"id":1,"type":"","hanji":"白","romanization":"pe̍h","category":"","audio":"","hokkienSearch":"白 peh","mandarinSearch":"","senses":[]}
             {"id":2,"type":"","hanji":"白","romanization":"pe̍h","category":"","audio":"","hokkienSearch":"白 peh","mandarinSearch":"白色","senses":[{"partOfSpeech":"","definition":"白色","examples":[]}]}
             {"id":3,"type":"","hanji":"烏","romanization":"oo","category":"","audio":"","hokkienSearch":"烏 oo","mandarinSearch":"黑色","senses":[{"partOfSpeech":"","definition":"黑色","examples":[]}]}
+            """.utf8
+        )
+    }
+
+    private func multiSenseExamplesData() -> Data {
+        Data(
+            """
+            {"id":13522,"type":"主詞目","hanji":"𨑨迌","romanization":"tshit-thô","category":"氣質態度,休閒、娛樂","audio":"13522(1)","hokkienSearch":"𨑨迌 tshit tho","mandarinSearch":"遊玩 玩弄 好玩的","senses":[{"partOfSpeech":"動詞","definition":"遊玩。","examples":[{"hanji":"你明仔載欲佮阮去𨑨迌無？","romanization":"Lí bîn-á-tsài beh kah guán khì tshit-thô--bô?","mandarin":"你明天要和我們去玩嗎？","audio":"13522-1-1"}]},{"partOfSpeech":"動詞","definition":"玩弄。","examples":[{"hanji":"你對伊的感情是認真的抑是𨑨迌爾爾？","romanization":"Lí tuì i ê kám-tsîng sī jīn-tsin--ê ia̍h-sī tshit-thô niā-niā?","mandarin":"你對他的感情是認真還是玩玩而已？","audio":"13522-2-1"}]},{"partOfSpeech":"形容詞","definition":"好玩的。","examples":[{"hanji":"食𨑨迌","romanization":"tsia̍h tshit-thô","mandarin":"吃著好玩","audio":"13522-3-1"}]}]}
             """.utf8
         )
     }

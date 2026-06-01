@@ -120,7 +120,8 @@ struct DictionaryDetailView: View {
                         openWord: openLinkedWord
                     )
 
-                    ForEach(Array(entry.senses.enumerated()), id: \.offset) { _, sense in
+                    ForEach(indexedSenses(for: entry)) { indexedSense in
+                        let sense = indexedSense.sense
                         let headerTitle = sense.partOfSpeech.isEmpty
                             ? AppLocalizer.text(.definitionFallbackTitle, locale: appLocale)
                             : sense.partOfSpeech
@@ -145,7 +146,8 @@ struct DictionaryDetailView: View {
                                 openWord: openLinkedWord
                             )
 
-                            ForEach(Array(sense.examples.enumerated()), id: \.offset) { _, example in
+                            ForEach(indexedExamples(for: indexedSense)) { indexedExample in
+                                let example = indexedExample.example
                                 VStack(alignment: .leading, spacing: 6) {
                                     HStack(alignment: .firstTextBaseline, spacing: 8) {
                                         Text(example.hanji)
@@ -319,6 +321,18 @@ struct DictionaryDetailView: View {
         }
         isBookmarked = bookmarked
     }
+
+    private func indexedSenses(for entry: DictionaryEntry) -> [IndexedSense] {
+        entry.senses.enumerated().map { offset, sense in
+            IndexedSense(entryID: entry.id, index: offset, sense: sense)
+        }
+    }
+
+    private func indexedExamples(for indexedSense: IndexedSense) -> [IndexedExample] {
+        indexedSense.sense.examples.enumerated().map { offset, example in
+            IndexedExample(parentSenseID: indexedSense.id, index: offset, example: example)
+        }
+    }
 }
 
 private extension DictionaryEntry {
@@ -338,6 +352,26 @@ private extension DictionaryEntry {
         || !colloquialPronunciations.isEmpty
         || !phoneticDifferences.isEmpty
         || !vocabularyComparisons.isEmpty
+    }
+}
+
+private struct IndexedSense: Identifiable {
+    let entryID: Int64
+    let index: Int
+    let sense: DictionarySense
+
+    var id: String {
+        "\(entryID)-sense-\(index)-\(sense.partOfSpeech)-\(sense.definition)"
+    }
+}
+
+private struct IndexedExample: Identifiable {
+    let parentSenseID: String
+    let index: Int
+    let example: DictionaryExample
+
+    var id: String {
+        "\(parentSenseID)-example-\(index)-\(example.audioID)-\(example.hanji)-\(example.romanization)-\(example.mandarin)"
     }
 }
 
