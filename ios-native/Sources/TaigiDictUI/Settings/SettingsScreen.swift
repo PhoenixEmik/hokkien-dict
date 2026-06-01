@@ -224,9 +224,9 @@ public struct SettingsScreen: View {
             VStack(alignment: .leading, spacing: 24) {
                 content()
             }
-            .frame(minWidth: 520, maxWidth: 720, alignment: .topLeading)
-            .padding(.horizontal, 28)
-            .padding(.vertical, 24)
+            .frame(minWidth: 500, maxWidth: 640, alignment: .topLeading)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 20)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
@@ -286,7 +286,6 @@ public struct SettingsScreen: View {
                     ) { action in
                         handleAudioAction(action, for: .word, title: wordAudioTitle)
                     }
-                    .padding(.vertical, 2)
 
                     Divider()
 
@@ -299,7 +298,6 @@ public struct SettingsScreen: View {
                     ) { action in
                         handleAudioAction(action, for: .sentence, title: sentenceAudioTitle)
                     }
-                    .padding(.vertical, 2)
                 }
             }
         }
@@ -312,7 +310,7 @@ public struct SettingsScreen: View {
             ) {
                 VStack(spacing: 0) {
                     if viewModel.supportsDataMaintenance {
-                        LabeledContent(AppLocalizer.text(.advancedMaintenanceSection, locale: locale)) {
+                        macSettingsRow(title: AppLocalizer.text(.advancedMaintenanceSection, locale: locale)) {
                             ControlGroup {
                                 Button(AppLocalizer.text(.advancedRebuild, locale: locale)) {
                                     Task {
@@ -335,7 +333,7 @@ public struct SettingsScreen: View {
                             .controlSize(.small)
                         }
                     } else {
-                        LabeledContent(AppLocalizer.text(.advancedMaintenanceSection, locale: locale)) {
+                        macSettingsRow(title: AppLocalizer.text(.advancedMaintenanceSection, locale: locale)) {
                             Text(AppLocalizer.text(.advancedMaintenanceUnsupported, locale: locale))
                                 .foregroundStyle(.secondary)
                         }
@@ -398,7 +396,7 @@ public struct SettingsScreen: View {
                 ) {
                     VStack(spacing: 0) {
                         if viewModel.isRunningAction {
-                            LabeledContent(AppLocalizer.text(.advancedStatusSection, locale: locale)) {
+                            macSettingsRow(title: AppLocalizer.text(.advancedStatusSection, locale: locale)) {
                                 HStack(spacing: 8) {
                                     ProgressView()
                                         .controlSize(.small)
@@ -414,7 +412,7 @@ public struct SettingsScreen: View {
                         }
 
                         if let statusMessageKey = viewModel.statusMessageKey {
-                            LabeledContent(AppLocalizer.text(.advancedStatusSection, locale: locale)) {
+                            macSettingsRow(title: AppLocalizer.text(.advancedStatusSection, locale: locale)) {
                                 Label(AppLocalizer.text(statusMessageKey, locale: locale), systemImage: "checkmark.circle.fill")
                                     .labelStyle(.titleAndIcon)
                                     .symbolRenderingMode(.hierarchical)
@@ -427,7 +425,7 @@ public struct SettingsScreen: View {
                         }
 
                         if let errorMessage = viewModel.errorMessage {
-                            LabeledContent(AppLocalizer.text(.advancedFailedTitle, locale: locale)) {
+                            macSettingsRow(title: AppLocalizer.text(.advancedFailedTitle, locale: locale), alignment: .top) {
                                 Text(errorMessage)
                                     .foregroundStyle(.secondary)
                             }
@@ -439,7 +437,7 @@ public struct SettingsScreen: View {
     }
 
     private func macSettingsValueRow(_ title: String, value: String, monospaced: Bool = false) -> some View {
-        LabeledContent(title) {
+        macSettingsRow(title: title) {
             if monospaced {
                 Text(value)
                     .font(.body)
@@ -451,7 +449,6 @@ public struct SettingsScreen: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(.vertical, 2)
     }
 #endif
 
@@ -649,7 +646,7 @@ private extension SettingsScreen {
             }
             .labelsHidden()
             .pickerStyle(.menu)
-            .frame(maxWidth: .infinity, alignment: .trailing)
+            .frame(maxWidth: 260, alignment: .trailing)
         }
     }
 
@@ -672,15 +669,15 @@ private extension SettingsScreen {
                     EmptyView()
                 }
                 .controlSize(.regular)
-                .frame(width: 260)
+                .frame(width: 220)
 
                 Text(viewModel.readingTextScale.displayScaleLabel(locale: locale))
                     .font(.body)
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
-                    .frame(width: 52, alignment: .trailing)
+                    .frame(width: 48, alignment: .trailing)
             }
-            .frame(maxWidth: .infinity, alignment: .trailing)
+            .frame(maxWidth: 280, alignment: .trailing)
         }
     }
 
@@ -689,18 +686,16 @@ private extension SettingsScreen {
         alignment: VerticalAlignment = .center,
         @ViewBuilder content: () -> Content
     ) -> some View {
-        HStack(alignment: alignment, spacing: 20) {
+        HStack(alignment: alignment, spacing: 16) {
             Text(title)
-                .frame(width: 170, alignment: .leading)
-
-            Spacer(minLength: 12)
+                .frame(width: 132, alignment: .leading)
 
             content()
-                .frame(width: 360, alignment: .trailing)
+                .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 20)
-        .padding(.vertical, 14)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 10)
     }
 }
 
@@ -709,7 +704,7 @@ private struct MacSettingsPanel<Content: View>: View {
     @ViewBuilder var content: () -> Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             Text(title)
                 .font(.headline)
 
@@ -717,11 +712,11 @@ private struct MacSettingsPanel<Content: View>: View {
                 content()
             }
             .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(Color(nsColor: .controlBackgroundColor))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .stroke(Color(nsColor: .separatorColor).opacity(0.22), lineWidth: 1)
             )
         }
@@ -759,14 +754,18 @@ private struct AudioArchiveResourceRow: View {
 
     var body: some View {
 #if os(macOS)
-        LabeledContent(title) {
-            VStack(alignment: .leading, spacing: 8) {
+        HStack(alignment: .top, spacing: 16) {
+            Text(title)
+                .frame(width: 132, alignment: .leading)
+
+            VStack(alignment: .trailing, spacing: 6) {
                 HStack(alignment: .firstTextBaseline, spacing: 12) {
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .trailing, spacing: 2) {
                         Text(snapshotDescription)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
-                            .lineLimit(1)
+                            .lineLimit(2)
+                            .multilineTextAlignment(.trailing)
                             .layoutPriority(1)
 
                         if isSnapshotLoading || isRunningAction {
@@ -774,8 +773,6 @@ private struct AudioArchiveResourceRow: View {
                                 .controlSize(.small)
                         }
                     }
-
-                    Spacer(minLength: 8)
 
                     ResourceActionControl(
                         locale: locale,
@@ -789,11 +786,14 @@ private struct AudioArchiveResourceRow: View {
 
                 if let progress = progressValue {
                     ProgressView(value: progress)
-                        .frame(width: 160, alignment: .leading)
+                        .frame(width: 160, alignment: .trailing)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .trailing)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 10)
 #else
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .top, spacing: 12) {

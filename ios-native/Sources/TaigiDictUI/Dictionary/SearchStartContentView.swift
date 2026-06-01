@@ -51,12 +51,15 @@ struct SearchHistoryContentView: View {
                     HStack(spacing: 8) {
                         Text(AppLocalizer.text(.searchHistoryTitle, locale: locale))
                         Spacer(minLength: 0)
-                        Button(AppLocalizer.text(.clearSearchHistory, locale: locale)) {
+                        Button {
                             isPresentingClearConfirmation = true
+                        } label: {
+                            Image(systemName: "trash")
+                                .font(.subheadline)
                         }
                         .buttonStyle(.plain)
-                        .font(.subheadline)
                         .foregroundStyle(.secondary)
+                        .accessibilityLabel(AppLocalizer.text(.clearSearchHistory, locale: locale))
                     }
                 }
             }
