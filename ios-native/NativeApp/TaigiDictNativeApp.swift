@@ -93,13 +93,10 @@ struct TaigiDictNativeApp: App {
         .windowStyle(.hiddenTitleBar)
 
         Window(appLanguageManager.localized(.settingsLicenses), id: LicenseWindow.licenseWindowID) {
-            NavigationStack {
-                LicenseSummaryScreen()
-            }
-            .environmentObject(appLanguageManager)
+            LicenseSummaryScreen()
+                .environmentObject(appLanguageManager)
         }
-        .defaultSize(width: 430, height: 300)
-        .windowResizability(.contentSize)
+        .defaultSize(width: 860, height: 580)
 
         Window(appLanguageManager.localized(.referenceTitle), id: ReferenceArticleViewerWindow.windowID) {
             MacReferenceArticleViewer()
@@ -127,10 +124,6 @@ struct TaigiDictNativeApp: App {
 #if os(macOS)
 private enum AboutWindow {
     static let aboutWindowID = "about-window"
-}
-
-private enum LicenseWindow {
-    static let licenseWindowID = "license-window"
 }
 
 private struct AboutWindowCommands: Commands {

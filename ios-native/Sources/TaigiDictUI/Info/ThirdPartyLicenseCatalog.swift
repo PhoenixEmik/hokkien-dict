@@ -1,8 +1,8 @@
 import SwiftUI
 import TaigiDictCore
 
-struct ThirdPartyLicenseCatalog {
-    static let directDependencies: [ThirdPartyLicenseEntry] = [
+public struct ThirdPartyLicenseCatalog {
+    public static let directDependencies: [ThirdPartyLicenseEntry] = [
         ThirdPartyLicenseEntry(
             name: "GRDB.swift",
             version: "7.10.0",
@@ -32,7 +32,7 @@ struct ThirdPartyLicenseCatalog {
         ),
     ]
 
-    static let bundledComponents: [ThirdPartyLicenseEntry] = [
+    public static let bundledComponents: [ThirdPartyLicenseEntry] = [
         ThirdPartyLicenseEntry(
             name: "OpenCC",
             version: nil,
@@ -52,31 +52,57 @@ struct ThirdPartyLicenseCatalog {
             licenseResourceName: "marisa_bsd_2_clause"
         ),
     ]
+
+    public static var allEntries: [ThirdPartyLicenseEntry] {
+        directDependencies + bundledComponents
+    }
+
+    public static func entry(id: String) -> ThirdPartyLicenseEntry? {
+        allEntries.first { $0.id == id }
+    }
 }
 
-struct ThirdPartyLicenseEntry: Identifiable, Hashable {
-    let name: String
-    let version: String?
-    let licenseName: String
-    let repositoryURL: URL
-    let includedVia: String?
-    let noteKey: AppLocalizedStringKey?
-    let licenseResourceName: String
+public struct ThirdPartyLicenseEntry: Identifiable, Hashable {
+    public let name: String
+    public let version: String?
+    public let licenseName: String
+    public let repositoryURL: URL
+    public let includedVia: String?
+    public let noteKey: AppLocalizedStringKey?
+    public let licenseResourceName: String
 
-    var id: String {
+    public init(
+        name: String,
+        version: String?,
+        licenseName: String,
+        repositoryURL: URL,
+        includedVia: String?,
+        noteKey: AppLocalizedStringKey?,
+        licenseResourceName: String
+    ) {
+        self.name = name
+        self.version = version
+        self.licenseName = licenseName
+        self.repositoryURL = repositoryURL
+        self.includedVia = includedVia
+        self.noteKey = noteKey
+        self.licenseResourceName = licenseResourceName
+    }
+
+    public var id: String {
         [name, version, includedVia]
             .compactMap { $0 }
             .joined(separator: "::")
     }
 
-    func summaryText() -> String {
+    public func summaryText() -> String {
         if let version, !version.isEmpty {
             return "\(version) • \(licenseName)"
         }
         return licenseName
     }
 
-    func licenseText() -> String {
+    public func licenseText() -> String {
         let candidateURL = Bundle.module.url(
             forResource: licenseResourceName,
             withExtension: "txt"
@@ -97,8 +123,8 @@ struct ThirdPartyLicenseEntry: Identifiable, Hashable {
     }
 }
 
-struct ThirdPartyLicenseDetailScreen: View {
-    let entry: ThirdPartyLicenseEntry
+public struct ThirdPartyLicenseDetailScreen: View {
+    public let entry: ThirdPartyLicenseEntry
 
     @Environment(\.locale) private var locale
 
@@ -106,7 +132,11 @@ struct ThirdPartyLicenseDetailScreen: View {
         AppLocalizer.appLocale(from: locale)
     }
 
-    var body: some View {
+    public init(entry: ThirdPartyLicenseEntry) {
+        self.entry = entry
+    }
+
+    public var body: some View {
         List {
             Section(AppLocalizer.text(.licenseMetadataSection, locale: appLocale)) {
                 LabeledContent {
@@ -154,8 +184,9 @@ struct ThirdPartyLicenseDetailScreen: View {
                     .textSelection(.enabled)
             }
         }
-        .navigationTitle(entry.name)
+        .listStyle(.inset)
 #if os(iOS)
+        .navigationTitle(entry.name)
         .navigationBarTitleDisplayMode(.inline)
 #endif
     }

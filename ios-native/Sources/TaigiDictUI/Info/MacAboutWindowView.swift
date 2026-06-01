@@ -6,7 +6,6 @@ import TaigiDictCore
 public struct MacAboutWindowView: View {
     private let repositoryURL = URL(string: "https://github.com/PhoenixEmik/taigi-dict")!
     private let privacyURL = URL(string: "https://github.com/PhoenixEmik/taigi-dict/blob/main/PRIVACY_POLICY.md")!
-    private let licenseWindowID = "license-window"
 
     @Environment(\.locale) private var locale
     @Environment(\.openWindow) private var openWindow
@@ -51,7 +50,7 @@ public struct MacAboutWindowView: View {
             VStack(spacing: 14) {
                 HStack(spacing: 10) {
                     Button(AppLocalizer.text(.settingsLicenses, locale: appLocale)) {
-                        openWindow(id: licenseWindowID)
+                        openWindow(id: LicenseWindow.licenseWindowID)
                     }
 
                     Button(AppLocalizer.text(.settingsReferences, locale: appLocale)) {
