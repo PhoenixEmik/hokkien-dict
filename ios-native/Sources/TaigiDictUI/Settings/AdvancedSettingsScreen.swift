@@ -127,23 +127,30 @@ struct AdvancedSettingsScreen: View {
         List {
             Section(AppLocalizer.text(.advancedMaintenanceSection, locale: appLocale)) {
                 if viewModel.supportsDataMaintenance {
-                    Button {
+                    AdvancedMaintenanceActionRow(
+                        title: AppLocalizer.text(.advancedRebuild, locale: appLocale),
+                        systemImage: "arrow.clockwise",
+                        tint: .accentColor,
+                        isRunningAction: viewModel.isRunningAction,
+                        isEnabled: !viewModel.isRunningAction
+                    ) {
                         Task {
                             if await viewModel.run(.rebuild) {
                                 onMaintenanceCompleted()
                             }
                         }
-                    } label: {
-                        Label(AppLocalizer.text(.advancedRebuild, locale: appLocale), systemImage: "arrow.clockwise")
                     }
-                    .disabled(viewModel.isRunningAction)
 
-                    Button(role: .destructive) {
+                    AdvancedMaintenanceActionRow(
+                        title: AppLocalizer.text(.advancedClear, locale: appLocale),
+                        systemImage: "trash",
+                        tint: .red,
+                        isDestructive: true,
+                        isRunningAction: viewModel.isRunningAction,
+                        isEnabled: !viewModel.isRunningAction
+                    ) {
                         viewModel.requestClearConfirmation()
-                    } label: {
-                        Label(AppLocalizer.text(.advancedClear, locale: appLocale), systemImage: "trash")
                     }
-                    .disabled(viewModel.isRunningAction)
                 } else {
                     Text(AppLocalizer.text(.advancedMaintenanceUnsupported, locale: appLocale))
                         .foregroundStyle(.secondary)
@@ -270,26 +277,52 @@ private struct AdvancedAudioMaintenanceRow: View {
     let onRestart: () -> Void
 
     var body: some View {
-        Button(action: onRestart) {
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(alignment: .top, spacing: 12) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(title)
-                            .foregroundStyle(.primary)
-                        Text(status)
+        AdvancedMaintenanceActionRow(
+            title: title,
+            subtitle: status,
+            systemImage: "arrow.clockwise",
+            tint: .accentColor,
+            isRunningAction: isRunningAction,
+            isEnabled: !isRunningAction && !actions.isEmpty,
+            action: onRestart
+        )
+    }
+}
+
+private struct AdvancedMaintenanceActionRow: View {
+    let title: String
+    var subtitle: String? = nil
+    let systemImage: String
+    let tint: Color
+    var isDestructive = false
+    let isRunningAction: Bool
+    let isEnabled: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: systemImage)
+                    .font(.title3)
+                    .foregroundStyle(tint)
+                    .frame(width: 28, alignment: .center)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .foregroundStyle(isDestructive ? .red : .primary)
+
+                    if let subtitle {
+                        Text(subtitle)
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
+                }
 
-                    Spacer(minLength: 12)
+                Spacer(minLength: 12)
 
-                    if isRunningAction {
-                        ProgressView()
-                            .controlSize(.small)
-                    } else if !actions.isEmpty {
-                        Image(systemName: "arrow.clockwise")
-                            .foregroundStyle(.tint)
-                    }
+                if isRunningAction {
+                    ProgressView()
+                        .controlSize(.small)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -297,7 +330,7 @@ private struct AdvancedAudioMaintenanceRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .disabled(isRunningAction || actions.isEmpty)
+        .disabled(!isEnabled)
     }
 }
 #endif
