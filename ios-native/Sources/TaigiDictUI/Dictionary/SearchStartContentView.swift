@@ -6,6 +6,7 @@ struct SearchStartContentView: View {
     var locale: AppLocale
     var applyHistory: (String) -> Void
     var clearHistory: () -> Void
+    var onHistoryQuerySelected: ((String) -> Void)? = nil
 
     var body: some View {
         Section {
@@ -20,7 +21,8 @@ struct SearchStartContentView: View {
             history: history,
             locale: locale,
             applyHistory: applyHistory,
-            clearHistory: clearHistory
+            clearHistory: clearHistory,
+            onHistoryQuerySelected: onHistoryQuerySelected
         )
     }
 }
@@ -30,6 +32,7 @@ struct SearchHistoryContentView: View {
     var locale: AppLocale
     var applyHistory: (String) -> Void
     var clearHistory: () -> Void
+    var onHistoryQuerySelected: ((String) -> Void)? = nil
     @State private var isPresentingClearConfirmation = false
 
     var body: some View {
@@ -39,6 +42,7 @@ struct SearchHistoryContentView: View {
                 Section {
                     ForEach(history, id: \.self) { query in
                         Button {
+                            onHistoryQuerySelected?(query)
                             applyHistory(query)
                         } label: {
                             Label(query, systemImage: "clock.arrow.circlepath")
@@ -76,6 +80,7 @@ struct SearchHistoryContentView: View {
             Section {
                 ForEach(history, id: \.self) { query in
                     Button {
+                        onHistoryQuerySelected?(query)
                         applyHistory(query)
                     } label: {
                         Label(query, systemImage: "clock.arrow.circlepath")

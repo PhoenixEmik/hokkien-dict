@@ -6,6 +6,8 @@ struct DictionarySearchListView: View {
     var showsSelection: Bool
     var startPresentation: DictionarySearchStartPresentation = .full
     var selectedEntryID: Binding<Int64?>? = nil
+    var onHistoryQuerySelected: ((String) -> Void)? = nil
+    var onUserSelectEntry: ((DictionaryEntry) -> Void)? = nil
     @Environment(\.locale) private var locale
 
     private var appLocale: AppLocale {
@@ -23,7 +25,7 @@ struct DictionarySearchListView: View {
                         return
                     }
                     selectedEntryID.wrappedValue = newID
-                    updateSelection(newID)
+                    updateSelection(newID, recordsUserSelection: true)
                 }
             )
         }
@@ -31,12 +33,12 @@ struct DictionarySearchListView: View {
         return Binding(
             get: { viewModel.selectedEntry?.id },
             set: { newID in
-                updateSelection(newID)
+                updateSelection(newID, recordsUserSelection: true)
             }
         )
     }
 
-    private func updateSelection(_ newID: Int64?) {
+    private func updateSelection(_ newID: Int64?, recordsUserSelection: Bool = false) {
         guard let newID else {
             viewModel.selectedEntry = nil
             viewModel.detailEntry = nil
@@ -44,8 +46,13 @@ struct DictionarySearchListView: View {
         }
 
         if let matched = viewModel.results.first(where: { $0.id == newID }) {
-            viewModel.selectedEntry = matched
-            viewModel.detailEntry = matched
+            if recordsUserSelection {
+                viewModel.select(matched)
+                onUserSelectEntry?(matched)
+            } else {
+                viewModel.selectedEntry = matched
+                viewModel.detailEntry = matched
+            }
         }
     }
 
@@ -74,6 +81,8 @@ struct DictionarySearchListView: View {
                         Task {
                             await viewModel.clearSearchHistory()
                         }
+                    } onHistoryQuerySelected: { query in
+                        onHistoryQuerySelected?(query)
                     }
                 } else {
                     SearchHistoryContentView(history: viewModel.searchHistory, locale: appLocale) { query in
@@ -82,6 +91,8 @@ struct DictionarySearchListView: View {
                         Task {
                             await viewModel.clearSearchHistory()
                         }
+                    } onHistoryQuerySelected: { query in
+                        onHistoryQuerySelected?(query)
                     }
                 }
             } else if viewModel.isSearching {
@@ -110,17 +121,10 @@ struct DictionarySearchListView: View {
                         if showsSelection {
                             DictionaryEntryRowView(entry: entry, layoutStyle: .sidebarCompact)
                                 .tag(entry.id)
-#if os(macOS)
-                                .contentShape(Rectangle())
-                                .simultaneousGesture(
-                                    TapGesture().onEnded {
-                                        viewModel.select(entry)
-                                    }
-                                )
-#endif
                         } else {
                             Button {
                                 viewModel.select(entry)
+                                onUserSelectEntry?(entry)
                             } label: {
                                 DictionaryEntryRowView(entry: entry, layoutStyle: .standard)
                             }

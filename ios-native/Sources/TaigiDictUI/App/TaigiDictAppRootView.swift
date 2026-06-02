@@ -268,6 +268,12 @@ public final class AppNavigationModel: ObservableObject {
 }
 
 #if os(macOS)
+private struct MacNavigationHistoryState: Equatable {
+    let section: MacNavigationSection
+    let searchText: String
+    let selectedEntryID: Int64?
+}
+
 private struct MacDictionaryWindowContent: View {
     @Bindable var dictionaryViewModel: DictionarySearchViewModel
     @Binding var selection: MacNavigationSection
@@ -276,6 +282,11 @@ private struct MacDictionaryWindowContent: View {
     @State private var selectedEntryID: Int64?
     @State private var displayedDetailEntry: DictionaryEntry?
     @State private var isToolbarEntryBookmarked = false
+    @State private var navigationHistory: [MacNavigationHistoryState] = []
+    @State private var navigationHistoryIndex = 0
+    @State private var isRestoringNavigationHistory = false
+    @State private var hasPendingCommittedSearchNavigation = false
+    @State private var shouldDeferNavigationStateReplacement = false
 
     let bookmarksViewModel: BookmarksViewModel
     let bookmarkStore: BookmarkStore
@@ -359,9 +370,38 @@ private struct MacDictionaryWindowContent: View {
             dictionaryViewModel.scheduleSearch()
         }
         .onSubmit(of: .search) {
+            hasPendingCommittedSearchNavigation = true
+            shouldDeferNavigationStateReplacement = true
             dictionaryViewModel.submitSearch()
         }
+        .onChange(of: dictionaryViewModel.isSearching) { _, isSearching in
+            guard !isSearching, hasPendingCommittedSearchNavigation else {
+                return
+            }
+
+            hasPendingCommittedSearchNavigation = false
+            shouldDeferNavigationStateReplacement = false
+            appendCurrentNavigationStateIfNeeded()
+        }
         .toolbar {
+            ToolbarItemGroup(placement: .navigation) {
+                historyButton(
+                    systemImage: "chevron.backward",
+                    label: AppLocalizer.text(.commonBack, locale: appLocale),
+                    action: navigateBack,
+                    disabled: !canNavigateBack
+                )
+                .keyboardShortcut("[", modifiers: [.command])
+
+                historyButton(
+                    systemImage: "chevron.forward",
+                    label: AppLocalizer.text(.commonForward, locale: appLocale),
+                    action: navigateForward,
+                    disabled: !canNavigateForward
+                )
+                .keyboardShortcut("]", modifiers: [.command])
+            }
+
             ToolbarItemGroup(placement: .primaryAction) {
                 textScaleButton(
                     systemImage: "textformat.size.smaller",
@@ -388,8 +428,12 @@ private struct MacDictionaryWindowContent: View {
             await bookmarksViewModel.load()
             syncSelection(for: displayedSelection, preserveCurrentSelection: false)
             await refreshToolbarBookmarkState()
+            replaceCurrentNavigationStateIfNeeded()
         }
         .onChange(of: selection) { _, newValue in
+            guard !isRestoringNavigationHistory else {
+                return
+            }
             activateSection(newValue, updateNavigationSelection: false)
         }
         .onChange(of: dictionaryResultIDsSignature) { _, _ in
@@ -401,6 +445,7 @@ private struct MacDictionaryWindowContent: View {
             Task {
                 await refreshToolbarBookmarkState()
             }
+            replaceCurrentNavigationStateIfNeeded()
         }
         .onChange(of: bookmarksEntryIDsSignature) { _, _ in
             guard displayedSelection == .bookmarks else {
@@ -411,6 +456,7 @@ private struct MacDictionaryWindowContent: View {
             Task {
                 await refreshToolbarBookmarkState()
             }
+            replaceCurrentNavigationStateIfNeeded()
         }
         .onChange(of: dictionaryViewModel.selectedEntry?.id) { _, _ in
             guard displayedSelection == .dictionary else {
@@ -421,9 +467,11 @@ private struct MacDictionaryWindowContent: View {
             Task {
                 await refreshToolbarBookmarkState()
             }
+            replaceCurrentNavigationStateIfNeeded()
         }
         .onChange(of: selectedEntryID) { _, newID in
             guard let newID else {
+                replaceCurrentNavigationStateIfNeeded()
                 return
             }
 
@@ -445,6 +493,7 @@ private struct MacDictionaryWindowContent: View {
             Task {
                 await refreshToolbarBookmarkState()
             }
+            replaceCurrentNavigationStateIfNeeded()
         }
     }
 
@@ -456,14 +505,36 @@ private struct MacDictionaryWindowContent: View {
                 viewModel: dictionaryViewModel,
                 showsSelection: true,
                 startPresentation: .historyOnly,
-                selectedEntryID: $selectedEntryID
+                selectedEntryID: $selectedEntryID,
+                onHistoryQuerySelected: { _ in
+                    hasPendingCommittedSearchNavigation = true
+                    shouldDeferNavigationStateReplacement = true
+                },
+                onUserSelectEntry: { entry in
+                    appendNavigationState(
+                        MacNavigationHistoryState(
+                            section: .dictionary,
+                            searchText: dictionaryViewModel.searchText,
+                            selectedEntryID: entry.id
+                        )
+                    )
+                }
             )
         case .bookmarks:
             MacBookmarksListView(
                 viewModel: bookmarksViewModel,
                 selectedEntryID: $selectedEntryID,
                 locale: appLocale,
-                removeBookmarks: removeBookmarks
+                removeBookmarks: removeBookmarks,
+                onUserSelectEntry: { entry in
+                    appendNavigationState(
+                        MacNavigationHistoryState(
+                            section: .bookmarks,
+                            searchText: dictionaryViewModel.searchText,
+                            selectedEntryID: entry.id
+                        )
+                    )
+                }
             )
         }
     }
@@ -534,6 +605,37 @@ private struct MacDictionaryWindowContent: View {
             / Double(AppSettingsSnapshot.readingTextScaleDivisions)
     }
 
+    private var currentNavigationState: MacNavigationHistoryState {
+        MacNavigationHistoryState(
+            section: displayedSelection,
+            searchText: dictionaryViewModel.searchText,
+            selectedEntryID: selectedEntryID
+        )
+    }
+
+    private var canNavigateBack: Bool {
+        navigationHistoryIndex > 0
+    }
+
+    private var canNavigateForward: Bool {
+        navigationHistoryIndex + 1 < navigationHistory.count
+    }
+
+    @ViewBuilder
+    private func historyButton(
+        systemImage: String,
+        label: String,
+        action: @escaping () -> Void,
+        disabled: Bool
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+        }
+        .help(label)
+        .accessibilityLabel(label)
+        .disabled(disabled)
+    }
+
     @ViewBuilder
     private func textScaleButton(
         systemImage: String,
@@ -579,12 +681,37 @@ private struct MacDictionaryWindowContent: View {
 
     private func openLinkedDictionaryWord(_ word: String) {
         activateSection(.dictionary)
+        shouldDeferNavigationStateReplacement = true
         Task {
             await dictionaryViewModel.openLinkedWord(word)
             await MainActor.run {
                 syncSelection(for: .dictionary, preserveCurrentSelection: false)
+                shouldDeferNavigationStateReplacement = false
+                appendCurrentNavigationStateIfNeeded()
             }
             await refreshToolbarBookmarkState()
+        }
+    }
+
+    private func navigateBack() {
+        guard canNavigateBack else {
+            return
+        }
+
+        let targetIndex = navigationHistoryIndex - 1
+        Task {
+            await restoreNavigationState(navigationHistory[targetIndex], targetIndex: targetIndex)
+        }
+    }
+
+    private func navigateForward() {
+        guard canNavigateForward else {
+            return
+        }
+
+        let targetIndex = navigationHistoryIndex + 1
+        Task {
+            await restoreNavigationState(navigationHistory[targetIndex], targetIndex: targetIndex)
         }
     }
 
@@ -621,6 +748,86 @@ private struct MacDictionaryWindowContent: View {
 
     private var dictionaryResultIDsSignature: [Int64] {
         dictionaryViewModel.results.map(\.id)
+    }
+
+    private func replaceCurrentNavigationStateIfNeeded() {
+        guard !isRestoringNavigationHistory, !shouldDeferNavigationStateReplacement else {
+            return
+        }
+
+        let state = currentNavigationState
+        guard !navigationHistory.isEmpty else {
+            navigationHistory = [state]
+            navigationHistoryIndex = 0
+            return
+        }
+
+        navigationHistory[navigationHistoryIndex] = state
+    }
+
+    private func appendCurrentNavigationStateIfNeeded() {
+        appendNavigationState(currentNavigationState)
+    }
+
+    private func appendNavigationState(_ state: MacNavigationHistoryState) {
+        guard !isRestoringNavigationHistory else {
+            return
+        }
+
+        guard !navigationHistory.isEmpty else {
+            navigationHistory = [state]
+            navigationHistoryIndex = 0
+            return
+        }
+
+        guard navigationHistory[navigationHistoryIndex] != state else {
+            return
+        }
+
+        if navigationHistoryIndex + 1 < navigationHistory.count {
+            navigationHistory.removeSubrange((navigationHistoryIndex + 1)..<navigationHistory.count)
+        }
+
+        navigationHistory.append(state)
+        navigationHistoryIndex = navigationHistory.count - 1
+    }
+
+    private func restoreNavigationState(
+        _ state: MacNavigationHistoryState,
+        targetIndex: Int
+    ) async {
+        await MainActor.run {
+            isRestoringNavigationHistory = true
+            hasPendingCommittedSearchNavigation = false
+        }
+
+        if !bookmarksViewModel.hasLoaded {
+            await bookmarksViewModel.load()
+        }
+
+        await dictionaryViewModel.searchImmediately(state.searchText)
+
+        await MainActor.run {
+            displayedSelection = state.section
+            selection = state.section
+            syncSelection(for: state.section, preserveCurrentSelection: false)
+
+            if let targetID = state.selectedEntryID,
+               let matchedEntry = entries(for: state.section).first(where: { $0.id == targetID }) {
+                selectedEntryID = targetID
+                displayedDetailEntry = matchedEntry
+                if state.section == .dictionary {
+                    dictionaryViewModel.selectedEntry = matchedEntry
+                    dictionaryViewModel.detailEntry = matchedEntry
+                }
+            }
+
+            navigationHistoryIndex = targetIndex
+            navigationHistory[targetIndex] = currentNavigationState
+            isRestoringNavigationHistory = false
+        }
+
+        await refreshToolbarBookmarkState()
     }
 
     private func entries(for section: MacNavigationSection) -> [DictionaryEntry] {
@@ -693,6 +900,7 @@ private struct MacDictionaryWindowContent: View {
             if updateNavigationSelection {
                 selection = .dictionary
             }
+            appendCurrentNavigationStateIfNeeded()
             Task {
                 await refreshToolbarBookmarkState()
             }
@@ -707,6 +915,7 @@ private struct MacDictionaryWindowContent: View {
                     if updateNavigationSelection {
                         selection = .bookmarks
                     }
+                    appendCurrentNavigationStateIfNeeded()
                 }
                 await refreshToolbarBookmarkState()
             }
@@ -748,6 +957,7 @@ private struct MacBookmarksListView: View {
     @Binding var selectedEntryID: Int64?
     let locale: AppLocale
     let removeBookmarks: (Set<Int64>) -> Void
+    let onUserSelectEntry: (DictionaryEntry) -> Void
 
     private var selectionBinding: Binding<Set<Int64>> {
         Binding(
@@ -764,6 +974,10 @@ private struct MacBookmarksListView: View {
                     return
                 }
                 selectedEntryID = newValue.first
+                if let selectedID = newValue.first,
+                   let matchedEntry = viewModel.entries.first(where: { $0.id == selectedID }) {
+                    onUserSelectEntry(matchedEntry)
+                }
             }
         )
     }
