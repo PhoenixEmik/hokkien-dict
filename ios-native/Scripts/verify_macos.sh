@@ -15,4 +15,6 @@ xcodebuild \
   -workspace TaigiDictNative.xcworkspace \
   -scheme TaigiDictNativeMac \
   -destination 'platform=macOS' \
+  CODE_SIGNING_ALLOWED=NO \
+  CODE_SIGNING_REQUIRED=NO \
   build
