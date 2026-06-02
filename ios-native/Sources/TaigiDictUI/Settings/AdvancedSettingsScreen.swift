@@ -4,6 +4,7 @@ import TaigiDictCore
 struct AdvancedSettingsScreen: View {
     @Bindable var viewModel: SettingsViewModel
     @Environment(\.locale) private var locale
+    @State private var pendingAudioRestart: PendingAdvancedAudioRestart?
     var onMaintenanceCompleted: () -> Void
 
     private var appLocale: AppLocale {
@@ -19,6 +20,33 @@ struct AdvancedSettingsScreen: View {
 #endif
         }
         .navigationTitle(AppLocalizer.text(.advancedTitle, locale: appLocale))
+        .confirmationDialog(
+            AppLocalizer.text(.audioRestartConfirmTitle, locale: appLocale),
+            isPresented: Binding(
+                get: { pendingAudioRestart != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        pendingAudioRestart = nil
+                    }
+                }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button(AppLocalizer.text(.audioActionRestart, locale: appLocale)) {
+                confirmPendingAudioRestart()
+            }
+            Button(AppLocalizer.text(.commonCancel, locale: appLocale), role: .cancel) {
+                pendingAudioRestart = nil
+            }
+        } message: {
+            Text(
+                AppLocalizer.formattedText(
+                    .audioRestartConfirmBody,
+                    locale: appLocale,
+                    pendingAudioRestart?.title ?? ""
+                )
+            )
+        }
     }
 
 #if os(macOS)
@@ -120,6 +148,43 @@ struct AdvancedSettingsScreen: View {
                     Text(AppLocalizer.text(.advancedMaintenanceUnsupported, locale: appLocale))
                         .foregroundStyle(.secondary)
                 }
+                AdvancedAudioMaintenanceRow(
+                    title: AppLocalizer.text(.settingsRedownloadWordAudio, locale: appLocale),
+                    status: DownloadSnapshotStatusPresentation.description(
+                        for: viewModel.snapshot(for: .word),
+                        locale: appLocale,
+                        isLoading: !viewModel.hasLoadedAudioSnapshots
+                    ),
+                    isRunningAction: viewModel.isAudioActionRunning(for: .word),
+                    actions: AudioResourcePresentation.maintenanceActions(
+                        for: viewModel.snapshot(for: .word),
+                        isLoading: !viewModel.hasLoadedAudioSnapshots
+                    )
+                ) {
+                    pendingAudioRestart = PendingAdvancedAudioRestart(
+                        archiveType: .word,
+                        title: AppLocalizer.text(.settingsRedownloadWordAudio, locale: appLocale)
+                    )
+                }
+
+                AdvancedAudioMaintenanceRow(
+                    title: AppLocalizer.text(.settingsRedownloadSentenceAudio, locale: appLocale),
+                    status: DownloadSnapshotStatusPresentation.description(
+                        for: viewModel.snapshot(for: .sentence),
+                        locale: appLocale,
+                        isLoading: !viewModel.hasLoadedAudioSnapshots
+                    ),
+                    isRunningAction: viewModel.isAudioActionRunning(for: .sentence),
+                    actions: AudioResourcePresentation.maintenanceActions(
+                        for: viewModel.snapshot(for: .sentence),
+                        isLoading: !viewModel.hasLoadedAudioSnapshots
+                    )
+                ) {
+                    pendingAudioRestart = PendingAdvancedAudioRestart(
+                        archiveType: .sentence,
+                        title: AppLocalizer.text(.settingsRedownloadSentenceAudio, locale: appLocale)
+                    )
+                }
             }
 
             if let summary = viewModel.librarySummary {
@@ -181,4 +246,63 @@ struct AdvancedSettingsScreen: View {
         }
     }
 #endif
+
+    private func confirmPendingAudioRestart() {
+        guard let pendingAudioRestart else {
+            return
+        }
+
+        let archiveType = pendingAudioRestart.archiveType
+        self.pendingAudioRestart = nil
+
+        Task {
+            await viewModel.runAudioAction(.restart, for: archiveType)
+        }
+    }
+}
+
+#if !os(macOS)
+private struct AdvancedAudioMaintenanceRow: View {
+    let title: String
+    let status: String
+    let isRunningAction: Bool
+    let actions: [SettingsViewModel.AudioResourceAction]
+    let onRestart: () -> Void
+
+    var body: some View {
+        Button(action: onRestart) {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(alignment: .top, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(title)
+                            .foregroundStyle(.primary)
+                        Text(status)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer(minLength: 12)
+
+                    if isRunningAction {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else if !actions.isEmpty {
+                        Image(systemName: "arrow.clockwise")
+                            .foregroundStyle(.tint)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 4)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(isRunningAction || actions.isEmpty)
+    }
+}
+#endif
+
+private struct PendingAdvancedAudioRestart {
+    let archiveType: AudioArchiveType
+    let title: String
 }

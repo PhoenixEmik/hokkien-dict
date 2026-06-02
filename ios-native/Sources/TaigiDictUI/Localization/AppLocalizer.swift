@@ -91,6 +91,8 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case settingsOfflineAudioSection
     case settingsWordAudio
     case settingsSentenceAudio
+    case settingsRedownloadWordAudio
+    case settingsRedownloadSentenceAudio
     case settingsActionsMenu
     case settingsClearConfirmTitle
     case settingsClearConfirmBody

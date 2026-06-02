@@ -159,6 +159,10 @@ public struct SettingsScreen: View {
                 AudioArchiveResourceRow(
                     title: wordAudioTitle,
                     locale: locale,
+                    actions: AudioResourcePresentation.settingsActions(
+                        for: viewModel.snapshot(for: .word),
+                        isLoading: !viewModel.hasLoadedAudioSnapshots
+                    ),
                     snapshot: viewModel.snapshot(for: .word),
                     isSnapshotLoading: !viewModel.hasLoadedAudioSnapshots,
                     isRunningAction: viewModel.isAudioActionRunning(for: .word)
@@ -169,6 +173,10 @@ public struct SettingsScreen: View {
                 AudioArchiveResourceRow(
                     title: sentenceAudioTitle,
                     locale: locale,
+                    actions: AudioResourcePresentation.settingsActions(
+                        for: viewModel.snapshot(for: .sentence),
+                        isLoading: !viewModel.hasLoadedAudioSnapshots
+                    ),
                     snapshot: viewModel.snapshot(for: .sentence),
                     isSnapshotLoading: !viewModel.hasLoadedAudioSnapshots,
                     isRunningAction: viewModel.isAudioActionRunning(for: .sentence)
@@ -760,10 +768,29 @@ private extension AppLanguage {
 private struct AudioArchiveResourceRow: View {
     let title: String
     let locale: AppLocale
+    let actions: [SettingsViewModel.AudioResourceAction]?
     let snapshot: DownloadSnapshot
     let isSnapshotLoading: Bool
     let isRunningAction: Bool
     let runAction: (SettingsViewModel.AudioResourceAction) -> Void
+
+    init(
+        title: String,
+        locale: AppLocale,
+        actions: [SettingsViewModel.AudioResourceAction]? = nil,
+        snapshot: DownloadSnapshot,
+        isSnapshotLoading: Bool,
+        isRunningAction: Bool,
+        runAction: @escaping (SettingsViewModel.AudioResourceAction) -> Void
+    ) {
+        self.title = title
+        self.locale = locale
+        self.actions = actions
+        self.snapshot = snapshot
+        self.isSnapshotLoading = isSnapshotLoading
+        self.isRunningAction = isRunningAction
+        self.runAction = runAction
+    }
 
     var body: some View {
 #if os(macOS)
@@ -843,7 +870,7 @@ private struct AudioArchiveResourceRow: View {
     }
 
     private var availableActions: [SettingsViewModel.AudioResourceAction] {
-        AudioResourcePresentation.actions(for: snapshot, isLoading: isSnapshotLoading)
+        actions ?? AudioResourcePresentation.actions(for: snapshot, isLoading: isSnapshotLoading)
     }
 
     private var snapshotDescription: String {
@@ -933,6 +960,38 @@ enum AudioResourcePresentation {
             return [.restart]
         case .failed:
             return [.restart]
+        }
+    }
+
+    static func settingsActions(for snapshot: DownloadSnapshot, isLoading: Bool = false) -> [SettingsViewModel.AudioResourceAction] {
+        guard !isLoading else {
+            return []
+        }
+
+        switch snapshot.state {
+        case .idle:
+            return [.start]
+        case .downloading:
+            return [.pause]
+        case .paused:
+            return [.resume]
+        case .completed:
+            return []
+        case .failed:
+            return [.start]
+        }
+    }
+
+    static func maintenanceActions(for snapshot: DownloadSnapshot, isLoading: Bool = false) -> [SettingsViewModel.AudioResourceAction] {
+        guard !isLoading else {
+            return []
+        }
+
+        switch snapshot.state {
+        case .completed, .failed:
+            return [.restart]
+        case .idle, .downloading, .paused:
+            return []
         }
     }
 }
