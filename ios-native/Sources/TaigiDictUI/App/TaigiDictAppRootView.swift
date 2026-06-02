@@ -734,68 +734,12 @@ private struct MacDictionaryToolbarActions: View {
             }
             .disabled(entry == nil)
 
-            MacDictionaryShareButton(
-                shareText: entry.map(WordDetailViewModel.shareText(for:)) ?? "",
-                appLocale: appLocale,
-                isEnabled: entry != nil
-            )
+            ShareLink(item: entry.map(WordDetailViewModel.shareText(for:)) ?? "") {
+                Label(AppLocalizer.text(.share, locale: appLocale), systemImage: "square.and.arrow.up")
+            }
+            .disabled(entry == nil)
         }
         .controlSize(.large)
-    }
-}
-
-private struct MacDictionaryShareButton: View {
-    let shareText: String
-    let appLocale: AppLocale
-    let isEnabled: Bool
-
-    @State private var isPresentingSharePicker = false
-
-    var body: some View {
-        Button {
-            isPresentingSharePicker = true
-        } label: {
-            Label(AppLocalizer.text(.share, locale: appLocale), systemImage: "square.and.arrow.up")
-        }
-        .disabled(!isEnabled)
-        .background(
-            MacSharingServicePresenter(
-                isPresented: $isPresentingSharePicker,
-                items: [shareText]
-            )
-            .frame(width: 0, height: 0)
-        )
-    }
-}
-
-private struct MacSharingServicePresenter: NSViewRepresentable {
-    @Binding var isPresented: Bool
-    let items: [Any]
-
-    func makeNSView(context: Context) -> NSView {
-        NSView(frame: .zero)
-    }
-
-    func updateNSView(_ nsView: NSView, context: Context) {
-        guard isPresented else {
-            return
-        }
-
-        context.coordinator.present(from: nsView, items: items)
-        DispatchQueue.main.async {
-            isPresented = false
-        }
-    }
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator()
-    }
-
-    final class Coordinator {
-        func present(from view: NSView, items: [Any]) {
-            let picker = NSSharingServicePicker(items: items)
-            picker.show(relativeTo: view.bounds, of: view, preferredEdge: .minY)
-        }
     }
 }
 
@@ -918,7 +862,11 @@ private extension View {
     @ViewBuilder
     func taigiMacWindowToolbarBaselineHidden() -> some View {
 #if os(macOS)
-        background(MacWindowToolbarConfigurator())
+        if #available(macOS 15.0, *) {
+            toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
+        } else {
+            background(MacWindowToolbarConfigurator())
+        }
 #else
         self
 #endif
@@ -928,18 +876,17 @@ private extension View {
 #if os(macOS)
 private struct MacWindowToolbarConfigurator: NSViewRepresentable {
     func makeNSView(context: Context) -> NSView {
-        let view = NSView()
-        DispatchQueue.main.async {
-            context.coordinator.applyConfiguration(for: view)
+        let view = ToolbarConfiguratorView()
+        view.onMoveToWindow = { [coordinator = context.coordinator, weak view] in
+            guard let view else {
+                return
+            }
+            coordinator.applyConfiguration(for: view)
         }
         return view
     }
 
-    func updateNSView(_ nsView: NSView, context: Context) {
-        DispatchQueue.main.async {
-            context.coordinator.applyConfiguration(for: nsView)
-        }
-    }
+    func updateNSView(_ nsView: NSView, context: Context) {}
 
     func makeCoordinator() -> Coordinator {
         Coordinator()
@@ -959,6 +906,17 @@ private struct MacWindowToolbarConfigurator: NSViewRepresentable {
 
             configuredWindow = window
             window.toolbar?.showsBaselineSeparator = false
+        }
+    }
+}
+
+private final class ToolbarConfiguratorView: NSView {
+    var onMoveToWindow: (() -> Void)?
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        DispatchQueue.main.async { [weak self] in
+            self?.onMoveToWindow?()
         }
     }
 }
