@@ -54,13 +54,17 @@ struct TaigiDictNativeApp: App {
             )
 
             CommandMenu(appLanguageManager.localized(.menuGo)) {
-                Button(appLanguageManager.localized(.tabDictionary)) {
+                Button {
                     navigationModel.showDictionary()
+                } label: {
+                    Label(appLanguageManager.localized(.tabDictionary), systemImage: "book")
                 }
                 .keyboardShortcut("1", modifiers: [.command])
 
-                Button(appLanguageManager.localized(.tabBookmarks)) {
+                Button {
                     navigationModel.showBookmarks()
+                } label: {
+                    Label(appLanguageManager.localized(.tabBookmarks), systemImage: "bookmark")
                 }
                 .keyboardShortcut("2", modifiers: [.command])
             }
@@ -139,8 +143,10 @@ private struct AboutWindowCommands: Commands {
 
     var body: some Commands {
         CommandGroup(replacing: .appInfo) {
-            Button(title) {
+            Button {
                 openWindow(id: AboutWindow.aboutWindowID)
+            } label: {
+                Label(title, systemImage: "info.circle")
             }
         }
     }
@@ -152,8 +158,10 @@ private struct SettingsWindowCommands: Commands {
 
     var body: some Commands {
         CommandGroup(replacing: .appSettings) {
-            Button(title) {
+            Button {
                 openWindow(id: SettingsWindow.windowID)
+            } label: {
+                Label(title, systemImage: "gearshape")
             }
             .keyboardShortcut(",", modifiers: [.command])
         }
@@ -166,8 +174,10 @@ private struct ReferenceArticleCommands: Commands {
 
     var body: some Commands {
         CommandGroup(replacing: .help) {
-            Button(title) {
+            Button {
                 openWindow(id: ReferenceArticleViewerWindow.windowID)
+            } label: {
+                Label(title, systemImage: "text.book.closed")
             }
         }
     }
