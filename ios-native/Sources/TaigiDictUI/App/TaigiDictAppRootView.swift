@@ -271,6 +271,10 @@ public final class AppNavigationModel: ObservableObject {
 private struct MacNavigationHistoryState: Equatable {
     let section: MacNavigationSection
     let searchText: String
+    let normalizedQuery: String
+    let dictionaryResults: [DictionaryEntry]
+    let dictionarySelectedEntryID: Int64?
+    let dictionaryErrorMessage: String?
     let selectedEntryID: Int64?
 }
 
@@ -367,6 +371,9 @@ private struct MacDictionaryWindowContent: View {
             prompt: AppLocalizer.text(.searchPrompt, locale: appLocale)
         )
         .onChange(of: dictionaryViewModel.searchText) { _, _ in
+            guard !isRestoringNavigationHistory else {
+                return
+            }
             dictionaryViewModel.scheduleSearch()
         }
         .onSubmit(of: .search) {
@@ -515,6 +522,10 @@ private struct MacDictionaryWindowContent: View {
                         MacNavigationHistoryState(
                             section: .dictionary,
                             searchText: dictionaryViewModel.searchText,
+                            normalizedQuery: dictionaryViewModel.normalizedQuery,
+                            dictionaryResults: dictionaryViewModel.results,
+                            dictionarySelectedEntryID: entry.id,
+                            dictionaryErrorMessage: dictionaryViewModel.errorMessage,
                             selectedEntryID: entry.id
                         )
                     )
@@ -531,6 +542,10 @@ private struct MacDictionaryWindowContent: View {
                         MacNavigationHistoryState(
                             section: .bookmarks,
                             searchText: dictionaryViewModel.searchText,
+                            normalizedQuery: dictionaryViewModel.normalizedQuery,
+                            dictionaryResults: dictionaryViewModel.results,
+                            dictionarySelectedEntryID: dictionaryViewModel.selectedEntry?.id,
+                            dictionaryErrorMessage: dictionaryViewModel.errorMessage,
                             selectedEntryID: entry.id
                         )
                     )
@@ -609,6 +624,10 @@ private struct MacDictionaryWindowContent: View {
         MacNavigationHistoryState(
             section: displayedSelection,
             searchText: dictionaryViewModel.searchText,
+            normalizedQuery: dictionaryViewModel.normalizedQuery,
+            dictionaryResults: dictionaryViewModel.results,
+            dictionarySelectedEntryID: dictionaryViewModel.selectedEntry?.id,
+            dictionaryErrorMessage: dictionaryViewModel.errorMessage,
             selectedEntryID: selectedEntryID
         )
     }
@@ -799,13 +818,22 @@ private struct MacDictionaryWindowContent: View {
         await MainActor.run {
             isRestoringNavigationHistory = true
             hasPendingCommittedSearchNavigation = false
+            shouldDeferNavigationStateReplacement = true
         }
 
         if !bookmarksViewModel.hasLoaded {
             await bookmarksViewModel.load()
         }
 
-        await dictionaryViewModel.searchImmediately(state.searchText)
+        await MainActor.run {
+            dictionaryViewModel.restoreSearchState(
+                searchText: state.searchText,
+                normalizedQuery: state.normalizedQuery,
+                results: state.dictionaryResults,
+                selectedEntryID: state.dictionarySelectedEntryID,
+                errorMessage: state.dictionaryErrorMessage
+            )
+        }
 
         await MainActor.run {
             displayedSelection = state.section
@@ -824,6 +852,7 @@ private struct MacDictionaryWindowContent: View {
 
             navigationHistoryIndex = targetIndex
             navigationHistory[targetIndex] = currentNavigationState
+            shouldDeferNavigationStateReplacement = false
             isRestoringNavigationHistory = false
         }
 

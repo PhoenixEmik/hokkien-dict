@@ -138,6 +138,30 @@ public final class DictionarySearchViewModel {
         await runSearch(query, saveHistory: false, generation: generation)
     }
 
+    public func restoreSearchState(
+        searchText: String,
+        normalizedQuery: String,
+        results: [DictionaryEntry],
+        selectedEntryID: Int64?,
+        errorMessage: String?
+    ) {
+        searchTask?.cancel()
+        self.searchText = searchText
+        self.normalizedQuery = normalizedQuery
+        self.results = results
+        self.errorMessage = errorMessage
+        isSearching = false
+
+        if let selectedEntryID,
+           let matchedEntry = results.first(where: { $0.id == selectedEntryID }) {
+            selectedEntry = matchedEntry
+            detailEntry = matchedEntry
+        } else {
+            selectedEntry = results.first
+            detailEntry = results.first
+        }
+    }
+
     public func openLinkedWord(_ word: String) async {
         await searchImmediately(word)
     }
