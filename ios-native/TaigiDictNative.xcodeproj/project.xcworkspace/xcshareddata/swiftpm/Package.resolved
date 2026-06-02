@@ -1,5 +1,5 @@
 {
-  "originHash" : "43b0252344f524656fe027569f8dbf4c32a165aba958c2b64d8ae6386ed30dcb",
+  "originHash" : "f44aaab2cf608f60747a81ce8618a97ae23b9a7f17a3002620538bec362aed40",
   "pins" : [
     {
       "identity" : "grdb.swift",
@@ -15,7 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/PhoenixEmik/SwiftyOpenCC.git",
       "state" : {
-        "revision" : "53f200cebe40eade3ebda025b0e8980e08cf23fa"
+        "revision" : "a69221e28ca59089147a7b9a255b73d72b83e6b2",
+        "version" : "1.3.1"
       }
     },
     {
