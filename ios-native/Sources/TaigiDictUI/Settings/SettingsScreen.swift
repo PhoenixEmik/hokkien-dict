@@ -5,7 +5,9 @@ public struct SettingsScreen: View {
     @EnvironmentObject private var appLanguageManager: AppLanguageManager
     @State private var viewModel: SettingsViewModel
     @State private var pendingAudioRestart: PendingAudioRestart?
+#if os(macOS)
     @State private var macSelectedSection: MacSettingsSection? = .general
+#endif
     @Environment(\.locale) private var locale
     private let onMaintenanceCompleted: () -> Void
     private let onSettingsChanged: (AppSettingsSnapshot) -> Void
