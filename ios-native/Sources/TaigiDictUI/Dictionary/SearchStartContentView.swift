@@ -52,7 +52,7 @@ struct SearchHistoryContentView: View {
                         .buttonStyle(.plain)
                     }
                 } header: {
-                    HStack(spacing: 8) {
+                    HStack(alignment: .center, spacing: 8) {
                         Text(AppLocalizer.text(.searchHistoryTitle, locale: locale))
                         Spacer(minLength: 0)
                         Button {
@@ -60,9 +60,12 @@ struct SearchHistoryContentView: View {
                         } label: {
                             Image(systemName: "trash")
                                 .font(.subheadline)
+                                .frame(width: 16, height: 16, alignment: .center)
                         }
                         .buttonStyle(.plain)
                         .foregroundStyle(.secondary)
+                        .padding(.top, 1)
+                        .padding(.trailing, 4)
                         .accessibilityLabel(AppLocalizer.text(.clearSearchHistory, locale: locale))
                     }
                 }
