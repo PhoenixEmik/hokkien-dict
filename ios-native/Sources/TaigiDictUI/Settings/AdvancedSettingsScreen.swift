@@ -5,6 +5,7 @@ struct AdvancedSettingsScreen: View {
     @Bindable var viewModel: SettingsViewModel
     @Environment(\.locale) private var locale
     @State private var pendingAudioRestart: PendingAdvancedAudioRestart?
+    @State private var isPresentingRebuildConfirmation = false
     var onMaintenanceCompleted: () -> Void
 
     private var appLocale: AppLocale {
@@ -20,7 +21,18 @@ struct AdvancedSettingsScreen: View {
 #endif
         }
         .navigationTitle(AppLocalizer.text(.advancedTitle, locale: appLocale))
-        .confirmationDialog(
+        .alert(
+            AppLocalizer.text(.settingsRebuildConfirmTitle, locale: appLocale),
+            isPresented: $isPresentingRebuildConfirmation
+        ) {
+            Button(AppLocalizer.text(.advancedRebuild, locale: appLocale)) {
+                confirmRebuild()
+            }
+            Button(AppLocalizer.text(.commonCancel, locale: appLocale), role: .cancel) {}
+        } message: {
+            Text(AppLocalizer.text(.settingsRebuildConfirmBody, locale: appLocale))
+        }
+        .alert(
             AppLocalizer.text(.audioRestartConfirmTitle, locale: appLocale),
             isPresented: Binding(
                 get: { pendingAudioRestart != nil },
@@ -29,8 +41,7 @@ struct AdvancedSettingsScreen: View {
                         pendingAudioRestart = nil
                     }
                 }
-            ),
-            titleVisibility: .visible
+            )
         ) {
             Button(AppLocalizer.text(.audioActionRestart, locale: appLocale)) {
                 confirmPendingAudioRestart()
@@ -47,6 +58,32 @@ struct AdvancedSettingsScreen: View {
                 )
             )
         }
+#if !os(macOS)
+        .alert(
+            AppLocalizer.text(.settingsClearConfirmTitle, locale: appLocale),
+            isPresented: Binding(
+                get: { viewModel.isClearConfirmationPresented },
+                set: { isPresented in
+                    if !isPresented {
+                        viewModel.cancelClearConfirmation()
+                    }
+                }
+            )
+        ) {
+            Button(AppLocalizer.text(.commonDelete, locale: appLocale), role: .destructive) {
+                Task {
+                    if await viewModel.confirmClear() {
+                        onMaintenanceCompleted()
+                    }
+                }
+            }
+            Button(AppLocalizer.text(.commonCancel, locale: appLocale), role: .cancel) {
+                viewModel.cancelClearConfirmation()
+            }
+        } message: {
+            Text(AppLocalizer.text(.settingsClearConfirmBody, locale: appLocale))
+        }
+#endif
     }
 
 #if os(macOS)
@@ -56,11 +93,7 @@ struct AdvancedSettingsScreen: View {
                 LabeledContent(AppLocalizer.text(.advancedMaintenanceSection, locale: appLocale)) {
                     HStack(spacing: 10) {
                         Button(AppLocalizer.text(.advancedRebuild, locale: appLocale)) {
-                            Task {
-                                if await viewModel.run(.rebuild) {
-                                    onMaintenanceCompleted()
-                                }
-                            }
+                            isPresentingRebuildConfirmation = true
                         }
                         .disabled(viewModel.isRunningAction)
 
@@ -134,11 +167,7 @@ struct AdvancedSettingsScreen: View {
                         isRunningAction: viewModel.isRunningAction,
                         isEnabled: !viewModel.isRunningAction
                     ) {
-                        Task {
-                            if await viewModel.run(.rebuild) {
-                                onMaintenanceCompleted()
-                            }
-                        }
+                        isPresentingRebuildConfirmation = true
                     }
 
                     AdvancedMaintenanceActionRow(
@@ -253,6 +282,14 @@ struct AdvancedSettingsScreen: View {
         }
     }
 #endif
+
+    private func confirmRebuild() {
+        Task {
+            if await viewModel.run(.rebuild) {
+                onMaintenanceCompleted()
+            }
+        }
+    }
 
     private func confirmPendingAudioRestart() {
         guard let pendingAudioRestart else {

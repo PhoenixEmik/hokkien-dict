@@ -96,6 +96,8 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case settingsActionsMenu
     case settingsClearConfirmTitle
     case settingsClearConfirmBody
+    case settingsRebuildConfirmTitle
+    case settingsRebuildConfirmBody
     case commonBack
     case commonDelete
     case commonCancel

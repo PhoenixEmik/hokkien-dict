@@ -66,6 +66,7 @@ public struct SettingsScreen: View {
         .onDisappear {
             viewModel.stopAudioSnapshotPolling()
         }
+#if os(macOS)
         .confirmationDialog(
             AppLocalizer.text(.settingsClearConfirmTitle, locale: appLocale),
             isPresented: Binding(
@@ -91,6 +92,7 @@ public struct SettingsScreen: View {
         } message: {
             Text(AppLocalizer.text(.settingsClearConfirmBody, locale: appLocale))
         }
+#endif
         .confirmationDialog(
             AppLocalizer.text(.audioRestartConfirmTitle, locale: appLocale),
             isPresented: Binding(

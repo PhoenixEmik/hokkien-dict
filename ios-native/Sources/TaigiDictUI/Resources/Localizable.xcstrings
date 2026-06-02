@@ -3373,6 +3373,52 @@
         }
       }
     },
+    "settingsRebuildConfirmBody" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This rebuilds the local dictionary data and may take some time."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重建会重新产生本机辞典资料，可能需要一些时间。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重建會重新產生本機辭典資料，可能需要一些時間。"
+          }
+        }
+      }
+    },
+    "settingsRebuildConfirmTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rebuild local dictionary data?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确定要重建本机辞典资料？"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確定要重建本機辭典資料？"
+          }
+        }
+      }
+    },
     "settingsDataAndInfoSection" : {
       "extractionState" : "stale",
       "localizations" : {
