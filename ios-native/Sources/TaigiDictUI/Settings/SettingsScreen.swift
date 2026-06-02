@@ -222,11 +222,22 @@ public struct SettingsScreen: View {
     ) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(section.title(locale: locale))
+                        .font(.largeTitle.weight(.semibold))
+
+                    Text(section.description(locale: locale))
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.top, -12)
+
                 content()
             }
             .frame(minWidth: 500, maxWidth: 640, alignment: .topLeading)
             .padding(.horizontal, 24)
-            .padding(.vertical, 20)
+            .padding(.top, 0)
+            .padding(.bottom, 20)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
@@ -365,7 +376,7 @@ public struct SettingsScreen: View {
                                 macSettingsValueRow(AppLocalizer.text(.advancedBuiltAt, locale: locale), value: builtAt)
                             }
 
-                            if let builtAt = viewModel.metadataBuiltAtDisplay,
+                            if viewModel.metadataBuiltAtDisplay != nil,
                                viewModel.metadataSourceModifiedAtDisplay != nil {
                                 Divider()
                             }
