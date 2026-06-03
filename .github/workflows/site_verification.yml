@@ -1,0 +1,70 @@
+name: Static Site Verification
+
+on:
+  push:
+    paths:
+      - 'index.html'
+      - 'en/**'
+      - 'assets/**'
+      - 'CNAME'
+      - '.github/workflows/site_verification.yml'
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'en/**'
+      - 'assets/**'
+      - 'CNAME'
+      - '.github/workflows/site_verification.yml'
+  workflow_dispatch:
+
+jobs:
+  verify-site:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify localized entry points
+        run: |
+          test -f index.html
+          test -f en/index.html
+          grep -q '<html lang="zh-Hant">' index.html
+          grep -q '<html lang="en">' en/index.html
+          grep -q 'href="en/"' index.html
+          grep -q 'href="../"' en/index.html
+
+      - name: Verify referenced site assets
+        run: |
+          test -f assets/icon/taigi_dict.png
+          test -f assets/site/taigi_dict_banner.png
+          test -f assets/site/app-store-badge.svg
+          test -f assets/site/mac-app-store-badge.svg
+          test -f assets/site/google-play-badge.png
+          test -f assets/site/android-home.png
+          test -f assets/site/android-search.png
+          test -f assets/site/android-detail.png
+          test -f assets/site/android-bookmarks.png
+          test -f assets/site/ios-home.png
+          test -f assets/site/ios-search.png
+          test -f assets/site/ios-detail.png
+          test -f assets/site/ios-bookmarks.png
+
+      - name: Build static site bundle
+        run: |
+          rm -rf dist
+          mkdir -p dist
+          cp index.html dist/index.html
+          cp CNAME dist/CNAME
+          cp -R en dist/en
+          cp -R assets dist/assets
+          test -f dist/index.html
+          test -f dist/en/index.html
+          test -f dist/assets/site/mac-app-store-badge.svg
+
+      - name: Upload static site artifact
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: taigi-dict-static-site
+          path: dist
+          retention-days: 7
