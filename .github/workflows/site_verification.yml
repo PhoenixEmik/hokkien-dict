@@ -5,6 +5,7 @@ on:
     paths:
       - 'index.html'
       - 'en/**'
+      - 'privacy/**'
       - 'assets/**'
       - 'CNAME'
       - '.github/workflows/site_verification.yml'
@@ -12,6 +13,7 @@ on:
     paths:
       - 'index.html'
       - 'en/**'
+      - 'privacy/**'
       - 'assets/**'
       - 'CNAME'
       - '.github/workflows/site_verification.yml'
@@ -28,8 +30,12 @@ jobs:
         run: |
           test -f index.html
           test -f en/index.html
+          test -f privacy/index.html
+          test -f en/privacy/index.html
           grep -q '<html lang="zh-Hant">' index.html
           grep -q '<html lang="en">' en/index.html
+          grep -q '<html lang="zh-Hant">' privacy/index.html
+          grep -q '<html lang="en">' en/privacy/index.html
           grep -q 'href="en/"' index.html
           grep -q 'href="../"' en/index.html
 
@@ -56,10 +62,14 @@ jobs:
           cp index.html dist/index.html
           cp CNAME dist/CNAME
           cp -R en dist/en
+          cp -R privacy dist/privacy
           cp -R assets dist/assets
           test -f dist/index.html
           test -f dist/en/index.html
+          test -f dist/privacy/index.html
+          test -f dist/en/privacy/index.html
           test -f dist/assets/site/mac-app-store-badge.svg
+
 
       - name: Upload static site artifact
         if: github.event_name == 'workflow_dispatch'

@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Privacy Policy | Taigi Dict</title>
+    <link rel="alternate" hreflang="zh-Hant" href="https://taigidict.org/privacy/" />
+    <link rel="alternate" hreflang="en" href="https://taigidict.org/en/privacy/" />
+    <meta
+      name="description"
+      content="Privacy policy for Taigi Dict, including local on-device storage, limited network use, and the project's no-data-sale policy."
+    />
+    <script>
+      (() => {
+        let storedTheme = null;
+        try {
+          storedTheme = localStorage.getItem("taigi-dict-theme");
+        } catch (_error) {}
+        const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+        const theme =
+          storedTheme === "light" || storedTheme === "dark"
+            ? storedTheme
+            : systemTheme;
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme;
+      })();
+    </script>
+    <style>
+      :root {
+        --bg: #f3f7fc;
+        --surface: rgba(255, 255, 255, 0.84);
+        --surface-hover: #ffffff;
+        --text: #18273d;
+        --muted: #5d6f88;
+        --line: rgba(35, 63, 106, 0.14);
+        --accent: #27406b;
+        --accent-strong: #1d3355;
+        --shadow: 0 18px 40px rgba(19, 39, 68, 0.08);
+        --radius: 28px;
+        --content-width: 960px;
+        --nav-height: 76px;
+      }
+
+      :root[data-theme="dark"] {
+        --bg: #0c1524;
+        --surface: rgba(13, 23, 39, 0.84);
+        --surface-hover: rgba(15, 27, 46, 0.94);
+        --text: #ecf3ff;
+        --muted: #a1b2cb;
+        --line: rgba(164, 187, 221, 0.18);
+        --accent: #587bcd;
+        --accent-strong: #bed3ff;
+        --shadow: 0 20px 42px rgba(0, 0, 0, 0.28);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          Inter,
+          "SF Pro Text",
+          "PingFang TC",
+          "Noto Sans TC",
+          system-ui,
+          sans-serif;
+        background: linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
+        color: var(--text);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .site-nav {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        backdrop-filter: blur(16px);
+        background: var(--surface);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .nav-inner,
+      .content,
+      .footer-inner {
+        width: min(calc(100% - 32px), var(--content-width));
+        margin: 0 auto;
+      }
+
+      .nav-inner {
+        min-height: var(--nav-height);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .brand-lockup {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 700;
+      }
+
+      .brand-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+      }
+
+      .brand-text {
+        display: inline-flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: baseline;
+      }
+
+      .brand-text span {
+        color: var(--muted);
+        font-weight: 600;
+      }
+
+      .nav-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .nav-pill,
+      .theme-toggle {
+        min-height: 44px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        color: var(--text);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 14px;
+        font: inherit;
+        font-weight: 700;
+        transition:
+          transform 180ms ease,
+          background-color 180ms ease,
+          border-color 180ms ease;
+      }
+
+      .theme-toggle {
+        width: 44px;
+        padding: 0;
+        cursor: pointer;
+      }
+
+      .nav-pill:hover,
+      .theme-toggle:hover {
+        transform: translateY(-2px);
+        background: var(--surface-hover);
+      }
+
+      .page {
+        padding: 36px 0 54px;
+      }
+
+      .page-hero {
+        margin-bottom: 24px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--accent-strong);
+        font-size: 0.9rem;
+        font-weight: 700;
+        margin-bottom: 18px;
+      }
+
+      .eyebrow::before {
+        content: "";
+        width: 28px;
+        height: 1px;
+        background: currentColor;
+      }
+
+      h1,
+      h2,
+      p,
+      ul {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(2.4rem, 6vw, 4.4rem);
+        line-height: 0.98;
+        letter-spacing: -0.03em;
+      }
+
+      .page-hero p {
+        margin-top: 14px;
+        max-width: 42rem;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .policy-card {
+        padding: 28px 24px;
+        border-radius: var(--radius);
+        background: var(--surface);
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+      }
+
+      .meta {
+        color: var(--muted);
+        font-size: 0.95rem;
+        margin-bottom: 24px;
+      }
+
+      .policy-section + .policy-section {
+        margin-top: 28px;
+        padding-top: 28px;
+        border-top: 1px solid var(--line);
+      }
+
+      .policy-section h2 {
+        font-size: 1.36rem;
+        margin-bottom: 12px;
+      }
+
+      .policy-section p,
+      .policy-section li {
+        color: var(--muted);
+        line-height: 1.76;
+      }
+
+      .policy-section ul {
+        padding-left: 1.2rem;
+        margin-top: 10px;
+        display: grid;
+        gap: 6px;
+      }
+
+      .footer {
+        padding: 0 0 42px;
+      }
+
+      .footer-inner {
+        padding-top: 18px;
+        border-top: 1px solid var(--line);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .footer-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+
+      .footer-links a {
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      @media (min-width: 760px) {
+        .policy-card {
+          padding: 34px 34px 32px;
+        }
+
+        .footer-inner {
+          flex-direction: row;
+          align-items: center;
+          justify-content: space-between;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-nav">
+      <div class="nav-inner">
+        <a class="brand-lockup" href="../" aria-label="Back to Taigi Dict home">
+          <img
+            class="brand-icon"
+            src="../../assets/icon/taigi_dict.png"
+            alt=""
+            aria-hidden="true"
+          />
+          <span class="brand-text">
+            <strong>Taigi Dict</strong>
+            <span>Taiwanese Hokkien Dictionary</span>
+          </span>
+        </a>
+        <div class="nav-actions">
+          <a class="nav-pill" href="../../privacy/" lang="zh-Hant" hreflang="zh-Hant">中</a>
+          <button
+            class="theme-toggle"
+            type="button"
+            aria-label="Switch to dark mode"
+            title="Switch to dark mode"
+            data-theme-toggle
+          >
+            <span aria-hidden="true">☾</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="page">
+      <div class="content">
+        <section class="page-hero">
+          <span class="eyebrow">Privacy / Offline / Open Source</span>
+          <h1>Privacy Policy</h1>
+          <p>
+            This page explains what Taigi Dict stores on your device, how the app uses the network in limited cases, and the project's policy against selling personal information.
+          </p>
+        </section>
+
+        <section class="policy-card">
+          <div class="meta">
+            Effective date: April 17, 2026
+          </div>
+
+          <div class="policy-section">
+            <h2>Summary</h2>
+            <p>
+              `台語辭典` is an offline Taiwanese Hokkien and Mandarin dictionary app. The app does not require account registration and is not designed to sell personal data or track users across third-party apps or websites.
+            </p>
+            <p>
+              The app stores core dictionary resources and user preferences on the user's device so that dictionary lookup and audio playback can work offline after setup.
+            </p>
+          </div>
+
+          <div class="policy-section">
+            <h2>Information stored on device</h2>
+            <p>The app may store the following information locally on your device:</p>
+            <ul>
+              <li>app preferences such as language, theme, and reading text size</li>
+              <li>bookmark data</li>
+              <li>recent search history</li>
+              <li>downloaded offline resources, including source files, local database files, and offline audio archives</li>
+            </ul>
+            <p>
+              This local data is used to provide app functionality. It is not uploaded by the app to the developer merely because it exists on your device.
+            </p>
+          </div>
+
+          <div class="policy-section">
+            <h2>Network use</h2>
+            <p>The app uses network access for limited product functions, including:</p>
+            <ul>
+              <li>downloading offline dictionary source files</li>
+              <li>downloading offline audio archives</li>
+              <li>opening external links selected by the user, such as the project repository or Ministry of Education reference pages</li>
+              <li>sharing content only when the user explicitly invokes the system share action</li>
+            </ul>
+            <p>
+              The current production download endpoints used by the app are hosted under `https://app.taigidict.org/assets/`.
+            </p>
+          </div>
+
+          <div class="policy-section">
+            <h2>Information processed during network requests</h2>
+            <p>
+              When the app downloads files or opens external links, the relevant hosting provider, CDN, or destination website may receive normal technical request data, including:
+            </p>
+            <ul>
+              <li>IP address</li>
+              <li>request timestamps</li>
+              <li>requested URL</li>
+              <li>basic network and protocol metadata</li>
+            </ul>
+            <p>
+              This project does not use that traffic to create in-app user accounts, profile users inside the app, or build cross-app advertising profiles.
+            </p>
+          </div>
+
+          <div class="policy-section">
+            <h2>Permissions</h2>
+            <p>The Android release build currently uses these normal permissions:</p>
+            <ul>
+              <li>`INTERNET`</li>
+              <li>`ACCESS_NETWORK_STATE`</li>
+            </ul>
+            <p>
+              These permissions support file downloads, link handling, and network-aware media behavior. The app does not currently request high-risk Android permissions such as location, camera, microphone, contacts, SMS, call logs, or photo/media library access.
+            </p>
+          </div>
+
+          <div class="policy-section">
+            <h2>Data sharing</h2>
+            <p>The app does not sell personal information.</p>
+            <p>
+              The app does not share personal information with third parties for advertising or cross-app tracking. User-initiated sharing is different: if you choose to share a dictionary entry through the system share sheet, the receiving app or service will process that content under its own privacy terms.
+            </p>
+          </div>
+
+          <div class="policy-section">
+            <h2>Third-party services and open source components</h2>
+            <p>
+              The app uses third-party and open source components for core functionality, including network transfer, audio playback, native sharing, local storage, and external link launching.
+            </p>
+            <p>The app may also connect to third-party websites that the user chooses to open, including:</p>
+            <ul>
+              <li>`taigidict.org`</li>
+              <li>`app.taigidict.org`</li>
+              <li>`github.com`</li>
+              <li>`sutian.moe.edu.tw`</li>
+            </ul>
+          </div>
+
+          <div class="policy-section">
+            <h2>Data retention and deletion</h2>
+            <p>Most app data is stored locally on the device.</p>
+            <p>You can generally remove locally stored app data by:</p>
+            <ul>
+              <li>uninstalling the app</li>
+              <li>clearing the app's local storage through the operating system</li>
+              <li>using app settings to manage certain downloaded offline resources</li>
+            </ul>
+          </div>
+
+          <div class="policy-section">
+            <h2>Children's privacy</h2>
+            <p>
+              The app is a general reference tool and is not designed to knowingly collect personal information from children.
+            </p>
+          </div>
+
+          <div class="policy-section">
+            <h2>Changes to this policy</h2>
+            <p>
+              This Privacy Policy may be updated when the app's behavior, infrastructure, or compliance requirements change. The latest version on the site and in the repository supersedes prior copies.
+            </p>
+          </div>
+
+          <div class="policy-section">
+            <h2>Contact</h2>
+            <ul>
+              <li>Project repository: `https://github.com/PhoenixEmik/taigi-dict`</li>
+              <li>Issue tracker: `https://github.com/PhoenixEmik/taigi-dict/issues`</li>
+            </ul>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <div>© 2026 Taigi Dict. Released under the MIT License.</div>
+        <div class="footer-links">
+          <a href="../">Back to home</a>
+          <a href="https://github.com/PhoenixEmik/taigi-dict" target="_blank" rel="noreferrer">GitHub</a>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      const themeStorageKey = "taigi-dict-theme";
+      const themeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      const themeToggle = document.querySelector("[data-theme-toggle]");
+
+      const getStoredTheme = () => {
+        try {
+          const value = localStorage.getItem(themeStorageKey);
+          return value === "light" || value === "dark" ? value : null;
+        } catch (_error) {
+          return null;
+        }
+      };
+
+      const getPreferredTheme = () =>
+        getStoredTheme() ?? (themeMediaQuery.matches ? "dark" : "light");
+
+      const applyTheme = (theme) => {
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme;
+        if (!themeToggle) return;
+        themeToggle.textContent = theme === "dark" ? "☀︎" : "☾";
+        themeToggle.setAttribute(
+          "aria-label",
+          theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+        );
+        themeToggle.setAttribute(
+          "title",
+          theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+        );
+        themeToggle.dataset.nextTheme = theme === "dark" ? "light" : "dark";
+      };
+
+      applyTheme(getPreferredTheme());
+
+      themeToggle?.addEventListener("click", () => {
+        const nextTheme = themeToggle.dataset.nextTheme === "dark" ? "dark" : "light";
+        try {
+          localStorage.setItem(themeStorageKey, nextTheme);
+        } catch (_error) {}
+        applyTheme(nextTheme);
+      });
+
+      themeMediaQuery.addEventListener("change", () => {
+        if (!getStoredTheme()) {
+          applyTheme(getPreferredTheme());
+        }
+      });
+    </script>
+  </body>
+</html>
