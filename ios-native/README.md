@@ -1,6 +1,6 @@
-# Taigi Dict iOS Native
+# Taigi Dict Apple Native
 
-This directory contains the native Swift / SwiftUI version of Taigi Dict.
+This directory contains the native Swift / SwiftUI Apple-platform version of Taigi Dict.
 
 The app is built as a small Xcode application target on top of a local Swift
 package:
@@ -14,7 +14,7 @@ package:
 
 ## Current App Scope
 
-The iOS native app currently includes:
+The native Apple app currently includes:
 
 - dictionary search with native `NavigationStack` / `NavigationSplitView`
 - entry detail pages with linked references, bookmarks, share, and audio actions
@@ -28,7 +28,7 @@ The iOS native app currently includes:
 
 - Xcode 17 or newer
 - iOS 17 simulator or device target
-- macOS 14 or newer for local development
+- macOS 14 or newer local runtime target
 
 ## Build And Run
 
@@ -43,7 +43,7 @@ Then select:
 - `TaigiDictNative` for iPhone or iPad
 - `TaigiDictNativeMac` for macOS
 
-Command-line build:
+Command-line iOS build:
 
 ```bash
 xcodebuild \
@@ -115,7 +115,7 @@ Current package dependencies:
 
 - Flutter source still lives at the repository root during migration.
 - Native Swift code lives under `ios-native/`.
-- The app bundles generated dictionary resources under `Generated/Dictionary/`.
+- The app bundles generated dictionary resources under `Generated/Dictionary/` for both iOS and macOS.
 - The app does not parse `kautian.ods` at runtime.
 - Dictionary source material must be converted before runtime into app-readable packaged resources.
 - The production app loads bundled dictionary resources and can also use installed resources from Application Support.
@@ -131,7 +131,7 @@ Command-line package tests:
 swift test
 ```
 
-Xcode build verification:
+iOS build verification:
 
 ```bash
 xcodebuild \
