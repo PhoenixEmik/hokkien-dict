@@ -206,6 +206,27 @@ final class DictionarySearchViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.selectedEntry?.id, 2)
     }
 
+    func testOpenLinkedWordPrefersResolvedLinkedEntryOverFirstSearchResult() async {
+        let target = entry(id: 1, hanji: "白", romanization: "pe̍h", definition: "白色")
+        let higherSearchRankButWrongEntry = entry(id: 2, hanji: "白鑠鑠", romanization: "pe̍h-siah-siah", definition: "非常白")
+        let repository = LinkedWordSelectionRepository(
+            searchResults: [higherSearchRankButWrongEntry, target],
+            linkedEntries: ["白": target]
+        )
+        let viewModel = DictionarySearchViewModel(
+            repository: repository,
+            searchHistoryStore: TestSearchHistoryStore()
+        )
+        await viewModel.load()
+
+        await viewModel.openLinkedWord("白")
+
+        XCTAssertEqual(viewModel.searchText, "白")
+        XCTAssertEqual(viewModel.results.map(\.id), [2, 1])
+        XCTAssertEqual(viewModel.selectedEntry?.id, 1)
+        XCTAssertEqual(viewModel.detailEntry?.id, 1)
+    }
+
     func testClearSearchHistoryAlsoClearsStore() async {
         let repository = InMemoryRepository(entries: [])
         let historyStore = TestSearchHistoryStore(initialValues: ["辭典", "字典"])
@@ -406,6 +427,52 @@ private actor CancellingSearchRepository: DictionaryRepositoryProtocol {
 
     func entry(id: Int64) async throws -> DictionaryEntry? {
         nil
+    }
+
+    func clearBundleCache() async {}
+}
+
+private actor LinkedWordSelectionRepository: DictionaryRepositoryProtocol {
+    private let bundle: DictionaryBundle
+    private let searchResults: [String: [DictionaryEntry]]
+    private let linkedEntries: [String: DictionaryEntry]
+
+    init(searchResults: [DictionaryEntry], linkedEntries: [String: DictionaryEntry]) {
+        let uniqueEntries = (searchResults + Array(linkedEntries.values)).reduce(into: [Int64: DictionaryEntry]()) {
+            partialResult, entry in
+            partialResult[entry.id] = entry
+        }
+        bundle = DictionaryBundle(
+            entryCount: uniqueEntries.count,
+            senseCount: uniqueEntries.values.reduce(0) { $0 + $1.senses.count },
+            exampleCount: 0,
+            entries: Array(uniqueEntries.values)
+        )
+        self.searchResults = ["白": searchResults]
+        self.linkedEntries = linkedEntries
+    }
+
+    func loadBundle() async throws -> DictionaryBundle {
+        bundle
+    }
+
+    func search(_ rawQuery: String, limit: Int, offset: Int) async throws -> [DictionaryEntry] {
+        let results = searchResults[rawQuery, default: []]
+        let boundedResults = Array(results.dropFirst(max(offset, 0)).prefix(limit))
+        return boundedResults
+    }
+
+    func findLinkedEntry(_ rawWord: String) async throws -> DictionaryEntry? {
+        linkedEntries[rawWord]
+    }
+
+    func entries(ids: [Int64]) async throws -> [DictionaryEntry] {
+        let entriesByID = Dictionary(uniqueKeysWithValues: bundle.entries.map { ($0.id, $0) })
+        return ids.compactMap { entriesByID[$0] }
+    }
+
+    func entry(id: Int64) async throws -> DictionaryEntry? {
+        bundle.entries.first { $0.id == id }
     }
 
     func clearBundleCache() async {}

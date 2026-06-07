@@ -163,7 +163,10 @@ public final class DictionarySearchViewModel {
     }
 
     public func openLinkedWord(_ word: String) async {
-        await searchImmediately(word)
+        searchTask?.cancel()
+        let generation = nextSearchGeneration()
+        searchText = word
+        await runLinkedWordSearch(word, generation: generation)
     }
 
     public func clearSearchHistory() async {
@@ -260,6 +263,102 @@ public final class DictionarySearchViewModel {
             }
             results = []
             selectedEntry = nil
+            errorMessage = error.userFacingMessage
+        }
+
+        if isCurrentSearch(generation) {
+            isSearching = false
+        }
+    }
+
+    private func runLinkedWordSearch(_ word: String, generation: Int) async {
+        let normalized = TextNormalization.normalizeQuery(word)
+        guard isCurrentSearch(generation) else {
+            return
+        }
+
+        normalizedQuery = normalized
+
+        guard !normalized.isEmpty else {
+            results = []
+            selectedEntry = nil
+            detailEntry = nil
+            isSearching = false
+            errorMessage = nil
+            return
+        }
+
+        isSearching = true
+        errorMessage = nil
+
+        do {
+            let locale = appLocale
+            let converter = conversionService
+            let normalizedLookupWord = await DictionaryDisplayLocalization.normalizeLookupWord(
+                word,
+                locale: locale,
+                converter: converter
+            )
+
+            async let linkedEntryTask = library.findLinkedEntry(normalizedLookupWord)
+            async let resultsTask = library.search(
+                normalizedLookupWord,
+                limit: DictionarySearchService.defaultLimit
+            )
+
+            let (linkedEntry, found) = try await (linkedEntryTask, resultsTask)
+            try Task.checkCancellation()
+
+            var displayResults = await found.asyncMap { entry in
+                await DictionaryDisplayLocalization.translateEntry(
+                    entry,
+                    locale: locale,
+                    converter: converter
+                )
+            }
+
+            let translatedLinkedEntry: DictionaryEntry?
+            if let linkedEntry {
+                translatedLinkedEntry = await DictionaryDisplayLocalization.translateEntry(
+                    linkedEntry,
+                    locale: locale,
+                    converter: converter
+                )
+            } else {
+                translatedLinkedEntry = nil
+            }
+
+            try Task.checkCancellation()
+            guard isCurrentSearch(generation) else {
+                return
+            }
+
+            if let translatedLinkedEntry,
+               !displayResults.contains(where: { $0.id == translatedLinkedEntry.id }) {
+                displayResults.insert(translatedLinkedEntry, at: 0)
+            }
+
+            results = displayResults
+
+            if let translatedLinkedEntry {
+                let matchedResult = displayResults.first(where: { $0.id == translatedLinkedEntry.id })
+                selectedEntry = matchedResult ?? translatedLinkedEntry
+                detailEntry = matchedResult ?? translatedLinkedEntry
+            } else {
+                selectedEntry = displayResults.first
+                detailEntry = displayResults.first
+            }
+        } catch is CancellationError {
+            if isCurrentSearch(generation) {
+                isSearching = false
+            }
+        } catch {
+            guard isCurrentSearch(generation) else {
+                return
+            }
+            results = []
+            selectedEntry = nil
+            detailEntry = nil
             errorMessage = error.userFacingMessage
         }
 

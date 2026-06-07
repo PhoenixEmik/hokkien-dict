@@ -55,7 +55,8 @@ public struct DictionarySearchScreen: View {
                     library: viewModel.library,
                     bookmarkStore: bookmarkStore,
                     offlineAudioStore: offlineAudioStore,
-                    conversionService: conversionService
+                    conversionService: conversionService,
+                    onOpenLinkedWord: openLinkedWord
                 )
             }
             .navigationSplitViewStyle(.balanced)
@@ -73,7 +74,8 @@ public struct DictionarySearchScreen: View {
                     library: viewModel.library,
                     bookmarkStore: bookmarkStore,
                     offlineAudioStore: offlineAudioStore,
-                    conversionService: conversionService
+                    conversionService: conversionService,
+                    onOpenLinkedWord: openLinkedWord
                 )
                 .navigationTitle(DictionarySearchNavigationTitle.detailTitle(
                     selectedEntryHanji: viewModel.selectedEntry?.hanji,
@@ -115,6 +117,12 @@ public struct DictionarySearchScreen: View {
                     )
                     .navigationTitle(entry.hanji)
                 }
+        }
+    }
+
+    private func openLinkedWord(_ word: String) {
+        Task {
+            await viewModel.openLinkedWord(word)
         }
     }
 }
