@@ -26,7 +26,7 @@ object ThirdPartyLicenseCatalog {
                 ThirdPartyLicenseEntry(
                     id = "android-opencc",
                     name = "android-opencc",
-                    version = "1.4.0",
+                    version = "1.4.1",
                     license = "MIT",
                     sourceUrl = "https://github.com/xyrlsz/android-opencc",
                     assetPath = "third_party_licenses/android_opencc_mit.txt",

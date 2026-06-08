@@ -107,7 +107,7 @@ Current primary dependencies:
 - Preferences DataStore
 - Room
 - Kotlin serialization JSON
-- `android-opencc` `1.4.0`
+- `android-opencc` `1.4.1`
 - Robolectric for local JVM-side Android tests
 
 ## Data Boundaries
