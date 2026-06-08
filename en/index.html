@@ -668,28 +668,6 @@
         height: 38px;
       }
 
-      .store-badge.is-disabled {
-        opacity: 0.56;
-        filter: saturate(0.65);
-        cursor: not-allowed;
-        position: relative;
-      }
-
-      .store-badge.is-disabled:hover {
-        transform: none;
-      }
-
-      .store-badge-label {
-        position: absolute;
-        right: 8px;
-        bottom: 8px;
-        background: var(--overlay-pill);
-        color: var(--overlay-pill-text);
-        font-size: 0.72rem;
-        padding: 4px 8px;
-        border-radius: 999px;
-      }
-
       .download-note {
         margin-top: 18px;
         color: var(--muted);
@@ -1064,16 +1042,17 @@
                   />
                 </a>
 
-                <span
-                  class="store-badge app-store-badge mac-app-store-badge is-disabled"
-                  aria-disabled="true"
+                <a
+                  class="store-badge app-store-badge mac-app-store-badge"
+                  href="https://apps.apple.com/tw/app/%E5%8F%B0%E8%AA%9E%E8%BE%AD%E5%85%B8/id6763974066"
+                  target="_blank"
+                  rel="noreferrer"
                 >
                   <img
                     src="../assets/site/mac-app-store-badge.svg"
-                    alt="Mac App Store coming soon"
+                    alt="Download on the Mac App Store"
                   />
-                  <span class="store-badge-label">macOS Coming Soon</span>
-                </span>
+                </a>
 
                 <a
                   class="store-badge"
