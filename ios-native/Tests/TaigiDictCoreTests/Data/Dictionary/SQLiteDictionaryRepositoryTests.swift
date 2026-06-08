@@ -42,6 +42,18 @@ final class SQLiteDictionaryRepositoryTests: XCTestCase {
         XCTAssertEqual(exactMatch?.id, 2)
     }
 
+    func testSQLiteRepositoryKeepsExactLinkedHanjiReachableWhenHokkienSearchHasManyMatches() async throws {
+        let databaseURL = try makeDatabaseURL()
+        let entriesData = crowdedLinkedEntriesData()
+        try buildDatabase(at: databaseURL, entriesData: entriesData, entryCount: 71, senseCount: 71, exampleCount: 0)
+
+        let repository = SQLiteDictionaryRepository(databaseURL: databaseURL)
+
+        let exactMatch = try await repository.findLinkedEntry("白")
+
+        XCTAssertEqual(exactMatch?.id, 1000)
+    }
+
     func testSQLiteRepositoryKeepsExamplesAttachedToTheirOriginalSenses() async throws {
         let databaseURL = try makeDatabaseURL()
         try buildDatabase(
@@ -131,5 +143,19 @@ final class SQLiteDictionaryRepositoryTests: XCTestCase {
             {"id":13522,"type":"主詞目","hanji":"𨑨迌","romanization":"tshit-thô","category":"氣質態度,休閒、娛樂","audio":"13522(1)","hokkienSearch":"𨑨迌 tshit tho","mandarinSearch":"遊玩 玩弄 好玩的","senses":[{"partOfSpeech":"動詞","definition":"遊玩。","examples":[{"hanji":"你明仔載欲佮阮去𨑨迌無？","romanization":"Lí bîn-á-tsài beh kah guán khì tshit-thô--bô?","mandarin":"你明天要和我們去玩嗎？","audio":"13522-1-1"}]},{"partOfSpeech":"動詞","definition":"玩弄。","examples":[{"hanji":"你對伊的感情是認真的抑是𨑨迌爾爾？","romanization":"Lí tuì i ê kám-tsîng sī jīn-tsin--ê ia̍h-sī tshit-thô niā-niā?","mandarin":"你對他的感情是認真還是玩玩而已？","audio":"13522-2-1"}]},{"partOfSpeech":"形容詞","definition":"好玩的。","examples":[{"hanji":"食𨑨迌","romanization":"tsia̍h tshit-thô","mandarin":"吃著好玩","audio":"13522-3-1"}]}]}
             """.utf8
         )
+    }
+
+    private func crowdedLinkedEntriesData() -> Data {
+        let noisyEntries = (1...70).map { id in
+            """
+            {"id":\(id),"type":"","hanji":"詞\(id)","romanization":"su\(id)","category":"","audio":"","hokkienSearch":"詞\(id) 白話 peh","mandarinSearch":"含白字的測試詞條","senses":[{"partOfSpeech":"","definition":"測試詞條 \(id)","examples":[]}]}
+            """
+        }
+
+        let exactEntry = """
+        {"id":1000,"type":"","hanji":"白","romanization":"pe̍h","category":"","audio":"","hokkienSearch":"白 peh","mandarinSearch":"白色","senses":[{"partOfSpeech":"","definition":"白色","examples":[]}]}
+        """
+
+        return Data((noisyEntries + [exactEntry]).joined(separator: "\n").utf8)
     }
 }

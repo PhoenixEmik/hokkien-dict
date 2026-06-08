@@ -14,6 +14,7 @@
 		8A000001000000000000001A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8A000001000000000000001B /* Assets.xcassets */; };
 		8A000001000000000000001C /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C20000010000000000000004 /* InfoPlist.strings */; };
 		B10000010000000000000001 /* LanguageSwitchingUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000010000000000000002 /* LanguageSwitchingUITests.swift */; };
+		B10000010000000000000010 /* LinkedTermNavigationUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000010000000000000011 /* LinkedTermNavigationUITests.swift */; };
 		D10000010000000000000001 /* TaigiDictNativeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A0000010000000000000002 /* TaigiDictNativeApp.swift */; };
 		D10000010000000000000002 /* Generated/Dictionary in Resources */ = {isa = PBXBuildFile; fileRef = 8A0000010000000000000004 /* Generated/Dictionary */; };
 		D10000010000000000000003 /* TaigiDictCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8A0000010000000000000006 /* TaigiDictCore */; };
@@ -39,6 +40,7 @@
 		8A000001000000000000001B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A06B49822FA4257A0068353D /* TaigiDictNative-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "TaigiDictNative-Info.plist"; sourceTree = "<group>"; };
 		B10000010000000000000002 /* LanguageSwitchingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageSwitchingUITests.swift; sourceTree = "<group>"; };
+		B10000010000000000000011 /* LinkedTermNavigationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkedTermNavigationUITests.swift; sourceTree = "<group>"; };
 		B10000010000000000000007 /* TaigiDictNativeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TaigiDictNativeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C20000010000000000000001 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C20000010000000000000002 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
@@ -117,6 +119,7 @@
 		B10000010000000000000009 /* NativeAppUITests */ = {
 			isa = PBXGroup;
 			children = (
+				B10000010000000000000011 /* LinkedTermNavigationUITests.swift */,
 				B10000010000000000000002 /* LanguageSwitchingUITests.swift */,
 			);
 			path = NativeAppUITests;
@@ -278,6 +281,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B10000010000000000000010 /* LinkedTermNavigationUITests.swift in Sources */,
 				B10000010000000000000001 /* LanguageSwitchingUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

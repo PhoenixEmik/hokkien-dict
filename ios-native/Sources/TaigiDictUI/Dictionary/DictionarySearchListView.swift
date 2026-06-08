@@ -129,6 +129,7 @@ struct DictionarySearchListView: View {
                                 DictionaryEntryRowView(entry: entry, layoutStyle: .standard)
                             }
                             .foregroundStyle(.primary)
+                            .accessibilityIdentifier("dictionary.entry.\(entry.id)")
                         }
                     }
                 }

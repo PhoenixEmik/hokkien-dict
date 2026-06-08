@@ -79,39 +79,50 @@ public actor SQLiteDictionaryRepository: DictionaryRepositoryProtocol {
 
         let dbQueue = try tryDatabaseQueue()
         return try await dbQueue.read { db in
-            let candidateIDs = try Int64.fetchAll(
+            let exactMatchIDs = try Int64.fetchAll(
                 db,
-                sql: """
-                SELECT DISTINCT id
-                FROM dictionary_entries
-                WHERE hanji = ?
-                   OR variant_chars LIKE ? ESCAPE '\\'
-                   OR hokkien_search LIKE ? ESCAPE '\\'
-                LIMIT 64
-                """,
-                arguments: [
-                    rawWord,
-                    "%\(Self.escapeLike(rawWord))%",
-                    "%\(Self.escapeLike(query))%",
-                ]
+                sql: "SELECT id FROM dictionary_entries WHERE hanji = ? ORDER BY id LIMIT 64",
+                arguments: [rawWord]
             )
-
-            let entries = try Self.fetchEntries(ids: candidateIDs, from: db)
-            let exactHanjiMatches = entries.filter {
+            let exactMatchEntries = try Self.fetchEntries(ids: exactMatchIDs, from: db)
+            let exactHanjiMatches = exactMatchEntries.filter {
                 TextNormalization.normalizeQuery($0.hanji) == query
             }
             if !exactHanjiMatches.isEmpty {
                 return Self.preferredLinkedEntries(from: exactHanjiMatches)
             }
 
-            let variantMatches = entries.filter {
+            let variantMatchIDs = try Int64.fetchAll(
+                db,
+                sql: """
+                SELECT id
+                FROM dictionary_entries
+                WHERE variant_chars LIKE ? ESCAPE '\\'
+                ORDER BY id
+                LIMIT 128
+                """,
+                arguments: ["%\(Self.escapeLike(rawWord))%"]
+            )
+            let variantEntries = try Self.fetchEntries(ids: variantMatchIDs, from: db)
+            let variantMatches = variantEntries.filter {
                 $0.variantChars.contains(where: { TextNormalization.normalizeQuery($0) == query })
             }
             if !variantMatches.isEmpty {
                 return Self.preferredLinkedEntries(from: variantMatches)
             }
 
-            let romanizationMatches = entries.filter {
+            let romanizationCandidateIDs = try Int64.fetchAll(
+                db,
+                sql: """
+                SELECT id
+                FROM dictionary_entries
+                WHERE hokkien_search LIKE ? ESCAPE '\\'
+                ORDER BY id
+                """,
+                arguments: ["%\(Self.escapeLike(query))%"]
+            )
+            let romanizationEntries = try Self.fetchEntries(ids: romanizationCandidateIDs, from: db)
+            let romanizationMatches = romanizationEntries.filter {
                 TextNormalization.normalizeQuery($0.romanization) == query
             }
             return Self.preferredLinkedEntries(from: romanizationMatches)

@@ -254,6 +254,34 @@ final class WordDetailViewModelTests: XCTestCase {
         XCTAssertEqual(linkedEntry?.id, 1850)
     }
 
+    func testPrepareOpensActualInstalledPackageAntonymForBlackAndWhite() async throws {
+        let packageRoot = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        let generatedDirectory = packageRoot.appendingPathComponent("Generated/Dictionary")
+        let manifestURL = generatedDirectory.appendingPathComponent("dictionary_manifest.json")
+        guard FileManager.default.fileExists(atPath: manifestURL.path) else {
+            throw XCTSkip("Generated dictionary package is not present.")
+        }
+
+        let installedDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("WordDetailViewModelTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: installedDirectory) }
+
+        let repository = InstalledDictionaryRepository(
+            sourceDirectory: generatedDirectory,
+            installedDirectory: installedDirectory
+        )
+        let library = DictionaryLibrary(repository: repository)
+        let blackResults = try await repository.search("烏", limit: 10, offset: 0)
+        let blackEntry = try XCTUnwrap(blackResults.first(where: { $0.id == 6227 }))
+        let viewModel = WordDetailViewModel(library: library)
+
+        await viewModel.prepare(entry: blackEntry)
+
+        XCTAssertTrue(viewModel.openableWords.contains("白"))
+        let linkedEntry = await viewModel.linkedEntry(for: "白")
+        XCTAssertEqual(linkedEntry?.id, 1850)
+    }
+
     func testPlayWordAudioSuccessClearsAudioAlert() async {
         let primary = entry(id: 10, hanji: "辭典", romanization: "sû-tián", definition: "工具書")
         var withAudio = primary

@@ -14,7 +14,6 @@ struct DictionaryDetailView: View {
     @State private var viewModel: WordDetailViewModel
     @State private var isBookmarked = false
     @State private var linkedEntry: DictionaryEntry?
-
     init(
         entry: DictionaryEntry?,
         library: DictionaryLibrary,
@@ -570,6 +569,7 @@ private struct RelationshipChip: View {
         .buttonStyle(.bordered)
         .controlSize(.small)
         .opacity(isOpenable ? 1 : 0.92)
+        .accessibilityIdentifier("dictionary.relationship.\(word)")
     }
 }
 
