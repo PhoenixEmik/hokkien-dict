@@ -1,17 +1,6 @@
 # Taigi Dict Swift Native Migration Specification
 
-本文根據目前 Flutter 專案實作整理，作為後續以 Swift / SwiftUI 完全重構時的唯一依據。  
-分析基準主要來自：
-
-- [flutter-archive/lib/app/shell/main_shell.dart](/Users/emik/repository/taigi-dict/flutter-archive/lib/app/shell/main_shell.dart:1)
-- [flutter-archive/lib/app/initialization/app_initialization_controller.dart](/Users/emik/repository/taigi-dict/flutter-archive/lib/app/initialization/app_initialization_controller.dart:1)
-- [flutter-archive/lib/features/dictionary/data/dictionary_repository.dart](/Users/emik/repository/taigi-dict/flutter-archive/lib/features/dictionary/data/dictionary_repository.dart:1)
-- [flutter-archive/lib/features/dictionary/data/dictionary_database_builder_service.dart](/Users/emik/repository/taigi-dict/flutter-archive/lib/features/dictionary/data/dictionary_database_builder_service.dart:1)
-- [flutter-archive/lib/features/dictionary/application/dictionary_search_controller.dart](/Users/emik/repository/taigi-dict/flutter-archive/lib/features/dictionary/application/dictionary_search_controller.dart:1)
-- [flutter-archive/lib/features/audio/data/offline_audio_library.dart](/Users/emik/repository/taigi-dict/flutter-archive/lib/features/audio/data/offline_audio_library.dart:1)
-- [flutter-archive/lib/features/dictionary/presentation/screens/dictionary_screen.dart](/Users/emik/repository/taigi-dict/flutter-archive/lib/features/dictionary/presentation/screens/dictionary_screen.dart:1)
-- [flutter-archive/lib/features/dictionary/presentation/coordinators/word_detail_coordinator.dart](/Users/emik/repository/taigi-dict/flutter-archive/lib/features/dictionary/presentation/coordinators/word_detail_coordinator.dart:1)
-- [flutter-archive/lib/features/settings/presentation/screens/settings_screen.dart](/Users/emik/repository/taigi-dict/flutter-archive/lib/features/settings/presentation/screens/settings_screen.dart:1)
+本文是 Swift 原生重寫時期留下的歷史規格文件。`flutter-archive/` 已從 repository 移除，因此本文件內殘留的 Flutter 路徑與比較描述僅供歷史背景參考；現行實作請以 `ios-native/`、`android-native/` 與 `tool/build_dictionary_asset.py` 為準。
 
 ## 實作狀態註記（2026-05-01）
 

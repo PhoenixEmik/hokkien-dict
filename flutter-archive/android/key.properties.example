@@ -1,4 +1,0 @@
-storePassword=replace-with-your-store-password
-keyPassword=replace-with-your-key-password
-keyAlias=replace-with-your-key-alias
-storeFile=../path-to-your-keystore.jks

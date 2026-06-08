@@ -113,7 +113,6 @@ Current package dependencies:
 
 ## Data Boundaries
 
-- Flutter source still lives at the repository root during migration.
 - Native Swift code lives under `ios-native/`.
 - The app bundles generated dictionary resources under `Generated/Dictionary/` for both iOS and macOS.
 - The app does not parse `kautian.ods` at runtime.
@@ -161,4 +160,4 @@ Desktop validation checklist:
 - Chinese conversion should go through the abstraction in
   `ChineseConversionService`, not direct package calls from UI code.
 - The app is intentionally using native SwiftUI components rather than a
-  Flutter-style UI port.
+  cross-platform UI abstraction.

@@ -1,7 +1,7 @@
 # Taigi Dict Android Native Implementation Plan
 
 本文是 `android-native-migration-spec.md` 的執行版補充。
-前者描述 Flutter 既有行為、iOS native 已確認的產品策略與 Android 遷移邊界；本文描述 Kotlin / Compose 重寫時的檔案邊界、資料庫對照、型別骨架與實作拆分。
+前者包含部分歷史 Flutter 對照內容；現行 source of truth 應以 `android-native/` 與 `ios-native/` 為準。本文描述 Kotlin / Compose 重寫時的檔案邊界、資料庫對照、型別骨架與實作拆分。
 
 ## 實作狀態註記（2026-05-06）
 

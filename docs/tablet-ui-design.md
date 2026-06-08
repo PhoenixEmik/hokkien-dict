@@ -2,6 +2,8 @@
 
 This document records the tablet optimization direction for Taigi Dict so the work can be continued in a future session without re-discovery.
 
+Historical note: the repository no longer contains `flutter-archive/`. Any Flutter file links or verification commands later in this document are archival context only and should be cross-checked against the current native apps.
+
 ## Goal
 
 Keep the app's existing phone navigation model, but make the dictionary experience meaningfully better on tablet-sized screens.

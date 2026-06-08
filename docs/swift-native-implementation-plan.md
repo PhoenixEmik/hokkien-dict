@@ -1,7 +1,7 @@
 # Taigi Dict Swift Native Implementation Plan
 
 本文是 `ios-native-migration-spec.md` 的執行版補充。  
-前者描述 Flutter 既有行為與遷移策略；本文描述 Swift / SwiftUI 重寫時的檔案邊界、資料庫對照、型別骨架與 agent 任務拆分。
+前者包含部分歷史 Flutter 對照內容；現行 source of truth 應以 `ios-native/`、`android-native/` 與 `tool/build_dictionary_asset.py` 為準。本文描述 Swift / SwiftUI 重寫時的檔案邊界、資料庫對照、型別骨架與 agent 任務拆分。
 
 ## 實作狀態註記（2026-05-01）
 

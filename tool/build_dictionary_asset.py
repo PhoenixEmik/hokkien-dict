@@ -44,8 +44,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "Convert the Taigi Dict ODS source into runtime-neutral JSON assets. "
-            "The Swift rewrite consumes the JSONL package; the gzip JSON output "
-            "is retained for the existing Flutter pipeline."
+            "The native apps consume the JSONL package; the gzip JSON output "
+            "is retained for compatibility with existing tooling."
         ),
     )
     parser.add_argument(

@@ -1,12 +1,10 @@
-# AGENTS.md — Android Native Rewrite Instructions
-
-You are working on rewriting an existing Flutter dictionary app into a native Android app.
+# AGENTS.md — Android Native Instructions
 
 The repository root is `Hokkien/`.
 
 Existing app/reference sources:
-- Flutter app: inspect the existing Flutter source in this repository.
-- iOS native app: inspect `ios-native/` and use it as the newer product/reference implementation when behavior differs from Flutter.
+- Android native app: inspect and extend `android-native/`.
+- iOS native app: inspect `ios-native/` and use it as the newer product/reference implementation when behavior differs.
 - The Android native app should live under `android-native/`.
 
 ## Primary goal
@@ -20,7 +18,7 @@ Rebuild the app as a high-quality native Android app using:
 - Kotlin coroutines and Flow/StateFlow
 - A clean separation between UI, domain logic, and data access
 
-Do not merely translate Dart code line-by-line into Kotlin. First infer the product behavior, data model, navigation, search behavior, localization needs, and UX flows. Then implement them in idiomatic Android.
+Do not merely translate Swift code line-by-line into Kotlin. First infer the product behavior, data model, navigation, search behavior, localization needs, and UX flows. Then implement them in idiomatic Android.
 
 ## Product type
 

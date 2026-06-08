@@ -8,7 +8,6 @@
 
 ![Swift](https://img.shields.io/badge/Swift-F05138?style=flat&logo=swift&logoColor=white)
 ![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=flat&logo=kotlin&logoColor=white)
-![Dart](https://img.shields.io/badge/Dart-0175C2?style=flat&logo=dart&logoColor=white)
 ![iOS 17+](https://img.shields.io/badge/iOS-17%2B-000000?style=flat&logo=apple&logoColor=white)
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-000000?style=flat&logo=apple&logoColor=white)
 ![Android 7+](https://img.shields.io/badge/Android-7%2B-3DDC84?style=flat&logo=android&logoColor=white)
@@ -22,23 +21,19 @@
 
 - [iOS 與 macOS app](ios-native/) 與 [Apple 平台說明](ios-native/README.md)
 - [Android app](android-native/) 與 [Android 說明](android-native/README.md)
-- [Flutter 封存版](flutter-archive/)
 - [隱私權政策](PRIVACY_POLICY.md)、[資料授權](DATA_LICENSE.md) 與 [MIT 授權](LICENSE)
 
-目前這個 repository 同時包含多條實作線：
+目前這個 repository 包含台語辭典的原生實作與共用工具：
 
 - [ios-native/](ios-native/) 內的原生 Swift / SwiftUI app，作為目前 iOS 與 macOS 的主要開發目標
 - [android-native/](android-native/) 內的原生 Kotlin / Jetpack Compose app，作為目前 Android 的主要開發目標
-- [flutter-archive/](flutter-archive/) 內的封存 Flutter app，保留第一代實作作為歷史與行為參考
 
 目前兩個原生 app 都圍繞同一組產品能力：離線查詢、可下載音檔、書籤、本地化介面，以及台羅 / 漢字參考資料。
-封存的 Flutter app 則保留第一代實作，作為歷史與行為參考。
 
 ## 目前狀態
 
 - Android：由 [android-native/](android-native/) 原生重寫維護
 - iOS 與 macOS：由 [ios-native/](ios-native/) 與 [TaigiDictNative.xcworkspace](ios-native/TaigiDictNative.xcworkspace) 維護
-- 舊版 Flutter 實作：已封存到 [flutter-archive/](flutter-archive/)，作為歷史與行為參考
 
 ## 核心體驗
 
@@ -50,12 +45,10 @@
 
 ## 專案識別
 
-- Dart package name：`taigi_dict`
 - App 顯示名稱：`台語辭典`
 - Android application ID：`org.taigidict.app`
 - iOS 與 macOS bundle identifier：`org.taigidict.app`
 - 目前原生 Apple app 版本：`1.3.6`（build `9`）
-- 封存 Flutter package 版本：`1.3.0+3`
 - 官方網站：[taigidict.org](https://taigidict.org)
 - 正式環境資產來源：[app.taigidict.org/assets](https://app.taigidict.org/assets/)
 
@@ -88,21 +81,10 @@ App 實際使用的正式環境離線資源端點：
 重要發行說明：
 
 - 上游原始資料授權為 `CC BY-ND 3.0 TW`
-- 封存 Flutter app 會內建原始 [kautian.ods](flutter-archive/assets/dictionary/kautian.ods)，再於裝置上建立本機 SQLite 詞典資料庫
 - 原生 Android app 使用 [android-native/Generated/Dictionary/](android-native/Generated/Dictionary/) 下的預先生成詞典資料，不會在執行期解析 `kautian.ods`
 - 原生 Apple app 使用 [ios-native/Generated/Dictionary/](ios-native/Generated/Dictionary/) 下的預先生成詞典資料，不會在執行期解析 `kautian.ods`
 
 ## 技術棧
-
-封存 Flutter 實作：
-
-- Flutter 與 Material 3
-- `dio`：可續傳下載
-- `just_audio`：離線音訊播放
-- `flutter_open_chinese_convert`：執行期 OpenCC 繁簡轉換
-- `shared_preferences`：使用者設定、書籤與搜尋紀錄
-- `spreadsheet_decoder`：解析 `kautian.ods`
-- `sqflite`：本機 SQLite 詞典資料庫
 
 原生 Android 實作：
 
@@ -126,12 +108,6 @@ App 實際使用的正式環境離線資源端點：
 - [android-native/Generated/Dictionary/](android-native/Generated/Dictionary/)：原生 Android app 內建的預先生成詞典資料包
 - [ios-native/](ios-native/)：原生 Swift / SwiftUI iOS 與 macOS app、本地 Swift package 與測試
 - [ios-native/Generated/Dictionary/](ios-native/Generated/Dictionary/)：原生 Apple app 內建的預先生成詞典資料包
-- [flutter-archive/](flutter-archive/)：封存的第一代 Flutter app 與平台 host
-- [flutter-archive/lib/](flutter-archive/lib/)：Flutter app 程式碼
-- [flutter-archive/android/](flutter-archive/android/)：Flutter Android host 專案
-- [flutter-archive/ios/](flutter-archive/ios/)：Flutter iOS host 專案
-- [flutter-archive/test/](flutter-archive/test/)：Flutter 測試
-- [flutter-archive/assets/dictionary/kautian.ods](flutter-archive/assets/dictionary/kautian.ods)：Flutter app 使用的內建原始詞典來源
 - [data/source/kautian.ods](data/source/kautian.ods)：目前詞典轉換流程共用的原始來源檔
 - [tool/build_dictionary_asset.py](tool/build_dictionary_asset.py)：目前原生流程仍共用的詞典轉換腳本
 - [ios-native/NativeApp/](ios-native/NativeApp/)：原生 iOS 與 macOS app 入口、本地化 bundle 中繼資料與 asset catalog
@@ -183,14 +159,6 @@ cd android-native
 
 更多原生 Android 細節可參考 [android-native/README.md](android-native/README.md)。
 
-封存 Flutter app：
-
-```bash
-cd flutter-archive
-flutter pub get
-flutter run -d android
-```
-
 ## 驗證
 
 原生 Apple package 與共享邏輯：
@@ -234,21 +202,12 @@ cd android-native
 ./gradlew verifyRoomDebug
 ```
 
-封存 Flutter app：
-
-```bash
-cd flutter-archive
-flutter analyze
-flutter test
-```
-
 ## 開發注意事項
 
 - 目前 Apple 平台正式開發工作在 [ios-native/](ios-native/)
 - 目前 Android 正式開發工作在 [android-native/](android-native/)
-- 舊版 Flutter 實作集中封存在 [flutter-archive/](flutter-archive/)
-- `flutter-archive/pubspec.yaml` 目前以 `dependency_overrides` 固定 `path_provider_foundation: 2.6.0`
-- `spreadsheet_decoder` 來自 git dependency，因此封存 Flutter 專案的依賴解析不完全只由 pub.dev 決定
+- 共用詞典來源資料維持在 [data/source/](data/source/)
+- 生成後的詞典資產應透過 [tool/build_dictionary_asset.py](tool/build_dictionary_asset.py) 重建，不要手動修改
 
 ## 建置 Release APK
 
@@ -270,7 +229,6 @@ cd android-native
 - [教育部臺灣台語常用詞辭典](https://sutian.moe.edu.tw/)：詞典資料來源參考
 - [豆腐烏 Tauhu-oo 20.05](https://github.com/tauhu-tw/tauhu-oo)：用於顯示台語漢字與特定 CJK Extension 字元的字型
 - [jf open 粉圓](https://github.com/justfont/open-huninn-font)：用於 App Icon 字樣的字型
-- [Open Chinese Convert for Flutter](https://github.com/zonble/flutter_open_chinese_convert)：封存 Flutter app 的執行期 OpenCC 繁簡轉換
 - [android-opencc](https://github.com/xyrlsz/android-opencc)：原生 Android app 的 OpenCC 繁簡轉換
 - [GRDB.swift](https://github.com/groue/GRDB.swift)：原生 Apple app 的 SQLite 存取
 - [ZIPFoundation](https://github.com/weichsel/ZIPFoundation)：原生 Apple app 的離線壓縮資源處理

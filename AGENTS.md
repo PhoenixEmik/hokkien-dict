@@ -2,13 +2,12 @@
 
 This repository contains the Hokkien dictionary project, a Taiwanese Hokkien / Mandarin dictionary app named `台語辭典`.
 
-The repository contains multiple implementations and support files for the same product. Treat this as a multi-target app repository, not as a single Flutter-only project.
+The repository contains multiple native implementations and shared support files for the same product. Treat this as a multi-target app repository.
 
 ## Repository layout
 
 Current important paths:
 
-- `flutter-archive/`: archived first-generation Flutter app, including legacy source, platform hosts, tests, and archive-only assets.
 - `tool/`: shared/support tooling, including dictionary data processing references still used by the native apps.
 - `assets/`: shared assets for the site, documentation, and retained product artwork.
 - `data/`: shared source data inputs, including raw dictionary source files.
@@ -22,19 +21,6 @@ Current important paths:
 - `README.md` and `README.zh-Hant.md`: product and project overview.
 
 ## General rule
-
-Do not modify legacy Flutter code unless explicitly asked.
-
-Legacy Flutter code includes, but is not limited to:
-
-- `flutter-archive/lib/`
-- `flutter-archive/ios/`
-- `flutter-archive/android/`
-- `flutter-archive/test/`
-- `flutter-archive/pubspec.yaml`
-- `flutter-archive/pubspec.lock`
-- `flutter-archive/analysis_options.yaml`
-- Flutter-specific files under `flutter-archive/`
 
 Do not modify native iOS code unless the task is specifically about the native iOS app.
 
@@ -131,17 +117,19 @@ Do not merge these resource flows unless explicitly requested.
 
 ## Source-of-truth guidance
 
-The Flutter app under `flutter-archive/` is the legacy/reference implementation.
+The native iOS app under `ios-native/` and the native Android app under `android-native/` are the active product implementations.
 
-The native iOS app under `ios-native/` may represent newer intended product behavior.
+The native iOS app may represent the newer intended product behavior in some areas.
 
-The native Android app under `android-native/` may be a work-in-progress rewrite.
+The native Android app may still lag in some flows.
 
-When behavior differs between Flutter and native iOS, do not assume which one is correct. Inspect both implementations and document the difference before making changes.
+When behavior differs between native iOS and native Android, do not assume which one is correct. Inspect both implementations and document the difference before making changes.
 
-For future Android native work, use both `flutter-archive/` and `ios-native/` as behavioral references. Preserve product behavior, but implement Android UI and architecture idiomatically.
+For Android work, use `ios-native/` as the primary behavioral reference where product intent is clearer. Preserve product behavior, but implement Android UI and architecture idiomatically.
 
-Do not translate Flutter/Dart code line-by-line into Swift or Kotlin.
+For iOS work, preserve native Apple interaction patterns and use `android-native/` only as a secondary product-parity reference where useful.
+
+Do not translate Swift code line-by-line into Kotlin or Kotlin code line-by-line into Swift.
 
 First understand:
 
@@ -173,7 +161,7 @@ Use the local iOS instructions in:
 In general:
 
 - Prefer native SwiftUI and UIKit patterns.
-- Do not recreate Flutter widgets manually.
+- Do not recreate Android or cross-platform UI patterns manually.
 - Prefer system navigation, system search, system lists, forms, sheets, alerts, menus, buttons, and toolbars.
 - Use Dynamic Type, Dark Mode, VoiceOver, system colors, system fonts, and SF Symbols.
 - Avoid fake Liquid Glass, excessive custom blur, custom tab bars, custom navigation bars, and decorative UI that fights the system.
@@ -193,10 +181,9 @@ This is a normal native Android app written in Kotlin.
 
 Do not interpret `android-native/` as:
 
-- the legacy Flutter `flutter-archive/android/` folder
 - a Kotlin Multiplatform project
 - a Kotlin/Native target
-- a Dart-to-Kotlin translation output
+- a Swift-to-Kotlin translation output
 
 Unless explicitly requested, native Android should use:
 
@@ -211,28 +198,6 @@ Unless explicitly requested, native Android should use:
 - Android-native navigation and back behavior
 
 Preserve product behavior, but make the Android UI feel native to Android.
-
-## Legacy Flutter guidance
-
-The legacy Flutter app remains an important reference implementation.
-
-Important Flutter locations:
-
-- `flutter-archive/lib/main.dart`: app entry point.
-- `flutter-archive/lib/app/`: app shell, navigation, and theme bootstrap.
-- `flutter-archive/lib/app/initialization/`: first-run bundled-source restore and dictionary build gating flow.
-- `flutter-archive/lib/app/shell/`: main three-tab app shell.
-- `flutter-archive/lib/core/`: constants, localization, translation, and shared preferences.
-- `flutter-archive/lib/features/dictionary/`: dictionary models, search, SQLite build/load logic, and UI.
-- `flutter-archive/lib/features/audio/`: offline audio archive download, indexing, and playback.
-- `flutter-archive/lib/features/bookmarks/`: bookmark persistence and screens.
-- `flutter-archive/lib/features/settings/`: settings UI, offline resource controls, and localized reference articles.
-- `flutter-archive/lib/features/settings/presentation/content/reference_articles.dart`: localized Tailo and Hanji reference article content.
-- `tool/build_dictionary_asset.py`: shared Python conversion script used as the reference ODS-to-runtime-data mapping pipeline.
-
-Do not change Flutter code unless explicitly asked.
-
-If you inspect Flutter code to understand behavior, say that you inspected it, but keep your implementation changes in the requested native target.
 
 ## Search behavior
 
@@ -322,16 +287,11 @@ Prefer changing the generator rather than manually editing generated output.
 
 Do not move, rename, or delete shared data files unless the task explicitly requires it.
 
-If a change affects both native apps or the legacy Flutter app, document the expected cross-platform impact.
+If a change affects both native apps, document the expected cross-platform impact.
 
 ## Build and verification
 
 Use the relevant verification commands for the part of the repo being changed.
-
-For legacy Flutter:
-
-- `cd flutter-archive && flutter analyze`
-- `cd flutter-archive && flutter test`
 
 For native iOS:
 
@@ -408,7 +368,5 @@ For every migration task, use this mindset:
 4. Use boring native system UI first.
 5. Add custom UI only if it improves dictionary readability or usability.
 6. Keep licensing, offline data, audio resources, localization, and accessibility intact.
-
-The goal is not to preserve Flutter's implementation shape.
 
 The goal is to preserve the product while making each native app feel truly native.

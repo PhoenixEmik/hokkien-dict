@@ -8,7 +8,6 @@
 
 ![Swift](https://img.shields.io/badge/Swift-F05138?style=flat&logo=swift&logoColor=white)
 ![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=flat&logo=kotlin&logoColor=white)
-![Dart](https://img.shields.io/badge/Dart-0175C2?style=flat&logo=dart&logoColor=white)
 ![iOS 17+](https://img.shields.io/badge/iOS-17%2B-000000?style=flat&logo=apple&logoColor=white)
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-000000?style=flat&logo=apple&logoColor=white)
 ![Android 7+](https://img.shields.io/badge/Android-7%2B-3DDC84?style=flat&logo=android&logoColor=white)
@@ -23,25 +22,21 @@ Ministry of Education dataset.
 
 - [iOS and macOS app](ios-native/) and [Apple platform notes](ios-native/README.md)
 - [Android app](android-native/) and [Android notes](android-native/README.md)
-- [Flutter archive](flutter-archive/)
 - [Privacy Policy](PRIVACY_POLICY.md), [Data License](DATA_LICENSE.md), and [MIT License](LICENSE)
 
-This repository currently contains multiple app implementations that share the same
-product scope:
+This repository contains the active native implementations and shared tooling for
+Taigi Dict:
 
 - Native Swift / SwiftUI app in [ios-native/](ios-native/) for current iOS and macOS development
 - Native Kotlin / Jetpack Compose app in [android-native/](android-native/) for current Android development
-- Archived Flutter app in [flutter-archive/](flutter-archive/) as the first-generation implementation
 
 The current native apps focus on offline lookup, downloadable audio archives,
 bookmarks, localized UI, and reference material for Tailo and Hanji usage.
-The archived Flutter app preserves the first-generation implementation for reference.
 
 ## Project Status
 
 - Android: native rewrite is maintained from [android-native/](android-native/)
 - iOS and macOS: maintained from [ios-native/](ios-native/) with [TaigiDictNative.xcworkspace](ios-native/TaigiDictNative.xcworkspace)
-- Legacy Flutter implementation: archived under [flutter-archive/](flutter-archive/) as historical/reference code
 
 ## Core Experience
 
@@ -53,12 +48,10 @@ The product is organized around three primary tabs:
 
 ## App Identity
 
-- Dart package name: `taigi_dict`
 - App display name: `台語辭典`
 - Android application ID: `org.taigidict.app`
 - iOS and macOS bundle identifier: `org.taigidict.app`
 - Current native Apple app version: `1.3.6` (build `9`)
-- Archived Flutter package version: `1.3.0+3`
 - Official project domain: [taigidict.org](https://taigidict.org)
 - Production asset host: [app.taigidict.org/assets](https://app.taigidict.org/assets/)
 
@@ -91,21 +84,10 @@ Production offline resource endpoints used by the apps:
 Important distribution note:
 
 - The upstream raw data is under `CC BY-ND 3.0 TW`
-- The archived Flutter app bundles the raw [kautian.ods](flutter-archive/assets/dictionary/kautian.ods) asset and builds the local SQLite database on-device
 - Native Android app bundles the generated dictionary package under [android-native/Generated/Dictionary/](android-native/Generated/Dictionary/) and does not parse `kautian.ods` at runtime
 - Native Apple app bundles the generated dictionary package under [ios-native/Generated/Dictionary/](ios-native/Generated/Dictionary/) and does not parse `kautian.ods` at runtime
 
 ## Tech Stack
-
-Archived Flutter implementation:
-
-- Flutter with Material 3
-- `dio` for resumable downloads
-- `just_audio` for offline audio playback
-- `flutter_open_chinese_convert` for runtime OpenCC conversion
-- `shared_preferences` for settings, bookmarks, and recent searches
-- `spreadsheet_decoder` for parsing `kautian.ods`
-- `sqflite` for the local SQLite dictionary database
 
 Native Android implementation:
 
@@ -129,12 +111,6 @@ Native Apple implementation:
 - [android-native/Generated/Dictionary/](android-native/Generated/Dictionary/): generated dictionary package bundled by the native Android app
 - [ios-native/](ios-native/): native Swift / SwiftUI iOS and macOS app, local Swift package, and tests
 - [ios-native/Generated/Dictionary/](ios-native/Generated/Dictionary/): generated dictionary package bundled by the native Apple app
-- [flutter-archive/](flutter-archive/): archived first-generation Flutter app and platform hosts
-- [flutter-archive/lib/](flutter-archive/lib/): Flutter application code
-- [flutter-archive/android/](flutter-archive/android/): Flutter Android host project
-- [flutter-archive/ios/](flutter-archive/ios/): Flutter iOS host project
-- [flutter-archive/test/](flutter-archive/test/): Flutter test suite
-- [flutter-archive/assets/dictionary/kautian.ods](flutter-archive/assets/dictionary/kautian.ods): bundled raw dictionary source used by the Flutter app
 - [data/source/kautian.ods](data/source/kautian.ods): shared raw source file used by the conversion pipeline
 - [tool/build_dictionary_asset.py](tool/build_dictionary_asset.py): shared dictionary conversion script used by the current native pipelines
 - [ios-native/NativeApp/](ios-native/NativeApp/): native iOS and macOS app entry points, localized bundle metadata, and asset catalog
@@ -186,14 +162,6 @@ cd android-native
 
 For more native Android details, see [android-native/README.md](android-native/README.md).
 
-Legacy Flutter archive:
-
-```bash
-cd flutter-archive
-flutter pub get
-flutter run -d android
-```
-
 ## Verify
 
 Native Apple package and shared logic:
@@ -237,21 +205,12 @@ cd android-native
 ./gradlew verifyRoomDebug
 ```
 
-Legacy Flutter archive:
-
-```bash
-cd flutter-archive
-flutter analyze
-flutter test
-```
-
 ## Development Notes
 
 - Active Apple platform product work happens in [ios-native/](ios-native/)
 - Active Android product work happens in [android-native/](android-native/)
-- The legacy Flutter implementation is kept under [flutter-archive/](flutter-archive/)
-- `flutter-archive/pubspec.yaml` pins `path_provider_foundation` with `dependency_overrides` to `2.6.0`
-- `spreadsheet_decoder` is a git dependency in the archived Flutter project, so Flutter dependency resolution is not fully pub.dev-only
+- Shared dictionary source data remains in [data/source/](data/source/)
+- Generated dictionary assets should be rebuilt through [tool/build_dictionary_asset.py](tool/build_dictionary_asset.py) instead of manual edits
 
 ## Build Release APK
 
@@ -273,7 +232,6 @@ Generated artifact:
 - [Ministry of Education Taiwanese Hokkien Dictionary](https://sutian.moe.edu.tw/): source dictionary data reference
 - [Tauhu-oo 20.05](https://github.com/tauhu-tw/tauhu-oo): font used for Taiwanese Hanzi and specific CJK Extension glyph coverage
 - [jf open-huninn](https://github.com/justfont/open-huninn-font): font used in the app icon artwork
-- [Open Chinese Convert for Flutter](https://github.com/zonble/flutter_open_chinese_convert): runtime OpenCC conversion in the archived Flutter app
 - [android-opencc](https://github.com/xyrlsz/android-opencc): OpenCC conversion in the native Android app
 - [GRDB.swift](https://github.com/groue/GRDB.swift): SQLite access in the native Apple app
 - [ZIPFoundation](https://github.com/weichsel/ZIPFoundation): offline archive handling in the native Apple app

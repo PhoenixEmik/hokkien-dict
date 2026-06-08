@@ -1,8 +1,8 @@
-# AGENTS.md — 台語辭典 iOS Native Migration
+# AGENTS.md — 台語辭典 iOS Native
 
-This repository is a native Swift iOS rewrite of the Flutter app “台語辭典”.
+This repository contains the native Swift iOS app for “台語辭典”.
 
-The main UI goal is to build a truly native iOS app, not a pixel-by-pixel port of the Flutter UI.
+The main UI goal is to build a truly native iOS app, not a pixel-by-pixel port of any non-Apple UI.
 
 Use Apple-native SwiftUI and UIKit components wherever possible so the app automatically benefits from future iOS appearance updates, including Liquid Glass, Dynamic Type, accessibility improvements, adaptive layouts, and platform-standard interactions.
 
@@ -10,7 +10,7 @@ Use Apple-native SwiftUI and UIKit components wherever possible so the app autom
 
 Prefer native system components over custom UI.
 
-Do not recreate Flutter widgets manually in Swift.
+Do not recreate non-native widgets manually in Swift.
 
 Before creating any custom view, ask:
 
@@ -178,7 +178,7 @@ Prefer:
 Avoid:
 
 - hard-coded font sizes
-- fixed pixel-perfect layouts copied from Flutter
+- fixed pixel-perfect layouts copied from another platform
 - custom global themes that fight the system
 - excessive rounded rectangles
 - custom shadows everywhere
@@ -203,14 +203,14 @@ Do not sacrifice readability for Liquid Glass aesthetics.
 
 ## Migration Mindset
 
-Do not port Flutter widget-by-widget.
+Do not port another platform's UI widget-by-widget.
 
 For every screen:
 
 1. Identify the user intent.
 2. Map it to the closest native iOS pattern.
 3. Implement with standard SwiftUI/UIKit components.
-4. Remove Flutter-era visual workarounds.
+4. Remove cross-platform-era visual workarounds.
 5. Add custom styling only after the native version works.
 6. Keep product-specific design focused on dictionary content, not system chrome.
 

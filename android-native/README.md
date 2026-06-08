@@ -149,4 +149,4 @@ Room-backed verification task:
 - The project currently targets `compileSdk = 36`, `targetSdk = 36`, and `minSdk = 24`.
 - The generated dictionary package is exposed to the app through Gradle asset source sets.
 - Chinese conversion should go through the app conversion abstractions in `data/conversion`, not direct package calls from UI code.
-- The Android app is intended to preserve product behavior while using idiomatic Compose and Android architecture rather than copying the Flutter structure directly.
+- The Android app is intended to preserve product behavior while using idiomatic Compose and Android architecture rather than copying another platform's structure directly.

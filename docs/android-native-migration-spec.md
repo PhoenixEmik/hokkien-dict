@@ -1,21 +1,6 @@
 # Taigi Dict Android Native Migration Specification
 
-本文根據目前 Flutter 專案實作與既有 iOS native 重寫結果整理，作為後續以 Kotlin / Jetpack Compose 完全重構時的主要依據。
-
-分析基準主要來自：
-
-- `flutter-archive/lib/app/shell/main_shell.dart`
-- `flutter-archive/lib/app/initialization/app_initialization_controller.dart`
-- `flutter-archive/lib/features/dictionary/data/dictionary_repository.dart`
-- `flutter-archive/lib/features/dictionary/data/dictionary_database_builder_service.dart`
-- `flutter-archive/lib/features/dictionary/application/dictionary_search_controller.dart`
-- `flutter-archive/lib/features/audio/data/offline_audio_library.dart`
-- `flutter-archive/lib/features/dictionary/presentation/screens/dictionary_screen.dart`
-- `flutter-archive/lib/features/dictionary/presentation/coordinators/word_detail_coordinator.dart`
-- `flutter-archive/lib/features/settings/presentation/screens/settings_screen.dart`
-- `ios-native/README.md`
-- `docs/ios-native-migration-spec.md`
-- `docs/ios-native-implementation-plan.md`
+本文是 Android 原生重寫時期留下的歷史規格文件。`flutter-archive/` 已從 repository 移除，因此本文件內殘留的 Flutter 路徑與比較描述僅供歷史背景參考；現行實作請以 `android-native/`、`ios-native/` 與目前的測試 / build 指令為準。
 
 ## 實作狀態註記（2026-05-06）
 

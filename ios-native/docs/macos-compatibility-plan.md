@@ -6,7 +6,7 @@ Assessed on 2026-05-27.
 
 Make the current Swift-native `台語辭典` project run on macOS without changing product identity, dictionary behavior, offline resource boundaries, or localization support.
 
-This plan is for the native Swift code under `ios-native/`. It does not modify legacy Flutter code.
+This plan is for the native Swift code under `ios-native/`. It does not modify the Android app or shared tooling unless explicitly stated.
 
 ## Current State
 
