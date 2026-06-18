@@ -1,12 +1,12 @@
 import SwiftUI
 import TaigiDictCore
 
-private struct ReferenceArticleRowModel: Decodable {
+struct ReferenceArticleRowModel: Decodable {
     let label: String
     let value: String
 }
 
-private struct ReferenceArticleSectionModel: Decodable {
+struct ReferenceArticleSectionModel: Decodable {
     let title: String
     let paragraphs: [String]
     let orderedItems: [String]
@@ -14,7 +14,7 @@ private struct ReferenceArticleSectionModel: Decodable {
     let tableRows: [ReferenceArticleRowModel]
 }
 
-private struct ReferenceArticleDocument: Decodable {
+struct ReferenceArticleDocument: Decodable {
     let title: String
     let sections: [ReferenceArticleSectionModel]
 }
@@ -48,7 +48,7 @@ private extension ReferenceArticleKind {
     }
 }
 
-private enum ReferenceArticleRepository {
+enum ReferenceArticleRepository {
     static func load(kind: ReferenceArticleKind, locale: AppLocale) throws -> ReferenceArticleDocument {
         let localeCode = switch locale {
         case .traditionalChinese:
@@ -58,7 +58,7 @@ private enum ReferenceArticleRepository {
         case .english:
             "en"
         case .japanese:
-            "en"
+            "ja"
         }
 
         let resourceName = "\(kind.rawValue)_\(localeCode)"

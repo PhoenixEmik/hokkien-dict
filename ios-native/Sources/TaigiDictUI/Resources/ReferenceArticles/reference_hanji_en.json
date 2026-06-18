@@ -1,10 +1,19 @@
 {
-  "title": "Hanji usage principles",
+  "title": "Hanzi Character Usage Principles",
   "sections": [
     {
-      "title": "The state of Han characters",
+      "title": "Overview",
       "paragraphs": [
-        "After Taiwanese Hokkien and Mandarin developed separately over a long period of time, some words in Taiwanese Hokkien are not written with Han characters in Mandarin, while other words do have corresponding Han-character forms in Mandarin but differ in meaning, pronunciation, or usage in Taiwanese Hokkien."
+        "This page compiles the core principles of Taiwan Hokkien character writing from the Ministry of Education's \"Taiwan Hokkien Dictionary\" for in-app reading."
+      ],
+      "orderedItems": [],
+      "bullets": [],
+      "tableRows": []
+    },
+    {
+      "title": "Hanzi situation",
+      "paragraphs": [
+        "Taiwanese Hokkien differs from Standard Chinese in pronunciation, vocabulary, and syntax. Because the separation occurred early in linguistic history, the differences are quite pronounced, leading to more disputes and issues in writing. Over the past hundred years, various dictionaries have made different character choices, but there is general agreement on identifying \"original characters.\" Scholars continue to accumulate reliable evidence for original characters. However, many characters and words of unknown origin, not derived from Chinese at all, remain, creating a \"sounds without characters\" problem."
       ],
       "orderedItems": [],
       "bullets": [],
@@ -13,36 +22,42 @@
     {
       "title": "Character types used in this dictionary",
       "paragraphs": [
-        "The character forms used in this dictionary are broadly divided into three types: original characters, semantic-loan characters, and popular or non-standard characters."
+        "Among various writing systems, this dictionary uses hanzi as its foundation, following the principle of \"one sound, one hanzi character.\" The standard for character selection depends on how the character is used in practice, combined with the dictionary's established conceptual framework. There are generally three types."
       ],
       "orderedItems": [
-        "Original characters: in contrast to semantic-loan characters, phonetic-loan characters, and newly created characters, these are character forms attested in traditional sources whose meanings are historically related to the Taiwanese Hokkien word. Example: the original character for phang “fragrant” is 〖芳〗, and the original character for sè “small” is 〖細〗.",
-        "Semantic-loan characters: a character form with the same meaning is used to represent the Taiwanese Hokkien reading for that meaning. In other words, the shape is borrowed for meaning rather than sound, and the sound used may have another original character. Example: the character 〖人〗 is read jîn in Taiwanese Hokkien, but another word for “person” is lâng, whose original character is written as 〖農〗 or 〖儂〗. This dictionary standardizes 〖人〗 as the written form, so when it is read lâng it is treated as a semantic-loan character. For example, the 人 in 〖人生〗 jîn-sing is an original character, while the 人 in 〖好人〗 hó lâng is a semantic-loan character.",
-        "Popular or non-standard characters: non-standard written forms commonly used in society or found in sources."
-      ],
-      "bullets": [
-        "Phonetic-loan characters: a Han character is borrowed for its Taiwanese Hokkien pronunciation to write a different word with the same or a similar sound. Example: 〖某〗 is read bóo in Taiwanese Hokkien and can mean “wife”.",
-        "Newly created characters: when no usable Han character can be found for either the sound or the meaning, a new character must be created. Most such characters are phono-semantic compounds, with some based on associative meaning. Example: 〖𬦰〗 peh “to climb” is phono-semantic, while 〖躼〗 lò “tall in stature” is associative."
-      ],
-      "tableRows": []
-    },
-    {
-      "title": "Notes on substitute characters",
-      "paragraphs": [
-        "Even when an original character can be identified in traditional sources, this dictionary may still adopt a more easily recognized substitute character in specific cases for the sake of usability and legibility."
-      ],
-      "orderedItems": [
-        "When the original form is graphically obscure, extremely rare, and hard for general readers to recognize, a common substitute may be used. Example: “塍” is replaced by “田”.",
-        "When different sources preserve multiple written forms and some of them are more common today, the more widely used form is preferred. Example: for lâng, instead of “農／儂”, this dictionary uses “人” as a semantic-loan character.",
-        "When a popular form and an original character coexist, and the popular form is easier to recognize, the dictionary may add explanatory notes in the definition. Example: the relationship between “治” and “刣”."
+        "Original characters: As opposed to trained use characters, phonetic loan characters, and newly created characters, these refer to characters with established forms in traditional texts whose meanings share an etymology with Taiwanese Hokkien vocabulary. Examples: the original character for phang (fragrant) is【芳】, and the original character for sè (small) is【細】.",
+        "Trained use characters: Characters with the same meaning are used to represent the corresponding Taiwanese Hokkien pronunciation. The meaning is borrowed, but not the sound. Example:【人】is read jîn in Taiwanese Hokkien, but another word for person is lâng, whose original character is【農】or【儂】. This dictionary uses【人】for both; when read lâng, it is a trained use character. In【人生】jîn-sing, 人 is read jîn; in【人去】lâng-khì, it is read lâng.",
+        "Colloquial characters, loan characters, and newly created characters: Colloquial or loan characters are commonly used among the public or found in texts. Some borrow a character's Taiwanese Hokkien pronunciation to represent another word with the same or similar sound but a different meaning. Example:【某】is read bóo and can mean wife. When no existing character can express both sound and meaning, a new character is created. Examples:【𬦰】peh, meaning climb, is a phonetic compound;【躼】lò, meaning tall, is an associative compound."
       ],
       "bullets": [],
       "tableRows": []
     },
     {
-      "title": "Preferred written forms",
+      "title": "Alternative characters",
       "paragraphs": [
-        "This dictionary follows Ministry of Education announcements and the dictionary’s current editorial practice, and gives priority to Han-character forms that best balance historical support, phonological correspondence, and recognizability for general readers."
+        "Non-original characters used in this dictionary are called alternative characters. Trained use characters, colloquial characters, loan characters, and newly created characters are therefore all alternative characters. Original characters are preferred, but an alternative may be selected even when the original is known in the following circumstances."
+      ],
+      "orderedItems": [
+        "The original character is too obscure or esoteric for general readers. Example: the original character for tshân (arable land) is【塍】, but this dictionary uses【田】.",
+        "The corresponding Standard Chinese character has exactly the same meaning and is an extremely common basic character, so using the original would make reading more difficult. Example: the original character for lâng (person) is【農】or【儂】, but this dictionary uses【人】.",
+        "A colloquial character has become an established and widely used convention. Example: the original character for thâi (slaughter) is【治】, but this dictionary uses the colloquial【刣】."
+      ],
+      "bullets": [],
+      "tableRows": []
+    },
+    {
+      "title": "Character selection",
+      "paragraphs": [
+        "Character selection aims to let readers infer pronunciation and meaning from a character's form or sound. For instance, làm (muddy or waterlogged) can be written as either「坔」, an associative compound, or「湳」, a phono-semantic compound. This dictionary prefers「湳」because its phonetic function is more closely connected to its meaning."
+      ],
+      "orderedItems": [],
+      "bullets": [],
+      "tableRows": []
+    },
+    {
+      "title": "Recommended characters",
+      "paragraphs": [
+        "The Ministry of Education announced a total of 700 \"Recommended Characters for Taiwan Hokkien\" characters and words in 2007 and 2008. This dictionary generally follows those recommendations."
       ],
       "orderedItems": [],
       "bullets": [],

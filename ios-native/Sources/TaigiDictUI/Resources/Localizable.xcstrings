@@ -3611,13 +3611,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hanji usage principles"
+            "value" : "Hanji Guide"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "漢字使用原則"
+            "value" : "漢字表記ガイド"
           }
         },
         "zh-Hans" : {
@@ -3640,13 +3640,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tai-Lo notation"
+            "value" : "Tailo Guide"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "台羅表記"
+            "value" : "台羅表記ガイド"
           }
         },
         "zh-Hans" : {

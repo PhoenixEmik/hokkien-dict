@@ -1,117 +1,76 @@
 {
-  "title": "Tai-Lo notation",
+  "title": "Taiwanese Hokkien Romanization Scheme",
   "sections": [
     {
-      "title": "General tones",
+      "title": "Overview",
       "paragraphs": [
-        "The regular tone categories are tones 1, 2, 3, 4, 5, 7, and 8. Chinese originally had the four tone classes level, rising, departing, and entering, and each later split into yin and yang. Their outcomes developed differently in different regions. In commonly used Taiwanese Hokkien today, the yang rising tone has merged into the yang departing tone, so the usual inventory contains seven tones: yin level, yin rising, yin departing, yin entering, yang level, yang departing, and yang entering."
+        "This dictionary uses the \"Taiwanese Hokkien Romanization Scheme (Tailo)\" announced by the Ministry of Education on October 14, 2006, as its romanization system. Foreign words in the dictionary text are treated as Taiwanese Hokkien entries and marked with their original (non-sandhi) tone."
+      ],
+      "orderedItems": [],
+      "bullets": [],
+      "tableRows": []
+    },
+    {
+      "title": "Common tones",
+      "paragraphs": [
+        "Common tones are classified as Tone 1, 2, 3, 4, 5, 7, and 8. In the initial classification of Chinese, tones were divided into four categories (level, rising, departing, and entering), each further subdivided into yin and yang. However, various dialects underwent different evolutionary processes. In modern standard Taiwanese Hokkien, the yang rising tone has evolved to become identical to the yang departing tone, resulting in a total of seven tones."
       ],
       "orderedItems": [],
       "bullets": [],
       "tableRows": [
-        {
-          "label": "Tone 1",
-          "value": "Yin level · formal tong · numbered tong1 · example 東"
-        },
-        {
-          "label": "Tone 2",
-          "value": "Yin rising · formal tóng · numbered tong2 · example 黨"
-        },
-        {
-          "label": "Tone 3",
-          "value": "Yin departing · formal tòng · numbered tong3 · example 棟"
-        },
-        {
-          "label": "Tone 4",
-          "value": "Yin entering · formal tok · numbered tok4 · example 督"
-        },
-        {
-          "label": "Tone 5",
-          "value": "Yang level · formal tông · numbered tong5 · example 同"
-        },
-        {
-          "label": "Tone 7",
-          "value": "Yang departing · formal tōng · numbered tong7 · example 洞"
-        },
-        {
-          "label": "Tone 8",
-          "value": "Yang entering · formal to̍k · numbered tok8 · example 毒"
-        }
+        { "label": "Tone 1 · High-level", "value": "Formal tong · numeric tong1 · example 東" },
+        { "label": "Tone 2 · High-rising", "value": "Formal tóng · numeric tong2 · example 黨" },
+        { "label": "Tone 3 · High-departing", "value": "Formal tòng · numeric tong3 · example 棟" },
+        { "label": "Tone 4 · High-entering", "value": "Formal tok · numeric tok4 · example 督" },
+        { "label": "Tone 5 · Low-level", "value": "Formal tông · numeric tong5 · example 同" },
+        { "label": "Tone 7 · Low-departing", "value": "Formal tōng · numeric tong7 · example 洞" },
+        { "label": "Tone 8 · Low-entering", "value": "Formal to̍k · numeric tok8 · example 毒" }
       ]
     },
     {
-      "title": "Special tones and neutral tone",
+      "title": "Special tones",
       "paragraphs": [],
-      "orderedItems": [
-        "Some local accents preserve tone 6, as in “ǒ” (numbered form o6).",
-        "Contracted vowels and triphthongs may take tone 9 on the first vocalic segment, as in “ő” (numbered form o9).",
-        "The neutral-tone marker “--” is written between the stressed syllable and the neutral syllable. The syllable before “--” keeps its citation tone, and the syllable after it is neutral."
-      ],
+      "orderedItems": [],
       "bullets": [
-        "Example: bô--ah (a suffix meaning “not” or “without”)",
-        "Example: tsit8--ê (“this one”)",
-        "Example: mi5--kih8 (“thing; object”)"
+        "Some dialect variations have Tone 6, for example: \"ǒ\" (numeric: o6).",
+        "The first syllable of combined sounds and three-syllable sequences may have Tone 9, for example: \"ő\" (numeric: o9).",
+        "The light-tone mark \"--\" is placed between a stressed syllable and a light-tone syllable. For example: āu--ji̍t (back--day), tsáu--tshut-khì (run--exit)."
       ],
       "tableRows": []
     },
     {
-      "title": "Tone sandhi rules",
+      "title": "Tone sandhi",
       "paragraphs": [
-        "Tone sandhi is a key feature of connected speech in Taiwanese Hokkien. In disyllabic words, trisyllabic words, and larger phrases, all syllables except the final one usually change according to tone-sandhi rules.",
-        "When a syllable is followed by a neutral tone, the preceding syllable keeps its citation tone and does not undergo sandhi."
+        "In phrases and sentences, tone sandhi occurs, where a character's tone changes when followed by another character. However, there are exceptions: when the phrase ends, when the following syllable is in a weak tone, or when the subject is emphasized, the original tone may be maintained even within a sentence.",
+        "Because tone sandhi varies depending on how phrases are segmented, and segmentation can be done in multiple ways, this dictionary marks all tones as original tones without indicating sandhi changes. However, light tones are marked with \"--\" as needed according to context."
       ],
       "orderedItems": [],
       "bullets": [],
       "tableRows": [
-        {
-          "label": "Tone 1",
-          "value": "1 → 7 · 心肝 sim-kuann → sīm-kuann"
-        },
-        {
-          "label": "Tone 2",
-          "value": "2 → 1 · 小弟 sió-tī → sio-tī"
-        },
-        {
-          "label": "Tone 3",
-          "value": "3 → 2 · 世間 sè-kan → sé-kan"
-        },
-        {
-          "label": "Tone 4 (-p / -t / -k)",
-          "value": "4 → 8 · 出名 tshut-miâ → tshu̍t-miâ"
-        },
-        {
-          "label": "Tone 4 (-h)",
-          "value": "4 → 2 · 鐵馬 thih-bé → thí-bé"
-        },
-        {
-          "label": "Tone 5 (Zhangzhou)",
-          "value": "5 → 7 · 來往 lâi-óng → lāi-óng"
-        },
-        {
-          "label": "Tone 5 (Quanzhou)",
-          "value": "5 → 3 · 來往 lâi-óng → lài-óng"
-        },
-        {
-          "label": "Tone 7",
-          "value": "7 → 3 · 外口 guā-kháu → guà-kháu"
-        },
-        {
-          "label": "Tone 8 (-p / -t / -k)",
-          "value": "8 → 4 · 木瓜 bo̍k-kue → bok-kue"
-        },
-        {
-          "label": "Tone 8 (-h)",
-          "value": "8 → 3 · 月娘 gue̍h-niû → guè-niû"
-        }
+        { "label": "Tone 1", "value": "1 → 7 · 心肝 sim-kuann → sīm-kuann" },
+        { "label": "Tone 2", "value": "2 → 1 · 小弟 sió-tī → sio-tī" },
+        { "label": "Tone 3", "value": "3 → 2 · 世間 sè-kan → sé-kan" },
+        { "label": "Tone 4 (-p/-t/-k)", "value": "4 → 8 · 出名 tshut-miâ → tshu̍t-miâ" },
+        { "label": "Tone 4 (-h)", "value": "4 → 2 · 鐵馬 thih-bé → thí-bé" },
+        { "label": "Tone 5 (Zhangzhou)", "value": "5 → 7 · 來往 lâi-óng → lāi-óng" },
+        { "label": "Tone 5 (Quanzhou)", "value": "5 → 3 · 來往 lâi-óng → lài-óng" },
+        { "label": "Tone 7", "value": "7 → 3 · 外口 guā-kháu → guà-kháu" },
+        { "label": "Tone 8 (-p/-t/-k)", "value": "8 → 4 · 木瓜 bo̍k-kue → bok-kue" },
+        { "label": "Tone 8 (-h)", "value": "8 → 3 · 月娘 gue̍h-niû → guè-niû" }
       ]
     },
     {
-      "title": "Unmarked tone notation",
+      "title": "Words without a fixed tone",
       "paragraphs": [
-        "An unmarked syllable usually indicates tone 1, or follows the common dictionary and teaching convention of writing the regular reading without an added tone mark."
+        "Particles, exclamations, and grammatical words without fixed tones are conventionally written with the Tone 4 glottal-stop ending \"-h\". Since these are typically read lightly and do not affect tone sandhi in the preceding character, the light-tone mark \"--\" is added according to the Taiwanese Hokkien Romanization Scheme."
       ],
       "orderedItems": [],
-      "bullets": [],
+      "bullets": [
+        "--lah (particle)",
+        "--aih (exclamation)",
+        "--ooh (exclamation)",
+        "--ah (particle)"
+      ],
       "tableRows": []
     }
   ]
