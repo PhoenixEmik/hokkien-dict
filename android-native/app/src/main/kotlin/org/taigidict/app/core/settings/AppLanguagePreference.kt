@@ -5,4 +5,5 @@ enum class AppLanguagePreference {
     TraditionalChinese,
     SimplifiedChinese,
     English,
+    Japanese,
 }

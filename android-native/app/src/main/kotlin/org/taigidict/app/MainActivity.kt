@@ -122,6 +122,7 @@ class MainActivity : AppCompatActivity() {
             AppLanguagePreference.TraditionalChinese -> LocaleListCompat.forLanguageTags("zh-TW")
             AppLanguagePreference.SimplifiedChinese -> LocaleListCompat.forLanguageTags("zh-CN")
             AppLanguagePreference.English -> LocaleListCompat.forLanguageTags("en")
+            AppLanguagePreference.Japanese -> LocaleListCompat.forLanguageTags("ja")
         }
         val currentLocales = AppCompatDelegate.getApplicationLocales()
         if (currentLocales != targetLocales) {

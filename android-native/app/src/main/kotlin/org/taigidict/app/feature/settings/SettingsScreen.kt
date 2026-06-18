@@ -641,4 +641,5 @@ private fun AppLanguagePreference.displayLabel(): String = when (this) {
     AppLanguagePreference.TraditionalChinese -> stringResource(R.string.settings_language_traditional_chinese)
     AppLanguagePreference.SimplifiedChinese -> stringResource(R.string.settings_language_simplified_chinese)
     AppLanguagePreference.English -> stringResource(R.string.settings_language_english)
+    AppLanguagePreference.Japanese -> stringResource(R.string.settings_language_japanese)
 }

@@ -4,4 +4,5 @@ enum class AppLocale {
     TraditionalChinese,
     SimplifiedChinese,
     English,
+    Japanese,
 }

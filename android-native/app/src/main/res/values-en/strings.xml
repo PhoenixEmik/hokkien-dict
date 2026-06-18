@@ -120,6 +120,7 @@
     <string name="settings_language_traditional_chinese">Traditional Chinese</string>
     <string name="settings_language_simplified_chinese">Simplified Chinese</string>
     <string name="settings_language_english">English</string>
+    <string name="settings_language_japanese">Japanese</string>
     <string name="settings_advanced_title">Advanced maintenance</string>
     <string name="settings_advanced_body">Rebuild or clear dictionary data and repair offline resources.</string>
     <string name="settings_advanced_open">Open advanced settings</string>

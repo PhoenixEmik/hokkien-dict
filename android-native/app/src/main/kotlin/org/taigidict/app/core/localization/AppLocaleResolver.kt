@@ -10,6 +10,7 @@ object AppLocaleResolver {
             AppLanguagePreference.TraditionalChinese -> AppLocale.TraditionalChinese
             AppLanguagePreference.SimplifiedChinese -> AppLocale.SimplifiedChinese
             AppLanguagePreference.English -> AppLocale.English
+            AppLanguagePreference.Japanese -> AppLocale.Japanese
         }
     }
 
@@ -20,6 +21,10 @@ object AppLocaleResolver {
 
         if (language == "en") {
             return AppLocale.English
+        }
+
+        if (language == "ja") {
+            return AppLocale.Japanese
         }
 
         if (language == "zh" && country == "CN") {

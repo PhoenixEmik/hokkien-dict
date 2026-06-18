@@ -43,10 +43,10 @@ class PreferenceMenuRowTest {
         }
 
         composeRule.onNodeWithText(context.getString(R.string.settings_language_title)).performClick()
-        composeRule.onNodeWithText(context.getString(R.string.settings_language_english)).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.settings_language_japanese)).assertIsDisplayed()
 
-        composeRule.onNodeWithText(context.getString(R.string.settings_language_english)).performClick()
-        composeRule.onNodeWithText(context.getString(R.string.settings_language_english)).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.settings_language_japanese)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.settings_language_japanese)).assertIsDisplayed()
     }
 
     private fun Context.languageLabel(preference: AppLanguagePreference): String {
@@ -55,6 +55,7 @@ class PreferenceMenuRowTest {
             AppLanguagePreference.TraditionalChinese -> getString(R.string.settings_language_traditional_chinese)
             AppLanguagePreference.SimplifiedChinese -> getString(R.string.settings_language_simplified_chinese)
             AppLanguagePreference.English -> getString(R.string.settings_language_english)
+            AppLanguagePreference.Japanese -> getString(R.string.settings_language_japanese)
         }
     }
 }
