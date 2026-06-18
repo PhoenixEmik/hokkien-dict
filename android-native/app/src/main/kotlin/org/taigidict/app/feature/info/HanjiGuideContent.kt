@@ -19,6 +19,7 @@ fun HanjiGuideContent(modifier: Modifier = Modifier) {
     val appLocale = when {
         locale.language == "zh" && locale.country == "CN" -> "simplified"
         locale.language == "zh" -> "traditional"
+        locale.language == "ja" -> "japanese"
         else -> "english"
     }
 
@@ -31,6 +32,7 @@ fun HanjiGuideContent(modifier: Modifier = Modifier) {
         when (appLocale) {
             "traditional" -> HanjiGuideTradition()
             "simplified" -> HanjiGuideSimplified()
+            "japanese" -> HanjiGuideJapanese()
             else -> HanjiGuideEnglish()
         }
     }
@@ -118,6 +120,91 @@ private fun HanjiGuideTradition() {
     GuideHeading("推薦用字", level = 2)
     GuideParagraph(
         "教育部分別於民國 96 年及 97 年公告「臺灣台語推薦用字」共計 700 字詞，本辭典原則上遵照推薦用字之成果。"
+    )
+}
+
+@Composable
+private fun HanjiGuideJapanese() {
+    GuideHeading("漢字表記の原則")
+    GuideParagraph(
+        "このページでは、教育部『教育部臺灣台語常用詞辭典』に示された台湾語の漢字表記に関する基本原則を、アプリ内で読めるようにまとめています。"
+    )
+
+    GuideHeading("漢字表記の現状", level = 2)
+    GuideParagraph(
+        "台湾語と標準中国語には、発音・語彙・文法の面で多くの違いがあります。早い時期に分岐したため両者の差は大きく、表記をめぐる問題や議論も少なくありません。" +
+                "この百年余りに広く使われてきた各種の辞書は、それぞれ異なる漢字を採用してきましたが、「本字」の認定には大きな隔たりがなく、研究者の考証によって信頼できる本字も次第に蓄積されています。" +
+                "一方、語源が不明な字や語、中国語に由来しない語も数多くあり、「音はあるが字がない」という問題が生じています。"
+    )
+
+    GuideHeading("本辞典で用いる漢字の種類", level = 2)
+    GuideParagraph(
+        "さまざまな表記方法のうち、本辞典は漢字を基本とし、「一音一漢字」を採用しています。漢字は実際の使用状況と本辞典で定めた考え方に基づいて選定します。おおむね次の三種類に分けられます。"
+    )
+
+    GuideSubheading("1. 本字")
+    GuideParagraph(
+        "「訓用字」「借音字」「新造字」に対する呼び方です。伝統的な文献にすでに字形が存在し、その意味が台湾語の語彙と同じ語源関係にある漢字を指します。"
+    )
+    GuideBulletList(
+        listOf(
+            "例：「香りがよい」を表す phang の本字は【芳】",
+            "例：「小さい」を表す sè の本字は【細】",
+        ),
+    )
+
+    GuideSubheading("2. 訓用字")
+    GuideParagraph(
+        "同じ意味を持つ漢字の字形を使い、その意味に対応する台湾語の読みを表すものです。漢字の意味だけを借り、音は借りません。" +
+                "つまり、採用した字形の意味を用いますが、当てる読みには別の本字があります。"
+    )
+    GuideBulletList(
+        listOf(
+            "例：【人】は台湾語で jîn と読みますが、「人」を表す別の語に lâng があり、その本字は【農】または【儂】とされます。" +
+                    "しかし本辞典ではいずれも【人】を採用し、lâng と読む場合は訓用字となります。" +
+                    "たとえば【人生】jîn-sing の「人」は jîn と読み、【人去】lâng-khì の「人」は lâng と読む訓用字です。",
+        ),
+    )
+
+    GuideSubheading("3. 俗字・借音字・新造字")
+    GuideParagraph("俗字／借音字：一般に民間で使われる字、または文献に見られる字を指します。漢字の台湾語での読みを借り、同音または近い音を持つ別の意味の語を直接表すものもあります。")
+    GuideBulletList(listOf("例：【某】は台湾語で bóo と読み、「妻」を表すことができます"))
+
+    GuideParagraph("新造字：読みと意味のどちらにも使える漢字がない場合に、新しい字を作ったものです。造字法は形声が多く、次いで会意が用いられます。")
+    GuideBulletList(
+        listOf(
+            "例：「よじ登る」を表す【𬦰】peh（形声）",
+            "例：「背が高い」を表す【躼】lò（会意）",
+        ),
+    )
+
+    GuideHeading("代替字について", level = 2)
+    GuideParagraph(
+        "本辞典では、本字ではない漢字を「代替字」と呼びます。したがって、前述の「訓用字」「俗字」「借音字」「新造字」はすべて代替字です。" +
+                "漢字の選定では本字を優先しますが、次のような場合には、本字が確定していても総合的な判断から採用しないことがあります。"
+    )
+
+    GuideSubheading("1. 本字が難解すぎる場合")
+    GuideParagraph("本字が非常に難解で、一般にはほとんど知られていない場合です。")
+    GuideBulletList(listOf("例：「耕作地」を表す tshân の本字は【塍】ですが、本辞典では【田】を採用します。"))
+
+    GuideSubheading("2. 標準語と同じ意味を持つ基本的な字の場合")
+    GuideParagraph("対応する標準語の漢字と意味が完全に同じで、きわめて一般的な基本字であり、本字を使うとかえって読みにくくなる場合です。")
+    GuideBulletList(listOf("例：「人」を表す lâng の本字は【農】または【儂】ですが、本辞典では代わりに【人】を採用します。"))
+
+    GuideSubheading("3. 広く定着した俗字の場合")
+    GuideParagraph("慣用としてほぼ定着し、広く使われているため、使用習慣を変えることが難しい俗字の場合です。")
+    GuideBulletList(listOf("例：「屠殺する」を表す thâi の本字は【治】ですが、本辞典では俗字の【刣】を採用します。"))
+
+    GuideParagraph(
+        "漢字の選定では、字形や音から書き手が表そうとする概念を連想できる「字を見て音と意味が分かる」表記を目指しています。" +
+                "たとえば「低くくぼんでぬかるんだ状態」を表す làm には「坔」と「湳」の二つの表記があります。「坔」は会意字、「湳」は形声字です。" +
+                "この二字を比較する場合、形声字のほうが音を示す働きと意味との結び付きが強いため、「湳」を採用します。"
+    )
+
+    GuideHeading("推奨用字", level = 2)
+    GuideParagraph(
+        "教育部は中華民国96年および97年に、合計700字・語の「臺灣台語推薦用字」を公布しました。本辞典は原則として、その推奨用字に従っています。"
     )
 }
 

@@ -22,6 +22,7 @@ fun TailoGuideContent(modifier: Modifier = Modifier) {
     val appLocale = when {
         locale.language == "zh" && locale.country == "CN" -> "simplified"
         locale.language == "zh" -> "traditional"
+        locale.language == "ja" -> "japanese"
         else -> "english"
     }
 
@@ -34,6 +35,7 @@ fun TailoGuideContent(modifier: Modifier = Modifier) {
         when (appLocale) {
             "traditional" -> TailoGuideTradition()
             "simplified" -> TailoGuideSimplified()
+            "japanese" -> TailoGuideJapanese()
             else -> TailoGuideEnglish()
         }
     }
@@ -102,6 +104,80 @@ private fun TailoGuideTradition() {
     GuideParagraph(
         "語助詞、感嘆詞、語法詞等沒有固定聲調的字，依書寫習用以第 4 聲喉塞尾「-h」標注之，" +
                 "而因其為輕讀，不影響前字的變調，故依臺灣台語羅馬字拼音方案，加上表示輕聲的「--」，例如："
+    )
+    GuideBulletList(
+        listOf(
+            "--lah（啦）",
+            "--aih（哎）",
+            "--ooh（喔）",
+            "--ah（啊）",
+        ),
+    )
+}
+
+@Composable
+private fun TailoGuideJapanese() {
+    GuideHeading("台湾語ローマ字表記法")
+    GuideParagraph(
+        "本辞典では、教育部が中華民国95年（2006年）10月14日に公布した「臺灣台語羅馬字拼音方案（臺羅）」をローマ字表記法として採用しています。" +
+                "辞典本文にある外来語も台湾語の見出し語として扱い、推定した本来の声調（本調）を表記します。"
+    )
+
+    GuideHeading("一般の声調", level = 2)
+    GuideParagraph(
+        "一般の声調には第1声、第2声、第3声、第4声、第5声、第7声、第8声があります。" +
+                "中国語の声調は当初、平・上・去・入の四種類に分かれ、その後それぞれが陰・陽に分かれましたが、各方言は言語変化の過程で異なる発達を遂げました。" +
+                "現在広く使われている台湾語では、陽上の調値が陽去と同じものに変化したため、声調は全部で七つです。"
+    )
+    GuideSubheading("一般的な対応例")
+    GuideTable(
+        headers = listOf("中国語の声調分類", "陰平", "陰上", "陰去", "陰入", "陽平", "陽去", "陽入"),
+        rows = listOf(
+            listOf("正式表記", "tong", "tóng", "tòng", "tok", "tông", "tōng", "to̍k"),
+            listOf("数字表記", "tong1", "tong2", "tong3", "tok4", "tong5", "tong7", "tok8"),
+            listOf("例字", "東", "黨", "棟", "督", "同", "洞", "毒"),
+        ),
+    )
+
+    GuideHeading("特殊な声調", level = 2)
+    GuideBulletList(
+        listOf(
+            "一部の地域音には第6声があります。例：「ǒ」（数字表記は o6）。",
+            "合音および三連音の第1音節には第9声があります。例：「ő」（数字表記は o9）。",
+            "軽声記号「--」は強く読む音節と軽く読む音節の間に置きます。記号の前は強く本調で読み、後ろは軽声で読みます。例：āu--ji̍t（後--日）、tsáu--tshut-khì（走--出去）。",
+        ),
+    )
+
+    GuideHeading("変調", level = 2)
+    GuideParagraph(
+        "語や文の中では「連続変調」が起こります。これは、ある音節の後ろに別の音節が続くと声調が変わり、文中での発音がその音節単独の本調とは異なって聞こえる現象です。" +
+                "ただし、発話が完結する場合、後続する音節が弱く読まれる場合、主語が強調される場合などには、文中でも変調しないことがあります。"
+    )
+    GuideSubheading("主な変調規則")
+    GuideTable(
+        headers = listOf("本調", "変調", "例語", "本調の発音", "変調後の発音"),
+        rows = listOf(
+            listOf("第1声", "1→7", "心肝", "sim-kuann", "sīm-kuann"),
+            listOf("第2声", "2→1", "小弟", "sió-tī", "sio-tī"),
+            listOf("第3声", "3→2", "世間", "sè-kan", "sé-kan"),
+            listOf("第4声", "4→8（-p/-t/-k）", "出名", "tshut-miâ", "tshu̍t-miâ"),
+            listOf("第4声", "4→2（-h）", "鐵馬", "thih-bé", "thí-bé"),
+            listOf("第5声", "5→7（漳）", "來往", "lâi-óng", "lāi-óng"),
+            listOf("第5声", "5→3（泉）", "來往", "lâi-óng", "lài-óng"),
+            listOf("第7声", "7→3", "外口", "guā-kháu", "guà-kháu"),
+            listOf("第8声", "8→4（-p/-t/-k）", "木瓜", "bo̍k-kue", "bok-kue"),
+            listOf("第8声", "8→3（-h）", "月娘", "gue̍h-niû", "guè-niû"),
+        ),
+    )
+    GuideParagraph(
+        "変調は文の区切り方によって変わり、区切り方も一通りではありません。そのため、本辞典では声調をすべて本調で表記し、変調後の声調は表記しません。" +
+                "ただし、軽声は文脈に応じて「--」で示します。また、見出し語の主な発音も、本調を持たない読みを除いて本調で表記します。"
+    )
+
+    GuideHeading("固有の声調を持たない語の表記", level = 2)
+    GuideParagraph(
+        "助詞・感動詞・文法語など、一定の声調を持たない語は、表記上の慣例に従って第4声の声門閉鎖音末尾「-h」を付けます。" +
+                "これらは軽く読まれ、直前の音節の変調に影響しないため、「臺灣台語羅馬字拼音方案」に従って軽声を示す「--」も付けます。例："
     )
     GuideBulletList(
         listOf(
