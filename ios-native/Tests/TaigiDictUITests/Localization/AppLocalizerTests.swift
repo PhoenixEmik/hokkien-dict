@@ -20,12 +20,21 @@ final class AppLocalizerTests: XCTestCase {
             ),
             "设置"
         )
+        XCTAssertEqual(
+            AppLocalizer.text(
+                .settingsTitle,
+                language: .ja,
+                systemLocale: Locale(identifier: "zh-Hant")
+            ),
+            "設定"
+        )
     }
 
     func testReadsLocalizedStringsFromResourceCatalog() {
         XCTAssertEqual(AppLocalizer.text(.settingsTitle, locale: .english), "Settings")
         XCTAssertEqual(AppLocalizer.text(.settingsTitle, locale: .traditionalChinese), "設定")
         XCTAssertEqual(AppLocalizer.text(.settingsTitle, locale: .simplifiedChinese), "设置")
+        XCTAssertEqual(AppLocalizer.text(.settingsTitle, locale: .japanese), "設定")
 
         XCTAssertEqual(AppLocalizer.text(.localeSystem, locale: .english), "System")
         XCTAssertEqual(AppLocalizer.text(.themeSystem, locale: .english), "System")
@@ -62,6 +71,7 @@ final class AppLocalizerTests: XCTestCase {
         XCTAssertEqual(AppLocalizer.appLocale(from: Locale(identifier: "zh-Hans")), .simplifiedChinese)
         XCTAssertEqual(AppLocalizer.appLocale(from: Locale(identifier: "zh-TW")), .traditionalChinese)
         XCTAssertEqual(AppLocalizer.appLocale(from: Locale(identifier: "en")), .english)
+        XCTAssertEqual(AppLocalizer.appLocale(from: Locale(identifier: "ja-JP")), .japanese)
     }
 
     func testAppLocaleResolvesStoredSettingsLocaleIdentifiers() {

@@ -35,6 +35,12 @@
             "value" : "Taigi Dictionary is an offline-first Taiwanese search tool with entries, senses, and examples."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "台語辞典は、見出し語、語義、例文を検索できるオフライン優先の台湾語検索ツールです。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -56,6 +62,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Taigi Dictionary"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "台語辞典"
           }
         },
         "zh-Hans" : {
@@ -81,6 +93,12 @@
             "value" : "Author"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "作者"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -102,6 +120,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open Source"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オープンソース"
           }
         },
         "zh-Hans" : {
@@ -127,6 +151,12 @@
             "value" : "Review the current Swift packages and bundled upstream license texts used by this native app."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このネイティブアプリで使用しているSwiftパッケージと同梱コンポーネントのライセンス文を確認します。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -148,6 +178,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Privacy policy"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プライバシーポリシー"
           }
         },
         "zh-Hans" : {
@@ -173,6 +209,12 @@
             "value" : "Read how the app stores local data, uses network access, and handles sharing."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ローカルデータの保存、ネットワークアクセス、共有の取り扱いについて確認します。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -194,6 +236,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Project"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プロジェクト"
           }
         },
         "zh-Hans" : {
@@ -219,6 +267,12 @@
             "value" : "Reference page"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "参考資料"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -240,6 +294,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Source code and releases"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ソースコードとリリース"
           }
         },
         "zh-Hans" : {
@@ -265,6 +325,12 @@
             "value" : "About Taigi Dictionary"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "台語辞典について"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -288,6 +354,12 @@
             "value" : "Version"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バージョン"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -306,6 +378,12 @@
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1.3.7"
+          }
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "1.3.7"
@@ -334,6 +412,12 @@
             "value" : "Built at"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "構築日時"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -355,6 +439,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clear local dictionary data"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ローカル辞書データを消去"
           }
         },
         "zh-Hans" : {
@@ -380,6 +470,12 @@
             "value" : "Local dictionary data cleared."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ローカル辞書データを消去しました。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -401,6 +497,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entries"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "見出し語"
           }
         },
         "zh-Hans" : {
@@ -426,6 +528,12 @@
             "value" : "Examples"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "例文"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -447,6 +555,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Action failed"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "操作に失敗しました"
           }
         },
         "zh-Hans" : {
@@ -472,6 +586,12 @@
             "value" : "Data maintenance"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "データのメンテナンス"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -493,6 +613,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Current data source does not support local maintenance."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在のデータソースではローカルメンテナンスを利用できません。"
           }
         },
         "zh-Hans" : {
@@ -518,6 +644,12 @@
             "value" : "Rebuild local dictionary data"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ローカル辞書データを再構築"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -539,6 +671,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Local dictionary data rebuilt."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ローカル辞書データを再構築しました。"
           }
         },
         "zh-Hans" : {
@@ -564,6 +702,12 @@
             "value" : "Maintenance in progress"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メンテナンス中"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -585,6 +729,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Senses"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "語義"
           }
         },
         "zh-Hans" : {
@@ -610,6 +760,12 @@
             "value" : "Source timestamps"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ソースの日時"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -631,6 +787,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Source updated"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ソース更新日時"
           }
         },
         "zh-Hans" : {
@@ -656,6 +818,12 @@
             "value" : "Status"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "状態"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -677,6 +845,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Current database summary"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在のデータベース概要"
           }
         },
         "zh-Hans" : {
@@ -702,6 +876,12 @@
             "value" : "Advanced settings"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "詳細設定"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -723,6 +903,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pause"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一時停止"
           }
         },
         "zh-Hans" : {
@@ -748,6 +934,12 @@
             "value" : "Restart"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再ダウンロード"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -769,6 +961,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Resume"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再開"
           }
         },
         "zh-Hans" : {
@@ -794,6 +992,12 @@
             "value" : "Download"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダウンロード"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -815,6 +1019,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Offline audio is not initialized yet."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オフライン音声はまだ初期化されていません。"
           }
         },
         "zh-Hans" : {
@@ -840,6 +1050,12 @@
             "value" : "Audio unavailable"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音声を利用できません"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -861,6 +1077,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Offline audio is unavailable. Please download offline audio resources in Settings."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オフライン音声を利用できません。設定でオフライン音声リソースをダウンロードしてください。"
           }
         },
         "zh-Hans" : {
@@ -886,6 +1108,12 @@
             "value" : "Playback failed: "
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再生に失敗しました: "
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -907,6 +1135,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Offline audio is unavailable. Please download offline audio resources in Settings."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オフライン音声を利用できません。設定でオフライン音声リソースをダウンロードしてください。"
           }
         },
         "zh-Hans" : {
@@ -932,6 +1166,12 @@
             "value" : "Playing"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再生中"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -953,6 +1193,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This replaces %@."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@を置き換えます。"
           }
         },
         "zh-Hans" : {
@@ -978,6 +1224,12 @@
             "value" : "Redownload audio?"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音声を再ダウンロードしますか？"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -999,6 +1251,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Audio"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音声"
           }
         },
         "zh-Hans" : {
@@ -1024,6 +1282,12 @@
             "value" : "Checking"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確認中"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1045,6 +1309,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Completed"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完了"
           }
         },
         "zh-Hans" : {
@@ -1070,6 +1340,12 @@
             "value" : "Downloading"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダウンロード中"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1091,6 +1367,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Failed"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "失敗"
           }
         },
         "zh-Hans" : {
@@ -1116,6 +1398,12 @@
             "value" : "Not downloaded"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未ダウンロード"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1137,6 +1425,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Paused"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一時停止中"
           }
         },
         "zh-Hans" : {
@@ -1162,6 +1456,12 @@
             "value" : "Stopped"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "停止中"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1183,6 +1483,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add bookmark"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ブックマークに追加"
           }
         },
         "zh-Hans" : {
@@ -1208,6 +1514,12 @@
             "value" : "Delete selected"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択項目を削除"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1229,6 +1541,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Deselect all"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべての選択を解除"
           }
         },
         "zh-Hans" : {
@@ -1254,6 +1572,12 @@
             "value" : "Done selecting"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択を完了"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1275,6 +1599,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Go to Dictionary Search"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "辞書検索へ移動"
           }
         },
         "zh-Hans" : {
@@ -1300,6 +1630,12 @@
             "value" : "Bookmarked entries will appear here."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ブックマークした見出し語がここに表示されます。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1321,6 +1657,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No bookmarks yet"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ブックマークはありません"
           }
         },
         "zh-Hans" : {
@@ -1346,6 +1688,12 @@
             "value" : "Loading bookmarks"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ブックマークを読み込み中"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1367,6 +1715,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Remove bookmark"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ブックマークを削除"
           }
         },
         "zh-Hans" : {
@@ -1392,6 +1746,12 @@
             "value" : "Saved entries"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存した見出し語"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1413,6 +1773,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Select"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択"
           }
         },
         "zh-Hans" : {
@@ -1438,6 +1804,12 @@
             "value" : "Select all"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべて選択"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1459,6 +1831,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bookmarks"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ブックマーク"
           }
         },
         "zh-Hans" : {
@@ -1484,6 +1862,12 @@
             "value" : "Clear search history"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "検索履歴を消去"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1505,6 +1889,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cancel"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キャンセル"
           }
         },
         "zh-Hans" : {
@@ -1530,6 +1920,12 @@
             "value" : "Back"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "戻る"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1551,6 +1947,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "削除"
           }
         },
         "zh-Hans" : {
@@ -1576,6 +1978,12 @@
             "value" : "Forward"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "進む"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1594,6 +2002,12 @@
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "OK"
@@ -1625,6 +2039,12 @@
             "value" : "Antonyms"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "反義語"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1646,6 +2066,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Definition"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "語義"
           }
         },
         "zh-Hans" : {
@@ -1671,6 +2097,12 @@
             "value" : "Synonyms"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "類義語"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1692,6 +2124,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Also pronounced"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "別の発音"
           }
         },
         "zh-Hans" : {
@@ -1717,6 +2155,12 @@
             "value" : "Colloquial pronunciations"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "口語発音"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1738,6 +2182,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Contracted pronunciations"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "縮約発音"
           }
         },
         "zh-Hans" : {
@@ -1763,6 +2213,12 @@
             "value" : "[%@]"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "［%@］"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1784,6 +2240,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Failed to load entry"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "見出し語を読み込めませんでした"
           }
         },
         "zh-Hans" : {
@@ -1809,6 +2271,12 @@
             "value" : "Phonetic differences"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "発音の違い"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1830,6 +2298,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vocabulary comparisons"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "語彙の比較"
           }
         },
         "zh-Hans" : {
@@ -1855,6 +2329,12 @@
             "value" : "Download latest"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最新版をダウンロード"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1878,6 +2358,12 @@
             "value" : "Restore from app"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリから復元"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1899,6 +2385,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dictionary"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "辞書"
           }
         },
         "zh-Hans" : {
@@ -1930,6 +2422,12 @@
             "value" : "TaigiDict Help"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "台語辞典ヘルプ"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1951,6 +2449,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Initialization failed"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "初期化に失敗しました"
           }
         },
         "zh-Hans" : {
@@ -1976,6 +2480,12 @@
             "value" : "Dictionary initialization did not complete."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "辞書の初期化が完了しませんでした。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1997,6 +2507,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Initializing dictionary data"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "辞書データを初期化しています"
           }
         },
         "zh-Hans" : {
@@ -2022,6 +2538,12 @@
             "value" : "Loading"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "読み込み中"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2043,6 +2565,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Retry"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再試行"
           }
         },
         "zh-Hans" : {
@@ -2068,6 +2596,12 @@
             "value" : "License"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ライセンス"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2091,6 +2625,12 @@
             "value" : "App code"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリのコード"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2109,6 +2649,12 @@
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MIT License"
+          }
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "MIT License"
@@ -2137,6 +2683,12 @@
             "value" : "Dictionary audio"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "辞書音声"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2155,6 +2707,12 @@
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CC BY-ND 3.0 TW"
+          }
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "CC BY-ND 3.0 TW"
@@ -2183,6 +2741,12 @@
             "value" : "Dictionary data"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "辞書データ"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2201,6 +2765,12 @@
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CC BY-ND 3.0 TW"
+          }
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "CC BY-ND 3.0 TW"
@@ -2229,6 +2799,12 @@
             "value" : "Included via"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同梱元"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2250,6 +2826,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Upstream distributes libmarisa under BSD-2-Clause OR LGPL-2.1-or-later. This screen reproduces the BSD-2-Clause option included in the shipped source tree."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上流ではlibmarisaをBSD-2-ClauseまたはLGPL-2.1-or-laterで配布しています。この画面には、同梱されたソースツリーに含まれるBSD-2-Clauseの選択肢を掲載しています。"
           }
         },
         "zh-Hans" : {
@@ -2275,6 +2857,12 @@
             "value" : "Details"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "詳細"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2296,6 +2884,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ministry copyright note"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "教育部の著作権に関する注記"
           }
         },
         "zh-Hans" : {
@@ -2321,6 +2915,12 @@
             "value" : "AVFoundation (reserved for audio)"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AVFoundation（音声用に予約）"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2342,6 +2942,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Swift package dependencies"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Swiftパッケージ依存関係"
           }
         },
         "zh-Hans" : {
@@ -2367,6 +2973,12 @@
             "value" : "Bundled upstream components"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同梱コンポーネント"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2388,6 +3000,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Package license list"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パッケージライセンス一覧"
           }
         },
         "zh-Hans" : {
@@ -2413,6 +3031,12 @@
             "value" : "Source repository"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ソースリポジトリ"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2434,6 +3058,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "License summary"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ライセンス概要"
           }
         },
         "zh-Hans" : {
@@ -2459,6 +3089,12 @@
             "value" : "License text"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ライセンス本文"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2480,6 +3116,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Package licenses"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パッケージライセンス"
           }
         },
         "zh-Hans" : {
@@ -2505,6 +3147,12 @@
             "value" : "License Information"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ライセンス情報"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2526,6 +3174,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Version"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バージョン"
           }
         },
         "zh-Hans" : {
@@ -2551,6 +3205,12 @@
             "value" : "Review the current Swift packages and bundled upstream license texts used by this native app."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このネイティブアプリで使用しているSwiftパッケージと同梱コンポーネントのライセンス文を確認します。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2572,6 +3232,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Loading dictionary"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "辞書を読み込み中"
           }
         },
         "zh-Hans" : {
@@ -2597,6 +3263,12 @@
             "value" : "Load failed"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "読み込みに失敗しました"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2620,6 +3292,12 @@
             "value" : "English"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "英語"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2634,6 +3312,35 @@
         }
       }
     },
+    "localeJapanese" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Japanese"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日本語"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日本語"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日本語"
+          }
+        }
+      }
+    },
     "localeSimplifiedChinese" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2641,6 +3348,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Simplified Chinese"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "簡体字中国語"
           }
         },
         "zh-Hans" : {
@@ -2666,6 +3379,12 @@
             "value" : "System"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム設定"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2687,6 +3406,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Traditional Chinese"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "繁体字中国語"
           }
         },
         "zh-Hans" : {
@@ -2712,6 +3437,12 @@
             "value" : "Go"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移動"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2733,6 +3464,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No playable audio for this item."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この項目には再生可能な音声がありません。"
           }
         },
         "zh-Hans" : {
@@ -2758,6 +3495,12 @@
             "value" : "Try Hanji, romanization, or Mandarin meanings."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "漢字、ローマ字、または中国語の語義で検索してください。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2779,6 +3522,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No results"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "検索結果なし"
           }
         },
         "zh-Hans" : {
@@ -2807,6 +3556,12 @@
             "value" : "Play example audio"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "例文音声を再生"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2828,6 +3583,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Play word audio"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "単語音声を再生"
           }
         },
         "zh-Hans" : {
@@ -2853,6 +3614,12 @@
             "value" : "Hanji usage principles"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "漢字使用原則"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2874,6 +3641,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tai-Lo notation"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "台羅表記"
           }
         },
         "zh-Hans" : {
@@ -2899,6 +3672,12 @@
             "value" : "References"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "参考資料"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2920,6 +3699,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Select a reference document from the sidebar."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サイドバーから参考資料を選択してください。"
           }
         },
         "zh-Hans" : {
@@ -2945,6 +3730,12 @@
             "value" : "Antonyms"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "反義語"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2966,6 +3757,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Synonyms"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "類義語"
           }
         },
         "zh-Hans" : {
@@ -2991,6 +3788,12 @@
             "value" : "Variants"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "異体語"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3012,6 +3815,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clear all search history?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "検索履歴をすべて消去しますか？"
           }
         },
         "zh-Hans" : {
@@ -3037,6 +3846,12 @@
             "value" : "Search history"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "検索履歴"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3058,6 +3873,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Searching"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "検索中"
           }
         },
         "zh-Hans" : {
@@ -3083,6 +3904,12 @@
             "value" : "Search Taiwanese Hanji, romanization, or Mandarin meaning"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "台湾語の漢字、ローマ字、または中国語の語義を検索"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3104,6 +3931,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Results"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "検索結果"
           }
         },
         "zh-Hans" : {
@@ -3129,6 +3962,12 @@
             "value" : "Type Hanji, romanization, or Mandarin meaning to see entries."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "漢字、ローマ字、または中国語の語義を入力して見出し語を検索します。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3150,6 +3989,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Select a search result to view details here."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "検索結果を選択すると、ここに詳細が表示されます。"
           }
         },
         "zh-Hans" : {
@@ -3175,6 +4020,12 @@
             "value" : "Start searching"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "検索を開始"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3196,6 +4047,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Start searching"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "検索を開始"
           }
         },
         "zh-Hans" : {
@@ -3221,6 +4078,12 @@
             "value" : "Search"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "検索"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3242,6 +4105,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "About"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このアプリについて"
           }
         },
         "zh-Hans" : {
@@ -3267,6 +4136,12 @@
             "value" : "Actions"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "操作"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3288,6 +4163,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Advanced settings"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "詳細設定"
           }
         },
         "zh-Hans" : {
@@ -3313,6 +4194,12 @@
             "value" : "Inspect dictionary metadata and run maintenance actions for local data."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "辞書のメタデータを確認し、ローカルデータのメンテナンスを実行します。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3334,6 +4221,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This removes local data and initialization will run again next launch."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ローカルデータを削除し、次回起動時に再度初期化します。"
           }
         },
         "zh-Hans" : {
@@ -3359,6 +4252,12 @@
             "value" : "Clear local dictionary data?"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ローカル辞書データを消去しますか？"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3380,6 +4279,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This rebuilds the local dictionary data and may take some time."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ローカル辞書データを再構築します。完了まで時間がかかることがあります。"
           }
         },
         "zh-Hans" : {
@@ -3405,6 +4310,12 @@
             "value" : "Rebuild local dictionary data?"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ローカル辞書データを再構築しますか？"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3426,6 +4337,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Data and info"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "データと情報"
           }
         },
         "zh-Hans" : {
@@ -3451,6 +4368,12 @@
             "value" : "Offline dictionary resources"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オフライン辞書リソース"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3472,6 +4395,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dictionary source data"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "辞書ソースデータ"
           }
         },
         "zh-Hans" : {
@@ -3497,6 +4426,12 @@
             "value" : "Display"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "表示"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3518,6 +4453,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "General"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一般"
           }
         },
         "zh-Hans" : {
@@ -3543,6 +4484,12 @@
             "value" : "Adjust interface language, appearance, and reading text size."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "インターフェース言語、外観、本文の文字サイズを調整します。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3564,6 +4511,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Interface language"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "インターフェース言語"
           }
         },
         "zh-Hans" : {
@@ -3589,6 +4542,12 @@
             "value" : "License info"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ライセンス情報"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3610,6 +4569,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Offline audio resources"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オフライン音声リソース"
           }
         },
         "zh-Hans" : {
@@ -3635,6 +4600,12 @@
             "value" : "Reading text scale"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本文の文字サイズ"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3653,6 +4624,12 @@
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%.2fx"
+          }
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%.2fx"
@@ -3681,6 +4658,12 @@
             "value" : "Redownload example audio"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "例文音声を再ダウンロード"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3702,6 +4685,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Redownload word audio"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "単語音声を再ダウンロード"
           }
         },
         "zh-Hans" : {
@@ -3727,6 +4716,12 @@
             "value" : "References"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "参考資料"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3748,6 +4743,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Resources"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リソース"
           }
         },
         "zh-Hans" : {
@@ -3773,6 +4774,12 @@
             "value" : "Manage offline audio downloads and repair resource state when needed."
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オフライン音声のダウンロードとリソース状態の修復を管理します。"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3794,6 +4801,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sentence audio"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "例文音声"
           }
         },
         "zh-Hans" : {
@@ -3819,6 +4832,12 @@
             "value" : "Theme"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "外観モード"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3840,6 +4859,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Settings"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定"
           }
         },
         "zh-Hans" : {
@@ -3865,6 +4890,12 @@
             "value" : "Word audio"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "単語音声"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3886,6 +4917,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Share"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "共有"
           }
         },
         "zh-Hans" : {
@@ -3914,6 +4951,12 @@
             "value" : "Bookmarks"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ブックマーク"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3935,6 +4978,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dictionary"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "辞書"
           }
         },
         "zh-Hans" : {
@@ -3960,6 +5009,12 @@
             "value" : "Settings"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3981,6 +5036,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dark"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダーク"
           }
         },
         "zh-Hans" : {
@@ -4006,6 +5067,12 @@
             "value" : "Light"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ライト"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4027,6 +5094,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "System"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム設定"
           }
         },
         "zh-Hans" : {

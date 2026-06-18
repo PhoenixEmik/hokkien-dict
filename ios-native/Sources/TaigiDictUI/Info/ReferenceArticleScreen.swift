@@ -57,6 +57,8 @@ private enum ReferenceArticleRepository {
             "zh-Hans"
         case .english:
             "en"
+        case .japanese:
+            "en"
         }
 
         let resourceName = "\(kind.rawValue)_\(localeCode)"

@@ -34,6 +34,21 @@ final class AppLanguageManagerTests: XCTestCase {
         XCTAssertEqual(manager.appLocale, .simplifiedChinese)
     }
 
+    func testSelectsJapaneseLanguage() {
+        let defaults = makeDefaults(testName: #function)
+        let manager = AppLanguageManager(
+            defaults: defaults,
+            systemLocale: Locale(identifier: "zh-Hant")
+        )
+
+        manager.setLanguage(.ja)
+
+        XCTAssertEqual(manager.selectedLanguage, .ja)
+        XCTAssertEqual(manager.locale.identifier, "ja")
+        XCTAssertEqual(manager.appLocale, .japanese)
+        XCTAssertEqual(manager.displayName(for: .ja), "日本語")
+    }
+
     private func makeDefaults(testName: String) -> UserDefaults {
         let suiteName = "AppLanguageManagerTests.\(testName)"
         let defaults = UserDefaults(suiteName: suiteName)!

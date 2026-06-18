@@ -6,6 +6,7 @@ public enum AppLanguage: String, CaseIterable, Codable, Hashable, Sendable {
     case zhHant = "zh-Hant"
     case zhHans = "zh-Hans"
     case en = "en"
+    case ja = "ja"
 
     var localizationIdentifier: String? {
         switch self {
@@ -17,6 +18,8 @@ public enum AppLanguage: String, CaseIterable, Codable, Hashable, Sendable {
             return Self.zhHans.rawValue
         case .en:
             return Self.en.rawValue
+        case .ja:
+            return Self.ja.rawValue
         }
     }
 
@@ -30,6 +33,8 @@ public enum AppLanguage: String, CaseIterable, Codable, Hashable, Sendable {
             return Locale(identifier: Self.zhHans.rawValue)
         case .en:
             return Locale(identifier: Self.en.rawValue)
+        case .ja:
+            return Locale(identifier: Self.ja.rawValue)
         }
     }
 

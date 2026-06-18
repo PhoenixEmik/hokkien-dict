@@ -120,6 +120,7 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case localeTraditionalChinese
     case localeSimplifiedChinese
     case localeEnglish
+    case localeJapanese
     case localeSystem
 
     case themeSystem
@@ -267,6 +268,9 @@ enum AppLocalizer {
         if identifier.hasPrefix("zh") {
             return .traditionalChinese
         }
+        if identifier.hasPrefix("ja") {
+            return .japanese
+        }
         return .english
     }
 
@@ -281,7 +285,7 @@ enum AppLocalizer {
         let localizationIdentifier = switch language {
         case .system:
             language.resolvedAppLocale(systemLocale: systemLocale).localizationIdentifier
-        case .zhHant, .zhHans, .en:
+        case .zhHant, .zhHans, .en, .ja:
             language.localizationIdentifier
         }
 
@@ -330,6 +334,8 @@ private struct LocalizedStringCatalog {
         let preferredLanguage = switch locale {
         case .english:
             "en"
+        case .japanese:
+            "ja"
         case .simplifiedChinese:
             "zh-Hans"
         case .traditionalChinese:
@@ -361,6 +367,8 @@ private extension AppLocale {
         switch self {
         case .english:
             return "en"
+        case .japanese:
+            return "ja"
         case .simplifiedChinese:
             return "zh-Hans"
         case .traditionalChinese:

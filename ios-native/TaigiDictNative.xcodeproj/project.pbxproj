@@ -45,6 +45,7 @@
 		C20000010000000000000001 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C20000010000000000000002 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		C20000010000000000000003 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		C20000010000000000000005 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		D10000010000000000000007 /* TaigiDictNativeMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TaigiDictNativeMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -221,6 +222,7 @@
 				"zh-Hans",
 				"zh-Hant",
 				en,
+				ja,
 				Base,
 			);
 			mainGroup = 8A000001000000000000000B;
@@ -311,6 +313,7 @@
 				C20000010000000000000001 /* en */,
 				C20000010000000000000002 /* zh-Hans */,
 				C20000010000000000000003 /* zh-Hant */,
+				C20000010000000000000005 /* ja */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";

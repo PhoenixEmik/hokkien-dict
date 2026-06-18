@@ -85,6 +85,8 @@ private extension AppLanguage {
             return .localeSimplifiedChinese
         case .en:
             return .localeEnglish
+        case .ja:
+            return .localeJapanese
         }
     }
 }

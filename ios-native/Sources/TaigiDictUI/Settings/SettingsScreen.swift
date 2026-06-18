@@ -763,6 +763,8 @@ private extension AppLanguage {
             return "settings.interfaceLanguage.zh-Hans"
         case .en:
             return "settings.interfaceLanguage.en"
+        case .ja:
+            return "settings.interfaceLanguage.ja"
         }
     }
 }
