@@ -7,6 +7,7 @@ import org.taigidict.app.domain.model.DictionaryBundle
 import org.taigidict.app.domain.model.DictionaryEntry
 import org.taigidict.app.domain.model.DictionaryExample
 import org.taigidict.app.domain.model.DictionarySense
+import org.taigidict.app.domain.search.DictionarySearchService
 import kotlinx.serialization.json.Json
 
 interface DictionaryRepositoryDataSource {
@@ -50,12 +51,21 @@ class SQLiteDictionaryRepository(
             return emptyList()
         }
 
-        val orderedIds = searchOrderedIds(
+        val searchLimit = limit.coerceAtLeast(1)
+        val candidateIds = searchOrderedIds(
             rawQuery = rawQuery.trim(),
             normalizedQuery = normalizedQuery,
-            limit = limit.coerceAtLeast(1),
+            limit = maxOf(searchLimit, DictionarySearchService.DEFAULT_LIMIT) *
+                SEARCH_CANDIDATE_MULTIPLIER,
         )
-        return fetchEntries(orderedIds)
+        val candidates = fetchEntries(candidateIds)
+        val rankedIds = DictionarySearchService.searchEntryIds(
+            index = DictionarySearchService.buildSearchIndex(candidates),
+            rawQuery = rawQuery,
+            limit = searchLimit,
+        )
+        val candidatesById = candidates.associateBy(DictionaryEntry::id)
+        return rankedIds.mapNotNull(candidatesById::get)
     }
 
     override fun entries(ids: List<Long>): List<DictionaryEntry> {
@@ -118,6 +128,7 @@ class SQLiteDictionaryRepository(
                      WHERE x.entry_id = e.id
                        AND (
                          x.hanji LIKE ? ESCAPE '\'
+                         OR x.romanization LIKE ? ESCAPE '\'
                          OR x.mandarin LIKE ? ESCAPE '\'
                        )
                    )
@@ -133,6 +144,7 @@ class SQLiteDictionaryRepository(
                 LIMIT ?
                 """.trimIndent(),
                 arrayOf(
+                    pattern,
                     pattern,
                     pattern,
                     pattern,
@@ -340,6 +352,7 @@ private data class EntryRow(
 )
 
 private const val DEFAULT_SEARCH_LIMIT = 60
+private const val SEARCH_CANDIDATE_MULTIPLIER = 6
 
 sealed class SQLiteDictionaryRepositoryException(message: String) : Exception(message) {
     class MissingDatabase(file: File) :

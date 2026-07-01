@@ -15,6 +15,7 @@ import org.taigidict.app.domain.model.DictionaryBundle
 import org.taigidict.app.domain.model.DictionaryEntry
 import org.taigidict.app.domain.model.DictionaryExample
 import org.taigidict.app.domain.model.DictionarySense
+import org.taigidict.app.domain.search.DictionarySearchService
 
 class RoomDictionaryRepository(
     context: Context,
@@ -57,7 +58,8 @@ class RoomDictionaryRepository(
 
         val pattern = "%${escapeLike(normalizedQuery)}%"
         val prefix = "${escapeLike(normalizedQuery)}%"
-        val ids = dao.searchOrderedIds(
+        val searchLimit = limit.coerceAtLeast(1)
+        val candidateIds = dao.searchOrderedIds(
             SimpleSQLiteQuery(
                 """
                 SELECT e.id
@@ -77,6 +79,7 @@ class RoomDictionaryRepository(
                      WHERE x.entry_id = e.id
                        AND (
                          x.hanji LIKE ? ESCAPE '\'
+                         OR x.romanization LIKE ? ESCAPE '\'
                          OR x.mandarin LIKE ? ESCAPE '\'
                        )
                    )
@@ -98,15 +101,24 @@ class RoomDictionaryRepository(
                     pattern,
                     pattern,
                     pattern,
+                    pattern,
                     rawQuery.trim(),
                     prefix,
                     prefix,
-                    limit.coerceAtLeast(1),
+                    maxOf(searchLimit, DictionarySearchService.DEFAULT_LIMIT) *
+                        SEARCH_CANDIDATE_MULTIPLIER,
                 ),
             ),
         ).map { it.id }
 
-        fetchEntries(ids)
+        val candidates = fetchEntries(candidateIds)
+        val rankedIds = DictionarySearchService.searchEntryIds(
+            index = DictionarySearchService.buildSearchIndex(candidates),
+            rawQuery = rawQuery,
+            limit = searchLimit,
+        )
+        val candidatesById = candidates.associateBy(DictionaryEntry::id)
+        rankedIds.mapNotNull(candidatesById::get)
     }
 
     override fun entries(ids: List<Long>): List<DictionaryEntry> = runBlocking(ioDispatcher) {
@@ -234,5 +246,6 @@ class RoomDictionaryRepository(
 
     private companion object {
         const val ROOM_DEFAULT_SEARCH_LIMIT = 60
+        const val SEARCH_CANDIDATE_MULTIPLIER = 6
     }
 }

@@ -70,6 +70,45 @@ class SQLiteDictionaryRepositorySearchTest {
     }
 
     @Test
+    fun search_prioritizesClosestDefinitionMatchForMandarinQuery() {
+        val tempDirectory = createTempDirectory(prefix = "dict-search-definition-order-").toFile()
+        val databaseFile = File(tempDirectory, "dictionary.sqlite")
+        val jsonl = """
+            {"id":1300,"type":"助詞","hanji":"仔【替】","romanization":"--á","category":"","audio":"","hokkienSearch":"仔 a","mandarinSearch":"名詞後綴。 今天","senses":[{"partOfSpeech":"助詞","definition":"名詞後綴。","examples":[{"order":1,"hanji":"今仔日","romanization":"kin-á-ji̍t","mandarin":"今天","audio":""}]}]}
+            {"id":366,"type":"時間詞","hanji":"下昏暗","romanization":"e-hng-àm","category":"","audio":"","hokkienSearch":"下昏暗 e hng am","mandarinSearch":"今晚 今天晚上。","senses":[{"partOfSpeech":"時間詞","definition":"今晚、今天晚上。","examples":[]}]}
+            {"id":629,"type":"時間詞","hanji":"今仔日","romanization":"kin-á-ji̍t","category":"","audio":"","hokkienSearch":"今仔日 kin a jit","mandarinSearch":"今天 今日。 今天是我的生日。","senses":[{"partOfSpeech":"時間詞","definition":"今天、今日。","examples":[{"order":1,"hanji":"今仔日是我的生日。","romanization":"Kin-á-ji̍t sī guá ê senn-ji̍t.","mandarin":"今天是我的生日。","audio":""}]}]}
+        """.trimIndent()
+        val repository = importRepository(
+            databaseFile = databaseFile,
+            jsonl = jsonl,
+            entryCount = 3,
+            senseCount = 3,
+            exampleCount = 2,
+        )
+
+        assertEquals(listOf(629L), repository.search("今天", limit = 1).map { it.id })
+        assertEquals(listOf(629L, 366L, 1300L), repository.search("今天").map { it.id })
+    }
+
+    @Test
+    fun search_prioritizesExactDefinitionTermBeforeDefinitionPrefix() {
+        val tempDirectory = createTempDirectory(prefix = "dict-search-exact-definition-").toFile()
+        val databaseFile = File(tempDirectory, "dictionary.sqlite")
+        val jsonl = """
+            {"id":4204,"type":"時間詞","hanji":"明仔日","romanization":"bîn-á-ji̍t","category":"","audio":"","hokkienSearch":"明仔日 bin a jit","mandarinSearch":"明天 明日。","senses":[{"partOfSpeech":"時間詞","definition":"明天、明日。","examples":[]}]}
+            {"id":4206,"type":"時間詞","hanji":"明仔早起","romanization":"bîn-á-tsá-khí","category":"","audio":"","hokkienSearch":"明仔早起 bin a tsa khi","mandarinSearch":"明天早上。","senses":[{"partOfSpeech":"時間詞","definition":"明天早上。","examples":[]}]}
+            {"id":4207,"type":"時間詞","hanji":"明仔暗","romanization":"bîn-á-àm","category":"","audio":"","hokkienSearch":"明仔暗 bin a am","mandarinSearch":"明天晚上。","senses":[{"partOfSpeech":"時間詞","definition":"明天晚上。","examples":[]}]}
+            {"id":4208,"type":"時間詞","hanji":"明仔載","romanization":"bîn-á-tsài","category":"","audio":"","hokkienSearch":"明仔載 bin a tsai","mandarinSearch":"明天 明日。","senses":[{"partOfSpeech":"時間詞","definition":"明天、明日。","examples":[]}]}
+        """.trimIndent()
+        val repository = importRepository(databaseFile, jsonl, entryCount = 4, senseCount = 4)
+
+        assertEquals(
+            listOf(4204L, 4208L, 4206L, 4207L),
+            repository.search("明天").map { it.id },
+        )
+    }
+
+    @Test
     fun findLinkedEntry_prefersExactHanjiThenRelatedWordThenRomanization() {
         val tempDirectory = createTempDirectory(prefix = "dict-linked-order-").toFile()
         val databaseFile = File(tempDirectory, "dictionary.sqlite")
