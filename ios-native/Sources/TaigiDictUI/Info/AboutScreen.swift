@@ -27,11 +27,13 @@ struct AboutScreen: View {
     @ViewBuilder
     private var aboutSections: some View {
         Section(AppLocalizer.text(.aboutAppSection, locale: appLocale)) {
-            LabeledContent {
-                Text(appVersion)
-                    .foregroundStyle(.secondary)
-            } label: {
-                Label(AppLocalizer.text(.aboutVersion, locale: appLocale), systemImage: "number.circle")
+            if let appVersion {
+                LabeledContent {
+                    Text(appVersion)
+                        .foregroundStyle(.secondary)
+                } label: {
+                    Label(AppLocalizer.text(.aboutVersion, locale: appLocale), systemImage: "number.circle")
+                }
             }
 
             LabeledContent {
@@ -75,12 +77,12 @@ struct AboutScreen: View {
         }
     }
 
-    private var appVersion: String {
-        if let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
-           !version.isEmpty {
-            return version
+    private var appVersion: String? {
+        guard let version = Bundle.main.object(
+            forInfoDictionaryKey: "CFBundleShortVersionString"
+        ) as? String, !version.isEmpty else {
+            return nil
         }
-
-        return AppLocalizer.text(.aboutVersionValue, locale: appLocale)
+        return version
     }
 }

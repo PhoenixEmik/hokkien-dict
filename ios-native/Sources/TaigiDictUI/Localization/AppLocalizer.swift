@@ -150,7 +150,6 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case aboutAppDescription
     case aboutAuthor
     case aboutVersion
-    case aboutVersionValue
     case aboutProjectSection
     case aboutGitHub
     case aboutRepositorySubtitle

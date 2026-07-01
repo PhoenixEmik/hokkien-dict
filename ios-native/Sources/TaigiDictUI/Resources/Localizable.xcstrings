@@ -374,35 +374,6 @@
         }
       }
     },
-    "aboutVersionValue" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1.4.1"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1.4.1"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1.4.1"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1.4.1"
-          }
-        }
-      }
-    },
     "advancedBuiltAt" : {
       "extractionState" : "stale",
       "localizations" : {

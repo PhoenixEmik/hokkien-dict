@@ -29,9 +29,11 @@ public struct MacAboutWindowView: View {
                     Text(AppLocalizer.text(.aboutAppSection, locale: appLocale))
                         .font(.title2.weight(.semibold))
 
-                    Text("\(AppLocalizer.text(.aboutVersion, locale: appLocale)) \(appVersion)")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    if let appVersion {
+                        Text("\(AppLocalizer.text(.aboutVersion, locale: appLocale)) \(appVersion)")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
                 }
 
                 VStack(spacing: 3) {
@@ -76,13 +78,13 @@ public struct MacAboutWindowView: View {
         .background(Color(nsColor: .windowBackgroundColor))
     }
 
-    private var appVersion: String {
-        if let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
-           !version.isEmpty {
-            return version
+    private var appVersion: String? {
+        guard let version = Bundle.main.object(
+            forInfoDictionaryKey: "CFBundleShortVersionString"
+        ) as? String, !version.isEmpty else {
+            return nil
         }
-
-        return AppLocalizer.text(.aboutVersionValue, locale: appLocale)
+        return version
     }
 }
 
