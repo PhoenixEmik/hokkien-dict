@@ -16,6 +16,55 @@ final class DictionarySearchServiceTests: XCTestCase {
         )
     }
 
+    func testSearchRanksExactDefinitionTermsBeforeDefinitionPrefixes() {
+        let index = DictionarySearchService.buildSearchIndex(entries: [
+            entry(id: 4204, hanji: "明仔日", romanization: "bîn-á-ji̍t", definition: "明天、明日。"),
+            entry(id: 4206, hanji: "明仔早起", romanization: "bîn-á-tsá-khí", definition: "明天早上。"),
+            entry(id: 4207, hanji: "明仔暗", romanization: "bîn-á-àm", definition: "明天晚上。"),
+            entry(id: 4208, hanji: "明仔載", romanization: "bîn-á-tsài", definition: "明天、明日。"),
+        ])
+
+        XCTAssertEqual(
+            DictionarySearchService.searchEntryIDs(index: index, query: "明天"),
+            [4204, 4208, 4206, 4207]
+        )
+    }
+
+    func testSearchRanksDefinitionsBeforeExactExampleMatches() {
+        let index = DictionarySearchService.buildSearchIndex(entries: [
+            entry(id: 629, hanji: "今仔日", romanization: "kin-á-ji̍t", definition: "今天、今日。"),
+            DictionaryEntry(
+                id: 1300,
+                type: "",
+                hanji: "仔【替】",
+                romanization: "--á",
+                category: "",
+                audioID: "",
+                hokkienSearch: "仔 a",
+                mandarinSearch: "名詞後綴。 今天",
+                senses: [
+                    DictionarySense(
+                        partOfSpeech: "",
+                        definition: "名詞後綴。",
+                        examples: [
+                            DictionaryExample(
+                                hanji: "今仔日",
+                                romanization: "kin-á-ji̍t",
+                                mandarin: "今天",
+                                audioID: ""
+                            )
+                        ]
+                    )
+                ]
+            ),
+        ])
+
+        XCTAssertEqual(
+            DictionarySearchService.searchEntryIDs(index: index, query: "今天"),
+            [629, 1300]
+        )
+    }
+
     func testInMemoryLinkedLookupPrefersExactVariantThenRomanization() async {
         let bundle = DictionaryBundle(
             entryCount: 3,

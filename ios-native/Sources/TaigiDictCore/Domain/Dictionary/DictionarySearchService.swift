@@ -4,11 +4,21 @@ public struct DictionarySearchRow: Sendable {
     public var entryID: Int64
     public var headwords: [String]
     public var definitions: [String]
+    public var examples: [String]
+    public var fallbackDefinitions: [String]
 
-    public init(entryID: Int64, headwords: [String], definitions: [String]) {
+    public init(
+        entryID: Int64,
+        headwords: [String],
+        definitions: [String],
+        examples: [String] = [],
+        fallbackDefinitions: [String] = []
+    ) {
         self.entryID = entryID
         self.headwords = headwords
         self.definitions = definitions
+        self.examples = examples
+        self.fallbackDefinitions = fallbackDefinitions
     }
 }
 
@@ -20,7 +30,9 @@ public enum DictionarySearchService {
             DictionarySearchRow(
                 entryID: entry.id,
                 headwords: headwordFields(for: entry),
-                definitions: definitionFields(for: entry)
+                definitions: definitionFields(for: entry),
+                examples: exampleFields(for: entry),
+                fallbackDefinitions: fallbackDefinitionFields(for: entry)
             )
         }
     }
@@ -43,16 +55,47 @@ public enum DictionarySearchService {
     }
 
     private static func match(row: DictionarySearchRow, query: String) -> ScoredSearchHit? {
-        if let headwordMatch = bestMatchLength(fields: row.headwords, query: query) {
-            let score = headwordMatch == query.count ? 0 : 1
-            return ScoredSearchHit(entryID: row.entryID, score: score, matchedLength: headwordMatch)
+        if let headwordMatch = bestMatch(fields: row.headwords, query: query) {
+            let score = headwordMatch.matchedLength == query.count ? 0 : 1
+            return ScoredSearchHit(
+                entryID: row.entryID,
+                score: score,
+                matchQuality: headwordMatch.quality,
+                matchedLength: headwordMatch.matchedLength
+            )
         }
 
-        guard let definitionMatch = bestMatchLength(fields: row.definitions, query: query) else {
+        if let definitionMatch = bestMatch(fields: row.definitions, query: query) {
+            return ScoredSearchHit(
+                entryID: row.entryID,
+                score: 2,
+                matchQuality: definitionMatch.quality,
+                matchedLength: definitionMatch.matchedLength
+            )
+        }
+
+        if let exampleMatch = bestMatch(fields: row.examples, query: query) {
+            return ScoredSearchHit(
+                entryID: row.entryID,
+                score: 3,
+                matchQuality: exampleMatch.quality,
+                matchedLength: exampleMatch.matchedLength
+            )
+        }
+
+        guard let fallbackDefinitionMatch = bestMatch(
+            fields: row.fallbackDefinitions,
+            query: query
+        ) else {
             return nil
         }
 
-        return ScoredSearchHit(entryID: row.entryID, score: 2, matchedLength: definitionMatch)
+        return ScoredSearchHit(
+            entryID: row.entryID,
+            score: 4,
+            matchQuality: fallbackDefinitionMatch.quality,
+            matchedLength: fallbackDefinitionMatch.matchedLength
+        )
     }
 
     private static func headwordFields(for entry: DictionaryEntry) -> [String] {
@@ -63,29 +106,74 @@ public enum DictionarySearchService {
     }
 
     private static func definitionFields(for entry: DictionaryEntry) -> [String] {
-        let senseFields = entry.senses.flatMap { sense in
-            [sense.definition] + sense.definitionSynonyms + sense.definitionAntonyms +
-                sense.examples.flatMap { [$0.hanji, $0.romanization, $0.mandarin] }
-        }
-
         return uniqueNonEmpty(
-            [entry.mandarinSearch] + senseFields
+            entry.senses.flatMap { sense in
+                [sense.definition] + sense.definitionSynonyms + sense.definitionAntonyms
+            }
                 .map(TextNormalization.normalizeQuery)
         )
     }
 
-    private static func bestMatchLength(fields: [String], query: String) -> Int? {
-        fields.reduce(nil) { bestLength, field in
+    private static func exampleFields(for entry: DictionaryEntry) -> [String] {
+        uniqueNonEmpty(
+            entry.senses.flatMap { sense in
+                sense.examples.flatMap { [$0.hanji, $0.romanization, $0.mandarin] }
+            }
+                .map(TextNormalization.normalizeQuery)
+        )
+    }
+
+    private static func fallbackDefinitionFields(for entry: DictionaryEntry) -> [String] {
+        uniqueNonEmpty([TextNormalization.normalizeQuery(entry.mandarinSearch)])
+    }
+
+    private static func bestMatch(fields: [String], query: String) -> SearchFieldMatch? {
+        fields.reduce(nil) { bestMatch, field in
             guard !field.isEmpty, !query.isEmpty, field.contains(query) else {
-                return bestLength
+                return bestMatch
             }
 
-            if let bestLength {
-                return min(bestLength, field.count)
+            let quality: Int
+            if containsExactTerm(field: field, query: query) {
+                quality = 0
+            } else if field.hasPrefix(query) {
+                quality = 1
+            } else {
+                quality = 2
             }
 
-            return field.count
+            let candidate = SearchFieldMatch(quality: quality, matchedLength: field.count)
+            if let bestMatch {
+                return min(bestMatch, candidate)
+            }
+
+            return candidate
         }
+    }
+
+    private static func containsExactTerm(field: String, query: String) -> Bool {
+        var searchStart = field.startIndex
+
+        while searchStart < field.endIndex,
+              let range = field.range(
+                of: query,
+                range: searchStart..<field.endIndex
+              ) {
+            let hasLeadingBoundary = range.lowerBound == field.startIndex ||
+                isTermBoundary(field[field.index(before: range.lowerBound)])
+            let hasTrailingBoundary = range.upperBound == field.endIndex ||
+                isTermBoundary(field[range.upperBound])
+            if hasLeadingBoundary && hasTrailingBoundary {
+                return true
+            }
+            searchStart = field.index(after: range.lowerBound)
+        }
+
+        return false
+    }
+
+    private static func isTermBoundary(_ character: Character) -> Bool {
+        !character.isLetter && !character.isNumber
     }
 
     private static func uniqueNonEmpty(_ values: [String]) -> [String] {
@@ -103,6 +191,7 @@ public enum DictionarySearchService {
 private struct ScoredSearchHit: Comparable {
     var entryID: Int64
     var score: Int
+    var matchQuality: Int
     var matchedLength: Int
 
     static func < (left: ScoredSearchHit, right: ScoredSearchHit) -> Bool {
@@ -110,10 +199,27 @@ private struct ScoredSearchHit: Comparable {
             return left.score < right.score
         }
 
+        if left.matchQuality != right.matchQuality {
+            return left.matchQuality < right.matchQuality
+        }
+
         if left.matchedLength != right.matchedLength {
             return left.matchedLength < right.matchedLength
         }
 
         return left.entryID < right.entryID
+    }
+}
+
+private struct SearchFieldMatch: Comparable {
+    var quality: Int
+    var matchedLength: Int
+
+    static func < (left: SearchFieldMatch, right: SearchFieldMatch) -> Bool {
+        if left.quality != right.quality {
+            return left.quality < right.quality
+        }
+
+        return left.matchedLength < right.matchedLength
     }
 }
