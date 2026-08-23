@@ -12,15 +12,15 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun appPageContainerColor(): Color = MaterialTheme.colorScheme.surfaceContainerLowest
+fun appPageContainerColor(): Color = MaterialTheme.colorScheme.surface
 
 @Composable
 fun appCardColors() = CardDefaults.cardColors(
-    containerColor = MaterialTheme.colorScheme.surface,
+    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
 )
 
 @Composable
-fun appListContainerColor(): Color = MaterialTheme.colorScheme.surface
+fun appListContainerColor(): Color = MaterialTheme.colorScheme.surfaceContainerLow
 
 @Composable
 fun transparentListItemColors() = ListItemDefaults.colors(
@@ -43,6 +43,6 @@ fun AppListDivider(
 ) {
     HorizontalDivider(
         modifier = modifier.padding(horizontal = inset),
-        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f),
+        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.38f),
     )
 }

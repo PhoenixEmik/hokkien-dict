@@ -283,8 +283,8 @@ fun DictionaryScreen(
                                 ) {
                                     Text(
                                         text = stringResource(R.string.dictionary_recent_searches_title),
-                                        style = MaterialTheme.typography.titleLarge,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSurface,
                                     )
                                     TextButton(onClick = viewModel::onClearRecentSearches) {
                                         Text(text = stringResource(R.string.dictionary_recent_searches_clear))
@@ -493,7 +493,7 @@ internal fun DictionaryNoResultsState(
                 Text(
                     text = stringResource(R.string.dictionary_recent_searches_title),
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             }
             item("recent-searches-card") {
@@ -646,14 +646,14 @@ internal fun RecentSearchHistoryCard(
                         Icon(
                             imageVector = Icons.Outlined.History,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     },
                     headlineContent = {
                         DictionaryFallbackText(
                             text = query,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
                     },
                 )
