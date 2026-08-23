@@ -144,6 +144,8 @@
     <string name="settings_info_body">アプリに収録されたライセンス文書を読み、オンラインのプライバシーポリシーを開きます。</string>
     <string name="settings_info_about">このアプリについて</string>
     <string name="settings_about_summary">アプリのバージョン、ソースコード、ライセンス、プライバシー</string>
+    <string name="settings_rate_app">台語辞典を評価</string>
+    <string name="settings_rate_app_summary">この辞典が役に立ったら、ストアで評価してください。</string>
     <string name="settings_reference_summary">Tailo と漢字の参考ガイド</string>
     <string name="about_title">台語辭典について</string>
     <string name="about_app_section">台語辭典</string>

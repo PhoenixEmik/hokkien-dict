@@ -83,6 +83,8 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case settingsAdvancedDescription
     case settingsAbout
     case settingsLicenses
+    case settingsRateApp
+    case settingsRateAppDescription
     case settingsReferences
     case settingsDictionaryResourcesSection
     case settingsDictionarySource

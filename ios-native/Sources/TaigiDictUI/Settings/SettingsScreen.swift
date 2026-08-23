@@ -1,8 +1,10 @@
+import StoreKit
 import SwiftUI
 import TaigiDictCore
 
 public struct SettingsScreen: View {
     @EnvironmentObject private var appLanguageManager: AppLanguageManager
+    @Environment(\.requestReview) private var requestReview
     @State private var viewModel: SettingsViewModel
     @State private var pendingAudioRestart: PendingAudioRestart?
 #if os(macOS)
@@ -149,6 +151,22 @@ public struct SettingsScreen: View {
                 } label: {
                     Label(AppLocalizer.text(.settingsAbout, locale: locale), systemImage: "info.circle")
                 }
+
+                Button {
+                    requestReview()
+                } label: {
+                    Label {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(AppLocalizer.text(.settingsRateApp, locale: locale))
+                            Text(AppLocalizer.text(.settingsRateAppDescription, locale: locale))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    } icon: {
+                        Image(systemName: "star")
+                    }
+                }
+                .foregroundStyle(.primary)
 
                 NavigationLink {
                     ReferenceArticleListScreen()

@@ -4678,6 +4678,64 @@
         }
       }
     },
+    "settingsRateApp" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rate Taigi Dictionary"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "台語辞典を評価"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "为台语辞典评分"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "為台語辭典評分"
+          }
+        }
+      }
+    },
+    "settingsRateAppDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If this dictionary helps, leave a rating on the store."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この辞典が役に立ったら、ストアで評価してください。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如果这本辞典有帮助，欢迎到商店留下评分。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "若這本辭典有幫助，歡迎到商店留下評分。"
+          }
+        }
+      }
+    },
     "settingsReferences" : {
       "extractionState" : "stale",
       "localizations" : {

@@ -144,6 +144,8 @@
     <string name="settings_info_body">可在 App 内阅读授权文档，隐私政策将打开外部链接。</string>
     <string name="settings_info_about">关于</string>
     <string name="settings_about_summary">App 版本、源代码、授权与隐私权</string>
+    <string name="settings_rate_app">为台语辞典评分</string>
+    <string name="settings_rate_app_summary">如果这本辞典有帮助，欢迎到商店留下评分。</string>
     <string name="settings_reference_summary">台罗与汉字参考资料</string>
     <string name="about_title">关于台语辞典</string>
     <string name="about_app_section">台语辞典</string>

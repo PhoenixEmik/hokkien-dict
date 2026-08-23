@@ -1,5 +1,8 @@
 package org.taigidict.app.feature.settings
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +26,7 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.StarRate
 import androidx.compose.material.icons.outlined.TextFields
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -77,6 +81,7 @@ private val RootHorizontalPadding = 16.dp
 private val RootVerticalPadding = 16.dp
 private val SettingsSectionSpacing = 22.dp
 private val SettingsSectionInnerSpacing = 8.dp
+private const val PlayStorePackageName = "com.android.vending"
 
 private enum class SettingsRoute {
     Main,
@@ -275,6 +280,7 @@ fun SettingsScreen(
                         referenceSummary = referenceSummary,
                         onOpenAdvancedSettings = { route = SettingsRoute.Advanced },
                         onOpenAbout = { route = SettingsRoute.About },
+                        onRateApp = { openAppRating(context) },
                         onOpenReference = { route = SettingsRoute.Reference },
                     )
                 }
@@ -597,6 +603,7 @@ private fun InfoAndMaintenanceGroup(
     referenceSummary: String,
     onOpenAdvancedSettings: () -> Unit,
     onOpenAbout: () -> Unit,
+    onRateApp: () -> Unit,
     onOpenReference: () -> Unit,
 ) {
     AppSettingsGroup {
@@ -657,6 +664,34 @@ private fun InfoAndMaintenanceGroup(
         )
         AppListDivider()
         ListItem(
+            modifier = Modifier.clickable(onClick = onRateApp),
+            colors = transparentListItemColors(),
+            leadingContent = {
+                AppSettingsRowIcon(
+                    imageVector = Icons.Outlined.StarRate,
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                )
+            },
+            headlineContent = {
+                Text(text = stringResource(R.string.settings_rate_app))
+            },
+            supportingContent = {
+                Text(
+                    text = stringResource(R.string.settings_rate_app_summary),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            },
+            trailingContent = {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            },
+        )
+        AppListDivider()
+        ListItem(
             modifier = Modifier.clickable(onClick = onOpenReference),
             colors = transparentListItemColors(),
             leadingContent = {
@@ -683,6 +718,29 @@ private fun InfoAndMaintenanceGroup(
                 )
             },
         )
+    }
+}
+
+private fun openAppRating(context: Context) {
+    val packageName = context.packageName
+    val marketIntent = Intent(
+        Intent.ACTION_VIEW,
+        Uri.parse("market://details?id=$packageName"),
+    ).apply {
+        setPackage(PlayStorePackageName)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    val webIntent = Intent(
+        Intent.ACTION_VIEW,
+        Uri.parse("https://play.google.com/store/apps/details?id=$packageName"),
+    ).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+
+    runCatching {
+        context.startActivity(marketIntent)
+    }.recoverCatching {
+        context.startActivity(webIntent)
     }
 }
 
