@@ -41,6 +41,10 @@ import org.taigidict.app.feature.common.AppListDivider
 import org.taigidict.app.feature.common.AppSettingsGroup
 import org.taigidict.app.feature.common.appSettingsPageContainerColor
 
+private val DocumentHorizontalPadding = 16.dp
+private val DocumentVerticalPadding = 12.dp
+private val DocumentMaxWidth = 760.dp
+
 enum class AppDocument(
     val titleRes: Int,
     val assetPath: String,
@@ -141,8 +145,12 @@ fun AppDocumentViewer(
                                 .fillMaxSize()
                                 .verticalScroll(rememberScrollState())
                                 .padding(innerPadding)
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                                .padding(
+                                    horizontal = DocumentHorizontalPadding,
+                                    vertical = DocumentVerticalPadding,
+                                ),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             blocks.forEach { block ->
                                 when (block) {
@@ -154,18 +162,25 @@ fun AppDocumentViewer(
                                                 2 -> MaterialTheme.typography.titleLarge
                                                 else -> MaterialTheme.typography.titleMedium
                                             },
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            modifier = Modifier
+                                                .documentContentWidth()
+                                                .padding(top = if (block.level == 1) 8.dp else 4.dp),
                                         )
                                     }
 
                                     is MarkdownBlock.Paragraph -> {
                                         Text(
                                             text = block.text,
-                                            style = MaterialTheme.typography.bodyMedium,
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            modifier = Modifier.documentContentWidth(),
                                         )
                                     }
 
                                     is MarkdownBlock.ListBlock -> {
                                         Column(
+                                            modifier = Modifier.documentContentWidth(),
                                             verticalArrangement = Arrangement.spacedBy(6.dp),
                                         ) {
                                             block.items.forEachIndexed { index, item ->
@@ -174,12 +189,14 @@ fun AppDocumentViewer(
                                                 ) {
                                                     Text(
                                                         text = if (block.ordered) "${index + 1}." else "•",
-                                                        style = MaterialTheme.typography.bodyMedium,
+                                                        style = MaterialTheme.typography.bodyLarge,
+                                                        color = MaterialTheme.colorScheme.primary,
                                                         modifier = Modifier.padding(end = 8.dp),
                                                     )
                                                     Text(
                                                         text = item,
-                                                        style = MaterialTheme.typography.bodyMedium,
+                                                        style = MaterialTheme.typography.bodyLarge,
+                                                        color = MaterialTheme.colorScheme.onSurface,
                                                         modifier = Modifier.weight(1f),
                                                     )
                                                 }
@@ -200,11 +217,17 @@ fun AppDocumentViewer(
     }
 }
 
+private fun Modifier.documentContentWidth(): Modifier = this
+    .widthIn(max = DocumentMaxWidth)
+    .fillMaxWidth()
+
 @Composable
 private fun MarkdownTable(table: MarkdownBlock.Table) {
     val horizontalScroll = rememberScrollState()
 
-    AppSettingsGroup {
+    AppSettingsGroup(
+        modifier = Modifier.documentContentWidth(),
+    ) {
         Column(
             modifier = Modifier
                 .horizontalScroll(horizontalScroll)
