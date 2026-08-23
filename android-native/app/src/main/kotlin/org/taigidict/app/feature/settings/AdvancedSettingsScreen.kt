@@ -21,6 +21,7 @@ import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.Speaker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
@@ -455,6 +456,23 @@ internal fun AudioArchiveResourceCard(
     showRedownloadAction: Boolean = true,
     onAction: (AudioArchiveAction) -> Unit,
 ) {
+    AppSettingsGroup {
+        AudioArchiveResourceRow(
+            type = type,
+            snapshot = snapshot,
+            showRedownloadAction = showRedownloadAction,
+            onAction = onAction,
+        )
+    }
+}
+
+@Composable
+internal fun AudioArchiveResourceRow(
+    type: DictionaryAudioArchiveType,
+    snapshot: AudioArchiveDownloadSnapshot,
+    showRedownloadAction: Boolean = true,
+    onAction: (AudioArchiveAction) -> Unit,
+) {
     val context = LocalContext.current
     val title = when (type) {
         DictionaryAudioArchiveType.Word -> stringResource(R.string.settings_word_audio)
@@ -486,55 +504,53 @@ internal fun AudioArchiveResourceCard(
     }
     val actions = availableActions(snapshot, showRedownloadAction)
 
-    AppSettingsGroup {
-        ListItem(
-            colors = transparentListItemColors(),
-            leadingContent = {
-                AppSettingsListIcon(
-                    imageVector = Icons.Outlined.FileDownload,
-                    tint = snapshot.iconTint(),
+    ListItem(
+        colors = transparentListItemColors(),
+        leadingContent = {
+            AppSettingsListIcon(
+                imageVector = Icons.Outlined.Speaker,
+                tint = snapshot.iconTint(),
+            )
+        },
+        headlineContent = {
+            Text(text = title)
+        },
+        supportingContent = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    text = statusText,
+                    color = snapshot.statusTextColor(),
                 )
-            },
-            headlineContent = {
-                Text(text = title)
-            },
-            supportingContent = {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Text(
-                        text = statusText,
-                        color = snapshot.statusTextColor(),
-                    )
-                }
-            },
-            trailingContent = if (actions.isNotEmpty()) {
-                {
-                    Column(horizontalAlignment = Alignment.End) {
-                        actions.forEach { action ->
-                            FilledTonalIconButton(onClick = { onAction(action) }) {
-                                Icon(
-                                    imageVector = action.icon(),
-                                    contentDescription = action.label(),
-                                )
-                            }
+            }
+        },
+        trailingContent = if (actions.isNotEmpty()) {
+            {
+                Column(horizontalAlignment = Alignment.End) {
+                    actions.forEach { action ->
+                        FilledTonalIconButton(onClick = { onAction(action) }) {
+                            Icon(
+                                imageVector = action.icon(),
+                                contentDescription = action.label(),
+                            )
                         }
                     }
                 }
-            } else {
-                null
-            },
-        )
-        snapshot.progress?.let { progress ->
-            if (snapshot.state == AudioArchiveDownloadState.Downloading || snapshot.state == AudioArchiveDownloadState.Paused) {
-                LinearProgressIndicator(
-                    progress = { progress.coerceIn(0f, 1f) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .padding(bottom = 12.dp),
-                )
             }
+        } else {
+            null
+        },
+    )
+    snapshot.progress?.let { progress ->
+        if (snapshot.state == AudioArchiveDownloadState.Downloading || snapshot.state == AudioArchiveDownloadState.Paused) {
+            LinearProgressIndicator(
+                progress = { progress.coerceIn(0f, 1f) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 12.dp),
+            )
         }
     }
 }

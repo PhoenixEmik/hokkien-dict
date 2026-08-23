@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
@@ -285,18 +284,11 @@ fun SettingsScreen(
                 AppSettingsSectionHeader(title = audioSectionTitle)
             }
 
-            items(
-                listOf(
-                    DictionaryAudioArchiveType.Word to wordSnapshot,
-                    DictionaryAudioArchiveType.Sentence to sentenceSnapshot,
-                ),
-                key = { (type, _) -> type.storageKey },
-            ) { (type, snapshot) ->
-                AudioArchiveResourceCard(
-                    type = type,
-                    snapshot = snapshot,
-                    showRedownloadAction = false,
-                    onAction = { action ->
+            item {
+                OfflineAudioResourcesGroup(
+                    wordSnapshot = wordSnapshot,
+                    sentenceSnapshot = sentenceSnapshot,
+                    onAction = { type, action ->
                         when (action) {
                             AudioArchiveAction.Download -> audioArchiveManager.startDownload(type)
                             AudioArchiveAction.Pause -> audioArchiveManager.pauseDownload(type)
@@ -414,6 +406,29 @@ private fun renderRouteScreen(
             )
             true
         }
+    }
+}
+
+@Composable
+private fun OfflineAudioResourcesGroup(
+    wordSnapshot: AudioArchiveDownloadSnapshot,
+    sentenceSnapshot: AudioArchiveDownloadSnapshot,
+    onAction: (DictionaryAudioArchiveType, AudioArchiveAction) -> Unit,
+) {
+    AppSettingsGroup {
+        AudioArchiveResourceRow(
+            type = DictionaryAudioArchiveType.Word,
+            snapshot = wordSnapshot,
+            showRedownloadAction = false,
+            onAction = { action -> onAction(DictionaryAudioArchiveType.Word, action) },
+        )
+        AppListDivider()
+        AudioArchiveResourceRow(
+            type = DictionaryAudioArchiveType.Sentence,
+            snapshot = sentenceSnapshot,
+            showRedownloadAction = false,
+            onAction = { action -> onAction(DictionaryAudioArchiveType.Sentence, action) },
+        )
     }
 }
 
