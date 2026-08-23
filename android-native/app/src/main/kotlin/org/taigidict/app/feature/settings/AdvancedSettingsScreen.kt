@@ -22,6 +22,7 @@ import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -336,6 +337,7 @@ private fun AudioArchiveMaintenanceRow(
         leadingContent = {
             AppSettingsListIcon(
                 imageVector = Icons.Outlined.Refresh,
+                tint = snapshot.iconTint(),
             )
         },
         headlineContent = {
@@ -345,17 +347,15 @@ private fun AudioArchiveMaintenanceRow(
             {
                 Text(
                     text = it,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = snapshot.statusTextColor(),
                 )
             }
         },
         trailingContent = if (isActionable) {
             {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                FilledTonalButton(onClick = onClick) {
+                    Text(text = AudioArchiveAction.Redownload.label())
+                }
             }
         } else {
             null

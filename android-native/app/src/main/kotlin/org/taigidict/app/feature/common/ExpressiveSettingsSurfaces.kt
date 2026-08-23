@@ -17,8 +17,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
-private val AppSettingsIconContainerSize = 48.dp
-private val AppSettingsIconSize = 24.dp
+private val AppSettingsIconContainerSize = 42.dp
+private val AppSettingsIconSize = 22.dp
 
 @Composable
 fun appSettingsPageContainerColor(): Color = MaterialTheme.colorScheme.surfaceContainer
