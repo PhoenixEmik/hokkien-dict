@@ -143,6 +143,8 @@
     <string name="settings_info_title">About and documents</string>
     <string name="settings_info_body">Read bundled license documents and open the privacy policy online.</string>
     <string name="settings_info_about">About</string>
+    <string name="settings_about_summary">App version, source code, licenses, and privacy</string>
+    <string name="settings_reference_summary">Tailo and Hanji reference guides</string>
     <string name="about_title">About Taigi Dictionary</string>
     <string name="about_app_section">Taigi Dictionary</string>
     <string name="about_version">Version</string>

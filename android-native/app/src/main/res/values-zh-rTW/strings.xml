@@ -143,6 +143,8 @@
     <string name="settings_info_title">關於與文件</string>
     <string name="settings_info_body">App 內底會使讀授權文件，隱私權政策會開外部連結。</string>
     <string name="settings_info_about">關於</string>
+    <string name="settings_about_summary">App 版本、原始碼、授權與隱私權</string>
+    <string name="settings_reference_summary">台羅與漢字參考資料</string>
     <string name="about_title">關於台語辭典</string>
     <string name="about_app_section">台語辭典</string>
     <string name="about_version">版本</string>

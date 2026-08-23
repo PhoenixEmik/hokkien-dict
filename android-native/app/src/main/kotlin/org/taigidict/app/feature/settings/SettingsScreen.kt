@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,13 +21,14 @@ import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.TextFields
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.Card
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +36,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -45,8 +47,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -57,8 +60,10 @@ import org.taigidict.app.core.settings.AppThemePreference
 import org.taigidict.app.data.audio.AudioArchiveDownloadSnapshot
 import org.taigidict.app.data.audio.DictionaryAudioArchiveType
 import org.taigidict.app.feature.common.AppListDivider
-import org.taigidict.app.feature.common.appCardColors
-import org.taigidict.app.feature.common.appPageContainerColor
+import org.taigidict.app.feature.common.AppSettingsGroup
+import org.taigidict.app.feature.common.AppSettingsRowIcon
+import org.taigidict.app.feature.common.AppSettingsSectionHeader
+import org.taigidict.app.feature.common.appSettingsPageContainerColor
 import org.taigidict.app.feature.common.transparentListItemColors
 import org.taigidict.app.feature.info.AboutScreen
 import org.taigidict.app.feature.info.ReferenceArticleScreen
@@ -71,6 +76,8 @@ import org.taigidict.app.feature.info.AppDocument
 
 private val RootHorizontalPadding = 16.dp
 private val RootVerticalPadding = 16.dp
+private val SettingsSectionSpacing = 22.dp
+private val SettingsSectionInnerSpacing = 8.dp
 
 private enum class SettingsRoute {
     Main,
@@ -212,17 +219,28 @@ fun SettingsScreen(
         }
     }
 
+    val displaySectionTitle = stringResource(R.string.settings_display_section)
+    val languageValue = uiState.languagePreference.displayLabel()
+    val themeValue = uiState.themePreference.displayLabel()
+    val textScaleValue = String.format("%.1fx", uiState.readingTextScale)
+    val infoSectionTitle = stringResource(R.string.settings_info_section)
+    val advancedSummary = stringResource(R.string.settings_advanced_body)
+    val aboutSummary = stringResource(R.string.settings_about_summary)
+    val referenceSummary = stringResource(R.string.settings_reference_summary)
+    val audioSectionTitle = stringResource(R.string.settings_offline_audio_title)
+
     Scaffold(
         modifier = modifier,
-        containerColor = appPageContainerColor(),
+        containerColor = appSettingsPageContainerColor(),
         contentWindowInsets = WindowInsets.safeDrawing.only(
             WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
         ),
         topBar = {
             TopAppBar(
-                title = {
-                    Text(text = stringResource(R.string.settings_title))
-                },
+                title = { Text(text = stringResource(R.string.settings_title)) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = appSettingsPageContainerColor(),
+                ),
             )
         },
     ) { innerPadding ->
@@ -232,37 +250,39 @@ fun SettingsScreen(
                 .padding(innerPadding)
                 .padding(horizontal = RootHorizontalPadding)
                 .padding(top = RootVerticalPadding, bottom = RootVerticalPadding),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(SettingsSectionSpacing),
         ) {
             item {
-                SectionHeader(text = stringResource(R.string.settings_display_section))
+                SettingsSection(title = displaySectionTitle) {
+                    DisplaySettingsGroup(
+                        selectedLanguage = uiState.languagePreference,
+                        selectedTheme = uiState.themePreference,
+                        currentScale = uiState.readingTextScale,
+                        languageValue = languageValue,
+                        themeValue = themeValue,
+                        textScaleValue = textScaleValue,
+                        onSelectLanguage = viewModel::setLanguagePreference,
+                        onSelectTheme = viewModel::setThemePreference,
+                        onScaleChanged = viewModel::setReadingTextScale,
+                    )
+                }
             }
 
             item {
-                DisplaySettingsCard(
-                    selectedLanguage = uiState.languagePreference,
-                    selectedTheme = uiState.themePreference,
-                    currentScale = uiState.readingTextScale,
-                    onSelectLanguage = viewModel::setLanguagePreference,
-                    onSelectTheme = viewModel::setThemePreference,
-                    onScaleChanged = viewModel::setReadingTextScale,
-                )
+                SettingsSection(title = infoSectionTitle) {
+                    InfoAndMaintenanceGroup(
+                        advancedSummary = advancedSummary,
+                        aboutSummary = aboutSummary,
+                        referenceSummary = referenceSummary,
+                        onOpenAdvancedSettings = { route = SettingsRoute.Advanced },
+                        onOpenAbout = { route = SettingsRoute.About },
+                        onOpenReference = { route = SettingsRoute.Reference },
+                    )
+                }
             }
 
             item {
-                SectionHeader(text = stringResource(R.string.settings_info_section))
-            }
-
-            item {
-                InfoAndMaintenanceCard(
-                    onOpenAdvancedSettings = { route = SettingsRoute.Advanced },
-                    onOpenAbout = { route = SettingsRoute.About },
-                    onOpenReference = { route = SettingsRoute.Reference },
-                )
-            }
-
-            item {
-                SectionHeader(text = stringResource(R.string.settings_offline_audio_title))
+                AppSettingsSectionHeader(title = audioSectionTitle)
             }
 
             items(
@@ -398,71 +418,87 @@ private fun renderRouteScreen(
 }
 
 @Composable
-private fun SectionHeader(
-    text: String,
+private fun SettingsSection(
+    title: String,
+    content: @Composable () -> Unit,
 ) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(horizontal = 2.dp),
-    )
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(SettingsSectionInnerSpacing),
+    ) {
+        AppSettingsSectionHeader(title = title)
+        content()
+    }
 }
 
 @Composable
-private fun DisplaySettingsCard(
+private fun DisplaySettingsGroup(
     selectedLanguage: AppLanguagePreference,
     selectedTheme: AppThemePreference,
     currentScale: Double,
+    languageValue: String,
+    themeValue: String,
+    textScaleValue: String,
     onSelectLanguage: (AppLanguagePreference) -> Unit,
     onSelectTheme: (AppThemePreference) -> Unit,
     onScaleChanged: (Double) -> Unit,
 ) {
-    Card(colors = appCardColors()) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            PreferenceMenuRow(
-                title = stringResource(R.string.settings_language_title),
-                value = selectedLanguage.displayLabel(),
-                options = AppLanguagePreference.entries,
-                selectedOption = selectedLanguage,
-                optionLabel = { it.displayLabel() },
-                onSelect = onSelectLanguage,
-            )
-            AppListDivider()
-            PreferenceMenuRow(
-                title = stringResource(R.string.settings_theme_title),
-                value = selectedTheme.displayLabel(),
-                options = AppThemePreference.entries,
-                selectedOption = selectedTheme,
-                optionLabel = { it.displayLabel() },
-                onSelect = onSelectTheme,
-            )
-            AppListDivider()
-            ListItem(
-                colors = transparentListItemColors(),
-                headlineContent = {
-                    Text(text = stringResource(R.string.settings_text_scale_title))
-                },
-                trailingContent = {
-                    Text(
-                        text = String.format("%.1fx", currentScale),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                },
-            )
-            Slider(
-                value = currentScale.toFloat(),
-                onValueChange = { onScaleChanged(it.toDouble()) },
-                valueRange = org.taigidict.app.core.settings.AppSettingsConstants.MIN_READING_TEXT_SCALE.toFloat()
-                    ..org.taigidict.app.core.settings.AppSettingsConstants.MAX_READING_TEXT_SCALE.toFloat(),
-                steps = org.taigidict.app.core.settings.AppSettingsConstants.READING_TEXT_SCALE_STEPS,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .padding(bottom = 12.dp),
-            )
-        }
+    AppSettingsGroup {
+        PreferenceMenuRow(
+            title = stringResource(R.string.settings_language_title),
+            value = languageValue,
+            options = AppLanguagePreference.entries,
+            selectedOption = selectedLanguage,
+            optionLabel = { it.displayLabel() },
+            icon = Icons.Outlined.Language,
+            iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            iconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            onSelect = onSelectLanguage,
+        )
+        AppListDivider()
+        PreferenceMenuRow(
+            title = stringResource(R.string.settings_theme_title),
+            value = themeValue,
+            options = AppThemePreference.entries,
+            selectedOption = selectedTheme,
+            optionLabel = { it.displayLabel() },
+            icon = Icons.Outlined.Palette,
+            iconContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
+            iconContentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+            onSelect = onSelectTheme,
+        )
+        AppListDivider()
+        ListItem(
+            colors = transparentListItemColors(),
+            leadingContent = {
+                AppSettingsRowIcon(
+                    imageVector = Icons.Outlined.TextFields,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                )
+            },
+            headlineContent = {
+                Text(text = stringResource(R.string.settings_text_scale_title))
+            },
+            supportingContent = {
+                Text(
+                    text = textScaleValue,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            },
+        )
+        Slider(
+            value = currentScale.toFloat(),
+            onValueChange = { onScaleChanged(it.toDouble()) },
+            valueRange = org.taigidict.app.core.settings.AppSettingsConstants.MIN_READING_TEXT_SCALE.toFloat()
+                ..org.taigidict.app.core.settings.AppSettingsConstants.MAX_READING_TEXT_SCALE.toFloat(),
+            steps = org.taigidict.app.core.settings.AppSettingsConstants.READING_TEXT_SCALE_STEPS,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 12.dp),
+        )
     }
 }
 
@@ -474,6 +510,9 @@ internal fun <T> PreferenceMenuRow(
     options: List<T>,
     selectedOption: T,
     optionLabel: @Composable (T) -> String,
+    icon: ImageVector? = null,
+    iconContainerColor: Color = MaterialTheme.colorScheme.secondaryContainer,
+    iconContentColor: Color = MaterialTheme.colorScheme.onSecondaryContainer,
     onSelect: (T) -> Unit,
 ) {
     var expanded by androidx.compose.runtime.remember { mutableStateOf(false) }
@@ -481,20 +520,29 @@ internal fun <T> PreferenceMenuRow(
     ListItem(
         modifier = Modifier.clickable { expanded = true },
         colors = transparentListItemColors(),
+        leadingContent = icon?.let {
+            {
+                AppSettingsRowIcon(
+                    imageVector = it,
+                    containerColor = iconContainerColor,
+                    contentColor = iconContentColor,
+                )
+            }
+        },
         headlineContent = { Text(text = title) },
+        supportingContent = {
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        },
         trailingContent = {
             Box {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(
-                        modifier = Modifier.widthIn(min = 72.dp),
-                        text = value,
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.End,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
                     Icon(
                         imageVector = Icons.Outlined.ArrowDropDown,
                         contentDescription = null,
@@ -528,84 +576,100 @@ internal fun <T> PreferenceMenuRow(
 }
 
 @Composable
-private fun InfoAndMaintenanceCard(
+private fun InfoAndMaintenanceGroup(
+    advancedSummary: String,
+    aboutSummary: String,
+    referenceSummary: String,
     onOpenAdvancedSettings: () -> Unit,
     onOpenAbout: () -> Unit,
     onOpenReference: () -> Unit,
 ) {
-    Card(colors = appCardColors()) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            ListItem(
-                modifier = Modifier.clickable(onClick = onOpenAdvancedSettings),
-                colors = transparentListItemColors(),
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Outlined.Build,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                },
-                headlineContent = {
-                    Text(text = stringResource(R.string.settings_advanced_title))
-                },
-                trailingContent = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                },
-            )
-            AppListDivider()
-            ListItem(
-                modifier = Modifier.clickable(onClick = onOpenAbout),
-                colors = transparentListItemColors(),
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Outlined.Info,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                },
-                headlineContent = {
-                    Text(text = stringResource(R.string.settings_info_about))
-                },
-                trailingContent = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                },
-            )
-            AppListDivider()
-            ListItem(
-                modifier = Modifier.clickable(onClick = onOpenReference),
-                colors = transparentListItemColors(),
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.MenuBook,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                },
-                headlineContent = {
-                    Text(text = stringResource(R.string.settings_info_reference))
-                },
-                trailingContent = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                },
-            )
-        }
+    AppSettingsGroup {
+        ListItem(
+            modifier = Modifier.clickable(onClick = onOpenAdvancedSettings),
+            colors = transparentListItemColors(),
+            leadingContent = {
+                AppSettingsRowIcon(
+                    imageVector = Icons.Outlined.Build,
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                )
+            },
+            headlineContent = {
+                Text(text = stringResource(R.string.settings_advanced_title))
+            },
+            supportingContent = {
+                Text(
+                    text = advancedSummary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            },
+            trailingContent = {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            },
+        )
+        AppListDivider()
+        ListItem(
+            modifier = Modifier.clickable(onClick = onOpenAbout),
+            colors = transparentListItemColors(),
+            leadingContent = {
+                AppSettingsRowIcon(
+                    imageVector = Icons.Outlined.Info,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            },
+            headlineContent = {
+                Text(text = stringResource(R.string.settings_info_about))
+            },
+            supportingContent = {
+                Text(
+                    text = aboutSummary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            },
+            trailingContent = {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            },
+        )
+        AppListDivider()
+        ListItem(
+            modifier = Modifier.clickable(onClick = onOpenReference),
+            colors = transparentListItemColors(),
+            leadingContent = {
+                AppSettingsRowIcon(
+                    imageVector = Icons.AutoMirrored.Outlined.MenuBook,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                )
+            },
+            headlineContent = {
+                Text(text = stringResource(R.string.settings_info_reference))
+            },
+            supportingContent = {
+                Text(
+                    text = referenceSummary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            },
+            trailingContent = {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            },
+        )
     }
 }
-
-
-
 
 private enum class SettingsDangerousAction {
     RebuildDatabase,

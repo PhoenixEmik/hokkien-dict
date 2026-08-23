@@ -21,7 +21,6 @@ import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Refresh
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,6 +33,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,8 +57,10 @@ import org.taigidict.app.data.audio.AudioArchiveDownloadState
 import org.taigidict.app.data.audio.DictionaryAudioArchiveType
 import org.taigidict.app.domain.model.DictionaryBundle
 import org.taigidict.app.feature.common.AppListDivider
-import org.taigidict.app.feature.common.appCardColors
-import org.taigidict.app.feature.common.appPageContainerColor
+import org.taigidict.app.feature.common.AppSettingsGroup
+import org.taigidict.app.feature.common.AppSettingsListIcon
+import org.taigidict.app.feature.common.AppSettingsSectionHeader
+import org.taigidict.app.feature.common.appSettingsPageContainerColor
 import org.taigidict.app.feature.common.transparentListItemColors
 
 private val AdvancedHorizontalPadding = 16.dp
@@ -119,7 +121,7 @@ internal fun AdvancedSettingsScreen(
 
     Scaffold(
         modifier = modifier,
-        containerColor = appPageContainerColor(),
+        containerColor = appSettingsPageContainerColor(),
         contentWindowInsets = WindowInsets.safeDrawing.only(
             WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
         ),
@@ -129,6 +131,9 @@ internal fun AdvancedSettingsScreen(
                 title = {
                     Text(text = stringResource(R.string.settings_advanced_title))
                 },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = appSettingsPageContainerColor(),
+                ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -149,7 +154,7 @@ internal fun AdvancedSettingsScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item {
-                AdvancedSectionHeader(text = stringResource(R.string.settings_maintenance_section))
+                AppSettingsSectionHeader(title = stringResource(R.string.settings_maintenance_section))
             }
 
             item {
@@ -166,7 +171,7 @@ internal fun AdvancedSettingsScreen(
 
             if (uiState.bundle != null) {
                 item {
-                    AdvancedSectionHeader(text = stringResource(R.string.settings_dictionary_title))
+                    AppSettingsSectionHeader(title = stringResource(R.string.settings_dictionary_title))
                 }
                 item {
                     DictionarySummaryCard(bundle = uiState.bundle)
@@ -175,7 +180,7 @@ internal fun AdvancedSettingsScreen(
 
             if (uiState.builtAt != null || uiState.sourceModifiedAt != null) {
                 item {
-                    AdvancedSectionHeader(text = stringResource(R.string.settings_source_time_title))
+                    AppSettingsSectionHeader(title = stringResource(R.string.settings_source_time_title))
                 }
                 item {
                     DictionaryMetadataCard(
@@ -190,16 +195,6 @@ internal fun AdvancedSettingsScreen(
 }
 
 @Composable
-private fun AdvancedSectionHeader(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(horizontal = 2.dp),
-    )
-}
-
-@Composable
 private fun MaintenanceActionsCard(
     uiState: SettingsUiState,
     runningAction: SettingsMaintenanceAction?,
@@ -209,7 +204,7 @@ private fun MaintenanceActionsCard(
     onClear: () -> Unit,
     onAudioArchiveAction: (DictionaryAudioArchiveType, AudioArchiveAction) -> Unit,
 ) {
-    Card(colors = appCardColors()) {
+    AppSettingsGroup {
         Column(modifier = Modifier.fillMaxWidth()) {
             ListItem(
                 modifier = Modifier
@@ -217,10 +212,8 @@ private fun MaintenanceActionsCard(
                     .clickable(enabled = !uiState.isRunningMaintenance, onClick = onRebuild),
                 colors = transparentListItemColors(),
                 leadingContent = {
-                    Icon(
+                    AppSettingsListIcon(
                         imageVector = Icons.Outlined.Refresh,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
                     )
                 },
                 headlineContent = {
@@ -243,9 +236,8 @@ private fun MaintenanceActionsCard(
                     .clickable(enabled = !uiState.isRunningMaintenance, onClick = onClear),
                 colors = transparentListItemColors(),
                 leadingContent = {
-                    Icon(
+                    AppSettingsListIcon(
                         imageVector = Icons.Outlined.DeleteOutline,
-                        contentDescription = null,
                         tint = MaterialTheme.colorScheme.error,
                     )
                 },
@@ -341,10 +333,8 @@ private fun AudioArchiveMaintenanceRow(
             .clickable(enabled = isActionable, onClick = onClick),
         colors = transparentListItemColors(),
         leadingContent = {
-            Icon(
+            AppSettingsListIcon(
                 imageVector = Icons.Outlined.Refresh,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
             )
         },
         headlineContent = {
@@ -379,7 +369,7 @@ private fun DictionarySummaryCard(
     val locale = LocalContext.current.resources.configuration.locales[0] ?: Locale.getDefault()
     val numberFormatter = NumberFormat.getIntegerInstance(locale)
 
-    Card(colors = appCardColors()) {
+    AppSettingsGroup {
         Column(modifier = Modifier.fillMaxWidth()) {
             SettingsKeyValueRow(
                 key = stringResource(R.string.settings_entry_count_label),
@@ -406,7 +396,7 @@ private fun DictionaryMetadataCard(
 ) {
     val locale = LocalContext.current.resources.configuration.locales[0] ?: Locale.getDefault()
 
-    Card(colors = appCardColors()) {
+    AppSettingsGroup {
         Column(modifier = Modifier.fillMaxWidth()) {
             builtAt?.let {
                 SettingsKeyValueRow(
@@ -495,9 +485,14 @@ internal fun AudioArchiveResourceCard(
     }
     val actions = availableActions(snapshot, showRedownloadAction)
 
-    Card(colors = appCardColors()) {
+    AppSettingsGroup {
         ListItem(
             colors = transparentListItemColors(),
+            leadingContent = {
+                AppSettingsListIcon(
+                    imageVector = Icons.Outlined.FileDownload,
+                )
+            },
             headlineContent = {
                 Text(text = title)
             },

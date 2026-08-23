@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.automirrored.outlined.TextSnippet
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Code
@@ -21,7 +22,6 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.ImportContacts
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.Policy
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -39,8 +40,10 @@ import androidx.compose.ui.unit.dp
 import org.taigidict.app.BuildConfig
 import org.taigidict.app.R
 import org.taigidict.app.feature.common.AppListDivider
-import org.taigidict.app.feature.common.appCardColors
-import org.taigidict.app.feature.common.appPageContainerColor
+import org.taigidict.app.feature.common.AppSettingsGroup
+import org.taigidict.app.feature.common.AppSettingsListIcon
+import org.taigidict.app.feature.common.AppSettingsSectionHeader
+import org.taigidict.app.feature.common.appSettingsPageContainerColor
 import org.taigidict.app.feature.common.transparentListItemColors
 
 private val AboutHorizontalPadding = 16.dp
@@ -64,13 +67,16 @@ fun AboutScreen(
 
     Scaffold(
         modifier = modifier,
-        containerColor = appPageContainerColor(),
+        containerColor = appSettingsPageContainerColor(),
         contentWindowInsets = WindowInsets.safeDrawing.only(
             WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
         ),
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(R.string.about_title)) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = appSettingsPageContainerColor(),
+                ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -90,10 +96,10 @@ fun AboutScreen(
                 .padding(top = AboutVerticalPadding, bottom = AboutVerticalPadding),
         ) {
             item {
-                AboutSectionHeader(title = stringResource(R.string.about_app_section))
+                AppSettingsSectionHeader(title = stringResource(R.string.about_app_section))
             }
             item {
-                AboutSectionCard {
+                AppSettingsGroup {
                     AboutValueRow(
                         icon = Icons.Outlined.Info,
                         title = stringResource(R.string.about_version),
@@ -116,10 +122,10 @@ fun AboutScreen(
             }
 
             item {
-                AboutSectionHeader(title = stringResource(R.string.about_project_section))
+                AppSettingsSectionHeader(title = stringResource(R.string.about_project_section))
             }
             item {
-                AboutSectionCard {
+                AppSettingsGroup {
                     AboutNavRow(
                         icon = Icons.Outlined.Description,
                         title = stringResource(R.string.settings_info_open_source_license),
@@ -135,10 +141,10 @@ fun AboutScreen(
             }
 
             item {
-                AboutSectionHeader(title = stringResource(R.string.settings_info_reference))
+                AppSettingsSectionHeader(title = stringResource(R.string.settings_info_reference))
             }
             item {
-                AboutSectionCard {
+                AppSettingsGroup {
                     AboutNavRow(
                         icon = Icons.Outlined.Link,
                         title = stringResource(R.string.about_reference_page),
@@ -163,25 +169,6 @@ fun AboutScreen(
 }
 
 @Composable
-private fun AboutSectionHeader(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
-    )
-}
-
-@Composable
-private fun AboutSectionCard(content: @Composable () -> Unit) {
-    Card(colors = appCardColors()) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            content()
-        }
-    }
-}
-
-@Composable
 private fun AboutDivider() {
     AppListDivider()
 }
@@ -195,17 +182,15 @@ private fun AboutValueRow(
     ListItem(
         colors = transparentListItemColors(),
         leadingContent = {
-            Icon(
+            AppSettingsListIcon(
                 imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
             )
         },
         headlineContent = { Text(text = title) },
-        trailingContent = {
+        supportingContent = {
             Text(
                 text = value,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         },
@@ -223,18 +208,23 @@ private fun AboutLinkRow(
         modifier = Modifier.clickable(onClick = onClick),
         colors = transparentListItemColors(),
         leadingContent = {
-            Icon(
+            AppSettingsListIcon(
                 imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
             )
         },
         headlineContent = { Text(text = title) },
-        trailingContent = {
+        supportingContent = {
             Text(
                 text = value,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        },
+        trailingContent = {
+            Icon(
+                imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         },
     )
@@ -250,10 +240,8 @@ private fun AboutNavRow(
         modifier = Modifier.clickable(onClick = onClick),
         colors = transparentListItemColors(),
         leadingContent = {
-            Icon(
+            AppSettingsListIcon(
                 imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
             )
         },
         headlineContent = { Text(text = title) },

@@ -17,7 +17,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -38,8 +38,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.taigidict.app.R
 import org.taigidict.app.feature.common.AppListDivider
-import org.taigidict.app.feature.common.appCardColors
-import org.taigidict.app.feature.common.appPageContainerColor
+import org.taigidict.app.feature.common.AppSettingsGroup
+import org.taigidict.app.feature.common.appSettingsPageContainerColor
 
 enum class AppDocument(
     val titleRes: Int,
@@ -93,13 +93,16 @@ fun AppDocumentViewer(
     }
 
     Scaffold(
-        containerColor = appPageContainerColor(),
+        containerColor = appSettingsPageContainerColor(),
         contentWindowInsets = WindowInsets.safeDrawing.only(
             WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
         ),
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(document.titleRes)) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = appSettingsPageContainerColor(),
+                ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -201,10 +204,7 @@ fun AppDocumentViewer(
 private fun MarkdownTable(table: MarkdownBlock.Table) {
     val horizontalScroll = rememberScrollState()
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = appCardColors(),
-    ) {
+    AppSettingsGroup {
         Column(
             modifier = Modifier
                 .horizontalScroll(horizontalScroll)
