@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Close
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -64,8 +66,6 @@ import org.taigidict.app.app.TaigiDictApplication
 import org.taigidict.app.feature.common.AppListDivider
 import org.taigidict.app.feature.common.DictionaryFallbackText
 import org.taigidict.app.feature.common.appCardColors
-import org.taigidict.app.feature.common.appListContainerColor
-import org.taigidict.app.feature.common.appPageContainerColor
 import org.taigidict.app.feature.common.transparentListItemColors
 
 private val ScreenHorizontalPadding = 16.dp
@@ -73,8 +73,15 @@ private val ScreenVerticalPadding = 16.dp
 private val TopContentPadding = 16.dp
 private val SectionSpacing = 16.dp
 private val ComponentSpacing = 8.dp
+private val ResultItemSpacing = 6.dp
 private val TwoPaneContentSpacing = 16.dp
 private val TwoPaneSectionHeaderHeight = 40.dp
+
+@Composable
+private fun dictionaryPageContainerColor() = MaterialTheme.colorScheme.surfaceContainer
+
+@Composable
+private fun dictionaryPanelColor() = MaterialTheme.colorScheme.surfaceContainerLow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -174,7 +181,7 @@ fun DictionaryScreen(
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
-            containerColor = appPageContainerColor(),
+            containerColor = dictionaryPageContainerColor(),
             contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
         ) { innerPadding ->
             val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
@@ -457,7 +464,10 @@ internal fun DictionaryNoResultsState(
         verticalArrangement = Arrangement.spacedBy(SectionSpacing),
     ) {
         item("no-results-card") {
-            Card(colors = appCardColors()) {
+            Surface(
+                shape = MaterialTheme.shapes.extraLarge,
+                color = dictionaryPanelColor(),
+            ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -481,7 +491,7 @@ internal fun DictionaryNoResultsState(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
 
-                    TextButton(onClick = onClearQuery) {
+                    FilledTonalButton(onClick = onClearQuery) {
                         Text(text = stringResource(R.string.dictionary_no_results_clear_query))
                     }
                 }
@@ -514,56 +524,52 @@ internal fun DictionaryResultList(
 ) {
     LazyColumn(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(0.dp),
+        verticalArrangement = Arrangement.spacedBy(ResultItemSpacing),
     ) {
-        item {
+        items(
+            items = results,
+            key = { entry -> entry.id },
+        ) { entry ->
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.large,
-                color = appListContainerColor(),
+                color = dictionaryPanelColor(),
             ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    results.forEachIndexed { index, entry ->
-                        ListItem(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onEntrySelected(entry.id) },
-                            colors = transparentListItemColors(),
-                            headlineContent = {
-                                DictionaryFallbackText(
-                                    text = entry.hanji,
-                                    style = MaterialTheme.typography.titleMedium,
-                                )
-                            },
-                            supportingContent = {
-                                Column(verticalArrangement = Arrangement.spacedBy(ComponentSpacing / 2)) {
-                                    DictionaryFallbackText(
-                                        text = entry.romanization,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                    if (entry.briefSummary.isNotBlank()) {
-                                        DictionaryFallbackText(
-                                            text = entry.briefSummary,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        )
-                                    }
-                                }
-                            },
-                            trailingContent = {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            },
+                ListItem(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onEntrySelected(entry.id) },
+                    colors = transparentListItemColors(),
+                    headlineContent = {
+                        DictionaryFallbackText(
+                            text = entry.hanji,
+                            style = MaterialTheme.typography.titleMedium,
                         )
-                        if (index < results.lastIndex) {
-                            AppListDivider()
+                    },
+                    supportingContent = {
+                        Column(verticalArrangement = Arrangement.spacedBy(ComponentSpacing / 2)) {
+                            DictionaryFallbackText(
+                                text = entry.romanization,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                            if (entry.briefSummary.isNotBlank()) {
+                                DictionaryFallbackText(
+                                    text = entry.briefSummary,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
                         }
-                    }
-                }
+                    },
+                    trailingContent = {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    },
+                )
             }
         }
     }
@@ -602,7 +608,10 @@ private fun TwoPaneDetailPlaceholder(
 
 @Composable
 internal fun DictionaryHomeEmptyCard() {
-    Card(colors = appCardColors()) {
+    Surface(
+        shape = MaterialTheme.shapes.extraLarge,
+        color = dictionaryPanelColor(),
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -634,7 +643,10 @@ internal fun RecentSearchHistoryCard(
     recentSearches: List<String>,
     onRecentSearchSelected: (String) -> Unit,
 ) {
-    Card(colors = appCardColors()) {
+    Surface(
+        shape = MaterialTheme.shapes.extraLarge,
+        color = dictionaryPanelColor(),
+    ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             recentSearches.take(8).forEachIndexed { index, query ->
                 ListItem(
