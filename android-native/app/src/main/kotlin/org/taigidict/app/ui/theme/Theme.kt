@@ -20,11 +20,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 
 private val LightColors = lightColorScheme(
-    primary = BrandBlue,
+    primary = BrandBlueLightPrimary,
+    onPrimary = BrandBlueLightOnPrimary,
+    primaryContainer = BrandBlueLightPrimaryContainer,
+    onPrimaryContainer = BrandBlueLightOnPrimaryContainer,
+    secondaryContainer = BrandBlueLightSecondaryContainer,
+    tertiaryContainer = BrandBlueLightTertiaryContainer,
 )
 
 private val DarkColors = darkColorScheme(
-    primary = BrandBlue,
+    primary = BrandBlueDarkPrimary,
+    onPrimary = BrandBlueDarkOnPrimary,
+    primaryContainer = BrandBlueDarkPrimaryContainer,
+    onPrimaryContainer = BrandBlueDarkOnPrimaryContainer,
+    secondaryContainer = BrandBlueDarkSecondaryContainer,
+    tertiaryContainer = BrandBlueDarkTertiaryContainer,
 )
 
 @Composable
