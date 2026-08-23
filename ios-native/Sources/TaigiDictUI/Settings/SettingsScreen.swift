@@ -158,15 +158,16 @@ public struct SettingsScreen: View {
                     Label {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(AppLocalizer.text(.settingsRateApp, locale: locale))
+                                .foregroundStyle(.primary)
                             Text(AppLocalizer.text(.settingsRateAppDescription, locale: locale))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
                     } icon: {
                         Image(systemName: "star")
+                            .foregroundStyle(.tint)
                     }
                 }
-                .foregroundStyle(.primary)
 
                 NavigationLink {
                     ReferenceArticleListScreen()
