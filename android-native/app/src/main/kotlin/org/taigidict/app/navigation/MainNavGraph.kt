@@ -8,10 +8,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.taigidict.app.app.MainAppState
 import org.taigidict.app.feature.common.appPageContainerColor
+import org.taigidict.app.feature.common.appSelectedContainerColor
 import org.taigidict.app.feature.bookmarks.BookmarksScreen
 import org.taigidict.app.feature.bookmarks.BookmarksViewModel
 import org.taigidict.app.feature.dictionary.DictionaryScreen
@@ -43,11 +47,13 @@ fun MainNavGraph(appState: MainAppState) {
             Row(modifier = Modifier.fillMaxSize()) {
                 NavigationRail(
                     modifier = Modifier.fillMaxHeight(),
+                    containerColor = appPageContainerColor(),
                 ) {
                     MainDestination.entries.forEach { destination ->
                         NavigationRailItem(
                             selected = destination == currentDestination,
                             onClick = { appState.navigate(destination) },
+                            colors = appNavigationRailItemColors(),
                             icon = {
                                 Icon(
                                     imageVector = destination.icon,
@@ -75,11 +81,14 @@ fun MainNavGraph(appState: MainAppState) {
             Scaffold(
                 containerColor = appPageContainerColor(),
                 bottomBar = {
-                    NavigationBar {
+                    NavigationBar(
+                        containerColor = appPageContainerColor(),
+                    ) {
                         MainDestination.entries.forEach { destination ->
                             NavigationBarItem(
                                 selected = destination == currentDestination,
                                 onClick = { appState.navigate(destination) },
+                                colors = appNavigationBarItemColors(),
                                 icon = {
                                     Icon(
                                         imageVector = destination.icon,
@@ -103,6 +112,24 @@ fun MainNavGraph(appState: MainAppState) {
         }
     }
 }
+
+@Composable
+private fun appNavigationBarItemColors() = NavigationBarItemDefaults.colors(
+    selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+    selectedTextColor = MaterialTheme.colorScheme.onSurface,
+    indicatorColor = appSelectedContainerColor(),
+    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+)
+
+@Composable
+private fun appNavigationRailItemColors() = NavigationRailItemDefaults.colors(
+    selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+    selectedTextColor = MaterialTheme.colorScheme.onSurface,
+    indicatorColor = appSelectedContainerColor(),
+    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+)
 
 @Composable
 private fun MainNavContent(
