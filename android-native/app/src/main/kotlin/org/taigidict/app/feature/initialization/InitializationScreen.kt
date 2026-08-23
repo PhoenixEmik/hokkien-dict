@@ -6,10 +6,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.material3.Card
 import androidx.compose.material3.Button
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,79 +19,99 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 import org.taigidict.app.R
-import org.taigidict.app.feature.common.appCardColors
+
+private val InitializationHorizontalPadding = 24.dp
+private val InitializationPanelHorizontalPadding = 20.dp
+private val InitializationPanelVerticalPadding = 18.dp
+
+@Composable
+private fun initializationPageContainerColor() = MaterialTheme.colorScheme.surfaceContainer
+
+@Composable
+private fun initializationPanelColor() = MaterialTheme.colorScheme.surfaceContainerLow
 
 @Composable
 fun InitializationScreen(
     uiState: InitializationUiState,
     onRetry: () -> Unit,
 ) {
-    Column(
+    Surface(
         modifier = Modifier
-            .fillMaxSize()
-            .safeDrawingPadding()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+            .fillMaxSize(),
+        color = initializationPageContainerColor(),
     ) {
-        Text(
-            text = stringResource(R.string.initialization_title),
-            style = MaterialTheme.typography.headlineMedium,
-            textAlign = TextAlign.Center,
-        )
-        Text(
-            modifier = Modifier.padding(top = 12.dp),
-            text = stringResource(R.string.initialization_body),
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-        )
-        Card(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 24.dp),
-            colors = appCardColors(),
+                .fillMaxSize()
+                .safeDrawingPadding()
+                .padding(InitializationHorizontalPadding),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
         ) {
-            Column(
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+            Text(
+                text = stringResource(R.string.initialization_title),
+                style = MaterialTheme.typography.headlineLarge,
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                modifier = Modifier.padding(top = 12.dp),
+                text = stringResource(R.string.initialization_body),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 24.dp),
+                shape = MaterialTheme.shapes.extraLarge,
+                color = initializationPanelColor(),
             ) {
-                Text(
-                    text = uiState.phase.label(),
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                LinearProgressIndicator(
-                    modifier = Modifier.fillMaxWidth(),
-                    progress = { uiState.progress ?: 0f },
-                )
-                uiState.progress?.let { progress ->
+                Column(
+                    modifier = Modifier.padding(
+                        horizontal = InitializationPanelHorizontalPadding,
+                        vertical = InitializationPanelVerticalPadding,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
                     Text(
-                        text = "${(progress * 100).roundToInt()}%",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        text = uiState.phase.label(),
+                        style = MaterialTheme.typography.titleMedium,
                     )
-                }
-                if (uiState.processedEntries != null && uiState.totalEntries != null) {
-                    Text(
-                        text = "${uiState.processedEntries} / ${uiState.totalEntries}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth(),
+                        progress = { uiState.progress ?: 0f },
                     )
-                }
-                if (uiState.errorMessage != null) {
-                    Text(
-                        text = uiState.errorMessage,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.error,
-                    )
+                    uiState.progress?.let { progress ->
+                        Text(
+                            text = "${(progress * 100).roundToInt()}%",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                    if (uiState.processedEntries != null && uiState.totalEntries != null) {
+                        Text(
+                            text = "${uiState.processedEntries} / ${uiState.totalEntries}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    if (uiState.errorMessage != null) {
+                        Text(
+                            text = uiState.errorMessage,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
                 }
             }
-        }
-        if (uiState.phase == InitializationPhase.Error) {
-            Button(
-                modifier = Modifier.padding(top = 24.dp),
-                onClick = onRetry,
-            ) {
-                Text(text = stringResource(R.string.retry))
+            if (uiState.phase == InitializationPhase.Error) {
+                Button(
+                    modifier = Modifier.padding(top = 24.dp),
+                    onClick = onRetry,
+                ) {
+                    Text(text = stringResource(R.string.retry))
+                }
             }
         }
     }
