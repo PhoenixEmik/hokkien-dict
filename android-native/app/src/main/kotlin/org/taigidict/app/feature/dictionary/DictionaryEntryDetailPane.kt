@@ -32,6 +32,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -40,6 +41,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -68,7 +70,6 @@ import org.taigidict.app.domain.model.DictionarySense
 import org.taigidict.app.feature.common.AppListDivider
 import org.taigidict.app.feature.common.DictionaryFallbackText
 import org.taigidict.app.feature.common.appCardColors
-import org.taigidict.app.feature.common.appPageContainerColor
 import org.taigidict.app.feature.common.buildDictionaryAnnotatedString
 
 private val DetailHorizontalPadding = 16.dp
@@ -76,8 +77,12 @@ private val DetailVerticalPadding = 12.dp
 private val DetailSectionSpacing = 16.dp
 private val DetailCardHorizontalPadding = 20.dp
 private val DetailCardVerticalPadding = 18.dp
+private val DetailHeaderVerticalPadding = 22.dp
+private val DetailAudioButtonSize = 44.dp
 
 private fun detailTopPadding(showTopBar: Boolean) = if (showTopBar) DetailVerticalPadding else 0.dp
+@Composable
+private fun detailPageContainerColor() = MaterialTheme.colorScheme.surfaceContainer
 @Composable
 private fun detailContentInsets(showTopBar: Boolean) = if (showTopBar) {
     WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
@@ -190,7 +195,7 @@ private fun DetailLoadingScreen(
 ) {
     Scaffold(
         modifier = modifier,
-        containerColor = appPageContainerColor(),
+        containerColor = detailPageContainerColor(),
         contentWindowInsets = detailContentInsets(showTopBar),
         topBar = if (showTopBar) {
             {
@@ -245,7 +250,7 @@ private fun DetailStatusScreen(
 ) {
     Scaffold(
         modifier = modifier,
-        containerColor = appPageContainerColor(),
+        containerColor = detailPageContainerColor(),
         contentWindowInsets = detailContentInsets(showTopBar),
         topBar = if (showTopBar) {
             {
@@ -306,10 +311,10 @@ private fun DictionaryEntryDetailContent(
     modifier: Modifier = Modifier,
 ) {
     val scaledHeadlineStyle = MaterialTheme.typography.headlineLarge.copy(
-        fontSize = MaterialTheme.typography.headlineMedium.fontSize * readingTextScale.toFloat(),
+        fontSize = MaterialTheme.typography.displaySmall.fontSize * readingTextScale.toFloat(),
     )
     val scaledTitleStyle = MaterialTheme.typography.titleLarge.copy(
-        fontSize = MaterialTheme.typography.titleMedium.fontSize * readingTextScale.toFloat(),
+        fontSize = MaterialTheme.typography.titleLarge.fontSize * readingTextScale.toFloat(),
     )
     val entryAudioUiState = remember(playbackState, entry.audioId) {
         resolveAudioUiState(
@@ -324,7 +329,7 @@ private fun DictionaryEntryDetailContent(
 
     Scaffold(
         modifier = modifier,
-        containerColor = appPageContainerColor(),
+        containerColor = detailPageContainerColor(),
         contentWindowInsets = detailContentInsets(showTopBar),
         topBar = if (showTopBar) {
             {
@@ -364,21 +369,21 @@ private fun DictionaryEntryDetailContent(
                             .fillMaxWidth()
                             .padding(
                                 horizontal = DetailCardHorizontalPadding,
-                                vertical = DetailCardVerticalPadding,
+                                vertical = DetailHeaderVerticalPadding,
                             ),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp),
                     ) {
                         Column(
-                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             FlowRow(
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
                                 itemVerticalAlignment = Alignment.CenterVertically,
                             ) {
                                 DictionaryFallbackText(
                                     text = entry.hanji,
-                                    style = scaledHeadlineStyle,
+                                    style = scaledHeadlineStyle.copy(fontWeight = FontWeight.SemiBold),
                                 )
                                 AudioActionButton(
                                     uiState = entryAudioUiState,
@@ -391,7 +396,7 @@ private fun DictionaryEntryDetailContent(
                                 DictionaryFallbackText(
                                     text = entry.romanization,
                                     style = scaledTitleStyle,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    color = MaterialTheme.colorScheme.primary,
                                 )
                             }
                         }
@@ -402,11 +407,10 @@ private fun DictionaryEntryDetailContent(
                         if (metadataLine.isNotBlank()) {
                             DictionaryFallbackText(
                                 text = metadataLine,
-                                style = MaterialTheme.typography.bodyMedium,
+                                style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
-
                     }
                 }
             }
@@ -525,6 +529,9 @@ private fun DetailTopBar(
     showActions: Boolean,
 ) {
     TopAppBar(
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = detailPageContainerColor(),
+        ),
         title = {
             DictionaryFallbackText(
                 text = title,
@@ -573,10 +580,10 @@ private fun DictionarySenseSection(
     onOpenLinkedWord: (String) -> Unit,
 ) {
     val scaledTitleStyle = MaterialTheme.typography.titleLarge.copy(
-        fontSize = MaterialTheme.typography.titleMedium.fontSize * readingTextScale.toFloat(),
+        fontSize = MaterialTheme.typography.labelLarge.fontSize * readingTextScale.toFloat(),
     )
     val scaledBodyStyle = MaterialTheme.typography.bodyLarge.copy(
-        fontSize = MaterialTheme.typography.bodyLarge.fontSize * readingTextScale.toFloat(),
+        fontSize = MaterialTheme.typography.titleMedium.fontSize * readingTextScale.toFloat(),
     )
 
     Card(
@@ -597,7 +604,7 @@ private fun DictionarySenseSection(
                 if (sense.partOfSpeech.isNotBlank()) {
                     DictionaryFallbackText(
                         text = sense.partOfSpeech,
-                        style = scaledTitleStyle,
+                        style = scaledTitleStyle.copy(fontWeight = FontWeight.SemiBold),
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
@@ -932,7 +939,7 @@ private fun AudioActionButton(
     when (uiState) {
         DictionaryAudioUiState.Loading -> {
             Box(
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier.size(DetailAudioButtonSize),
                 contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator(
@@ -943,21 +950,25 @@ private fun AudioActionButton(
         }
 
         DictionaryAudioUiState.Playing -> {
-            IconButton(onClick = onClick) {
+            FilledTonalIconButton(
+                modifier = Modifier.size(DetailAudioButtonSize),
+                onClick = onClick,
+            ) {
                 Icon(
                     imageVector = Icons.Outlined.Pause,
                     contentDescription = contentDescription,
-                    tint = MaterialTheme.colorScheme.primary,
                 )
             }
         }
 
         DictionaryAudioUiState.Idle -> {
-            IconButton(onClick = onClick) {
+            FilledTonalIconButton(
+                modifier = Modifier.size(DetailAudioButtonSize),
+                onClick = onClick,
+            ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Outlined.VolumeUp,
                     contentDescription = contentDescription,
-                    tint = MaterialTheme.colorScheme.primary,
                 )
             }
         }
