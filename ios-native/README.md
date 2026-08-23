@@ -107,7 +107,7 @@ Notable source areas:
 
 Current package dependencies:
 
-- `SwiftyOpenCC` `1.3.1`
+- `SwiftyOpenCC` `1.4.2`
 - `GRDB.swift` `7.10.0`
 - `ZIPFoundation` `0.9.20`
 
