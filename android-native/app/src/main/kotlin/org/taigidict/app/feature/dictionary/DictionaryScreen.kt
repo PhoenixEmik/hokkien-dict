@@ -73,7 +73,7 @@ private val ScreenVerticalPadding = 16.dp
 private val TopContentPadding = 16.dp
 private val SectionSpacing = 16.dp
 private val ComponentSpacing = 8.dp
-private val ResultItemSpacing = 6.dp
+private val ResultItemSpacing = 4.dp
 private val TwoPaneContentSpacing = 16.dp
 private val TwoPaneSectionHeaderHeight = 40.dp
 

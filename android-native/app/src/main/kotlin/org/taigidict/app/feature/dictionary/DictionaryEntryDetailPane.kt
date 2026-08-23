@@ -76,10 +76,10 @@ import org.taigidict.app.feature.common.buildDictionaryAnnotatedString
 
 private val DetailHorizontalPadding = 16.dp
 private val DetailVerticalPadding = 12.dp
-private val DetailSectionSpacing = 16.dp
+private val DetailSectionSpacing = 12.dp
 private val DetailCardHorizontalPadding = 20.dp
-private val DetailCardVerticalPadding = 18.dp
-private val DetailHeaderVerticalPadding = 22.dp
+private val DetailCardVerticalPadding = 16.dp
+private val DetailHeaderVerticalPadding = 20.dp
 private val DetailAudioButtonSize = 44.dp
 
 private fun detailTopPadding(showTopBar: Boolean) = if (showTopBar) DetailVerticalPadding else 0.dp
@@ -373,14 +373,14 @@ private fun DictionaryEntryDetailContent(
                                 horizontal = DetailCardHorizontalPadding,
                                 vertical = DetailHeaderVerticalPadding,
                             ),
-                        verticalArrangement = Arrangement.spacedBy(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         Column(
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
                         ) {
                             FlowRow(
                                 horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp),
                                 itemVerticalAlignment = Alignment.CenterVertically,
                             ) {
                                 DictionaryFallbackText(
@@ -648,7 +648,7 @@ private fun DictionarySenseSection(
                         .fillMaxWidth()
                         .padding(
                             horizontal = DetailCardHorizontalPadding,
-                            vertical = 14.dp,
+                            vertical = 12.dp,
                         ),
                     verticalArrangement = Arrangement.spacedBy(2.dp),
                 ) {
