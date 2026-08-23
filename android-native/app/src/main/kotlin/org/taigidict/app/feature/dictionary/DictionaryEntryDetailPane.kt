@@ -39,6 +39,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -70,6 +71,7 @@ import org.taigidict.app.domain.model.DictionarySense
 import org.taigidict.app.feature.common.AppListDivider
 import org.taigidict.app.feature.common.DictionaryFallbackText
 import org.taigidict.app.feature.common.appCardColors
+import org.taigidict.app.feature.common.appPanelContainerColor
 import org.taigidict.app.feature.common.buildDictionaryAnnotatedString
 
 private val DetailHorizontalPadding = 16.dp
@@ -586,8 +588,9 @@ private fun DictionarySenseSection(
         fontSize = MaterialTheme.typography.titleMedium.fontSize * readingTextScale.toFloat(),
     )
 
-    Card(
-        colors = appCardColors(),
+    Surface(
+        shape = MaterialTheme.shapes.extraLarge,
+        color = appPanelContainerColor(),
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -652,7 +655,7 @@ private fun DictionarySenseSection(
                     Text(
                         text = stringResource(R.string.dictionary_detail_examples),
                         style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(bottom = 4.dp),
                     )
 
@@ -686,8 +689,9 @@ private fun DictionaryDetailListSection(
         fontSize = MaterialTheme.typography.bodyMedium.fontSize * readingTextScale.toFloat(),
     )
 
-    Card(
-        colors = appCardColors(),
+    Surface(
+        shape = MaterialTheme.shapes.extraLarge,
+        color = appPanelContainerColor(),
     ) {
         Column(
             modifier = Modifier
@@ -701,7 +705,7 @@ private fun DictionaryDetailListSection(
             Text(
                 text = title,
                 style = scaledLabelStyle,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.primary,
             )
 
             values.forEachIndexed { index, value ->
@@ -769,7 +773,7 @@ private fun DictionaryExampleBlock(
             DictionaryFallbackText(
                 text = example.romanization,
                 style = scaledBodyMediumStyle,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.primary,
             )
         }
         if (example.mandarin.isNotBlank()) {
@@ -811,7 +815,10 @@ private fun DictionaryDetailRelationshipSection(
     }
 
     if (useCard) {
-        Card(colors = appCardColors()) {
+        Surface(
+            shape = MaterialTheme.shapes.extraLarge,
+            color = appPanelContainerColor(),
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
