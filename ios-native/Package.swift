@@ -26,7 +26,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/groue/GRDB.swift.git",
-            exact: "7.10.0"
+            exact: "7.11.1"
         ),
         .package(
             url: "https://github.com/weichsel/ZIPFoundation.git",
