@@ -12,15 +12,24 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun appPageContainerColor(): Color = MaterialTheme.colorScheme.surface
+fun appPageContainerColor(): Color = MaterialTheme.colorScheme.surfaceContainer
+
+@Composable
+fun appTopBarContainerColor(): Color = MaterialTheme.colorScheme.surfaceContainer
 
 @Composable
 fun appCardColors() = CardDefaults.cardColors(
-    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+    containerColor = appPanelContainerColor(),
 )
 
 @Composable
-fun appListContainerColor(): Color = MaterialTheme.colorScheme.surfaceContainerLow
+fun appPanelContainerColor(): Color = MaterialTheme.colorScheme.surfaceContainerLow
+
+@Composable
+fun appListContainerColor(): Color = appPanelContainerColor()
+
+@Composable
+fun appSelectedContainerColor(): Color = MaterialTheme.colorScheme.secondaryContainer
 
 @Composable
 fun transparentListItemColors() = ListItemDefaults.colors(
@@ -30,7 +39,7 @@ fun transparentListItemColors() = ListItemDefaults.colors(
 @Composable
 fun selectableListItemColors(isSelected: Boolean) = ListItemDefaults.colors(
     containerColor = if (isSelected) {
-        MaterialTheme.colorScheme.secondaryContainer
+        appSelectedContainerColor()
     } else {
         Color.Transparent
     },
