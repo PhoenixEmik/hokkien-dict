@@ -51,6 +51,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 import org.taigidict.app.R
 import org.taigidict.app.app.TaigiDictApplication
+import org.taigidict.app.feature.common.AppStatusPanel
 import org.taigidict.app.domain.model.DictionaryEntry
 import org.taigidict.app.feature.common.DictionaryFallbackText
 import org.taigidict.app.feature.common.selectableListItemColors
@@ -293,33 +294,11 @@ fun BookmarksScreen(
 
 @Composable
 internal fun BookmarksEmptyCard() {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.extraLarge,
-        color = bookmarksPanelColor(),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.BookmarkBorder,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                text = stringResource(R.string.bookmarks_empty_title),
-                style = MaterialTheme.typography.titleLarge,
-            )
-            Text(
-                text = stringResource(R.string.bookmarks_empty_body),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
+    AppStatusPanel(
+        icon = Icons.Outlined.BookmarkBorder,
+        title = stringResource(R.string.bookmarks_empty_title),
+        body = stringResource(R.string.bookmarks_empty_body),
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

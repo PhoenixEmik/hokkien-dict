@@ -31,7 +31,6 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -64,6 +63,7 @@ import kotlinx.coroutines.launch
 import org.taigidict.app.R
 import org.taigidict.app.app.TaigiDictApplication
 import org.taigidict.app.feature.common.AppListDivider
+import org.taigidict.app.feature.common.AppStatusPanel
 import org.taigidict.app.feature.common.DictionaryFallbackText
 import org.taigidict.app.feature.common.appCardColors
 import org.taigidict.app.feature.common.transparentListItemColors
@@ -464,38 +464,13 @@ internal fun DictionaryNoResultsState(
         verticalArrangement = Arrangement.spacedBy(SectionSpacing),
     ) {
         item("no-results-card") {
-            Surface(
-                shape = MaterialTheme.shapes.extraLarge,
-                color = dictionaryPanelColor(),
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 20.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Search,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(32.dp),
-                    )
-
-                    Text(
-                        text = stringResource(R.string.dictionary_no_results_title),
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-                    Text(
-                        text = stringResource(R.string.dictionary_no_results_body, query),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-
-                    FilledTonalButton(onClick = onClearQuery) {
-                        Text(text = stringResource(R.string.dictionary_no_results_clear_query))
-                    }
-                }
-            }
+            AppStatusPanel(
+                icon = Icons.Outlined.Search,
+                title = stringResource(R.string.dictionary_no_results_title),
+                body = stringResource(R.string.dictionary_no_results_body, query),
+                actionLabel = stringResource(R.string.dictionary_no_results_clear_query),
+                onAction = onClearQuery,
+            )
         }
 
         if (recentSearches.isNotEmpty()) {
@@ -608,34 +583,11 @@ private fun TwoPaneDetailPlaceholder(
 
 @Composable
 internal fun DictionaryHomeEmptyCard() {
-    Surface(
-        shape = MaterialTheme.shapes.extraLarge,
-        color = dictionaryPanelColor(),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(ComponentSpacing),
-            horizontalAlignment = Alignment.Start,
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Search,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(32.dp),
-            )
-            Text(
-                text = stringResource(R.string.dictionary_empty_state_title),
-                style = MaterialTheme.typography.titleLarge,
-            )
-            Text(
-                text = stringResource(R.string.dictionary_empty_state_body),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
+    AppStatusPanel(
+        icon = Icons.Outlined.Search,
+        title = stringResource(R.string.dictionary_empty_state_title),
+        body = stringResource(R.string.dictionary_empty_state_body),
+    )
 }
 
 @Composable
