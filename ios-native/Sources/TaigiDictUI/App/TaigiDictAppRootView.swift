@@ -1,14 +1,15 @@
 import SwiftUI
+import StoreKit
 import TaigiDictCore
-#if os(macOS)
-import AppKit
-#endif
 #if os(macOS)
 import AppKit
 #endif
 
 public struct TaigiDictAppRootView: View {
     @Environment(\.locale) private var locale
+#if os(iOS)
+    @Environment(\.requestReview) private var requestReview
+#endif
     @StateObject private var appLanguageManager: AppLanguageManager
     @ObservedObject private var navigationModel: AppNavigationModel
     @State private var viewModel: DictionarySearchViewModel
@@ -80,6 +81,17 @@ public struct TaigiDictAppRootView: View {
             await loadAppSettingsIfNeeded()
             syncAppLocaleWithSystem()
         }
+#if os(iOS)
+        .onChange(of: initializationViewModel.isReady, initial: true) { _, isReady in
+            guard isReady else {
+                return
+            }
+
+            AppReviewPromptScheduler.maybeRequestReview {
+                requestReview()
+            }
+        }
+#endif
 #if os(macOS)
         .task {
             await bookmarksViewModel.load()

@@ -33,6 +33,7 @@ import org.taigidict.app.core.settings.AppThemePreference
 import org.taigidict.app.feature.common.appPageContainerColor
 import org.taigidict.app.feature.initialization.InitializationScreen
 import org.taigidict.app.feature.initialization.InitializationViewModel
+import org.taigidict.app.feature.review.AppReviewPromptCoordinator
 import org.taigidict.app.navigation.MainDestination
 import org.taigidict.app.navigation.MainNavGraph
 import org.taigidict.app.ui.theme.TaigiDictTheme
@@ -73,6 +74,12 @@ class MainActivity : AppCompatActivity() {
 
             LaunchedEffect(uiState.databaseGeneration) {
                 appState.applyDatabaseGeneration(uiState.databaseGeneration)
+            }
+
+            LaunchedEffect(uiState.isReady) {
+                if (uiState.isReady) {
+                    AppReviewPromptCoordinator(this@MainActivity).maybeRequestReview()
+                }
             }
 
             val systemDark = isSystemInDarkTheme()
