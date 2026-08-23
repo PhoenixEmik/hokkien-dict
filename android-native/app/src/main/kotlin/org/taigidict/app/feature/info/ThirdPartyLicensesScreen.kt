@@ -37,7 +37,7 @@ import org.taigidict.app.feature.common.appSettingsPageContainerColor
 import org.taigidict.app.feature.common.transparentListItemColors
 
 private val ThirdPartyHorizontalPadding = 16.dp
-private val ThirdPartyVerticalPadding = 16.dp
+private val ThirdPartyVerticalPadding = 24.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

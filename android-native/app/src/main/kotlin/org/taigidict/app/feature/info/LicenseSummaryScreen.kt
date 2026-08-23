@@ -41,7 +41,7 @@ import org.taigidict.app.feature.common.appSettingsPageContainerColor
 import org.taigidict.app.feature.common.transparentListItemColors
 
 private val LicenseHorizontalPadding = 16.dp
-private val LicenseVerticalPadding = 16.dp
+private val LicenseVerticalPadding = 24.dp
 
 private const val MinistryCopyrightUrl = "https://sutian.moe.edu.tw/zh-hant/piantsip/pankhuan-singbing/"
 

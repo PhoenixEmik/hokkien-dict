@@ -66,7 +66,7 @@ import org.taigidict.app.feature.common.appSettingsPageContainerColor
 import org.taigidict.app.feature.common.transparentListItemColors
 
 private val AdvancedHorizontalPadding = 16.dp
-private val AdvancedVerticalPadding = 16.dp
+private val AdvancedVerticalPadding = 24.dp
 
 internal enum class AudioArchiveAction {
     Download,

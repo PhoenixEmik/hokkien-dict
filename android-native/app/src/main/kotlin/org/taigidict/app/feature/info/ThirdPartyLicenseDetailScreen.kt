@@ -43,7 +43,7 @@ import org.taigidict.app.feature.common.appSettingsPageContainerColor
 import org.taigidict.app.feature.common.transparentListItemColors
 
 private val LicenseDetailHorizontalPadding = 16.dp
-private val LicenseDetailVerticalPadding = 16.dp
+private val LicenseDetailVerticalPadding = 24.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

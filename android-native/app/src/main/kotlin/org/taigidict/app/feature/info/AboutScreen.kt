@@ -1,6 +1,7 @@
 package org.taigidict.app.feature.info
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -47,7 +48,7 @@ import org.taigidict.app.feature.common.appSettingsPageContainerColor
 import org.taigidict.app.feature.common.transparentListItemColors
 
 private val AboutHorizontalPadding = 16.dp
-private val AboutVerticalPadding = 16.dp
+private val AboutVerticalPadding = 24.dp
 
 private const val RepoUrl = "https://github.com/PhoenixEmik/taigi-dict"
 private const val PrivacyPolicyUrl = "https://github.com/PhoenixEmik/taigi-dict/blob/main/PRIVACY_POLICY.md"
@@ -94,6 +95,7 @@ fun AboutScreen(
                 .padding(innerPadding)
                 .padding(horizontal = AboutHorizontalPadding)
                 .padding(top = AboutVerticalPadding, bottom = AboutVerticalPadding),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             item {
                 AppSettingsSectionHeader(title = stringResource(R.string.about_app_section))

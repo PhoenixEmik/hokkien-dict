@@ -44,7 +44,7 @@ import org.taigidict.app.feature.common.appSettingsPageContainerColor
 import org.taigidict.app.feature.common.transparentListItemColors
 
 private val ReferenceHorizontalPadding = 16.dp
-private val ReferenceVerticalPadding = 16.dp
+private val ReferenceVerticalPadding = 24.dp
 
 private enum class ReferenceArticle(val titleRes: Int) {
     Tailo(titleRes = R.string.about_tailo_title),

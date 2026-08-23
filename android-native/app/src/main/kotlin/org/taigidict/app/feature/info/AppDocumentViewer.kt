@@ -42,7 +42,7 @@ import org.taigidict.app.feature.common.AppSettingsGroup
 import org.taigidict.app.feature.common.appSettingsPageContainerColor
 
 private val DocumentHorizontalPadding = 16.dp
-private val DocumentVerticalPadding = 12.dp
+private val DocumentVerticalPadding = 24.dp
 private val DocumentMaxWidth = 760.dp
 
 enum class AppDocument(
