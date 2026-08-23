@@ -22,6 +22,7 @@ import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -491,6 +492,7 @@ internal fun AudioArchiveResourceCard(
             leadingContent = {
                 AppSettingsListIcon(
                     imageVector = Icons.Outlined.FileDownload,
+                    tint = snapshot.iconTint(),
                 )
             },
             headlineContent = {
@@ -502,15 +504,15 @@ internal fun AudioArchiveResourceCard(
                 ) {
                     Text(
                         text = statusText,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = snapshot.statusTextColor(),
                     )
                 }
             },
             trailingContent = if (actions.isNotEmpty()) {
                 {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(horizontalAlignment = Alignment.End) {
                         actions.forEach { action ->
-                            IconButton(onClick = { onAction(action) }) {
+                            FilledTonalIconButton(onClick = { onAction(action) }) {
                                 Icon(
                                     imageVector = action.icon(),
                                     contentDescription = action.label(),
@@ -535,6 +537,26 @@ internal fun AudioArchiveResourceCard(
             }
         }
     }
+}
+
+@Composable
+private fun AudioArchiveDownloadSnapshot.iconTint() = when (state) {
+    AudioArchiveDownloadState.Failed -> MaterialTheme.colorScheme.error
+    AudioArchiveDownloadState.Completed,
+    AudioArchiveDownloadState.Downloading,
+    AudioArchiveDownloadState.Paused
+    -> MaterialTheme.colorScheme.primary
+    AudioArchiveDownloadState.Idle -> MaterialTheme.colorScheme.onSurfaceVariant
+}
+
+@Composable
+private fun AudioArchiveDownloadSnapshot.statusTextColor() = when (state) {
+    AudioArchiveDownloadState.Failed -> MaterialTheme.colorScheme.error
+    AudioArchiveDownloadState.Completed -> MaterialTheme.colorScheme.primary
+    AudioArchiveDownloadState.Idle,
+    AudioArchiveDownloadState.Downloading,
+    AudioArchiveDownloadState.Paused
+    -> MaterialTheme.colorScheme.onSurfaceVariant
 }
 
 @Composable
