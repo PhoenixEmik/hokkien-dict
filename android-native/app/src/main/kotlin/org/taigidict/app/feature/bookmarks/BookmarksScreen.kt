@@ -12,12 +12,12 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,6 +32,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -51,16 +52,19 @@ import kotlinx.coroutines.launch
 import org.taigidict.app.R
 import org.taigidict.app.app.TaigiDictApplication
 import org.taigidict.app.domain.model.DictionaryEntry
-import org.taigidict.app.feature.common.AppListDivider
 import org.taigidict.app.feature.common.DictionaryFallbackText
-import org.taigidict.app.feature.common.appCardColors
-import org.taigidict.app.feature.common.appListContainerColor
-import org.taigidict.app.feature.common.appPageContainerColor
 import org.taigidict.app.feature.common.selectableListItemColors
 import org.taigidict.app.feature.dictionary.DictionaryEntryDetailPane
 
 private val RootHorizontalPadding = 16.dp
 private val RootVerticalPadding = 16.dp
+private val BookmarkItemSpacing = 6.dp
+
+@Composable
+private fun bookmarksPageContainerColor() = MaterialTheme.colorScheme.surfaceContainer
+
+@Composable
+private fun bookmarksPanelColor() = MaterialTheme.colorScheme.surfaceContainerLow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -127,7 +131,7 @@ fun BookmarksScreen(
 
     Scaffold(
         modifier = modifier,
-        containerColor = appPageContainerColor(),
+        containerColor = bookmarksPageContainerColor(),
         contentWindowInsets = WindowInsets.safeDrawing.only(
             WindowInsetsSides.Horizontal + WindowInsetsSides.Top,
         ),
@@ -135,6 +139,9 @@ fun BookmarksScreen(
         topBar = {
             if (isSelectionMode) {
                 TopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = bookmarksPageContainerColor(),
+                    ),
                     title = {
                         Text(
                             text = stringResource(
@@ -198,6 +205,9 @@ fun BookmarksScreen(
                 )
             } else {
                 TopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = bookmarksPageContainerColor(),
+                    ),
                     title = {
                         Text(text = stringResource(R.string.bookmarks_title))
                     },
@@ -244,38 +254,34 @@ fun BookmarksScreen(
                 else -> {
                     LazyColumn(
                         modifier = Modifier.weight(1f, fill = true),
-                        verticalArrangement = Arrangement.spacedBy(0.dp),
+                        verticalArrangement = Arrangement.spacedBy(BookmarkItemSpacing),
                     ) {
-                        item {
+                        items(
+                            items = uiState.entries,
+                            key = { entry -> entry.id },
+                        ) { entry ->
+                            val isSelected = entry.id in selectedBookmarkIds
                             Surface(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = MaterialTheme.shapes.large,
-                                color = appListContainerColor(),
+                                color = bookmarksPanelColor(),
                             ) {
-                                Column {
-                                    uiState.entries.forEachIndexed { index, entry ->
-                                        val isSelected = entry.id in selectedBookmarkIds
-                                        BookmarkEntryListItem(
-                                            entry = entry,
-                                            isSelectionMode = isSelectionMode,
-                                            isSelected = isSelected,
-                                            onClick = { viewModel.onEntrySelected(entry.id) },
-                                            onLongClick = {
-                                                selectedBookmarkIds = selectedBookmarkIds + entry.id
-                                            },
-                                            onToggleSelected = {
-                                                selectedBookmarkIds = if (isSelected) {
-                                                    selectedBookmarkIds - entry.id
-                                                } else {
-                                                    selectedBookmarkIds + entry.id
-                                                }
-                                            },
-                                        )
-                                        if (index < uiState.entries.lastIndex) {
-                                            AppListDivider()
+                                BookmarkEntryListItem(
+                                    entry = entry,
+                                    isSelectionMode = isSelectionMode,
+                                    isSelected = isSelected,
+                                    onClick = { viewModel.onEntrySelected(entry.id) },
+                                    onLongClick = {
+                                        selectedBookmarkIds = selectedBookmarkIds + entry.id
+                                    },
+                                    onToggleSelected = {
+                                        selectedBookmarkIds = if (isSelected) {
+                                            selectedBookmarkIds - entry.id
+                                        } else {
+                                            selectedBookmarkIds + entry.id
                                         }
-                                    }
-                                }
+                                    },
+                                )
                             }
                         }
                     }
@@ -287,7 +293,11 @@ fun BookmarksScreen(
 
 @Composable
 internal fun BookmarksEmptyCard() {
-    Card(colors = appCardColors()) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.extraLarge,
+        color = bookmarksPanelColor(),
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -359,7 +369,7 @@ internal fun BookmarkEntryListItem(
                 DictionaryFallbackText(
                     text = entry.romanization,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.primary,
                 )
                 if (entry.briefSummary.isNotBlank()) {
                     DictionaryFallbackText(
