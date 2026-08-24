@@ -184,6 +184,10 @@ internal class DictionaryAudioArchiveStorage(
         return File(archivesDirectory(), "${type.archiveFileName}.download")
     }
 
+    fun archiveMetadataFile(type: DictionaryAudioArchiveType): File {
+        return File(archivesDirectory(), "${type.archiveFileName.removeSuffix(".zip")}.metadata.properties")
+    }
+
     fun findArchiveFile(type: DictionaryAudioArchiveType): File? {
         return archiveCandidates(type).firstOrNull(File::exists)
     }

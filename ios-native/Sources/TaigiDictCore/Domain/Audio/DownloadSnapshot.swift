@@ -12,11 +12,18 @@ public struct DownloadSnapshot: Equatable, Sendable {
     public var state: State
     public var downloadedBytes: Int64
     public var totalBytes: Int64?
+    public var needsDictionaryUpdate: Bool
 
-    public init(state: State = .idle, downloadedBytes: Int64 = 0, totalBytes: Int64? = nil) {
+    public init(
+        state: State = .idle,
+        downloadedBytes: Int64 = 0,
+        totalBytes: Int64? = nil,
+        needsDictionaryUpdate: Bool = false
+    ) {
         self.state = state
         self.downloadedBytes = downloadedBytes
         self.totalBytes = totalBytes
+        self.needsDictionaryUpdate = needsDictionaryUpdate
     }
 
     public var progress: Double? {

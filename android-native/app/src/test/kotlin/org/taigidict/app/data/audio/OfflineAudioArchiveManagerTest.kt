@@ -48,6 +48,33 @@ class OfflineAudioArchiveManagerTest {
     }
 
     @Test
+    fun refreshAll_withExistingArchiveWithoutCurrentDictionaryMetadata_requestsUpdate() = runTest {
+        val rootDirectory = Files.createTempDirectory("audio-archive-refresh-stale").toFile()
+        val archiveFile = File(
+            File(File(rootDirectory, DictionaryAudioArchiveStorage.ROOT_DIRECTORY_NAME), "archives"),
+            DictionaryAudioArchiveType.Word.archiveFileName,
+        )
+        writeStoredZipFile(
+            archiveFile = archiveFile,
+            entries = mapOf(
+                "word/1(1).mp3" to "validation".toByteArray(),
+            ),
+        )
+        val manager = OfflineAudioArchiveManager(
+            filesDirectory = rootDirectory,
+            managerScope = backgroundScope,
+            ioDispatcher = StandardTestDispatcher(testScheduler),
+            expectedDictionaryEntriesChecksum = "current-checksum",
+        )
+
+        manager.refreshAll().joinAll()
+
+        val snapshot = manager.snapshotFlow(DictionaryAudioArchiveType.Word).value
+        assertEquals(AudioArchiveDownloadState.Completed, snapshot.state)
+        assertTrue(snapshot.needsDictionaryUpdate)
+    }
+
+    @Test
     fun startDownload_downloadsAndStoresArchive() = runTest {
         val rootDirectory = Files.createTempDirectory("audio-archive-download").toFile()
         val archiveBytes = buildStoredZipBytes(
@@ -73,6 +100,34 @@ class OfflineAudioArchiveManagerTest {
         assertEquals(AudioArchiveDownloadState.Completed, snapshot.state)
         assertTrue(storedArchive.exists())
         assertEquals(storedArchive.length(), snapshot.downloadedBytes)
+    }
+
+    @Test
+    fun startDownload_recordsCurrentDictionaryMetadata() = runTest {
+        val rootDirectory = Files.createTempDirectory("audio-archive-download-current").toFile()
+        val archiveBytes = buildStoredZipBytes(
+            mapOf(
+                "word/1(1).mp3" to "validation".toByteArray(),
+            ),
+        )
+        val manager = OfflineAudioArchiveManager(
+            filesDirectory = rootDirectory,
+            connectionFactory = FakeAudioArchiveConnectionFactory(archiveBytes),
+            managerScope = backgroundScope,
+            ioDispatcher = StandardTestDispatcher(testScheduler),
+            expectedDictionaryEntriesChecksum = "current-checksum",
+        )
+
+        manager.startDownload(DictionaryAudioArchiveType.Word).join()
+
+        val snapshot = manager.snapshotFlow(DictionaryAudioArchiveType.Word).value
+        val metadataFile = File(
+            File(File(rootDirectory, DictionaryAudioArchiveStorage.ROOT_DIRECTORY_NAME), "archives"),
+            "sutiau-mp3.metadata.properties",
+        )
+        assertEquals(AudioArchiveDownloadState.Completed, snapshot.state)
+        assertEquals(false, snapshot.needsDictionaryUpdate)
+        assertTrue(metadataFile.readText().contains("current-checksum"))
     }
 
     @Test

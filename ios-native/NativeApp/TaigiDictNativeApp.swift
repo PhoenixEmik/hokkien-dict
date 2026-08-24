@@ -117,7 +117,10 @@ struct TaigiDictNativeApp: App {
         try? appStorage.prepareAudioDirectory()
         let storage = AudioArchiveStorage(rootDirectory: appStorage.audioDirectory)
         try? storage.ensureDirectories()
-        return OfflineAudioStore(storage: storage)
+        return OfflineAudioStore(
+            storage: storage,
+            expectedDictionaryEntriesChecksum: bundledDictionaryChecksum()
+        )
     }
 
     private static var bundledDictionaryDirectory: URL {
@@ -125,6 +128,17 @@ struct TaigiDictNativeApp: App {
             preconditionFailure("Bundled dictionary package is missing.")
         }
         return url
+    }
+
+    private static func bundledDictionaryChecksum() -> String? {
+        let manifestURL = bundledDictionaryDirectory.appendingPathComponent("dictionary_manifest.json")
+        guard
+            let data = try? Data(contentsOf: manifestURL),
+            let manifest = try? JSONDecoder().decode(DictionaryManifest.self, from: data)
+        else {
+            return nil
+        }
+        return manifest.checksumSHA256
     }
 }
 

@@ -1302,6 +1302,34 @@
         }
       }
     },
+    "audioStatusNeedsDictionaryUpdate" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update recommended"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再ダウンロード推奨"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "建议重新下载"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "建議重新下載"
+          }
+        }
+      }
+    },
     "audioStatusDownloading" : {
       "extractionState" : "stale",
       "localizations" : {

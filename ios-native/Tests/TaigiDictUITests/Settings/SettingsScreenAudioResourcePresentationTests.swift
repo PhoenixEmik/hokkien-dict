@@ -36,6 +36,16 @@ final class SettingsScreenAudioResourcePresentationTests: XCTestCase {
             [.restart]
         )
         XCTAssertEqual(
+            AudioResourcePresentation.settingsActions(for: DownloadSnapshot(state: .completed)),
+            []
+        )
+        XCTAssertEqual(
+            AudioResourcePresentation.settingsActions(
+                for: DownloadSnapshot(state: .completed, needsDictionaryUpdate: true)
+            ),
+            [.restart]
+        )
+        XCTAssertEqual(
             AudioResourcePresentation.actions(for: DownloadSnapshot(state: .failed("network"))),
             [.restart]
         )
@@ -81,6 +91,19 @@ final class SettingsScreenAudioResourcePresentationTests: XCTestCase {
                 for: completed,
                 locale: .traditionalChinese
             ).contains("已完成")
+        )
+
+        let needsUpdate = DownloadSnapshot(
+            state: .completed,
+            downloadedBytes: 100,
+            totalBytes: 100,
+            needsDictionaryUpdate: true
+        )
+        XCTAssertTrue(
+            DownloadSnapshotStatusPresentation.description(
+                for: needsUpdate,
+                locale: .traditionalChinese
+            ).contains("建議重新下載")
         )
 
         let failed = DownloadSnapshot(state: .failed("broken zip"), downloadedBytes: 0, totalBytes: nil)

@@ -6,6 +6,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.Properties
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -31,6 +32,7 @@ internal class OfflineAudioArchiveManager(
     private val connectionFactory: AudioArchiveConnectionFactory = DefaultAudioArchiveConnectionFactory(),
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val managerScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
+    private val expectedDictionaryEntriesChecksum: String? = null,
 ) {
     private val snapshots = DictionaryAudioArchiveType.entries.associateWith { type ->
         MutableStateFlow(
@@ -173,12 +175,14 @@ internal class OfflineAudioArchiveManager(
                 if (!tempFile.renameTo(archiveFile)) {
                     throw IOException("Failed to move downloaded archive into place.")
                 }
+                writeArchiveVersionMetadata(type)
                 storage.clearCachedClips(type)
                 updateSnapshot(type) {
                     AudioArchiveDownloadSnapshot(
                         state = AudioArchiveDownloadState.Completed,
                         downloadedBytes = archiveFile.length(),
                         totalBytes = archiveFile.length(),
+                        needsDictionaryUpdate = false,
                     )
                 }
             }
@@ -244,6 +248,7 @@ internal class OfflineAudioArchiveManager(
         withContext(ioDispatcher) {
             storage.archiveFile(type).delete()
             storage.downloadTempFile(type).delete()
+            storage.archiveMetadataFile(type).delete()
             storage.clearCachedClips(type)
         }
     }
@@ -260,6 +265,7 @@ internal class OfflineAudioArchiveManager(
                             state = AudioArchiveDownloadState.Completed,
                             downloadedBytes = archiveFile.length(),
                             totalBytes = archiveFile.length(),
+                            needsDictionaryUpdate = archiveNeedsDictionaryUpdate(type),
                         )
                     } else {
                         AudioArchiveDownloadSnapshot(
@@ -308,6 +314,44 @@ internal class OfflineAudioArchiveManager(
     ) {
         snapshots.getValue(type).update(transform)
     }
+
+    private fun archiveNeedsDictionaryUpdate(type: DictionaryAudioArchiveType): Boolean {
+        val expectedChecksum = expectedDictionaryEntriesChecksum?.takeIf(String::isNotBlank) ?: return false
+        val storedChecksum = readArchiveVersionMetadata(type) ?: return true
+        return !storedChecksum.equals(expectedChecksum, ignoreCase = true)
+    }
+
+    private fun readArchiveVersionMetadata(type: DictionaryAudioArchiveType): String? {
+        val metadataFile = storage.archiveMetadataFile(type)
+        if (!metadataFile.exists()) {
+            return null
+        }
+
+        return runCatching {
+            val properties = Properties()
+            metadataFile.inputStream().use(properties::load)
+            properties.getProperty(DictionaryChecksumProperty)
+        }.getOrNull()
+    }
+
+    private fun writeArchiveVersionMetadata(type: DictionaryAudioArchiveType) {
+        val expectedChecksum = expectedDictionaryEntriesChecksum?.takeIf(String::isNotBlank) ?: return
+        val metadataFile = storage.archiveMetadataFile(type)
+        metadataFile.parentFile?.mkdirs()
+
+        val properties = Properties().apply {
+            setProperty(DictionaryChecksumProperty, expectedChecksum)
+        }
+        runCatching {
+            metadataFile.outputStream().use { output ->
+                properties.store(output, "Offline audio archive metadata")
+            }
+        }
+    }
+
+    private companion object {
+        private const val DictionaryChecksumProperty = "dictionary_entries_checksum_sha256"
+    }
 }
 
 internal data class AudioArchiveDownloadSnapshot(
@@ -315,6 +359,7 @@ internal data class AudioArchiveDownloadSnapshot(
     val downloadedBytes: Long,
     val totalBytes: Long,
     val errorMessage: String? = null,
+    val needsDictionaryUpdate: Boolean = false,
 ) {
     val progress: Float?
         get() = if (totalBytes > 0) downloadedBytes.toFloat() / totalBytes.toFloat() else null

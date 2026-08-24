@@ -134,6 +134,62 @@ final class OfflineAudioStoreTests: XCTestCase {
         XCTAssertEqual(snapshot.downloadedBytes, snapshot.totalBytes)
     }
 
+    func testExistingArchiveWithoutCurrentDictionaryMetadataRequestsUpdate() async throws {
+        let storage = TestAudioStorage()
+        let archiveURL = storage.archiveURL(for: .word)
+        try FileManager.default.createDirectory(
+            at: archiveURL.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        try Data("archive".utf8).write(to: archiveURL)
+
+        let downloader = TestDownloader(snapshots: [
+            "word": DownloadSnapshot(state: .idle),
+        ])
+        let indexer = TestIndexer(indexByType: [
+            .word: ["1(1)": "word/1(1).mp3"],
+        ])
+        let store = OfflineAudioStore(
+            downloadService: downloader,
+            storage: storage,
+            zipIndexer: indexer,
+            expectedDictionaryEntriesChecksum: "current-checksum"
+        )
+
+        let snapshot = await store.snapshot(for: .word)
+
+        XCTAssertEqual(snapshot.state, .completed)
+        XCTAssertTrue(snapshot.needsDictionaryUpdate)
+    }
+
+    func testCompletedDownloadStoresCurrentDictionaryMetadata() async throws {
+        let storage = TestAudioStorage()
+        let downloader = TestDownloader(snapshots: [
+            "word": DownloadSnapshot(state: .completed, downloadedBytes: 100, totalBytes: 100),
+        ])
+        let indexer = TestIndexer(indexByType: [
+            .word: ["1(1)": "word/1(1).mp3"],
+        ])
+        let store = OfflineAudioStore(
+            downloadService: downloader,
+            storage: storage,
+            zipIndexer: indexer,
+            expectedDictionaryEntriesChecksum: "current-checksum"
+        )
+
+        await store.startDownload(.word)
+        let snapshot = await store.snapshot(for: .word)
+
+        XCTAssertEqual(snapshot.state, .completed)
+        XCTAssertFalse(snapshot.needsDictionaryUpdate)
+        let metadataURL = storage.archiveURL(for: .word)
+            .deletingPathExtension()
+            .appendingPathExtension("metadata.json")
+        let metadataData = try Data(contentsOf: metadataURL)
+        let metadata = try JSONSerialization.jsonObject(with: metadataData) as? [String: String]
+        XCTAssertEqual(metadata?["dictionaryEntriesChecksumSHA256"], "current-checksum")
+    }
+
     func testSnapshotReturnsExistingArchiveBeforeIndexValidationFinishes() async throws {
         let storage = TestAudioStorage()
         let archiveURL = storage.archiveURL(for: .word)

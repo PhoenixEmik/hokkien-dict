@@ -999,7 +999,7 @@ enum AudioResourcePresentation {
         case .paused:
             return [.resume]
         case .completed:
-            return []
+            return snapshot.needsDictionaryUpdate ? [.restart] : []
         case .failed:
             return [.start]
         }
@@ -1036,6 +1036,9 @@ enum DownloadSnapshotStatusPresentation {
         case .paused:
             return "\(AppLocalizer.text(.audioStatusPaused, locale: locale)) · \(downloaded) / \(total)"
         case .completed:
+            if snapshot.needsDictionaryUpdate {
+                return "\(AppLocalizer.text(.audioStatusNeedsDictionaryUpdate, locale: locale)) · \(downloaded)"
+            }
             return "\(AppLocalizer.text(.audioStatusCompleted, locale: locale)) · \(downloaded)"
         case .failed(let message):
             return "\(AppLocalizer.text(.audioStatusFailed, locale: locale)) · \(message)"

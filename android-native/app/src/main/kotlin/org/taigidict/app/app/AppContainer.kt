@@ -2,6 +2,8 @@ package org.taigidict.app.app
 
 import android.content.Context
 import java.io.File
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import org.taigidict.app.BuildConfig
 import org.taigidict.app.core.constants.AppConstants
 import org.taigidict.app.core.settings.AppSettingsStoring
@@ -13,6 +15,7 @@ import org.taigidict.app.data.bookmarks.BookmarkStore
 import org.taigidict.app.data.conversion.AndroidOpenCcChineseConversionService
 import org.taigidict.app.data.conversion.ChineseConversionService
 import org.taigidict.app.data.importer.BundledDictionaryImporting
+import org.taigidict.app.data.importer.DictionaryManifest
 import org.taigidict.app.data.importer.DictionaryImportService
 import org.taigidict.app.data.importer.DictionaryJsonlReader
 import org.taigidict.app.data.importer.LocalDictionaryPackageLoader
@@ -110,7 +113,10 @@ class AppContainer(
         overrides.searchHistoryStore ?: SearchHistoryStore(context = appContext)
     }
     internal val offlineAudioArchiveManager: OfflineAudioArchiveManager by lazy {
-        OfflineAudioArchiveManager(filesDirectory = appContext.filesDir)
+        OfflineAudioArchiveManager(
+            filesDirectory = appContext.filesDir,
+            expectedDictionaryEntriesChecksum = bundledDictionaryChecksum(),
+        )
     }
     init {
         // Preload local audio archive state so Settings does not briefly show
@@ -133,5 +139,22 @@ class AppContainer(
             bundledEntriesAssetPath = bundledDictionaryEntriesAssetPath,
             localSourceDirectory = localDictionarySourceDirectory,
         )
+    }
+
+    private fun bundledDictionaryChecksum(): String? {
+        return runCatching {
+            val manifestString = appContext.assets.open(bundledDictionaryManifestAssetPath).use { input ->
+                input.readBytes().toString(Charsets.UTF_8)
+            }
+            DictionaryManifestJson
+                .decodeFromString<DictionaryManifest>(manifestString)
+                .checksumSHA256
+        }.getOrNull()
+    }
+
+    private companion object {
+        val DictionaryManifestJson = Json {
+            ignoreUnknownKeys = true
+        }
     }
 }

@@ -111,6 +111,7 @@ public enum AppLocalizedStringKey: String, CaseIterable {
     case audioStatusDownloading
     case audioStatusPaused
     case audioStatusCompleted
+    case audioStatusNeedsDictionaryUpdate
     case audioStatusFailed
     case audioActionStart
     case audioActionPause

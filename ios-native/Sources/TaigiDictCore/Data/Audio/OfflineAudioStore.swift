@@ -1,26 +1,34 @@
 import Foundation
 
 public actor OfflineAudioStore: OfflineAudioManaging {
+    private struct ArchiveVersionMetadata: Codable {
+        var dictionaryEntriesChecksumSHA256: String
+    }
+
     private let downloadService: any ResumableDownloading
     private let storage: any AudioArchiveStoring
     private let zipIndexer: any AudioZipIndexing
     private let playbackService: any AudioPlaybackControlling
+    private let expectedDictionaryEntriesChecksum: String?
 
     private var snapshots: [AudioArchiveType: DownloadSnapshot] = [:]
     private var indexes: [AudioArchiveType: [String: String]] = [:]
     private var completedValidationFailures: [AudioArchiveType: DownloadSnapshot] = [:]
     private var pendingIndexValidations = Set<AudioArchiveType>()
+    private var versionMarkingCandidates = Set<AudioArchiveType>()
 
     public init(
         downloadService: any ResumableDownloading = ResumableDownloadService(),
         storage: any AudioArchiveStoring,
         zipIndexer: any AudioZipIndexing = AudioZipIndexService(),
-        playbackService: any AudioPlaybackControlling = AudioPlaybackService()
+        playbackService: any AudioPlaybackControlling = AudioPlaybackService(),
+        expectedDictionaryEntriesChecksum: String? = nil
     ) {
         self.downloadService = downloadService
         self.storage = storage
         self.zipIndexer = zipIndexer
         self.playbackService = playbackService
+        self.expectedDictionaryEntriesChecksum = expectedDictionaryEntriesChecksum
     }
 
     public func snapshot(for type: AudioArchiveType) async -> DownloadSnapshot {
@@ -30,6 +38,7 @@ public actor OfflineAudioStore: OfflineAudioManaging {
 
     public func startDownload(_ type: AudioArchiveType) async {
         let archiveURL = storage.archiveURL(for: type)
+        versionMarkingCandidates.insert(type)
         await downloadService.startDownload(id: type.rawValue, from: type.remoteURL, to: archiveURL)
         await refreshSnapshotAndIndex(type)
     }
@@ -40,15 +49,18 @@ public actor OfflineAudioStore: OfflineAudioManaging {
     }
 
     public func resumeDownload(_ type: AudioArchiveType) async {
+        versionMarkingCandidates.insert(type)
         await downloadService.resumeDownload(id: type.rawValue)
         await refreshSnapshotAndIndex(type)
     }
 
     public func restartDownload(_ type: AudioArchiveType) async {
         let archiveURL = storage.archiveURL(for: type)
+        versionMarkingCandidates.insert(type)
         await downloadService.restartDownload(id: type.rawValue, from: type.remoteURL, to: archiveURL)
         indexes[type] = nil
         completedValidationFailures[type] = nil
+        try? clearArchiveVersionMetadata(for: type)
         try? storage.clearClipCache(for: type)
         await refreshSnapshotAndIndex(type)
     }
@@ -137,6 +149,7 @@ public actor OfflineAudioStore: OfflineAudioManaging {
             }
 
             indexes[type] = index
+            reconcileArchiveVersionMetadata(for: type)
         } catch {
             let failure = DownloadSnapshot(
                 state: .failed(error.userFacingMessage),
@@ -181,7 +194,12 @@ public actor OfflineAudioStore: OfflineAudioManaging {
             return nil
         }
 
-        return DownloadSnapshot(state: .completed, downloadedBytes: bytes, totalBytes: bytes)
+        return DownloadSnapshot(
+            state: .completed,
+            downloadedBytes: bytes,
+            totalBytes: bytes,
+            needsDictionaryUpdate: archiveNeedsDictionaryUpdate(for: type)
+        )
     }
 
     private func hasLocalArchive(for type: AudioArchiveType) -> Bool {
@@ -196,5 +214,67 @@ public actor OfflineAudioStore: OfflineAudioManaging {
         let index = try zipIndexer.buildIndex(for: storage.archiveURL(for: type))
         indexes[type] = index
         return index
+    }
+
+    private func reconcileArchiveVersionMetadata(for type: AudioArchiveType) {
+        guard expectedDictionaryEntriesChecksum != nil else {
+            return
+        }
+
+        if versionMarkingCandidates.contains(type) {
+            try? writeArchiveVersionMetadata(for: type)
+            versionMarkingCandidates.remove(type)
+        }
+
+        let needsUpdate = archiveNeedsDictionaryUpdate(for: type)
+        if var snapshot = snapshots[type], snapshot.state == .completed {
+            snapshot.needsDictionaryUpdate = needsUpdate
+            snapshots[type] = snapshot
+        }
+    }
+
+    private func archiveNeedsDictionaryUpdate(for type: AudioArchiveType) -> Bool {
+        guard let expectedDictionaryEntriesChecksum, !expectedDictionaryEntriesChecksum.isEmpty else {
+            return false
+        }
+
+        guard let metadata = try? readArchiveVersionMetadata(for: type) else {
+            return true
+        }
+
+        return metadata.dictionaryEntriesChecksumSHA256.caseInsensitiveCompare(expectedDictionaryEntriesChecksum) != .orderedSame
+    }
+
+    private func readArchiveVersionMetadata(for type: AudioArchiveType) throws -> ArchiveVersionMetadata {
+        let data = try Data(contentsOf: archiveVersionMetadataURL(for: type))
+        return try JSONDecoder().decode(ArchiveVersionMetadata.self, from: data)
+    }
+
+    private func writeArchiveVersionMetadata(for type: AudioArchiveType) throws {
+        guard let expectedDictionaryEntriesChecksum else {
+            return
+        }
+
+        let metadataURL = archiveVersionMetadataURL(for: type)
+        try FileManager.default.createDirectory(
+            at: metadataURL.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        let metadata = ArchiveVersionMetadata(dictionaryEntriesChecksumSHA256: expectedDictionaryEntriesChecksum)
+        let data = try JSONEncoder().encode(metadata)
+        try data.write(to: metadataURL, options: .atomic)
+    }
+
+    private func clearArchiveVersionMetadata(for type: AudioArchiveType) throws {
+        let metadataURL = archiveVersionMetadataURL(for: type)
+        if FileManager.default.fileExists(atPath: metadataURL.path) {
+            try FileManager.default.removeItem(at: metadataURL)
+        }
+    }
+
+    private func archiveVersionMetadataURL(for type: AudioArchiveType) -> URL {
+        storage.archiveURL(for: type)
+            .deletingPathExtension()
+            .appendingPathExtension("metadata.json")
     }
 }

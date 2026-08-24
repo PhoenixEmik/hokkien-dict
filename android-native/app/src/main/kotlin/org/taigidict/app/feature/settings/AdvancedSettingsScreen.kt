@@ -496,7 +496,11 @@ internal fun AudioArchiveResourceRow(
             downloadedSize,
             totalSize,
         )
-        AudioArchiveDownloadState.Completed -> stringResource(R.string.settings_audio_status_completed)
+        AudioArchiveDownloadState.Completed -> if (snapshot.needsDictionaryUpdate) {
+            stringResource(R.string.settings_audio_status_needs_update)
+        } else {
+            stringResource(R.string.settings_audio_status_completed)
+        }
         AudioArchiveDownloadState.Failed -> stringResource(
             R.string.settings_audio_status_failed,
             snapshot.errorMessage ?: stringResource(R.string.unknown_error),
@@ -602,7 +606,7 @@ private fun availableActions(
         AudioArchiveDownloadState.Idle -> listOf(AudioArchiveAction.Download)
         AudioArchiveDownloadState.Downloading -> listOf(AudioArchiveAction.Pause)
         AudioArchiveDownloadState.Paused -> listOf(AudioArchiveAction.Resume)
-        AudioArchiveDownloadState.Completed -> if (showRedownloadAction) {
+        AudioArchiveDownloadState.Completed -> if (showRedownloadAction || snapshot.needsDictionaryUpdate) {
             listOf(AudioArchiveAction.Redownload)
         } else {
             emptyList()

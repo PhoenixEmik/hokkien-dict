@@ -230,7 +230,21 @@ public struct TaigiDictAppRootView: View {
         let storage = AudioArchiveStorage(rootDirectory: appStorage.audioDirectory)
         try? storage.ensureDirectories()
 
-        return OfflineAudioStore(storage: storage)
+        return OfflineAudioStore(
+            storage: storage,
+            expectedDictionaryEntriesChecksum: bundledDictionaryChecksum()
+        )
+    }
+
+    private static func bundledDictionaryChecksum() -> String? {
+        guard
+            let dictionaryURL = Bundle.main.url(forResource: "Dictionary", withExtension: nil),
+            let data = try? Data(contentsOf: dictionaryURL.appendingPathComponent("dictionary_manifest.json")),
+            let manifest = try? JSONDecoder().decode(DictionaryManifest.self, from: data)
+        else {
+            return nil
+        }
+        return manifest.checksumSHA256
     }
 
 #if os(macOS)

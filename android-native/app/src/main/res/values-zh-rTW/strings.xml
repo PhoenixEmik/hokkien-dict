@@ -109,6 +109,7 @@
     <string name="settings_audio_status_downloading">下載中 · %1$s / %2$s</string>
     <string name="settings_audio_status_paused">已暫停 · %1$s / %2$s</string>
     <string name="settings_audio_status_completed">已下載</string>
+    <string name="settings_audio_status_needs_update">已下載 · 建議重下載</string>
     <string name="settings_audio_status_failed">失敗 · %1$s</string>
     <string name="settings_audio_action_download">下載</string>
     <string name="settings_audio_action_pause">暫停</string>
