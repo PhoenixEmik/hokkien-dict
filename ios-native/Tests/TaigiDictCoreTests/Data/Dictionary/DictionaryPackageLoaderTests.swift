@@ -53,9 +53,9 @@ final class DictionaryPackageLoaderTests: XCTestCase {
 
         let bundle = try DictionaryPackageLoader().loadBundle(from: generatedDirectory)
 
-        XCTAssertEqual(bundle.entryCount, 28_965)
-        XCTAssertEqual(bundle.senseCount, 23_106)
-        XCTAssertEqual(bundle.exampleCount, 17_700)
+        XCTAssertEqual(bundle.entryCount, 29_593)
+        XCTAssertEqual(bundle.senseCount, 23_298)
+        XCTAssertEqual(bundle.exampleCount, 17_907)
         XCTAssertEqual(bundle.entries.first?.id, 1)
     }
 

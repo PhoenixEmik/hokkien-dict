@@ -9,7 +9,7 @@ final class PackageDictionaryRepositoryTests: XCTestCase {
         let bundle = try await repository.loadBundle()
         let results = try await repository.search("辭典", limit: 5, offset: 0)
 
-        XCTAssertEqual(bundle.entryCount, 28_965)
+        XCTAssertEqual(bundle.entryCount, 29_593)
         XCTAssertFalse(results.isEmpty)
         XCTAssertTrue(results.contains { $0.hanji.contains("辭典") })
     }
@@ -33,9 +33,9 @@ final class PackageDictionaryRepositoryTests: XCTestCase {
             phase,
             .ready(
                 DictionaryLibrarySummary(
-                    entryCount: 28_965,
-                    senseCount: 23_106,
-                    exampleCount: 17_700
+                    entryCount: 29_593,
+                    senseCount: 23_298,
+                    exampleCount: 17_907
                 )
             )
         )

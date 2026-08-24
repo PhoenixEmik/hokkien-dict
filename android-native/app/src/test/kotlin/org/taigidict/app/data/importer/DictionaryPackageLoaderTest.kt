@@ -25,9 +25,9 @@ class DictionaryPackageLoaderTest {
 
         val validatedPackage = loader.validateBundledPackage()
 
-        assertEquals(28_965, validatedPackage.manifest.entryCount)
-        assertEquals(23_106, validatedPackage.manifest.senseCount)
-        assertEquals(17_700, validatedPackage.manifest.exampleCount)
+        assertEquals(29_593, validatedPackage.manifest.entryCount)
+        assertEquals(23_298, validatedPackage.manifest.senseCount)
+        assertEquals(17_907, validatedPackage.manifest.exampleCount)
         assertEquals(1L, validatedPackage.firstEntry.id)
         assertNotNull(validatedPackage.entriesBytes)
     }
