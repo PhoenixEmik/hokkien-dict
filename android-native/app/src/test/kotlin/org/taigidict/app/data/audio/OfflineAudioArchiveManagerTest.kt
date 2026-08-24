@@ -170,6 +170,44 @@ class OfflineAudioArchiveManagerTest {
     }
 
     @Test
+    fun resumeDownload_whenServerRejectsRange_restartsFullDownload() = runTest {
+        val rootDirectory = Files.createTempDirectory("audio-archive-range-rejected").toFile()
+        val archiveBytes = buildStoredZipBytes(
+            mapOf(
+                "word/1(1).mp3" to "validation".toByteArray(),
+                "word/example.mp3" to "example".toByteArray(),
+            ),
+        )
+        val partialBytes = archiveBytes.copyOfRange(0, archiveBytes.size / 2)
+        val tempDownloadFile = File(
+            File(File(rootDirectory, DictionaryAudioArchiveStorage.ROOT_DIRECTORY_NAME), "archives"),
+            "${DictionaryAudioArchiveType.Word.archiveFileName}.download",
+        )
+        tempDownloadFile.parentFile?.mkdirs()
+        tempDownloadFile.writeBytes(partialBytes)
+
+        val connectionFactory = RangeRejectedThenFullConnectionFactory(archiveBytes)
+        val manager = OfflineAudioArchiveManager(
+            filesDirectory = rootDirectory,
+            connectionFactory = connectionFactory,
+            managerScope = backgroundScope,
+            ioDispatcher = StandardTestDispatcher(testScheduler),
+        )
+
+        manager.resumeDownload(DictionaryAudioArchiveType.Word).join()
+
+        val snapshot = manager.snapshotFlow(DictionaryAudioArchiveType.Word).value
+        val storedArchive = File(
+            File(File(rootDirectory, DictionaryAudioArchiveStorage.ROOT_DIRECTORY_NAME), "archives"),
+            DictionaryAudioArchiveType.Word.archiveFileName,
+        )
+        assertEquals(AudioArchiveDownloadState.Completed, snapshot.state)
+        assertTrue(storedArchive.exists())
+        assertEquals(archiveBytes.toList(), storedArchive.readBytes().toList())
+        assertEquals(listOf(partialBytes.size.toLong(), 0L), connectionFactory.resumeFromByteRequests)
+    }
+
+    @Test
     fun pauseDownload_duringActiveDownload_marksSnapshotPaused() = runTest {
         val rootDirectory = Files.createTempDirectory("audio-archive-pause").toFile()
         val manager = OfflineAudioArchiveManager(
@@ -186,6 +224,27 @@ class OfflineAudioArchiveManagerTest {
 
         val snapshot = manager.snapshotFlow(DictionaryAudioArchiveType.Word).value
         assertEquals(AudioArchiveDownloadState.Paused, snapshot.state)
+    }
+}
+
+private class RangeRejectedThenFullConnectionFactory(
+    private val payload: ByteArray,
+) : AudioArchiveConnectionFactory {
+    val resumeFromByteRequests = mutableListOf<Long>()
+
+    override fun open(url: String, resumeFromByte: Long): AudioArchiveConnection {
+        resumeFromByteRequests += resumeFromByte
+        return if (resumeFromByte > 0) {
+            FakeAudioArchiveConnection(
+                payload = ByteArray(0),
+                responseCode = 416,
+            )
+        } else {
+            FakeAudioArchiveConnection(
+                payload = payload,
+                responseCode = java.net.HttpURLConnection.HTTP_OK,
+            )
+        }
     }
 }
 

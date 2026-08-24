@@ -60,6 +60,60 @@ final class ResumableDownloadServiceTests: XCTestCase {
         XCTAssertEqual(diskData, expectedData)
     }
 
+    func testResumeRestartsFullDownloadWhenServerRejectsRange() async throws {
+        let fileManager = FileManager.default
+        let directory = fileManager.temporaryDirectory
+            .appendingPathComponent("ResumableDownloadServiceTests-\(UUID().uuidString)", isDirectory: true)
+        try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+
+        let localURL = directory.appendingPathComponent("audio.zip")
+        try Data("PARTIAL".utf8).write(to: localURL)
+
+        let expectedData = Data("FULL-DATA".utf8)
+        let requestCount = AtomicCounter()
+        MockDownloadURLProtocol.handler = { request in
+            let count = requestCount.increment()
+            if count == 1 {
+                XCTAssertEqual(request.value(forHTTPHeaderField: "Range"), "bytes=7-")
+                let response = HTTPURLResponse(
+                    url: request.url!,
+                    statusCode: 416,
+                    httpVersion: "HTTP/1.1",
+                    headerFields: nil
+                )!
+                return (response, Data())
+            }
+
+            XCTAssertNil(request.value(forHTTPHeaderField: "Range"))
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 200,
+                httpVersion: "HTTP/1.1",
+                headerFields: [
+                    "Content-Length": "\(expectedData.count)",
+                ]
+            )!
+            return (response, expectedData)
+        }
+
+        let service = ResumableDownloadService(session: makeSession(), fileManager: fileManager)
+        await service.startDownload(id: "sentence", from: URL(string: "https://example.com/sentence.zip")!, to: localURL)
+
+        for _ in 0..<80 {
+            let snapshot = await service.snapshot(for: "sentence")
+            if snapshot.state == .completed {
+                break
+            }
+            try await Task.sleep(for: .milliseconds(25))
+        }
+
+        let snapshot = await service.snapshot(for: "sentence")
+        XCTAssertEqual(snapshot.state, .completed)
+        XCTAssertEqual(snapshot.downloadedBytes, Int64(expectedData.count))
+        XCTAssertEqual(try Data(contentsOf: localURL), expectedData)
+        XCTAssertEqual(requestCount.value, 2)
+    }
+
     private func makeSession() -> URLSession {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [MockDownloadURLProtocol.self]
@@ -95,4 +149,22 @@ private final class MockDownloadURLProtocol: URLProtocol {
     }
 
     override func stopLoading() {}
+}
+
+private final class AtomicCounter: @unchecked Sendable {
+    private let lock = NSLock()
+    private var rawValue = 0
+
+    var value: Int {
+        lock.withLock {
+            rawValue
+        }
+    }
+
+    func increment() -> Int {
+        lock.withLock {
+            rawValue += 1
+            return rawValue
+        }
+    }
 }
