@@ -50,7 +50,7 @@ public actor OfflineAudioStore: OfflineAudioManaging {
 
     public func resumeDownload(_ type: AudioArchiveType) async {
         versionMarkingCandidates.insert(type)
-        await downloadService.resumeDownload(id: type.rawValue)
+        await downloadService.startDownload(id: type.rawValue, from: type.remoteURL, to: storage.archiveURL(for: type))
         await refreshSnapshotAndIndex(type)
     }
 
@@ -120,6 +120,12 @@ public actor OfflineAudioStore: OfflineAudioManaging {
             return
         }
 
+        if snapshots[type]?.state == .idle,
+           let localPausedSnapshot = partialArchiveSnapshot(for: type) {
+            snapshots[type] = localPausedSnapshot
+            return
+        }
+
         validateCompletedArchiveIfNeeded(for: type)
     }
 
@@ -138,27 +144,30 @@ public actor OfflineAudioStore: OfflineAudioManaging {
         do {
             let index = try zipIndexer.buildIndex(for: storage.archiveURL(for: type))
             guard index[type.validationClipID] != nil else {
-                let failure = DownloadSnapshot(
-                    state: .failed("Offline audio archive is incomplete or missing required files."),
-                    downloadedBytes: snapshots[type]?.downloadedBytes ?? 0,
-                    totalBytes: snapshots[type]?.totalBytes
-                )
-                completedValidationFailures[type] = failure
-                snapshots[type] = failure
+                discardInvalidArchive(for: type)
                 return
             }
 
             indexes[type] = index
             reconcileArchiveVersionMetadata(for: type)
         } catch {
-            let failure = DownloadSnapshot(
-                state: .failed(error.userFacingMessage),
-                downloadedBytes: snapshots[type]?.downloadedBytes ?? 0,
-                totalBytes: snapshots[type]?.totalBytes
-            )
-            completedValidationFailures[type] = failure
-            snapshots[type] = failure
+            discardInvalidArchive(for: type)
         }
+    }
+
+    private func discardInvalidArchive(for type: AudioArchiveType) {
+        indexes[type] = nil
+        completedValidationFailures[type] = nil
+        versionMarkingCandidates.remove(type)
+        try? clearArchiveVersionMetadata(for: type)
+        try? storage.clearClipCache(for: type)
+
+        let archiveURL = storage.archiveURL(for: type)
+        if FileManager.default.fileExists(atPath: archiveURL.path) {
+            try? FileManager.default.removeItem(at: archiveURL)
+        }
+
+        snapshots[type] = DownloadSnapshot(state: .idle, downloadedBytes: 0, totalBytes: nil)
     }
 
     private func scheduleIndexValidation(for type: AudioArchiveType) {
@@ -200,6 +209,19 @@ public actor OfflineAudioStore: OfflineAudioManaging {
             totalBytes: bytes,
             needsDictionaryUpdate: archiveNeedsDictionaryUpdate(for: type)
         )
+    }
+
+    private func partialArchiveSnapshot(for type: AudioArchiveType) -> DownloadSnapshot? {
+        let partialURL = storage.partialArchiveURL(for: type)
+        guard
+            let fileSize = try? partialURL.resourceValues(forKeys: [.fileSizeKey]).fileSize,
+            let bytes = Int64(exactly: fileSize),
+            bytes > 0
+        else {
+            return nil
+        }
+
+        return DownloadSnapshot(state: .paused, downloadedBytes: bytes, totalBytes: nil)
     }
 
     private func hasLocalArchive(for type: AudioArchiveType) -> Bool {

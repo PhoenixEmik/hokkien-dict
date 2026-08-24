@@ -56,8 +56,9 @@ final class OfflineAudioStoreTests: XCTestCase {
         XCTAssertEqual(playing, "word:1(1)")
     }
 
-    func testMissingValidationClipMarksSnapshotFailed() async {
+    func testMissingValidationClipDiscardsInvalidArchive() async throws {
         let storage = TestAudioStorage()
+        let archiveURL = try writeArchive(for: .sentence, in: storage)
         let downloader = TestDownloader(snapshots: [
             "sentence": DownloadSnapshot(state: .completed, downloadedBytes: 80, totalBytes: 80),
         ])
@@ -76,16 +77,13 @@ final class OfflineAudioStoreTests: XCTestCase {
         await store.startDownload(.sentence)
         let snapshot = await store.snapshot(for: .sentence)
 
-        switch snapshot.state {
-        case .failed(let message):
-            XCTAssertEqual(message, "Offline audio archive is incomplete or missing required files.")
-        default:
-            XCTFail("Expected failed snapshot when validation clip is missing")
-        }
+        XCTAssertEqual(snapshot.state, .idle)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: archiveURL.path))
     }
 
-    func testInvalidArchiveMarksSnapshotFailedWithReadableMessage() async {
+    func testInvalidArchiveDiscardsDamagedArchive() async throws {
         let storage = TestAudioStorage()
+        let archiveURL = try writeArchive(for: .word, in: storage)
         let downloader = TestDownloader(snapshots: [
             "word": DownloadSnapshot(state: .completed, downloadedBytes: 80, totalBytes: 80),
         ])
@@ -98,12 +96,72 @@ final class OfflineAudioStoreTests: XCTestCase {
         await store.startDownload(.word)
         let snapshot = await store.snapshot(for: .word)
 
-        switch snapshot.state {
-        case .failed(let message):
-            XCTAssertEqual(message, "Offline audio archive is damaged or unreadable.")
-        default:
-            XCTFail("Expected failed snapshot when archive is invalid")
-        }
+        XCTAssertEqual(snapshot.state, .idle)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: archiveURL.path))
+    }
+
+    func testExistingInvalidArchiveIsDiscardedAfterBackgroundValidation() async throws {
+        let storage = TestAudioStorage()
+        let archiveURL = try writeArchive(for: .word, in: storage)
+
+        let downloader = TestDownloader(snapshots: [
+            "word": DownloadSnapshot(state: .idle),
+        ])
+        let store = OfflineAudioStore(
+            downloadService: downloader,
+            storage: storage,
+            zipIndexer: FailingIndexer(error: .invalidArchive)
+        )
+
+        let first = await store.snapshot(for: .word)
+
+        XCTAssertEqual(first.state, .completed)
+
+        try await Task.sleep(nanoseconds: 50_000_000)
+        let second = await store.snapshot(for: .word)
+
+        XCTAssertEqual(second.state, .idle)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: archiveURL.path))
+    }
+
+    func testPartialArchiveIsPresentedAsPausedWhenDownloaderIsIdle() async throws {
+        let storage = TestAudioStorage()
+        try writePartialArchive(for: .word, in: storage, contents: "partial archive")
+
+        let downloader = TestDownloader(snapshots: [
+            "word": DownloadSnapshot(state: .idle),
+        ])
+        let store = OfflineAudioStore(
+            downloadService: downloader,
+            storage: storage,
+            zipIndexer: FailingIndexer(error: .invalidArchive)
+        )
+
+        let snapshot = await store.snapshot(for: .word)
+
+        XCTAssertEqual(snapshot.state, .paused)
+        XCTAssertGreaterThan(snapshot.downloadedBytes, 0)
+    }
+
+    func testResumePartialArchiveStartsDownloadJob() async throws {
+        let storage = TestAudioStorage()
+        try writePartialArchive(for: .word, in: storage, contents: "partial archive")
+
+        let downloader = TestDownloader(snapshots: [
+            "word": DownloadSnapshot(state: .idle),
+        ])
+        let store = OfflineAudioStore(
+            downloadService: downloader,
+            storage: storage,
+            zipIndexer: FailingIndexer(error: .invalidArchive)
+        )
+
+        await store.resumeDownload(.word)
+        let startedIDs = await downloader.startDownloadIDs()
+        let resumedIDs = await downloader.resumeDownloadIDs()
+
+        XCTAssertEqual(startedIDs, ["word"])
+        XCTAssertEqual(resumedIDs, [])
     }
 
     func testSnapshotTreatsExistingValidArchiveAsCompletedWhenDownloaderIsIdle() async throws {
@@ -222,6 +280,31 @@ final class OfflineAudioStoreTests: XCTestCase {
     }
 }
 
+private func writeArchive(for type: AudioArchiveType, in storage: TestAudioStorage) throws -> URL {
+    let archiveURL = storage.archiveURL(for: type)
+    try FileManager.default.createDirectory(
+        at: archiveURL.deletingLastPathComponent(),
+        withIntermediateDirectories: true
+    )
+    try Data("archive".utf8).write(to: archiveURL)
+    return archiveURL
+}
+
+@discardableResult
+private func writePartialArchive(
+    for type: AudioArchiveType,
+    in storage: TestAudioStorage,
+    contents: String
+) throws -> URL {
+    let partialURL = storage.partialArchiveURL(for: type)
+    try FileManager.default.createDirectory(
+        at: partialURL.deletingLastPathComponent(),
+        withIntermediateDirectories: true
+    )
+    try Data(contents.utf8).write(to: partialURL)
+    return partialURL
+}
+
 private actor SequencedDownloader: ResumableDownloading {
     private var snapshots: [DownloadSnapshot]
     private var index = 0
@@ -265,18 +348,34 @@ private struct TestAudioStorage: AudioArchiveStoring {
 
 private actor TestDownloader: ResumableDownloading {
     private var snapshotsByID: [String: DownloadSnapshot]
+    private var startedIDs: [String] = []
+    private var resumedIDs: [String] = []
 
     init(snapshots: [String: DownloadSnapshot]) {
         self.snapshotsByID = snapshots
     }
 
-    func startDownload(id: String, from remoteURL: URL, to localURL: URL) async {}
+    func startDownload(id: String, from remoteURL: URL, to localURL: URL) async {
+        startedIDs.append(id)
+    }
+
     func pauseDownload(id: String) async {}
-    func resumeDownload(id: String) async {}
+    func resumeDownload(id: String) async {
+        resumedIDs.append(id)
+    }
+
     func restartDownload(id: String, from remoteURL: URL, to localURL: URL) async {}
 
     func snapshot(for id: String) async -> DownloadSnapshot {
         snapshotsByID[id] ?? DownloadSnapshot()
+    }
+
+    func startDownloadIDs() -> [String] {
+        startedIDs
+    }
+
+    func resumeDownloadIDs() -> [String] {
+        resumedIDs
     }
 }
 

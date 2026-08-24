@@ -2,8 +2,15 @@ import Foundation
 
 public protocol AudioArchiveStoring: Sendable {
     func archiveURL(for type: AudioArchiveType) -> URL
+    func partialArchiveURL(for type: AudioArchiveType) -> URL
     func clipCacheURL(for type: AudioArchiveType, clipID: String) -> URL
     func clearClipCache(for type: AudioArchiveType) throws
+}
+
+public extension AudioArchiveStoring {
+    func partialArchiveURL(for type: AudioArchiveType) -> URL {
+        URL(fileURLWithPath: archiveURL(for: type).path + ".download")
+    }
 }
 
 public struct AudioArchiveStorage: AudioArchiveStoring {
