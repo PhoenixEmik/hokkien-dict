@@ -21,7 +21,7 @@ final class ResumableDownloadServiceTests: XCTestCase {
 
         let localURL = directory.appendingPathComponent("audio.zip")
         let initialData = Data("OLD".utf8)
-        try initialData.write(to: localURL)
+        try initialData.write(to: temporaryDownloadURL(for: localURL))
 
         let expectedData = Data("NEW-DATA".utf8)
         MockDownloadURLProtocol.handler = { request in
@@ -67,7 +67,7 @@ final class ResumableDownloadServiceTests: XCTestCase {
         try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
 
         let localURL = directory.appendingPathComponent("audio.zip")
-        try Data("PARTIAL".utf8).write(to: localURL)
+        try Data("PARTIAL".utf8).write(to: temporaryDownloadURL(for: localURL))
 
         let expectedData = Data("FULL-DATA".utf8)
         let requestCount = AtomicCounter()
@@ -118,6 +118,10 @@ final class ResumableDownloadServiceTests: XCTestCase {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [MockDownloadURLProtocol.self]
         return URLSession(configuration: configuration)
+    }
+
+    private func temporaryDownloadURL(for localURL: URL) -> URL {
+        URL(fileURLWithPath: localURL.path + ".download")
     }
 }
 

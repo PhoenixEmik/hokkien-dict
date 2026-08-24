@@ -72,6 +72,7 @@ public actor ResumableDownloadService: ResumableDownloading {
     public func restartDownload(id: String, from remoteURL: URL, to localURL: URL) async {
         await pauseDownload(id: id)
         try? fileManager.removeItem(at: localURL)
+        try? fileManager.removeItem(at: temporaryDownloadURL(for: localURL))
 
         snapshots[id] = DownloadSnapshot(state: .idle, downloadedBytes: 0, totalBytes: nil)
         upsertJob(id: id, remoteURL: remoteURL, localURL: localURL)
@@ -115,10 +116,11 @@ public actor ResumableDownloadService: ResumableDownloading {
 
         do {
             try await performDownload(id: id, job: job, resumeIfPossible: true)
+            try replaceCompletedDownload(for: job)
             markJobFinished(id: id)
         } catch DownloadRecoverySignal.restartWithoutRange {
             try? ensureParentDirectory(for: job.localURL)
-            try? fileManager.removeItem(at: job.localURL)
+            try? fileManager.removeItem(at: temporaryDownloadURL(for: job.localURL))
 
             var snapshot = snapshots[id] ?? DownloadSnapshot()
             snapshot.state = .downloading
@@ -128,6 +130,7 @@ public actor ResumableDownloadService: ResumableDownloading {
 
             do {
                 try await performDownload(id: id, job: job, resumeIfPossible: false)
+                try replaceCompletedDownload(for: job)
                 markJobFinished(id: id)
             } catch is CancellationError {
                 // pause/restart manages state updates.
@@ -144,7 +147,8 @@ public actor ResumableDownloadService: ResumableDownloading {
     private func performDownload(id: String, job: DownloadJob, resumeIfPossible: Bool) async throws {
         try ensureParentDirectory(for: job.localURL)
 
-        let existingBytes = resumeIfPossible ? fileSize(of: job.localURL) : 0
+        let downloadURL = temporaryDownloadURL(for: job.localURL)
+        let existingBytes = resumeIfPossible ? fileSize(of: downloadURL) : 0
         var request = URLRequest(url: job.remoteURL)
         if existingBytes > 0 {
             request.setValue("bytes=\(existingBytes)-", forHTTPHeaderField: "Range")
@@ -174,7 +178,7 @@ public actor ResumableDownloadService: ResumableDownloading {
                     let resumedResponse = isResumedResponse(response)
                     let shouldAppend = existingBytes > 0 && resumedResponse
                     if existingBytes > 0 && !shouldAppend {
-                        try? fileManager.removeItem(at: job.localURL)
+                        try? fileManager.removeItem(at: downloadURL)
                     }
 
                     let baselineBytes: Int64 = shouldAppend ? existingBytes : 0
@@ -188,12 +192,12 @@ public actor ResumableDownloadService: ResumableDownloading {
                     snapshot.totalBytes = totalBytes
                     snapshots[id] = snapshot
 
-                    if shouldAppend, fileManager.fileExists(atPath: job.localURL.path) {
-                        handle = try FileHandle(forWritingTo: job.localURL)
+                    if shouldAppend, fileManager.fileExists(atPath: downloadURL.path) {
+                        handle = try FileHandle(forWritingTo: downloadURL)
                         try handle?.seekToEnd()
                     } else {
-                        fileManager.createFile(atPath: job.localURL.path, contents: nil)
-                        handle = try FileHandle(forWritingTo: job.localURL)
+                        fileManager.createFile(atPath: downloadURL.path, contents: nil)
+                        handle = try FileHandle(forWritingTo: downloadURL)
                     }
 
                 case .data(let data):
@@ -233,6 +237,14 @@ public actor ResumableDownloadService: ResumableDownloading {
         if let finishedJob {
             jobs[id] = finishedJob
         }
+    }
+
+    private func replaceCompletedDownload(for job: DownloadJob) throws {
+        let downloadURL = temporaryDownloadURL(for: job.localURL)
+        if fileManager.fileExists(atPath: job.localURL.path) {
+            try fileManager.removeItem(at: job.localURL)
+        }
+        try fileManager.moveItem(at: downloadURL, to: job.localURL)
     }
 
     private func markJobFailed(id: String, error: Error) {
@@ -312,6 +324,10 @@ public actor ResumableDownloadService: ResumableDownloading {
         }
 
         return nil
+    }
+
+    private func temporaryDownloadURL(for localURL: URL) -> URL {
+        URL(fileURLWithPath: localURL.path + ".download")
     }
 }
 
