@@ -132,12 +132,12 @@ public actor ResumableDownloadService: ResumableDownloading {
                 try await performDownload(id: id, job: job, resumeIfPossible: false)
                 try replaceCompletedDownload(for: job)
                 markJobFinished(id: id)
-            } catch is CancellationError {
+            } catch where error.isDownloadCancellation {
                 // pause/restart manages state updates.
             } catch {
                 markJobFailed(id: id, error: error)
             }
-        } catch is CancellationError {
+        } catch where error.isDownloadCancellation {
             // pause/restart manages state updates.
         } catch {
             markJobFailed(id: id, error: error)
@@ -223,6 +223,8 @@ public actor ResumableDownloadService: ResumableDownloading {
             }
             throw error
         }
+
+        try Task.checkCancellation()
 
         var completed = snapshots[id] ?? DownloadSnapshot()
         completed.state = .completed
@@ -384,6 +386,15 @@ private final class ChunkedDownloadStream: NSObject, URLSessionDataDelegate, URL
 }
 
 private extension Error {
+    var isDownloadCancellation: Bool {
+        if self is CancellationError {
+            return true
+        }
+
+        let error = self as NSError
+        return error.domain == NSURLErrorDomain && error.code == URLError.cancelled.rawValue
+    }
+
     var isBadServerResponse: Bool {
         let error = self as NSError
         return error.domain == NSURLErrorDomain && error.code == URLError.badServerResponse.rawValue
