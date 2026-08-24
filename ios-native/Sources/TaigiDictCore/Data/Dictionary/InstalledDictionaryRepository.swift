@@ -198,7 +198,7 @@ public actor InstalledDictionaryRepository: DictionaryRepositoryProtocol {
 
     private func restoreSourceFromFallbackIfNeeded() throws {
         let sourceManifestURL = sourceDirectory.appendingPathComponent("dictionary_manifest.json")
-        guard !fileManager.fileExists(atPath: sourceManifestURL.path), let fallbackSourceDirectory else {
+        guard let fallbackSourceDirectory else {
             return
         }
 
@@ -207,6 +207,13 @@ public actor InstalledDictionaryRepository: DictionaryRepositoryProtocol {
         let fallbackEntriesURL = fallbackSourceDirectory.appendingPathComponent(manifest.entriesFileName)
         guard fileManager.fileExists(atPath: fallbackEntriesURL.path) else {
             throw DictionaryPackageLoaderError.missingEntries(fallbackEntriesURL)
+        }
+
+        if fileManager.fileExists(atPath: sourceManifestURL.path),
+           let sourceManifest = try? loadManifest(at: sourceManifestURL),
+           fileManager.fileExists(atPath: sourceDirectory.appendingPathComponent(sourceManifest.entriesFileName).path),
+           !manifest.shouldReplace(sourceManifest) {
+            return
         }
 
         try fileManager.createDirectory(at: sourceDirectory, withIntermediateDirectories: true)
@@ -272,5 +279,24 @@ public actor InstalledDictionaryRepository: DictionaryRepositoryProtocol {
 
     private var databaseURL: URL {
         installedDirectory.appendingPathComponent("dictionary.sqlite")
+    }
+}
+
+private extension DictionaryManifest {
+    func shouldReplace(_ other: DictionaryManifest) -> Bool {
+        if let checksumSHA256,
+           !checksumSHA256.isEmpty,
+           checksumSHA256.caseInsensitiveCompare(other.checksumSHA256 ?? "") == .orderedSame {
+            return false
+        }
+
+        if let sourceModifiedAt,
+           !sourceModifiedAt.isEmpty,
+           let otherSourceModifiedAt = other.sourceModifiedAt,
+           !otherSourceModifiedAt.isEmpty {
+            return sourceModifiedAt > otherSourceModifiedAt
+        }
+
+        return self != other
     }
 }

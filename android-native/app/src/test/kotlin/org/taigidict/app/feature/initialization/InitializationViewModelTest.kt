@@ -10,6 +10,8 @@ import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -22,6 +24,7 @@ import org.robolectric.annotation.Config
 import org.taigidict.app.app.AppContainer
 import org.taigidict.app.app.AppContainerOverrides
 import org.taigidict.app.app.TaigiDictApplication
+import org.taigidict.app.core.constants.AppConstants
 import org.taigidict.app.data.database.DictionaryDatabase
 import org.taigidict.app.data.importer.BundledDictionaryImporting
 import org.taigidict.app.data.importer.DictionaryImportProgress
@@ -45,8 +48,8 @@ class InitializationViewModelTest {
     @Test
     fun existingDatabase_becomesReadyBeforeBackgroundRefreshCompletes() {
         val importer = BlockingBundledDictionaryImporter(imported = false)
-        val application = configureApplication(importer) { databaseFile ->
-            writeDatabaseMetadata(databaseFile)
+        val application = configureApplication(importer) { databaseFile, bundledManifest ->
+            writeDatabaseMetadata(databaseFile, bundledManifest)
         }
 
         val viewModel = InitializationViewModel(application)
@@ -63,7 +66,7 @@ class InitializationViewModelTest {
     @Test
     fun missingDatabase_doesNotSkipBlockingInitialization() {
         val importer = BlockingBundledDictionaryImporter(imported = true)
-        val application = configureApplication(importer) { databaseFile ->
+        val application = configureApplication(importer) { databaseFile, _ ->
             if (databaseFile.exists()) {
                 databaseFile.delete()
             }
@@ -76,7 +79,7 @@ class InitializationViewModelTest {
         }
 
         assertFalse(viewModel.uiState.value.isReady)
-        assertEquals(InitializationPhase.CheckingResources, viewModel.uiState.value.phase)
+        assertEquals(InitializationPhase.RestoringBundledSource, viewModel.uiState.value.phase)
 
         importer.release()
 
@@ -88,14 +91,14 @@ class InitializationViewModelTest {
 
     private fun configureApplication(
         importer: BlockingBundledDictionaryImporter,
-        prepareDatabase: (File) -> Unit,
+        prepareDatabase: (File, DictionaryManifest?) -> Unit,
     ): InitializationViewModelTestApplication {
         InitializationViewModelTestApplication.appContainerFactory = { context ->
             val fixtureDirectory = File(context.filesDir, "initialization-viewmodel-test")
             fixtureDirectory.deleteRecursively()
             fixtureDirectory.mkdirs()
             val databaseFile = File(fixtureDirectory, "dictionary.sqlite")
-            prepareDatabase(databaseFile)
+            prepareDatabase(databaseFile, currentBundledManifest(context))
             importer.databaseFile = databaseFile
             AppContainer(
                 context = context,
@@ -128,18 +131,34 @@ class InitializationViewModelTest {
         assertTrue(condition())
     }
 
-    private fun writeDatabaseMetadata(databaseFile: File) {
+    private fun writeDatabaseMetadata(databaseFile: File, bundledManifest: DictionaryManifest?) {
         if (databaseFile.exists()) {
             databaseFile.delete()
         }
+        val entryCount = bundledManifest?.entryCount ?: 2
+        val senseCount = bundledManifest?.senseCount ?: 3
+        val exampleCount = bundledManifest?.exampleCount ?: 1
+
         DictionaryDatabase.openWritable(databaseFile).use { database ->
             DictionaryDatabase.createSchema(database)
             database.execSQL("INSERT INTO dictionary_metadata (key, value) VALUES ('built_at', '2026-05-07T00:00:00Z')")
             database.execSQL("INSERT INTO dictionary_metadata (key, value) VALUES ('source_modified_at', '2026-05-07T00:00:00Z')")
-            database.execSQL("INSERT INTO dictionary_metadata (key, value) VALUES ('entry_count', '2')")
-            database.execSQL("INSERT INTO dictionary_metadata (key, value) VALUES ('sense_count', '3')")
-            database.execSQL("INSERT INTO dictionary_metadata (key, value) VALUES ('example_count', '1')")
+            database.execSQL("INSERT INTO dictionary_metadata (key, value) VALUES ('entry_count', ?)", arrayOf(entryCount.toString()))
+            database.execSQL("INSERT INTO dictionary_metadata (key, value) VALUES ('sense_count', ?)", arrayOf(senseCount.toString()))
+            database.execSQL("INSERT INTO dictionary_metadata (key, value) VALUES ('example_count', ?)", arrayOf(exampleCount.toString()))
+            bundledManifest?.checksumSHA256?.let { checksum ->
+                database.execSQL("INSERT INTO dictionary_metadata (key, value) VALUES ('checksum_sha256', ?)", arrayOf(checksum))
+            }
         }
+    }
+
+    private fun currentBundledManifest(context: Context): DictionaryManifest? {
+        return runCatching {
+            val manifestString = context.assets
+                .open(AppConstants.BUNDLED_DICTIONARY_MANIFEST_ASSET_PATH)
+                .use { input -> input.readBytes().toString(Charsets.UTF_8) }
+            Json.decodeFromString<DictionaryManifest>(manifestString)
+        }.getOrNull()
     }
 }
 
@@ -213,6 +232,8 @@ private class IdleDictionarySourceStore : DictionarySourceResourceManaging {
     override suspend fun refresh(): Result<Unit> = Result.success(Unit)
 
     override suspend fun restoreBundledSource(): Result<Unit> = Result.success(Unit)
+
+    override suspend fun restoreBundledSourceIfNewer(): Result<Boolean> = Result.success(false)
 
     override suspend fun downloadSource(): Result<Unit> = Result.success(Unit)
 

@@ -10,10 +10,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import org.taigidict.app.app.TaigiDictApplication
 import org.taigidict.app.data.database.DictionaryDatabase
 import org.taigidict.app.data.importer.BundledDictionaryImporting
 import org.taigidict.app.data.importer.DictionaryImportResult
+import org.taigidict.app.data.importer.DictionaryManifest
 import org.taigidict.app.data.source.DictionarySourceResourceManaging
 
 data class InitializationUiState(
@@ -121,7 +124,21 @@ class InitializationViewModel(application: Application) : AndroidViewModel(appli
             return false
         }
 
-        return metadata["built_at"].isNullOrBlank().not()
+        if (metadata["built_at"].isNullOrBlank()) {
+            return false
+        }
+
+        val expectedManifest = expectedDictionaryManifestOrNull() ?: return true
+        if (
+            entryCount != expectedManifest.entryCount ||
+            senseCount != expectedManifest.senseCount ||
+            exampleCount != expectedManifest.exampleCount
+        ) {
+            return false
+        }
+
+        val expectedChecksum = expectedManifest.checksumSHA256?.takeIf(String::isNotBlank) ?: return true
+        return expectedChecksum.equals(metadata[CHECKSUM_METADATA_KEY].orEmpty(), ignoreCase = true)
     }
 
     private suspend fun refreshDatabaseInBackgroundIfNeeded() {
@@ -136,6 +153,18 @@ class InitializationViewModel(application: Application) : AndroidViewModel(appli
     }
 
     private suspend fun ensureDictionaryDatabase(reportProgressToUi: Boolean): Boolean {
+        if (reportProgressToUi) {
+            updateState(
+                phase = InitializationPhase.RestoringBundledSource,
+                progress = 0.15f,
+                processedEntries = null,
+                totalEntries = null,
+                isReady = false,
+                errorMessage = null,
+            )
+        }
+        val restoredBundledSource = sourceStore.restoreBundledSourceIfNewer().getOrThrow()
+
         val importedFromLocal = runCatching {
             importDatabase(
                 importService = localImportService,
@@ -145,7 +174,7 @@ class InitializationViewModel(application: Application) : AndroidViewModel(appli
             )
         }.getOrNull()
         if (importedFromLocal != null) {
-            return importedFromLocal.imported
+            return restoredBundledSource || importedFromLocal.imported
         }
 
         if (reportProgressToUi) {
@@ -257,5 +286,56 @@ class InitializationViewModel(application: Application) : AndroidViewModel(appli
             databaseGeneration = databaseGeneration,
             errorMessage = errorMessage,
         )
+    }
+
+    private fun bundledDictionaryManifestOrNull(): DictionaryManifest? {
+        return runCatching {
+            val manifestString = appContainer.appContext.assets
+                .open(appContainer.bundledDictionaryManifestAssetPath)
+                .use { input -> input.readBytes().toString(Charsets.UTF_8) }
+            ManifestJson.decodeFromString<DictionaryManifest>(manifestString)
+        }.getOrNull()
+    }
+
+    private fun localDictionaryManifestOrNull(): DictionaryManifest? {
+        return runCatching {
+            val manifestFile = appContainer.localDictionarySourceDirectory.resolve("dictionary_manifest.json")
+            val manifestString = manifestFile.readBytes().toString(Charsets.UTF_8)
+            ManifestJson.decodeFromString<DictionaryManifest>(manifestString)
+        }.getOrNull()
+    }
+
+    private fun expectedDictionaryManifestOrNull(): DictionaryManifest? {
+        val bundledManifest = bundledDictionaryManifestOrNull()
+        val localManifest = localDictionaryManifestOrNull()
+        return when {
+            bundledManifest == null -> localManifest
+            localManifest == null -> bundledManifest
+            bundledManifest.isNewerThan(localManifest) -> bundledManifest
+            else -> localManifest
+        }
+    }
+
+    private fun DictionaryManifest.isNewerThan(other: DictionaryManifest): Boolean {
+        val checksum = checksumSHA256?.takeIf(String::isNotBlank)
+        val otherChecksum = other.checksumSHA256?.takeIf(String::isNotBlank)
+        if (checksum != null && checksum.equals(otherChecksum, ignoreCase = true)) {
+            return false
+        }
+
+        val sourceModifiedAt = sourceModifiedAt?.takeIf(String::isNotBlank)
+        val otherSourceModifiedAt = other.sourceModifiedAt?.takeIf(String::isNotBlank)
+        if (sourceModifiedAt != null && otherSourceModifiedAt != null) {
+            return sourceModifiedAt > otherSourceModifiedAt
+        }
+
+        return this != other
+    }
+
+    private companion object {
+        const val CHECKSUM_METADATA_KEY = "checksum_sha256"
+        val ManifestJson = Json {
+            ignoreUnknownKeys = true
+        }
     }
 }

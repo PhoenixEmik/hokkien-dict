@@ -281,6 +281,8 @@ private class FakeDictionarySourceResourceStore : org.taigidict.app.data.source.
 
     override suspend fun restoreBundledSource(): Result<Unit> = Result.success(Unit)
 
+    override suspend fun restoreBundledSourceIfNewer(): Result<Boolean> = Result.success(false)
+
     override suspend fun downloadSource(): Result<Unit> = Result.success(Unit)
 
     override suspend fun pauseDownload(): Result<Unit> = Result.success(Unit)

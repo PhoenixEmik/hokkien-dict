@@ -40,6 +40,35 @@ class DictionarySourceResourceStoreTest {
     }
 
     @Test
+    fun restoreBundledSourceIfNewer_replacesOlderLocalSource() = runTest {
+        val localSourceDirectory = Files.createTempDirectory("dictionary-source-upgrade").toFile()
+        localSourceDirectory.mkdirs()
+        File(localSourceDirectory, "dictionary_manifest.json").writeText(
+            """
+            {
+              "schemaVersion": 1,
+              "builtAt": "2026-04-01T00:00:00Z",
+              "source": "test",
+              "sourceModifiedAt": "2026-04-01T00:00:00Z",
+              "entryCount": 1,
+              "senseCount": 1,
+              "exampleCount": 0,
+              "entriesFileName": "dictionary_entries.jsonl",
+              "checksumSHA256": "old"
+            }
+            """.trimIndent()
+        )
+        File(localSourceDirectory, "dictionary_entries.jsonl").writeText("{}")
+        val store = createStore(localSourceDirectory, StandardTestDispatcher(testScheduler))
+
+        val result = store.restoreBundledSourceIfNewer()
+
+        assertTrue(result.getOrThrow())
+        assertEquals(DownloadSnapshot.State.Completed, store.snapshot.value.state)
+        assertTrue(File(localSourceDirectory, "dictionary_entries.jsonl").length() > 2)
+    }
+
+    @Test
     fun refresh_withPausedStagingDownload_preservesExistingFilesAndPublishesPausedSnapshot() = runTest {
         val localSourceDirectory = Files.createTempDirectory("dictionary-source-invalid").toFile()
         File(localSourceDirectory, "dictionary_manifest.json").writeText(

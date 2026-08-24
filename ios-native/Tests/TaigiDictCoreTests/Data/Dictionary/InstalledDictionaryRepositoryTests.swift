@@ -68,6 +68,34 @@ final class InstalledDictionaryRepositoryTests: XCTestCase {
         )
     }
 
+    func testInstalledRepositoryRestoresNewerFallbackSourceBeforeLoading() async throws {
+        let writableSourceDirectory = try makeTemporaryDirectory().appendingPathComponent("Source", isDirectory: true)
+        let fallbackSourceDirectory = try makeTemporaryDirectory()
+        let installedDirectory = try makeTemporaryDirectory().appendingPathComponent("Installed", isDirectory: true)
+        try writePackage(
+            to: writableSourceDirectory,
+            entries: [
+                TestEntry(id: 1, hanji: "舊詞", romanization: "ku7-su5", definition: "舊資料。"),
+            ]
+        )
+        try writePackage(
+            to: fallbackSourceDirectory,
+            entries: [
+                TestEntry(id: 2, hanji: "新詞", romanization: "sin-su5", definition: "新資料。"),
+            ]
+        )
+
+        let repository = InstalledDictionaryRepository(
+            sourceDirectory: writableSourceDirectory,
+            installedDirectory: installedDirectory,
+            fallbackSourceDirectory: fallbackSourceDirectory
+        )
+
+        let results = try await repository.search("新詞", limit: 5, offset: 0)
+
+        XCTAssertEqual(results.map(\.hanji), ["新詞"])
+    }
+
     func testInstalledRepositoryReportsPreparationProgressAcrossSteps() async throws {
         let sourceDirectory = try makeTemporaryDirectory()
         let installedDirectory = try makeTemporaryDirectory().appendingPathComponent("Installed", isDirectory: true)
@@ -194,6 +222,8 @@ final class InstalledDictionaryRepositoryTests: XCTestCase {
     private func writePackage(to directory: URL, entries: [TestEntry] = [
         TestEntry(id: 1, hanji: "辭典", romanization: "sû-tián", definition: "一種工具書。"),
     ]) throws {
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+
         let jsonl = entries.map { entry in
             """
             {"id":\(entry.id),"type":"名詞","hanji":"\(entry.hanji)","romanization":"\(entry.romanization)","category":"主詞目","audio":"\(entry.id)","hokkienSearch":"\(entry.hanji) \(entry.romanization)","mandarinSearch":"\(entry.definition)","senses":[{"partOfSpeech":"名詞","definition":"\(entry.definition)","examples":[]}]}

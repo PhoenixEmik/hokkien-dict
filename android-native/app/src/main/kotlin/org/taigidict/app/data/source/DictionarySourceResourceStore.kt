@@ -51,6 +51,7 @@ interface DictionarySourceResourceManaging {
     val snapshot: StateFlow<DownloadSnapshot>
     suspend fun refresh(): Result<Unit>
     suspend fun restoreBundledSource(): Result<Unit>
+    suspend fun restoreBundledSourceIfNewer(): Result<Boolean>
     suspend fun downloadSource(): Result<Unit>
     suspend fun pauseDownload(): Result<Unit>
     suspend fun resumeDownload(): Result<Unit>
@@ -148,6 +149,24 @@ class DictionarySourceResourceStore(
                 )
                 throw error
             }
+        }
+    }
+
+    override suspend fun restoreBundledSourceIfNewer(): Result<Boolean> = withContext(ioDispatcher) {
+        runCatching {
+            val bundledManifest = readBundledManifest()
+            val localManifest = readManifestOrNull(localSourceDirectory)
+            val localEntriesExists = localManifest?.let { manifest ->
+                File(localSourceDirectory, manifest.entriesFileName).exists()
+            } ?: false
+
+            val shouldRestore = !localEntriesExists || bundledManifest.isNewerThan(localManifest)
+            if (!shouldRestore) {
+                return@runCatching false
+            }
+
+            restoreBundledSource().getOrThrow()
+            true
         }
     }
 
@@ -484,6 +503,31 @@ class DictionarySourceResourceStore(
                 manifestFile.readBytes().toString(Charsets.UTF_8)
             )
         }.getOrNull()
+    }
+
+    private fun readBundledManifest(): DictionaryManifest {
+        val manifestBytes = assetManager.open(bundledManifestAssetPath).use { it.readBytes() }
+        return json.decodeFromString(manifestBytes.toString(Charsets.UTF_8))
+    }
+
+    private fun DictionaryManifest.isNewerThan(other: DictionaryManifest?): Boolean {
+        if (other == null) {
+            return true
+        }
+
+        val checksum = checksumSHA256?.takeIf(String::isNotBlank)
+        val otherChecksum = other.checksumSHA256?.takeIf(String::isNotBlank)
+        if (checksum != null && checksum.equals(otherChecksum, ignoreCase = true)) {
+            return false
+        }
+
+        val sourceModifiedAt = sourceModifiedAt?.takeIf(String::isNotBlank)
+        val otherSourceModifiedAt = other.sourceModifiedAt?.takeIf(String::isNotBlank)
+        if (sourceModifiedAt != null && otherSourceModifiedAt != null) {
+            return sourceModifiedAt > otherSourceModifiedAt
+        }
+
+        return this != other
     }
 
     private fun resetDirectory(directory: File) {

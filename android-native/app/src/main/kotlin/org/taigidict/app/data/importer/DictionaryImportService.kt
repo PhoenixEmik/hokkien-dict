@@ -81,7 +81,8 @@ class DictionaryImportService(
         return metadata["entry_count"] == manifest.entryCount.toString() &&
             metadata["sense_count"] == manifest.senseCount.toString() &&
             metadata["example_count"] == manifest.exampleCount.toString() &&
-            metadata["source_modified_at"].orEmpty() == manifest.sourceModifiedAt.orEmpty()
+            metadata["source_modified_at"].orEmpty() == manifest.sourceModifiedAt.orEmpty() &&
+            manifest.checksumSHA256.orEmpty().equals(metadata[CHECKSUM_METADATA_KEY].orEmpty(), ignoreCase = true)
     }
 
     private fun importValidatedPackage(
@@ -155,6 +156,7 @@ class DictionaryImportService(
 
                 insertMetadata(metadataStatement, "built_at", manifest.builtAt)
                 insertMetadata(metadataStatement, "source_modified_at", manifest.sourceModifiedAt.orEmpty())
+                insertMetadata(metadataStatement, CHECKSUM_METADATA_KEY, manifest.checksumSHA256.orEmpty())
                 insertMetadata(metadataStatement, "entry_count", entryCount.toString())
                 insertMetadata(metadataStatement, "sense_count", senseCount.toString())
                 insertMetadata(metadataStatement, "example_count", exampleCount.toString())
@@ -299,5 +301,6 @@ class DictionaryImportService(
     private companion object {
         const val SUPPORTED_SCHEMA_VERSION = 1
         const val INSERT_BATCH_SIZE = 200
+        const val CHECKSUM_METADATA_KEY = "checksum_sha256"
     }
 }

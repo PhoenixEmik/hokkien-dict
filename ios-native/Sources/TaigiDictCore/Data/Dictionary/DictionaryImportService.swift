@@ -219,6 +219,7 @@ public struct DictionaryImportService: Sendable {
         let items: [(String, String)] = [
             ("built_at", manifest.builtAt),
             ("source_modified_at", manifest.sourceModifiedAt ?? ""),
+            ("checksum_sha256", manifest.checksumSHA256 ?? ""),
             ("entry_count", String(stats.entryCount)),
             ("sense_count", String(stats.senseCount)),
             ("example_count", String(stats.exampleCount)),
