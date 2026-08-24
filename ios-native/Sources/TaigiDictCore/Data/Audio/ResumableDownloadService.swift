@@ -159,58 +159,65 @@ public actor ResumableDownloadService: ResumableDownloading {
             try? handle?.close()
         }
 
-        for try await event in ChunkedDownloadStream.events(for: request, configuration: session.configuration) {
-            try Task.checkCancellation()
+        do {
+            for try await event in ChunkedDownloadStream.events(for: request, configuration: session.configuration) {
+                try Task.checkCancellation()
 
-            switch event {
-            case .response(let response):
-                if shouldRestartWithoutRange(response, existingBytes: existingBytes) {
-                    throw DownloadRecoverySignal.restartWithoutRange
-                }
+                switch event {
+                case .response(let response):
+                    if shouldRestartWithoutRange(response, existingBytes: existingBytes) {
+                        throw DownloadRecoverySignal.restartWithoutRange
+                    }
 
-                try validateResponse(response)
+                    try validateResponse(response)
 
-                let resumedResponse = isResumedResponse(response)
-                let shouldAppend = existingBytes > 0 && resumedResponse
-                if existingBytes > 0 && !shouldAppend {
-                    try? fileManager.removeItem(at: job.localURL)
-                }
+                    let resumedResponse = isResumedResponse(response)
+                    let shouldAppend = existingBytes > 0 && resumedResponse
+                    if existingBytes > 0 && !shouldAppend {
+                        try? fileManager.removeItem(at: job.localURL)
+                    }
 
-                let baselineBytes: Int64 = shouldAppend ? existingBytes : 0
-                downloadedBytes = baselineBytes
-                lastReportedBytes = baselineBytes
-                totalBytes = resolveTotalBytes(response: response, currentSize: baselineBytes)
+                    let baselineBytes: Int64 = shouldAppend ? existingBytes : 0
+                    downloadedBytes = baselineBytes
+                    lastReportedBytes = baselineBytes
+                    totalBytes = resolveTotalBytes(response: response, currentSize: baselineBytes)
 
-                var snapshot = snapshots[id] ?? DownloadSnapshot()
-                snapshot.state = .downloading
-                snapshot.downloadedBytes = baselineBytes
-                snapshot.totalBytes = totalBytes
-                snapshots[id] = snapshot
+                    var snapshot = snapshots[id] ?? DownloadSnapshot()
+                    snapshot.state = .downloading
+                    snapshot.downloadedBytes = baselineBytes
+                    snapshot.totalBytes = totalBytes
+                    snapshots[id] = snapshot
 
-                if shouldAppend, fileManager.fileExists(atPath: job.localURL.path) {
-                    handle = try FileHandle(forWritingTo: job.localURL)
-                    try handle?.seekToEnd()
-                } else {
-                    fileManager.createFile(atPath: job.localURL.path, contents: nil)
-                    handle = try FileHandle(forWritingTo: job.localURL)
-                }
+                    if shouldAppend, fileManager.fileExists(atPath: job.localURL.path) {
+                        handle = try FileHandle(forWritingTo: job.localURL)
+                        try handle?.seekToEnd()
+                    } else {
+                        fileManager.createFile(atPath: job.localURL.path, contents: nil)
+                        handle = try FileHandle(forWritingTo: job.localURL)
+                    }
 
-            case .data(let data):
-                guard let handle else {
-                    throw URLError(.badServerResponse)
-                }
+                case .data(let data):
+                    guard let handle else {
+                        throw URLError(.badServerResponse)
+                    }
 
-                try handle.write(contentsOf: data)
-                downloadedBytes += Int64(data.count)
+                    try handle.write(contentsOf: data)
+                    downloadedBytes += Int64(data.count)
 
-                if downloadedBytes - lastReportedBytes >= snapshotUpdateByteInterval {
-                    var rolling = snapshots[id] ?? DownloadSnapshot(state: .downloading)
-                    rolling.downloadedBytes = downloadedBytes
-                    rolling.totalBytes = totalBytes
-                    snapshots[id] = rolling
-                    lastReportedBytes = downloadedBytes
+                    if downloadedBytes - lastReportedBytes >= snapshotUpdateByteInterval {
+                        var rolling = snapshots[id] ?? DownloadSnapshot(state: .downloading)
+                        rolling.downloadedBytes = downloadedBytes
+                        rolling.totalBytes = totalBytes
+                        snapshots[id] = rolling
+                        lastReportedBytes = downloadedBytes
+                    }
                 }
             }
+        } catch {
+            if existingBytes > 0, error.isBadServerResponse {
+                throw DownloadRecoverySignal.restartWithoutRange
+            }
+            throw error
         }
 
         var completed = snapshots[id] ?? DownloadSnapshot()
@@ -270,7 +277,7 @@ public actor ResumableDownloadService: ResumableDownloading {
             return false
         }
 
-        return httpResponse.statusCode == 416
+        return !(200..<300).contains(httpResponse.statusCode)
     }
 
     private func ensureParentDirectory(for fileURL: URL) throws {
@@ -357,5 +364,15 @@ private final class ChunkedDownloadStream: NSObject, URLSessionDataDelegate, URL
         }
         self.session?.finishTasksAndInvalidate()
         self.session = nil
+    }
+}
+
+private extension Error {
+    var isBadServerResponse: Bool {
+        guard let urlError = self as? URLError else {
+            return false
+        }
+
+        return urlError.code == .badServerResponse
     }
 }

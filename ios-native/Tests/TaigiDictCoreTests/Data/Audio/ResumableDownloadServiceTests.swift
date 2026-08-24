@@ -77,7 +77,7 @@ final class ResumableDownloadServiceTests: XCTestCase {
                 XCTAssertEqual(request.value(forHTTPHeaderField: "Range"), "bytes=7-")
                 let response = HTTPURLResponse(
                     url: request.url!,
-                    statusCode: 416,
+                    statusCode: 403,
                     httpVersion: "HTTP/1.1",
                     headerFields: nil
                 )!

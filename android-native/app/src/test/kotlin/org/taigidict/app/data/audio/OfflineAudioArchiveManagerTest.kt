@@ -237,7 +237,7 @@ private class RangeRejectedThenFullConnectionFactory(
         return if (resumeFromByte > 0) {
             FakeAudioArchiveConnection(
                 payload = ByteArray(0),
-                responseCode = 416,
+                responseCode = java.net.HttpURLConnection.HTTP_FORBIDDEN,
             )
         } else {
             FakeAudioArchiveConnection(

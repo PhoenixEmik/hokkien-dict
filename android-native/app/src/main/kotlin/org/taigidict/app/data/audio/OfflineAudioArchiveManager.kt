@@ -125,7 +125,7 @@ internal class OfflineAudioArchiveManager(
                 val tempFile = storage.downloadTempFile(type)
                 var resumeBytes = if (allowResume && tempFile.exists()) tempFile.length() else 0L
                 var connection = connectionFactory.open(type.sourceUrl, resumeBytes)
-                if (resumeBytes > 0 && connection.responseCode == HTTP_REQUESTED_RANGE_NOT_SATISFIABLE) {
+                if (resumeBytes > 0 && connection.responseCode !in SUCCESSFUL_HTTP_CODES) {
                     connection.close()
                     tempFile.delete()
                     resumeBytes = 0L
@@ -360,7 +360,6 @@ internal class OfflineAudioArchiveManager(
     }
 
     private companion object {
-        private const val HTTP_REQUESTED_RANGE_NOT_SATISFIABLE = 416
         private val SUCCESSFUL_HTTP_CODES = HttpURLConnection.HTTP_OK..299
         private const val DictionaryChecksumProperty = "dictionary_entries_checksum_sha256"
     }
