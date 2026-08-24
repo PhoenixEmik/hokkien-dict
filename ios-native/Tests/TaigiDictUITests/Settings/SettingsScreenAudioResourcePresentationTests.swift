@@ -40,9 +40,21 @@ final class SettingsScreenAudioResourcePresentationTests: XCTestCase {
             []
         )
         XCTAssertEqual(
+            AudioResourcePresentation.settingsActions(for: DownloadSnapshot(state: .downloading)),
+            [.pause, .restart]
+        )
+        XCTAssertEqual(
+            AudioResourcePresentation.settingsActions(for: DownloadSnapshot(state: .paused)),
+            [.resume, .restart]
+        )
+        XCTAssertEqual(
             AudioResourcePresentation.settingsActions(
                 for: DownloadSnapshot(state: .completed, needsDictionaryUpdate: true)
             ),
+            [.restart]
+        )
+        XCTAssertEqual(
+            AudioResourcePresentation.settingsActions(for: DownloadSnapshot(state: .failed("network"))),
             [.restart]
         )
         XCTAssertEqual(

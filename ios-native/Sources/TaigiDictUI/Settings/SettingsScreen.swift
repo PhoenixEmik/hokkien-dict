@@ -839,7 +839,7 @@ private struct AudioArchiveResourceRow: View {
 
                     ResourceActionControl(
                         locale: locale,
-                        isDisabled: isSnapshotLoading || isRunningAction,
+                        isDisabled: isActionControlDisabled,
                         actions: availableActions,
                         buttonTitle: { $0.buttonTitle(locale: locale) },
                         systemImage: \.systemImage,
@@ -876,7 +876,7 @@ private struct AudioArchiveResourceRow: View {
 
                 ResourceActionControl(
                     locale: locale,
-                    isDisabled: isSnapshotLoading || isRunningAction,
+                    isDisabled: isActionControlDisabled,
                     actions: availableActions,
                     buttonTitle: { $0.buttonTitle(locale: locale) },
                     systemImage: \.systemImage,
@@ -894,6 +894,10 @@ private struct AudioArchiveResourceRow: View {
 
     private var availableActions: [SettingsViewModel.AudioResourceAction] {
         actions ?? AudioResourcePresentation.actions(for: snapshot, isLoading: isSnapshotLoading)
+    }
+
+    private var isActionControlDisabled: Bool {
+        isSnapshotLoading || (isRunningAction && snapshot.state != .downloading && snapshot.state != .paused)
     }
 
     private var snapshotDescription: String {
@@ -995,13 +999,13 @@ enum AudioResourcePresentation {
         case .idle:
             return [.start]
         case .downloading:
-            return [.pause]
+            return [.pause, .restart]
         case .paused:
-            return [.resume]
+            return [.resume, .restart]
         case .completed:
             return snapshot.needsDictionaryUpdate ? [.restart] : []
         case .failed:
-            return [.start]
+            return [.restart]
         }
     }
 

@@ -369,10 +369,7 @@ private final class ChunkedDownloadStream: NSObject, URLSessionDataDelegate, URL
 
 private extension Error {
     var isBadServerResponse: Bool {
-        guard let urlError = self as? URLError else {
-            return false
-        }
-
-        return urlError.code == .badServerResponse
+        let error = self as NSError
+        return error.domain == NSURLErrorDomain && error.code == URLError.badServerResponse.rawValue
     }
 }

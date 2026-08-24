@@ -167,7 +167,10 @@ public final class SettingsViewModel {
     }
 
     public func runAudioAction(_ action: AudioResourceAction, for type: AudioArchiveType) async {
-        guard let offlineAudioStore, !activeAudioActions.contains(type) else {
+        guard let offlineAudioStore else {
+            return
+        }
+        if activeAudioActions.contains(type), action != .restart {
             return
         }
 
